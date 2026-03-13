@@ -1,0 +1,158 @@
+{
+  "identity": {
+    "name": "SoccerMatch",
+    "archetype": "The Performance Pro",
+    "tone": "Elite, Precision, Kinetic, Tactical",
+    "core_philosophy": "Dark Mode First. High Contrast. Data is Hero."
+  },
+  "typography": {
+    "headings": {
+      "font_family": "Barlow Condensed, sans-serif",
+      "weights": ["600", "700", "800"],
+      "usage": "All section titles, hero text, and stats numbers. Use uppercase for maximum impact.",
+      "letter_spacing": "tracking-tight"
+    },
+    "body": {
+      "font_family": "Manrope, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "Descriptions, form inputs, long text.",
+      "letter_spacing": "tracking-normal"
+    },
+    "mono": {
+      "font_family": "JetBrains Mono, monospace",
+      "usage": "Data tables, contract values, timestamps."
+    },
+    "installation": "Import from Google Fonts in index.css: @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400&display=swap');"
+  },
+  "colors": {
+    "background": {
+      "default": "#09090b",
+      "paper": "#18181b",
+      "subtle": "#27272a"
+    },
+    "primary": {
+      "main": "#22c55e",
+      "hover": "#16a34a",
+      "light": "#4ade80",
+      "foreground": "#000000"
+    },
+    "text": {
+      "primary": "#ffffff",
+      "secondary": "#a1a1aa",
+      "muted": "#52525b"
+    },
+    "status": {
+      "success": "#22c55e",
+      "error": "#ef4444",
+      "warning": "#f59e0b",
+      "info": "#3b82f6"
+    },
+    "tailwind_config": {
+      "background": "0 0% 3.5%",
+      "foreground": "0 0% 98%",
+      "card": "240 10% 3.9%",
+      "card-foreground": "0 0% 98%",
+      "primary": "142 76% 36%",
+      "primary-foreground": "355.7 100% 97.3%",
+      "secondary": "240 3.7% 15.9%",
+      "secondary-foreground": "0 0% 98%",
+      "muted": "240 3.7% 15.9%",
+      "muted-foreground": "240 5% 64.9%",
+      "accent": "240 3.7% 15.9%",
+      "accent-foreground": "0 0% 98%",
+      "destructive": "0 62.8% 30.6%",
+      "destructive-foreground": "0 0% 98%",
+      "border": "240 3.7% 15.9%",
+      "input": "240 3.7% 15.9%",
+      "ring": "142 76% 36%"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": {
+      "usage": "Sticky headers, modal overlays, toast notifications.",
+      "classes": "bg-black/40 backdrop-blur-xl border-white/10 border-b"
+    },
+    "textures": {
+      "noise": "Add a subtle noise grain overlay to the entire app body to prevent 'digital flatness'.",
+      "grid": "Use a faint 20px x 20px grid background in hero sections (opacity 5%)."
+    },
+    "borders": {
+      "style": "1px solid",
+      "color": "border-white/10",
+      "radius": "rounded-none or rounded-sm (max 4px). Avoid playful rounded-xl."
+    },
+    "shadows": {
+      "card": "0 0 0 1px rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.5)",
+      "glow": "0 0 20px rgba(34, 197, 94, 0.3)"
+    }
+  },
+  "layouts": {
+    "container": "max-w-7xl mx-auto px-6 md:px-12",
+    "bento_grid": {
+      "wrapper": "grid grid-cols-1 md:grid-cols-4 gap-4",
+      "item": "bg-card border border-border p-6 flex flex-col justify-between"
+    },
+    "dashboard": {
+      "sidebar": "w-64 border-r border-border bg-background fixed h-full hidden md:block",
+      "main": "md:ml-64 p-8"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12 px-8 transition-transform active:scale-95",
+      "secondary": "bg-transparent border border-white/20 text-white hover:bg-white/10 rounded-sm h-12 px-8 uppercase tracking-wide",
+      "ghost": "text-primary hover:text-primary/80 hover:bg-primary/10"
+    },
+    "cards": {
+      "base": "bg-card border border-border/50 text-card-foreground p-6 rounded-sm relative overflow-hidden",
+      "hover_effect": "hover:border-primary/50 transition-colors duration-300"
+    },
+    "inputs": {
+      "style": "bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12 px-4 text-white placeholder:text-white/30"
+    },
+    "badges": {
+      "position": "bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1",
+      "status_success": "bg-green-500/10 text-green-500 border-green-500/20",
+      "status_error": "bg-red-500/10 text-red-500 border-red-500/20"
+    }
+  },
+  "image_urls": {
+    "hero_backgrounds": [
+      {
+        "url": "https://images.unsplash.com/photo-1697562160779-fed83c21a2cd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNTl8MHwxfHNlYXJjaHw0fHxlbXB0eSUyMG1vZGVybiUyMGZvb3RiYWxsJTIwc3RhZGl1bSUyMG5pZ2h0JTIwZmxvb2RsaWdodHMlMjB3aWRlJTIwYW5nbGV8ZW58MHx8fHwxNzczMzk5NDk2fDA&ixlib=rb-4.1.0&q=85",
+        "category": "hero_bg",
+        "description": "Dark stadium night view"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1661587535658-50048b8ec242?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODl8MHwxfHNlYXJjaHwzfHxzb2NjZXIlMjBwbGF5ZXIlMjBzY29yaW5nJTIwZ29hbCUyMG5pZ2h0JTIwbWF0Y2glMjBkcmFtYXRpYyUyMGxpZ2h0aW5nfGVufDB8fHx8MTc3MzM5OTQ4NHww&ixlib=rb-4.1.0&q=85",
+        "category": "action_shot",
+        "description": "Player action shot for landing page"
+      }
+    ],
+    "placeholders": {
+      "player_avatar": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      "club_logo": "https://via.placeholder.com/150/000000/FFFFFF?text=CLUB"
+    }
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "Stroke width 1.5px (thin and precise). Size 20px default."
+  },
+  "instructions_to_main_agent": [
+    "1. THEME SETUP: Immediately replace the `tailwind.config.js` colors with the 'The Performance Pro' palette defined above. Force dark mode by default.",
+    "2. FONT SETUP: Add the Google Fonts import to `index.css` immediately.",
+    "3. LAYOUT: Do NOT use centered layouts for the dashboard. Use a sidebar (left) + content (right) layout.",
+    "4. CARDS: Player cards must look like 'Trading Cards' or 'FIFA Cards' - darker background, sharp borders, stats in a grid.",
+    "5. FORMS: Use 'ghost' inputs (transparent bg, bottom border only) for a cleaner look in profile editing, or solid dark inputs for registration.",
+    "6. LISTS: Opportunity lists should look like a stock ticker or flight schedule - very tabular, monospaced numbers, high contrast.",
+    "7. UNIVERSAL: Avoid all gradients on backgrounds. Use solid colors + subtle noise texture only."
+  ],
+  "universal_guidelines": [
+    "Do NOT use 'Inter' for Headings. Use 'Barlow Condensed'.",
+    "Do NOT use Purple or Blue as primary colors. Use Electric Green (#22c55e).",
+    "Do NOT use rounded-xl or rounded-2xl. Use sharp rounded-sm or rounded-none.",
+    "All interactive elements must have `data-testid` attributes.",
+    "Use 'sonner' for toasts.",
+    "Never center text in the main dashboard view. Left align everything for readability."
+  ]
+}
