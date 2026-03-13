@@ -5,13 +5,15 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import socketio
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Dict
 import uuid
 from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
+from chat_video_manager import ChatRoomManager, VideoSessionManager, ChatMessage
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -20,9 +22,15 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-app = FastAPI()
+# Socket.IO Setup
+sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+fastapi_app = FastAPI()
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
+
+# Initialize managers
+chat_room_manager = ChatRoomManager(db)
+video_session_manager = VideoSessionManager(db)
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
 JWT_ALGORITHM = 'HS256'
@@ -601,9 +609,371 @@ async def delete_opportunity_admin(opportunity_id: str, current_user: dict = Dep
         raise HTTPException(status_code=404, detail="Opportunity not found")
     return {"message": "Deleted"}
 
-app.include_router(api_router)
+# ============ CHAT & VIDEO ADMIN ENDPOINTS ============
+@api_router.post("/admin/chat/create")
+async def create_chat_room_admin(
+    player_id: str,
+    club_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin creates a chat room between player and club"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    # Get player and club info
+    player = await db.players.find_one({"user_id": player_id}, {"_id": 0})
+    club = await db.clubs.find_one({"user_id": club_id}, {"_id": 0})
+    
+    if not player or not club:
+        raise HTTPException(status_code=404, detail="Player or club not found")
+    
+    room_id = f"chat_{player_id}_{club_id}_{uuid.uuid4().hex[:8]}"
+    room = await chat_room_manager.create_chat_room(
+        room_id,
+        player_id,
+        club_id,
+        player.get('name', 'Unknown Player'),
+        club.get('name', 'Unknown Club'),
+        current_user['user_id']
+    )
+    
+    return {
+        "room_id": room.id,
+        "player_name": room.player_name,
+        "club_name": room.club_name,
+        "created_at": room.created_at
+    }
 
-app.add_middleware(
+@api_router.get("/admin/chat/rooms")
+async def get_all_chat_rooms(current_user: dict = Depends(get_current_user)):
+    """Admin gets all chat rooms"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    rooms = await chat_room_manager.get_all_chat_rooms()
+    return [
+        {
+            "id": r.id,
+            "player_name": r.player_name,
+            "club_name": r.club_name,
+            "created_at": r.created_at,
+            "message_count": len(r.messages),
+            "is_active": r.is_active
+        }
+        for r in rooms
+    ]
+
+@api_router.get("/admin/chat/rooms/{room_id}/messages")
+async def get_chat_room_messages(room_id: str, current_user: dict = Depends(get_current_user)):
+    """Admin views chat room messages"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    room = await chat_room_manager.get_chat_room(room_id)
+    if not room:
+        raise HTTPException(status_code=404, detail="Chat room not found")
+    
+    return {
+        "room_id": room.id,
+        "player_name": room.player_name,
+        "club_name": room.club_name,
+        "messages": [m.model_dump() for m in room.messages]
+    }
+
+@api_router.delete("/admin/chat/rooms/{room_id}")
+async def delete_chat_room(room_id: str, current_user: dict = Depends(get_current_user)):
+    """Admin deletes chat room"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    await chat_room_manager.delete_chat_room(room_id)
+    return {"message": "Chat room deleted"}
+
+@api_router.post("/admin/video/create")
+async def create_video_session_admin(
+    player_id: str,
+    club_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin creates a video session between player and club"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    # Get player and club info
+    player = await db.players.find_one({"user_id": player_id}, {"_id": 0})
+    club = await db.clubs.find_one({"user_id": club_id}, {"_id": 0})
+    
+    if not player or not club:
+        raise HTTPException(status_code=404, detail="Player or club not found")
+    
+    session_id = f"video_{player_id}_{club_id}_{uuid.uuid4().hex[:8]}"
+    session = await video_session_manager.create_video_session(
+        session_id,
+        player_id,
+        club_id,
+        player.get('name', 'Unknown Player'),
+        club.get('name', 'Unknown Club'),
+        current_user['user_id']
+    )
+    
+    return {
+        "session_id": session.id,
+        "player_name": session.player_name,
+        "club_name": session.club_name,
+        "created_at": session.created_at
+    }
+
+@api_router.get("/admin/video/sessions")
+async def get_all_video_sessions(current_user: dict = Depends(get_current_user)):
+    """Admin gets all video sessions"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    sessions = await video_session_manager.get_all_video_sessions()
+    return [
+        {
+            "id": s.id,
+            "player_name": s.player_name,
+            "club_name": s.club_name,
+            "created_at": s.created_at,
+            "is_active": s.is_active,
+            "participant_count": len(s.participants)
+        }
+        for s in sessions
+    ]
+
+@api_router.get("/admin/video/sessions/{session_id}")
+async def get_video_session_details(session_id: str, current_user: dict = Depends(get_current_user)):
+    """Admin views video session details"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    session = await video_session_manager.get_video_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Video session not found")
+    
+    return {
+        "id": session.id,
+        "player_name": session.player_name,
+        "club_name": session.club_name,
+        "created_at": session.created_at,
+        "is_active": session.is_active,
+        "participants": [
+            {
+                "user_id": p.user_id,
+                "username": p.username,
+                "role": p.role,
+                "joined_at": p.joined_at.isoformat(),
+                "is_observer": p.is_observer
+            }
+            for p in session.participants
+        ]
+    }
+
+@api_router.delete("/admin/video/sessions/{session_id}")
+async def delete_video_session(session_id: str, current_user: dict = Depends(get_current_user)):
+    """Admin deletes video session"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    await video_session_manager.delete_video_session(session_id)
+    return {"message": "Video session deleted"}
+
+# ============ PLAYER/CLUB CHAT & VIDEO ENDPOINTS ============
+@api_router.get("/my-chats")
+async def get_my_chats(current_user: dict = Depends(get_current_user)):
+    """Get chats for current user (player or club)"""
+    user_id = current_user['user_id']
+    role = current_user['role']
+    
+    rooms = await chat_room_manager.get_all_chat_rooms()
+    
+    if role == 'player':
+        my_rooms = [r for r in rooms if r.player_id == user_id]
+    elif role == 'club':
+        my_rooms = [r for r in rooms if r.club_id == user_id]
+    else:
+        my_rooms = []
+    
+    return [
+        {
+            "id": r.id,
+            "other_party": r.club_name if role == 'player' else r.player_name,
+            "last_message": r.messages[-1].model_dump() if r.messages else None,
+            "unread_count": 0
+        }
+        for r in my_rooms
+    ]
+
+@api_router.get("/my-videos")
+async def get_my_videos(current_user: dict = Depends(get_current_user)):
+    """Get video sessions for current user (player or club)"""
+    user_id = current_user['user_id']
+    role = current_user['role']
+    
+    sessions = await video_session_manager.get_all_video_sessions()
+    
+    if role == 'player':
+        my_sessions = [s for s in sessions if s.player_id == user_id]
+    elif role == 'club':
+        my_sessions = [s for s in sessions if s.club_id == user_id]
+    else:
+        my_sessions = []
+    
+    return [
+        {
+            "id": s.id,
+            "other_party": s.club_name if role == 'player' else s.player_name,
+            "created_at": s.created_at,
+            "is_active": s.is_active
+        }
+        for s in my_sessions
+    ]
+
+
+
+fastapi_app.include_router(api_router)
+
+fastapi_app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Socket.IO Event Handlers
+@sio.event
+async def connect(sid, environ):
+    logger.info(f"Client connected: {sid}")
+
+@sio.event
+async def disconnect(sid):
+    logger.info(f"Client disconnected: {sid}")
+    # Clean up video session if user was in one
+    for session_id, session in video_session_manager.active_sessions.items():
+        for participant in session.participants:
+            if video_session_manager.socket_to_session.get(sid) == session_id:
+                video_session_manager.remove_participant(session_id, participant.user_id)
+                await sio.emit('participant_left', {
+                    'session_id': session_id,
+                    'user_id': participant.user_id
+                }, room=session_id, skip_sid=sid)
+                break
+
+@sio.event
+async def join_chat_room(sid, data):
+    """Join a chat room"""
+    room_id = data.get('room_id')
+    user_id = data.get('user_id')
+    if room_id:
+        await sio.enter_room(sid, room_id)
+        logger.info(f"User {user_id} joined chat room {room_id}")
+        
+        # Load previous messages
+        room = await chat_room_manager.get_chat_room(room_id)
+        if room:
+            await sio.emit('previous_messages', {
+                'messages': [m.model_dump() for m in room.messages[-50:]]  # Last 50 messages
+            }, room=sid)
+
+@sio.event
+async def send_chat_message(sid, data):
+    """Send chat message"""
+    room_id = data.get('room_id')
+    sender_id = data.get('sender_id')
+    sender_name = data.get('sender_name')
+    message_text = data.get('message')
+    
+    if room_id and sender_id and message_text:
+        message = ChatMessage(
+            id=str(uuid.uuid4()),
+            room_id=room_id,
+            sender_id=sender_id,
+            sender_name=sender_name,
+            message=message_text,
+            timestamp=datetime.now(timezone.utc).isoformat()
+        )
+        
+        await chat_room_manager.add_message(room_id, message)
+        
+        # Broadcast to all in room
+        await sio.emit('new_chat_message', message.model_dump(), room=room_id)
+
+@sio.event
+async def join_video_session(sid, data):
+    """Join video session"""
+    session_id = data.get('session_id')
+    user_id = data.get('user_id')
+    username = data.get('username')
+    role = data.get('role')
+    is_observer = data.get('is_observer', False)
+    
+    if session_id:
+        await sio.enter_room(sid, session_id)
+        video_session_manager.socket_to_session[sid] = session_id
+        video_session_manager.add_participant(session_id, user_id, username, role, is_observer)
+        
+        # Notify others
+        session = await video_session_manager.get_video_session(session_id)
+        if session:
+            await sio.emit('participant_joined', {
+                'session_id': session_id,
+                'user_id': user_id,
+                'username': username,
+                'role': role,
+                'is_observer': is_observer,
+                'participants': [
+                    {
+                        'user_id': p.user_id,
+                        'username': p.username,
+                        'role': p.role,
+                        'is_observer': p.is_observer
+                    }
+                    for p in session.participants
+                ]
+            }, room=session_id)
+
+@sio.event
+async def webrtc_offer(sid, data):
+    """Forward WebRTC offer"""
+    session_id = data.get('session_id')
+    target_user = data.get('target_user')
+    offer = data.get('offer')
+    from_user = data.get('from_user')
+    
+    await sio.emit('webrtc_offer', {
+        'from_user': from_user,
+        'offer': offer
+    }, room=session_id, skip_sid=sid)
+
+@sio.event
+async def webrtc_answer(sid, data):
+    """Forward WebRTC answer"""
+    session_id = data.get('session_id')
+    answer = data.get('answer')
+    from_user = data.get('from_user')
+    
+    await sio.emit('webrtc_answer', {
+        'from_user': from_user,
+        'answer': answer
+    }, room=session_id, skip_sid=sid)
+
+@sio.event
+async def webrtc_ice_candidate(sid, data):
+    """Forward ICE candidate"""
+    session_id = data.get('session_id')
+    candidate = data.get('candidate')
+    from_user = data.get('from_user')
+    
+    await sio.emit('webrtc_ice_candidate', {
+        'from_user': from_user,
+        'candidate': candidate
+    }, room=session_id, skip_sid=sid)
+
+fastapi_app.include_router(api_router)
+
+fastapi_app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
@@ -617,6 +987,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-@app.on_event("shutdown")
+@fastapi_app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+# Wrap FastAPI with Socket.IO
+socket_app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app, socketio_path='/api/socket.io')
+app = socket_app
