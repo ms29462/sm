@@ -41,6 +41,7 @@ export const api = {
   getAllPlayers: () => axios.get(`${API}/admin/players`, { headers: getAuthHeaders() }),
   getAllClubs: () => axios.get(`${API}/admin/clubs`, { headers: getAuthHeaders() }),
   approvePlayer: (userId, approved) => axios.put(`${API}/admin/players/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
+  verifyPlayer: (userId, verified) => axios.put(`${API}/admin/players/${userId}/verify?verified=${verified}`, {}, { headers: getAuthHeaders() }),
   approveClub: (userId, approved) => axios.put(`${API}/admin/clubs/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
   deleteUser: (userId) => axios.delete(`${API}/admin/users/${userId}`, { headers: getAuthHeaders() }),
   getAllOpportunities: () => axios.get(`${API}/admin/opportunities`, { headers: getAuthHeaders() }),

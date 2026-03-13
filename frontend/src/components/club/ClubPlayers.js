@@ -4,10 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Users, Search, Heart } from 'lucide-react';
-
-const POSITIONS = ['All', 'GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'Winger', 'Striker'];
-const LEVELS = ['All', 'Amateur', 'Semi-Pro', 'Professional', 'University'];
+import { Users, Search, Heart, CheckCircle } from 'lucide-react';
+import { POSITIONS, LEVELS, COUNTRIES } from '@/lib/constants';
 
 const ClubPlayers = () => {
   const [players, setPlayers] = useState([]);
@@ -15,7 +13,8 @@ const ClubPlayers = () => {
   const [filters, setFilters] = useState({
     position: 'All',
     level: 'All',
-    nationality: '',
+    nationality: 'All',
+    name: '',
   });
 
   useEffect(() => {
@@ -27,7 +26,8 @@ const ClubPlayers = () => {
       const queryFilters = {};
       if (filters.position !== 'All') queryFilters.position = filters.position;
       if (filters.level !== 'All') queryFilters.level = filters.level;
-      if (filters.nationality) queryFilters.nationality = filters.nationality;
+      if (filters.nationality !== 'All' && filters.nationality) queryFilters.nationality = filters.nationality;
+      if (filters.name) queryFilters.name = filters.name;
 
       const response = await api.getPlayers(queryFilters);
       setPlayers(response.data);
@@ -64,7 +64,21 @@ const ClubPlayers = () => {
 
       <div className="bg-card border border-border/50 p-6 rounded-sm mb-6">
         <h3 className="text-lg font-heading font-bold uppercase mb-4">FILTERS</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="text-sm font-medium uppercase tracking-wide block mb-2">Player Name</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                data-testid="name-filter"
+                type="text"
+                value={filters.name}
+                onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
+                className="pl-10 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+                placeholder="Search by name..."
+              />
+            </div>
+          </div>
           <div>
             <label className="text-sm font-medium uppercase tracking-wide block mb-2">Position</label>
             <Select value={filters.position} onValueChange={(value) => setFilters((prev) => ({ ...prev, position: value }))}>
@@ -72,7 +86,7 @@ const ClubPlayers = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {POSITIONS.map((pos) => (
+                {['All', ...POSITIONS].map((pos) => (
                   <SelectItem key={pos} value={pos}>
                     {pos}
                   </SelectItem>
@@ -87,7 +101,7 @@ const ClubPlayers = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {LEVELS.map((level) => (
+                {['All', ...LEVELS].map((level) => (
                   <SelectItem key={level} value={level}>
                     {level}
                   </SelectItem>
@@ -97,14 +111,19 @@ const ClubPlayers = () => {
           </div>
           <div>
             <label className="text-sm font-medium uppercase tracking-wide block mb-2">Nationality</label>
-            <Input
-              data-testid="nationality-filter"
-              type="text"
-              value={filters.nationality}
-              onChange={(e) => setFilters((prev) => ({ ...prev, nationality: e.target.value }))}
-              className="bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-              placeholder="Enter nationality"
-            />
+            <Select value={filters.nationality} onValueChange={(value) => setFilters((prev) => ({ ...prev, nationality: value }))}>
+              <SelectTrigger data-testid="nationality-filter" className="bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12">
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px]">
+                <SelectItem value="All">All</SelectItem>
+                {COUNTRIES.map((country) => (
+                  <SelectItem key={country} value={country}>
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -135,7 +154,12 @@ const ClubPlayers = () => {
                   </div>
                 )}
                 <div className="flex-1">
-                  <h3 className="text-lg font-heading font-bold uppercase mb-1">{player.name}</h3>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="text-lg font-heading font-bold uppercase">{player.name}</h3>
+                    {player.verified && (
+                      <CheckCircle className="w-4 h-4 text-blue-500" data-testid={`verified-icon-${player.user_id}`} />
+                    )}
+                  </div>
                   <div className="flex items-center space-x-2">
                     {player.position && (
                       <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">

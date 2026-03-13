@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Users, Check, X, Trash2 } from 'lucide-react';
+import { Users, Check, X, Trash2, CheckCircle, XCircle } from 'lucide-react';
 
 const AdminPlayers = () => {
   const [players, setPlayers] = useState([]);
@@ -30,6 +30,16 @@ const AdminPlayers = () => {
       loadPlayers();
     } catch (error) {
       toast.error('Failed to update approval status');
+    }
+  };
+
+  const handleVerify = async (userId, currentStatus) => {
+    try {
+      await api.verifyPlayer(userId, !currentStatus);
+      toast.success(currentStatus ? 'Player unverified' : 'Player verified');
+      loadPlayers();
+    } catch (error) {
+      toast.error('Failed to update verification status');
     }
   };
 
@@ -99,6 +109,15 @@ const AdminPlayers = () => {
                       >
                         {player.approved ? 'APPROVED' : 'PENDING'}
                       </span>
+                      {player.verified && (
+                        <span
+                          data-testid={`verified-badge-${player.user_id}`}
+                          className="inline-flex items-center px-2 py-1 text-[10px] uppercase tracking-wider border rounded-sm bg-blue-500/10 text-blue-500 border-blue-500/20"
+                        >
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          VERIFIED
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">{player.email}</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -135,8 +154,18 @@ const AdminPlayers = () => {
                     size="icon"
                     onClick={() => handleApprove(player.user_id, player.approved)}
                     className={player.approved ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-primary hover:bg-primary/90'}
+                    title={player.approved ? 'Unapprove' : 'Approve'}
                   >
                     {player.approved ? <X className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                  </Button>
+                  <Button
+                    data-testid={`verify-btn-${player.user_id}`}
+                    size="icon"
+                    onClick={() => handleVerify(player.user_id, player.verified)}
+                    className={player.verified ? 'bg-gray-500 hover:bg-gray-600' : 'bg-blue-500 hover:bg-blue-600'}
+                    title={player.verified ? 'Unverify' : 'Verify'}
+                  >
+                    {player.verified ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                   </Button>
                   <Button
                     data-testid={`delete-btn-${player.user_id}`}

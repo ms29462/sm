@@ -6,11 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { User, Camera, Upload } from 'lucide-react';
-
-const POSITIONS = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'Winger', 'Striker'];
-const LEVELS = ['Amateur', 'Semi-Pro', 'Professional', 'University'];
-const FEET = ['Left', 'Right', 'Both'];
+import { User, Camera, Upload, CheckCircle } from 'lucide-react';
+import { POSITIONS, LEVELS, FEET, COUNTRIES } from '@/lib/constants';
 
 const PlayerProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -110,16 +107,27 @@ const PlayerProfile = () => {
             <div>
               <h3 className="text-xl font-heading font-bold">{profile?.name}</h3>
               <p className="text-sm text-muted-foreground">{profile?.email}</p>
-              <span
-                data-testid="approval-status"
-                className={`inline-block mt-2 px-2 py-1 text-[10px] uppercase tracking-wider rounded-sm ${
-                  profile?.approved
-                    ? 'bg-green-500/10 text-green-500 border border-green-500/20'
-                    : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
-                }`}
-              >
-                {profile?.approved ? 'APPROVED' : 'PENDING APPROVAL'}
-              </span>
+              <div className="flex items-center space-x-2 mt-2">
+                <span
+                  data-testid="approval-status"
+                  className={`inline-block px-2 py-1 text-[10px] uppercase tracking-wider rounded-sm ${
+                    profile?.approved
+                      ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                      : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                  }`}
+                >
+                  {profile?.approved ? 'APPROVED' : 'PENDING APPROVAL'}
+                </span>
+                {profile?.verified && (
+                  <span
+                    data-testid="verified-badge"
+                    className="inline-flex items-center px-2 py-1 text-[10px] uppercase tracking-wider rounded-sm bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                  >
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    VERIFIED
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -178,14 +186,22 @@ const PlayerProfile = () => {
               <Label htmlFor="nationality" className="text-sm font-medium uppercase tracking-wide">
                 Nationality
               </Label>
-              <Input
-                id="nationality"
-                data-testid="nationality-input"
-                type="text"
-                value={formData.nationality || ''}
-                onChange={(e) => handleChange('nationality', e.target.value)}
-                className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-              />
+              <Select value={formData.nationality || ''} onValueChange={(value) => handleChange('nationality', value)}>
+                <SelectTrigger
+                  id="nationality"
+                  data-testid="nationality-select"
+                  className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+                >
+                  <SelectValue placeholder="Select nationality" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {COUNTRIES.map((country) => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>

@@ -74,6 +74,7 @@ class PlayerProfile(BaseModel):
     highlight_video: Optional[str] = None
     cv: Optional[str] = None
     approved: bool = False
+    verified: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class PlayerUpdate(BaseModel):
@@ -446,6 +447,7 @@ async def get_players(
     position: Optional[str] = None,
     nationality: Optional[str] = None,
     level: Optional[str] = None,
+    name: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] != 'club':
@@ -458,6 +460,8 @@ async def get_players(
         query['nationality'] = nationality
     if level:
         query['playing_level'] = level
+    if name:
+        query['name'] = {"$regex": name, "$options": "i"}  # Case-insensitive search
     
     players = await db.players.find(query, {"_id": 0}).to_list(1000)
     return [PlayerProfile(**p) for p in players]
@@ -567,6 +571,16 @@ async def approve_player(user_id: str, approval: UserApproval, current_user: dic
         raise HTTPException(status_code=403, detail="Not an admin")
     
     result = await db.players.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Player not found")
+    return {"message": "Updated"}
+
+@api_router.put("/admin/players/{user_id}/verify")
+async def verify_player(user_id: str, verified: bool, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    result = await db.players.update_one({"user_id": user_id}, {"$set": {"verified": verified}})
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Player not found")
     return {"message": "Updated"}
