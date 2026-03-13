@@ -1200,6 +1200,11 @@ async def get_player_match_scores_endpoint(current_user: dict = Depends(get_curr
     if not transfermarkt_url:
         return {"error": "Please add your Transfermarkt profile URL to get match scores", "scores": []}
     
+    # Check if benchmark data exists
+    benchmark_exists = await db.benchmark_data.find_one({"id": "current_benchmark"})
+    if not benchmark_exists:
+        return {"error": "Benchmark data not available. Please ask admin to generate it.", "scores": []}
+    
     # Get all opportunities
     opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
     if not opportunities:
@@ -1210,7 +1215,8 @@ async def get_player_match_scores_endpoint(current_user: dict = Depends(get_curr
         scores = await get_player_match_scores(db, transfermarkt_url, opportunities)
         return {"scores": scores}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to calculate match scores: {str(e)}")
+        logger.error(f"Failed to calculate match scores: {str(e)}")
+        return {"error": f"Failed to fetch player data from Transfermarkt. Please verify your profile URL is correct.", "scores": []}
 
 
 @api_router.get("/player/match-score/{opportunity_id}")

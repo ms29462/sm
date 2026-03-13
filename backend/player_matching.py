@@ -552,11 +552,13 @@ async def load_benchmark_data(db) -> Optional[Dict]:
     if not benchmark_doc:
         return None
 
+    from io import StringIO
+    
     return {
-        "df_model": pd.read_json(benchmark_doc["df_model"]),
-        "benchmark_role": pd.read_json(benchmark_doc["benchmark_role"]),
-        "benchmark_group": pd.read_json(benchmark_doc["benchmark_group"]),
-        "prod_minmax": pd.read_json(benchmark_doc["prod_minmax"]),
+        "df_model": pd.read_json(StringIO(benchmark_doc["df_model"])),
+        "benchmark_role": pd.read_json(StringIO(benchmark_doc["benchmark_role"])),
+        "benchmark_group": pd.read_json(StringIO(benchmark_doc["benchmark_group"])),
+        "prod_minmax": pd.read_json(StringIO(benchmark_doc["prod_minmax"])),
         "generated_at": benchmark_doc.get("generated_at"),
         "leagues": benchmark_doc.get("leagues", [])
     }
