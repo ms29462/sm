@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useSocket from '@/hooks/useSocket';
 import useWebRTC from '@/hooks/useWebRTC';
+import { useNotifications } from '@/context/NotificationContext';
 import { Button } from '@/components/ui/button';
 import { Video as VideoIcon, VideoOff, Mic, MicOff, PhoneOff, Users } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -11,6 +12,7 @@ const VideoCall = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { clearVideoNotification } = useNotifications();
   const [participants, setParticipants] = useState([]);
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [audioEnabled, setAudioEnabled] = useState(true);
@@ -35,6 +37,9 @@ const VideoCall = () => {
 
   // Initialize media and join session
   useEffect(() => {
+    // Clear video notification when joining
+    clearVideoNotification(sessionId);
+    
     const initialize = async () => {
       try {
         await getLocalMedia();

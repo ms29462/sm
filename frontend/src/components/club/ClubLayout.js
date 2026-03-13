@@ -1,12 +1,15 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
+import Badge from '@/components/ui/badge';
 import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video } from 'lucide-react';
 
 const ClubLayout = ({ children }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { totalUnread, totalPending } = useNotifications();
 
   const handleLogout = () => {
     logout();
@@ -93,20 +96,22 @@ const ClubLayout = ({ children }) => {
             <Button
               data-testid="nav-chats-btn"
               variant={isActive('/club/chats') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
+              className="w-full justify-start relative"
             >
               <MessageCircle className="w-4 h-4 mr-3" />
               Chats
+              <Badge count={totalUnread} />
             </Button>
           </Link>
           <Link to="/club/videos">
             <Button
               data-testid="nav-videos-btn"
               variant={isActive('/club/videos') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
+              className="w-full justify-start relative"
             >
               <Video className="w-4 h-4 mr-3" />
               Video Calls
+              <Badge count={totalPending} />
             </Button>
           </Link>
         </nav>

@@ -10,63 +10,66 @@ import AdminDashboard from '@/pages/AdminDashboard';
 import ChatRoom from '@/components/chat/ChatRoom';
 import VideoCall from '@/components/video/VideoCall';
 import { AuthProvider } from '@/context/AuthContext';
+import { NotificationProvider } from '@/context/NotificationContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 function App() {
   return (
     <AuthProvider>
-      <div className="App min-h-screen">
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/admin/login" element={<Login admin={true} />} />
-            <Route
-              path="/player/*"
-              element={
-                <ProtectedRoute role="player">
-                  <PlayerDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/club/*"
-              element={
-                <ProtectedRoute role="club">
-                  <ClubDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/*"
-              element={
-                <ProtectedRoute role="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/chat/:roomId"
-              element={
-                <ProtectedRoute>
-                  <ChatRoom />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/video/:sessionId"
-              element={
-                <ProtectedRoute>
-                  <VideoCall />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </BrowserRouter>
-        <Toaster position="top-right" />
-      </div>
+      <NotificationProvider>
+        <div className="App min-h-screen">
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/admin/login" element={<Login admin={true} />} />
+              <Route
+                path="/player/*"
+                element={
+                  <ProtectedRoute role="player">
+                    <PlayerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/club/*"
+                element={
+                  <ProtectedRoute role="club">
+                    <ClubDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/*"
+                element={
+                  <ProtectedRoute role="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/chat/:roomId"
+                element={
+                  <ProtectedRoute>
+                    <ChatRoom />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/video/:sessionId"
+                element={
+                  <ProtectedRoute>
+                    <VideoCall />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </BrowserRouter>
+          <Toaster position="top-right" richColors />
+        </div>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

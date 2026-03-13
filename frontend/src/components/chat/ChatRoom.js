@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import useSocket from '@/hooks/useSocket';
+import { useNotifications } from '@/context/NotificationContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,11 +13,17 @@ const ChatRoom = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { markChatAsRead } = useNotifications();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [roomInfo, setRoomInfo] = useState(null);
   const messagesEndRef = useRef(null);
   const { socket, emit, on, off, isConnected } = useSocket();
+
+  useEffect(() => {
+    // Mark this chat as read when opened
+    markChatAsRead(roomId);
+  }, [roomId, markChatAsRead]);
 
   useEffect(() => {
     if (socket && isConnected && roomId) {
