@@ -81,4 +81,5 @@ export const api = {
   // Admin - Benchmark
   generateBenchmark: () => axios.post(`${API}/admin/generate-benchmark`, {}, { headers: getAuthHeaders() }),
   getBenchmarkStatus: () => axios.get(`${API}/admin/benchmark-status`, { headers: getAuthHeaders() }),
+  getBenchmarkGenerationStatus: () => axios.get(`${API}/admin/benchmark-generation-status`, { headers: getAuthHeaders() }),
 };

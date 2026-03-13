@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Database, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Database, RefreshCw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 const AdminBenchmark = () => {
   const [status, setStatus] = useState(null);
+  const [generationStatus, setGenerationStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -13,10 +14,44 @@ const AdminBenchmark = () => {
     loadStatus();
   }, []);
 
+  useEffect(() => {
+    // Poll for generation status while running
+    let interval;
+    if (generating || generationStatus?.running) {
+      interval = setInterval(async () => {
+        try {
+          const genResponse = await api.getBenchmarkGenerationStatus();
+          setGenerationStatus(genResponse.data);
+          
+          if (!genResponse.data.running) {
+            // Generation completed, refresh status
+            setGenerating(false);
+            loadStatus();
+            if (genResponse.data.error) {
+              toast.error('Benchmark generation failed: ' + genResponse.data.error);
+            } else {
+              toast.success('Benchmark generation completed!');
+            }
+          }
+        } catch (error) {
+          console.error('Failed to check generation status');
+        }
+      }, 5000); // Poll every 5 seconds
+    }
+    return () => clearInterval(interval);
+  }, [generating, generationStatus?.running]);
+
   const loadStatus = async () => {
     try {
-      const response = await api.getBenchmarkStatus();
-      setStatus(response.data);
+      const [statusResponse, genStatusResponse] = await Promise.all([
+        api.getBenchmarkStatus(),
+        api.getBenchmarkGenerationStatus()
+      ]);
+      setStatus(statusResponse.data);
+      setGenerationStatus(genStatusResponse.data);
+      if (genStatusResponse.data.running) {
+        setGenerating(true);
+      }
     } catch (error) {
       toast.error('Failed to load benchmark status');
     } finally {
@@ -25,20 +60,17 @@ const AdminBenchmark = () => {
   };
 
   const handleGenerate = async () => {
-    if (!window.confirm('This will scrape data from Transfermarkt and may take several minutes. Continue?')) {
+    if (!window.confirm('This will scrape data from Transfermarkt in the background. The process takes 5-10 minutes. Continue?')) {
       return;
     }
     
     setGenerating(true);
-    toast.info('Generating benchmark data... This may take 5-10 minutes.');
     
     try {
       const response = await api.generateBenchmark();
-      toast.success(`Benchmark generated! ${response.data.player_count} players indexed.`);
-      loadStatus();
+      toast.info(response.data.message);
     } catch (error) {
-      toast.error('Failed to generate benchmark: ' + (error.response?.data?.detail || 'Unknown error'));
-    } finally {
+      toast.error('Failed to start benchmark generation: ' + (error.response?.data?.detail || 'Unknown error'));
       setGenerating(false);
     }
   };
@@ -51,6 +83,8 @@ const AdminBenchmark = () => {
     );
   }
 
+  const isGenerating = generating || generationStatus?.running;
+
   return (
     <div className="p-8">
       <div className="mb-8">
@@ -59,6 +93,37 @@ const AdminBenchmark = () => {
       </div>
 
       <div className="max-w-2xl">
+        {/* Generation Status Alert */}
+        {isGenerating && (
+          <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-sm mb-6">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+              <div>
+                <p className="text-blue-500 font-medium">Benchmark generation in progress...</p>
+                <p className="text-sm text-muted-foreground">
+                  Started at: {generationStatus?.started_at ? new Date(generationStatus.started_at).toLocaleString() : 'Unknown'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This process takes 5-10 minutes. You can leave this page and come back.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error Alert */}
+        {generationStatus?.error && !isGenerating && (
+          <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-sm mb-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              <div>
+                <p className="text-red-500 font-medium">Last generation failed</p>
+                <p className="text-sm text-muted-foreground">{generationStatus.error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
           <div className="flex items-start space-x-4 mb-6">
             <Database className="w-8 h-8 text-primary" />
@@ -88,11 +153,20 @@ const AdminBenchmark = () => {
           <Button
             data-testid="generate-benchmark-btn"
             onClick={handleGenerate}
-            disabled={generating}
+            disabled={isGenerating}
             className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${generating ? 'animate-spin' : ''}`} />
-            {generating ? 'GENERATING... (5-10 MIN)' : status?.exists ? 'REGENERATE BENCHMARK' : 'GENERATE BENCHMARK'}
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                GENERATING... (5-10 MIN)
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                {status?.exists ? 'REGENERATE BENCHMARK' : 'GENERATE BENCHMARK'}
+              </>
+            )}
           </Button>
         </div>
 

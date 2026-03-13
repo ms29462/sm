@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, BackgroundTasks
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -20,6 +20,11 @@ from player_matching import (
     build_player_dict_from_transfermarkt_url, calculate_match_score_for_opportunity,
     AVAILABLE_LEAGUES, DEFAULT_LEAGUES
 )
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+# Background task executor for heavy operations
+background_executor = ThreadPoolExecutor(max_workers=2)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -1093,23 +1098,73 @@ async def get_unread_count(current_user: dict = Depends(get_current_user)):
 
 
 # ============ PLAYER MATCHING ENDPOINTS ============
+# Track benchmark generation status
+benchmark_generation_status = {"running": False, "started_at": None, "error": None}
+
 @api_router.get("/available-leagues")
 async def get_available_leagues():
     """Get list of available leagues for opportunity selection"""
     return {"leagues": AVAILABLE_LEAGUES}
 
 
+async def run_benchmark_generation_background():
+    """Background task to generate benchmark data"""
+    global benchmark_generation_status
+    try:
+        benchmark_generation_status["running"] = True
+        benchmark_generation_status["started_at"] = datetime.now(timezone.utc).isoformat()
+        benchmark_generation_status["error"] = None
+        
+        # Run the heavy scraping operation
+        result = await generate_benchmark_data(db, DEFAULT_LEAGUES)
+        
+        benchmark_generation_status["running"] = False
+        benchmark_generation_status["last_result"] = result
+        return result
+    except Exception as e:
+        benchmark_generation_status["running"] = False
+        benchmark_generation_status["error"] = str(e)
+        raise
+
+
 @api_router.post("/admin/generate-benchmark")
-async def admin_generate_benchmark(current_user: dict = Depends(get_current_user)):
-    """Admin generates/updates benchmark data from Transfermarkt (takes several minutes)"""
+async def admin_generate_benchmark(
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin generates/updates benchmark data from Transfermarkt (runs in background)"""
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
     
-    try:
-        result = await generate_benchmark_data(db, DEFAULT_LEAGUES)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate benchmark: {str(e)}")
+    if benchmark_generation_status["running"]:
+        return {
+            "message": "Benchmark generation is already in progress",
+            "started_at": benchmark_generation_status["started_at"],
+            "status": "running"
+        }
+    
+    # Start background task
+    background_tasks.add_task(run_benchmark_generation_background)
+    
+    return {
+        "message": "Benchmark generation started in background. This will take 5-10 minutes.",
+        "status": "started",
+        "check_status_at": "/api/admin/benchmark-generation-status"
+    }
+
+
+@api_router.get("/admin/benchmark-generation-status")
+async def get_benchmark_generation_status(current_user: dict = Depends(get_current_user)):
+    """Check the status of ongoing benchmark generation"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    return {
+        "running": benchmark_generation_status["running"],
+        "started_at": benchmark_generation_status.get("started_at"),
+        "error": benchmark_generation_status.get("error"),
+        "last_result": benchmark_generation_status.get("last_result")
+    }
 
 
 @api_router.get("/admin/benchmark-status")
