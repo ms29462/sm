@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { Trophy, User, Briefcase, FileText, LogOut, Home } from 'lucide-react';
+import { Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video } from 'lucide-react';
 
 const PlayerLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -67,6 +67,26 @@ const PlayerLayout = ({ children }) => {
             >
               <FileText className="w-4 h-4 mr-3" />
               My Applications
+            </Button>
+          </Link>
+          <Link to="/player/chats">
+            <Button
+              data-testid="nav-chats-btn"
+              variant={isActive('/player/chats') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <MessageCircle className="w-4 h-4 mr-3" />
+              Chats
+            </Button>
+          </Link>
+          <Link to="/player/videos">
+            <Button
+              data-testid="nav-videos-btn"
+              variant={isActive('/player/videos') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <Video className="w-4 h-4 mr-3" />
+              Video Calls
             </Button>
           </Link>
         </nav>

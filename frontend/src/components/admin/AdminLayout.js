@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { Trophy, Shield, Users, Building, Briefcase, LogOut } from 'lucide-react';
+import { Trophy, Shield, Users, Building, Briefcase, LogOut, MessageCircle, Video } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -70,6 +70,26 @@ const AdminLayout = ({ children }) => {
             >
               <Briefcase className="w-4 h-4 mr-3" />
               Opportunities
+            </Button>
+          </Link>
+          <Link to="/admin/chats">
+            <Button
+              data-testid="nav-chats-btn"
+              variant={isActive('/admin/chats') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <MessageCircle className="w-4 h-4 mr-3" />
+              Chat Rooms
+            </Button>
+          </Link>
+          <Link to="/admin/videos">
+            <Button
+              data-testid="nav-videos-btn"
+              variant={isActive('/admin/videos') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <Video className="w-4 h-4 mr-3" />
+              Video Sessions
             </Button>
           </Link>
         </nav>

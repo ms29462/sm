@@ -4,6 +4,8 @@ import PlayerHome from '@/components/player/PlayerHome';
 import PlayerProfile from '@/components/player/PlayerProfile';
 import PlayerOpportunities from '@/components/player/PlayerOpportunities';
 import PlayerApplications from '@/components/player/PlayerApplications';
+import ChatList from '@/components/chat/ChatList';
+import VideoList from '@/components/video/VideoList';
 
 const PlayerDashboard = () => {
   return (
@@ -13,6 +15,8 @@ const PlayerDashboard = () => {
         <Route path="profile" element={<PlayerProfile />} />
         <Route path="opportunities" element={<PlayerOpportunities />} />
         <Route path="applications" element={<PlayerApplications />} />
+        <Route path="chats" element={<ChatList />} />
+        <Route path="videos" element={<VideoList />} />
         <Route path="*" element={<PlayerHome />} />
       </Routes>
     </PlayerLayout>

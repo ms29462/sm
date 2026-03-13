@@ -7,6 +7,8 @@ import Register from '@/pages/Register';
 import PlayerDashboard from '@/pages/PlayerDashboard';
 import ClubDashboard from '@/pages/ClubDashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
+import ChatRoom from '@/components/chat/ChatRoom';
+import VideoCall from '@/components/video/VideoCall';
 import { AuthProvider } from '@/context/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -41,6 +43,22 @@ function App() {
               element={
                 <ProtectedRoute role="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat/:roomId"
+              element={
+                <ProtectedRoute>
+                  <ChatRoom />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/video/:sessionId"
+              element={
+                <ProtectedRoute>
+                  <VideoCall />
                 </ProtectedRoute>
               }
             />

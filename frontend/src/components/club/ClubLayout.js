@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home } from 'lucide-react';
+import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video } from 'lucide-react';
 
 const ClubLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -87,6 +87,26 @@ const ClubLayout = ({ children }) => {
             >
               <Heart className="w-4 h-4 mr-3" />
               Favorites
+            </Button>
+          </Link>
+          <Link to="/club/chats">
+            <Button
+              data-testid="nav-chats-btn"
+              variant={isActive('/club/chats') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <MessageCircle className="w-4 h-4 mr-3" />
+              Chats
+            </Button>
+          </Link>
+          <Link to="/club/videos">
+            <Button
+              data-testid="nav-videos-btn"
+              variant={isActive('/club/videos') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <Video className="w-4 h-4 mr-3" />
+              Video Calls
             </Button>
           </Link>
         </nav>

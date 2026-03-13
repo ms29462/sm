@@ -45,4 +45,18 @@ export const api = {
   deleteUser: (userId) => axios.delete(`${API}/admin/users/${userId}`, { headers: getAuthHeaders() }),
   getAllOpportunities: () => axios.get(`${API}/admin/opportunities`, { headers: getAuthHeaders() }),
   deleteOpportunityAdmin: (id) => axios.delete(`${API}/admin/opportunities/${id}`, { headers: getAuthHeaders() }),
+
+  // Chat & Video - Admin
+  createChatRoom: (playerId, clubId) => axios.post(`${API}/admin/chat/create?player_id=${playerId}&club_id=${clubId}`, {}, { headers: getAuthHeaders() }),
+  getAdminChatRooms: () => axios.get(`${API}/admin/chat/rooms`, { headers: getAuthHeaders() }),
+  getChatRoomMessages: (roomId) => axios.get(`${API}/admin/chat/rooms/${roomId}/messages`, { headers: getAuthHeaders() }),
+  deleteChatRoom: (roomId) => axios.delete(`${API}/admin/chat/rooms/${roomId}`, { headers: getAuthHeaders() }),
+  createVideoSession: (playerId, clubId) => axios.post(`${API}/admin/video/create?player_id=${playerId}&club_id=${clubId}`, {}, { headers: getAuthHeaders() }),
+  getAdminVideoSessions: () => axios.get(`${API}/admin/video/sessions`, { headers: getAuthHeaders() }),
+  getVideoSessionDetails: (sessionId) => axios.get(`${API}/admin/video/sessions/${sessionId}`, { headers: getAuthHeaders() }),
+  deleteVideoSession: (sessionId) => axios.delete(`${API}/admin/video/sessions/${sessionId}`, { headers: getAuthHeaders() }),
+
+  // Chat & Video - Player/Club
+  getMyChats: () => axios.get(`${API}/my-chats`, { headers: getAuthHeaders() }),
+  getMyVideos: () => axios.get(`${API}/my-videos`, { headers: getAuthHeaders() }),
 };
