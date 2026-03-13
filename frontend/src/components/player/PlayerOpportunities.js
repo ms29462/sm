@@ -3,16 +3,18 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Briefcase, Search } from 'lucide-react';
+import { Briefcase, Search, Target, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
 
 const PlayerOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [filteredOpportunities, setFilteredOpportunities] = useState([]);
+  const [matchScores, setMatchScores] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadOpportunities();
+    loadMatchScores();
   }, []);
 
   useEffect(() => {
@@ -41,6 +43,21 @@ const PlayerOpportunities = () => {
     }
   };
 
+  const loadMatchScores = async () => {
+    try {
+      const response = await api.getPlayerMatchScores();
+      if (response.data.scores && !response.data.error) {
+        const scoresMap = {};
+        response.data.scores.forEach(score => {
+          scoresMap[score.opportunity_id] = score;
+        });
+        setMatchScores(scoresMap);
+      }
+    } catch (error) {
+      // Silently fail - match scores are optional
+    }
+  };
+
   const handleApply = async (opportunityId) => {
     try {
       await api.createApplication({ opportunity_id: opportunityId });
@@ -48,6 +65,24 @@ const PlayerOpportunities = () => {
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to apply');
     }
+  };
+
+  const getFitScoreColor = (score) => {
+    if (score === null || score === undefined) return 'text-muted-foreground';
+    if (score >= 75) return 'text-green-500';
+    if (score >= 65) return 'text-emerald-500';
+    if (score >= 55) return 'text-yellow-500';
+    if (score >= 45) return 'text-orange-500';
+    return 'text-red-500';
+  };
+
+  const getFitScoreBg = (score) => {
+    if (score === null || score === undefined) return 'bg-muted/10';
+    if (score >= 75) return 'bg-green-500/10';
+    if (score >= 65) return 'bg-emerald-500/10';
+    if (score >= 55) return 'bg-yellow-500/10';
+    if (score >= 45) return 'bg-orange-500/10';
+    return 'bg-red-500/10';
   };
 
   if (loading) {
@@ -86,49 +121,80 @@ const PlayerOpportunities = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredOpportunities.map((opp) => (
-            <div
-              key={opp.id}
-              data-testid={`opportunity-card-${opp.id}`}
-              className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-heading font-bold uppercase mb-1">{opp.club_name}</h3>
-                  <p className="text-sm text-muted-foreground">{opp.club_country || 'International'}</p>
-                </div>
-                <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">
-                  {opp.position}
-                </span>
-              </div>
-              <div className="space-y-2 mb-4 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">League Level:</span>
-                  <span className="font-medium">{opp.league_level}</span>
-                </div>
-                {opp.salary_range && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Salary:</span>
-                    <span className="font-medium font-mono">{opp.salary_range}</span>
-                  </div>
-                )}
-                {opp.contract_duration && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Duration:</span>
-                    <span className="font-medium">{opp.contract_duration}</span>
-                  </div>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{opp.description}</p>
-              <Button
-                data-testid={`apply-btn-${opp.id}`}
-                onClick={() => handleApply(opp.id)}
-                className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10"
+          {filteredOpportunities.map((opp) => {
+            const score = matchScores[opp.id];
+            return (
+              <div
+                key={opp.id}
+                data-testid={`opportunity-card-${opp.id}`}
+                className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors"
               >
-                APPLY NOW
-              </Button>
-            </div>
-          ))}
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-heading font-bold uppercase mb-1">{opp.club_name}</h3>
+                    <p className="text-sm text-muted-foreground">{opp.club_country || 'International'}</p>
+                  </div>
+                  <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">
+                    {opp.position}
+                  </span>
+                </div>
+
+                {/* Match Score Badge */}
+                {score && score.fit_score !== null && (
+                  <div className={`mb-4 p-3 rounded-sm ${getFitScoreBg(score.fit_score)} border border-border/30`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Target className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-xs uppercase tracking-wide text-muted-foreground">Match Score</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xl font-heading font-bold ${getFitScoreColor(score.fit_score)}`}>
+                          {Math.round(score.fit_score)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">/100</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-2 text-xs">
+                      <span className="text-muted-foreground">{score.fit_label}</span>
+                      {score.position_match && (
+                        <span className="text-primary flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          Position match
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2 mb-4 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">League Level:</span>
+                    <span className="font-medium">{opp.league_level}</span>
+                  </div>
+                  {opp.salary_range && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Salary:</span>
+                      <span className="font-medium font-mono">{opp.salary_range}</span>
+                    </div>
+                  )}
+                  {opp.contract_duration && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Duration:</span>
+                      <span className="font-medium">{opp.contract_duration}</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{opp.description}</p>
+                <Button
+                  data-testid={`apply-btn-${opp.id}`}
+                  onClick={() => handleApply(opp.id)}
+                  className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10"
+                >
+                  APPLY NOW
+                </Button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

@@ -196,7 +196,7 @@ const PlayerDetailView = () => {
         </div>
 
         {/* Media */}
-        {(player.highlight_video || player.cv) && (
+        {(player.highlight_video || player.cv || player.transfermarkt_url) && (
           <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
             <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">
               MEDIA & DOCUMENTS
@@ -243,6 +243,23 @@ const PlayerDetailView = () => {
                   >
                     <Download className="w-4 h-4 mr-2" />
                     VIEW CV
+                  </Button>
+                </div>
+              )}
+              {player.transfermarkt_url && (
+                <div className="flex items-center justify-between p-4 bg-background rounded-sm border border-border">
+                  <div>
+                    <p className="font-medium mb-1">Transfermarkt Profile</p>
+                    <p className="text-sm text-muted-foreground">Professional stats and market value</p>
+                  </div>
+                  <Button
+                    data-testid="view-transfermarkt-btn"
+                    variant="outline"
+                    onClick={() => window.open(player.transfermarkt_url, '_blank')}
+                    className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    VIEW PROFILE
                   </Button>
                 </div>
               )}

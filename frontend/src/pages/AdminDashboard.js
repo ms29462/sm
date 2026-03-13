@@ -8,6 +8,7 @@ import AdminChatManagement from '@/components/admin/AdminChatManagement';
 import AdminChatViewer from '@/components/admin/AdminChatViewer';
 import AdminVideoManagement from '@/components/admin/AdminVideoManagement';
 import AdminChatRequests from '@/components/admin/AdminChatRequests';
+import AdminBenchmark from '@/components/admin/AdminBenchmark';
 
 const AdminDashboard = () => {
   return (
@@ -21,6 +22,7 @@ const AdminDashboard = () => {
         <Route path="chats" element={<AdminChatManagement />} />
         <Route path="chat/:roomId" element={<AdminChatViewer />} />
         <Route path="videos" element={<AdminVideoManagement />} />
+        <Route path="benchmark" element={<AdminBenchmark />} />
         <Route path="*" element={<AdminHome />} />
       </Routes>
     </AdminLayout>

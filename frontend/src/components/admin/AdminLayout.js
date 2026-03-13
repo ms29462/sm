@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { Trophy, Shield, Users, Building, Briefcase, LogOut, MessageCircle, Video, MessageSquare } from 'lucide-react';
+import { Trophy, Shield, Users, Building, Briefcase, LogOut, MessageCircle, Video, MessageSquare, Database } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -100,6 +100,16 @@ const AdminLayout = ({ children }) => {
             >
               <Video className="w-4 h-4 mr-3" />
               Video Sessions
+            </Button>
+          </Link>
+          <Link to="/admin/benchmark">
+            <Button
+              data-testid="nav-benchmark-btn"
+              variant={isActive('/admin/benchmark') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <Database className="w-4 h-4 mr-3" />
+              Benchmark Data
             </Button>
           </Link>
         </nav>

@@ -4,9 +4,29 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Briefcase, Plus, Trash2 } from 'lucide-react';
+import { POSITIONS } from '@/lib/constants';
+
+const LEAGUES = [
+  "CPL",
+  "USL Championship",
+  "USL League One",
+  "Challenger Pro League",
+  "MLS",
+  "Premier League",
+  "La Liga",
+  "Bundesliga",
+  "Serie A",
+  "Ligue 1",
+  "League One",
+  "League Two",
+  "National League",
+  "Semi-Professional",
+  "Amateur"
+];
 
 const ClubOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
@@ -108,27 +128,46 @@ const ClubOpportunities = () => {
                 <Label htmlFor="position" className="text-sm font-medium uppercase tracking-wide">
                   Position *
                 </Label>
-                <Input
-                  id="position"
-                  data-testid="position-input"
-                  value={formData.position}
-                  onChange={(e) => handleChange('position', e.target.value)}
-                  className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                  placeholder="e.g., Striker, Midfielder"
-                />
+                <Select value={formData.position} onValueChange={(value) => handleChange('position', value)}>
+                  <SelectTrigger
+                    id="position"
+                    data-testid="position-select"
+                    className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+                  >
+                    <SelectValue placeholder="Select position" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {POSITIONS.map((pos) => (
+                      <SelectItem key={pos} value={pos}>
+                        {pos}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="league_level" className="text-sm font-medium uppercase tracking-wide">
                   League Level *
                 </Label>
-                <Input
-                  id="league_level"
-                  data-testid="league-level-input"
-                  value={formData.league_level}
-                  onChange={(e) => handleChange('league_level', e.target.value)}
-                  className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                  placeholder="e.g., Professional, Semi-Pro"
-                />
+                <Select value={formData.league_level} onValueChange={(value) => handleChange('league_level', value)}>
+                  <SelectTrigger
+                    id="league_level"
+                    data-testid="league-level-select"
+                    className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+                  >
+                    <SelectValue placeholder="Select league level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LEAGUES.map((league) => (
+                      <SelectItem key={league} value={league}>
+                        {league}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Used for AI-powered player matching
+                </p>
               </div>
               <div>
                 <Label htmlFor="salary_range" className="text-sm font-medium uppercase tracking-wide">

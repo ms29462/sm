@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
-import { Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare } from 'lucide-react';
+import { Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target } from 'lucide-react';
 
 const PlayerLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -60,6 +60,16 @@ const PlayerLayout = ({ children }) => {
             >
               <Briefcase className="w-4 h-4 mr-3" />
               Opportunities
+            </Button>
+          </Link>
+          <Link to="/player/match-scores">
+            <Button
+              data-testid="nav-match-scores-btn"
+              variant={isActive('/player/match-scores') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <Target className="w-4 h-4 mr-3" />
+              Match Scores
             </Button>
           </Link>
           <Link to="/player/applications">

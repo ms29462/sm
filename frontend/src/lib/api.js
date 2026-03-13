@@ -72,4 +72,13 @@ export const api = {
   getNotifications: () => axios.get(`${API}/notifications`, { headers: getAuthHeaders() }),
   markNotificationRead: (notificationId) => axios.put(`${API}/notifications/${notificationId}/read`, {}, { headers: getAuthHeaders() }),
   getUnreadCount: () => axios.get(`${API}/notifications/unread-count`, { headers: getAuthHeaders() }),
+
+  // Player Matching
+  getAvailableLeagues: () => axios.get(`${API}/available-leagues`, { headers: getAuthHeaders() }),
+  getPlayerMatchScores: () => axios.get(`${API}/player/match-scores`, { headers: getAuthHeaders() }),
+  getMatchScore: (opportunityId) => axios.get(`${API}/player/match-score/${opportunityId}`, { headers: getAuthHeaders() }),
+  
+  // Admin - Benchmark
+  generateBenchmark: () => axios.post(`${API}/admin/generate-benchmark`, {}, { headers: getAuthHeaders() }),
+  getBenchmarkStatus: () => axios.get(`${API}/admin/benchmark-status`, { headers: getAuthHeaders() }),
 };

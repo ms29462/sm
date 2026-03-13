@@ -15,6 +15,11 @@ import bcrypt
 import jwt
 from chat_video_manager import ChatRoomManager, VideoSessionManager, ChatMessage
 from chat_requests import ChatRequest, ChatRequestCreate, ChatRequestResponse
+from player_matching import (
+    generate_benchmark_data, load_benchmark_data, get_player_match_scores,
+    build_player_dict_from_transfermarkt_url, calculate_match_score_for_opportunity,
+    AVAILABLE_LEAGUES, DEFAULT_LEAGUES
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -74,6 +79,7 @@ class PlayerProfile(BaseModel):
     assists: Optional[int] = 0
     highlight_video: Optional[str] = None
     cv: Optional[str] = None
+    transfermarkt_url: Optional[str] = None  # Transfermarkt profile link
     approved: bool = False
     verified: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -102,6 +108,7 @@ class PlayerUpdate(BaseModel):
     assists: Optional[int] = None
     highlight_video: Optional[str] = None
     cv: Optional[str] = None
+    transfermarkt_url: Optional[str] = None
 
 # ============ CLUB MODELS ============
 class ClubProfile(BaseModel):
@@ -1083,6 +1090,113 @@ async def get_unread_count(current_user: dict = Depends(get_current_user)):
         "read": False
     })
     return {"count": count}
+
+
+# ============ PLAYER MATCHING ENDPOINTS ============
+@api_router.get("/available-leagues")
+async def get_available_leagues():
+    """Get list of available leagues for opportunity selection"""
+    return {"leagues": AVAILABLE_LEAGUES}
+
+
+@api_router.post("/admin/generate-benchmark")
+async def admin_generate_benchmark(current_user: dict = Depends(get_current_user)):
+    """Admin generates/updates benchmark data from Transfermarkt (takes several minutes)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    try:
+        result = await generate_benchmark_data(db, DEFAULT_LEAGUES)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate benchmark: {str(e)}")
+
+
+@api_router.get("/admin/benchmark-status")
+async def get_benchmark_status(current_user: dict = Depends(get_current_user)):
+    """Check if benchmark data exists and when it was generated"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    benchmark_doc = await db.benchmark_data.find_one({"id": "current_benchmark"}, {"_id": 0, "df_model": 0, "benchmark_role": 0, "benchmark_group": 0, "prod_minmax": 0})
+    if not benchmark_doc:
+        return {"exists": False, "message": "No benchmark data. Please generate it."}
+    
+    return {
+        "exists": True,
+        "generated_at": benchmark_doc.get("generated_at"),
+        "leagues": benchmark_doc.get("leagues", []),
+        "player_count": benchmark_doc.get("player_count", 0)
+    }
+
+
+@api_router.get("/player/match-scores")
+async def get_player_match_scores_endpoint(current_user: dict = Depends(get_current_user)):
+    """Get match scores for the current player against all opportunities"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    # Get player profile
+    player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+    
+    transfermarkt_url = player.get("transfermarkt_url")
+    if not transfermarkt_url:
+        return {"error": "Please add your Transfermarkt profile URL to get match scores", "scores": []}
+    
+    # Get all opportunities
+    opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
+    if not opportunities:
+        return {"scores": [], "message": "No opportunities available"}
+    
+    # Get match scores
+    try:
+        scores = await get_player_match_scores(db, transfermarkt_url, opportunities)
+        return {"scores": scores}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to calculate match scores: {str(e)}")
+
+
+@api_router.get("/player/match-score/{opportunity_id}")
+async def get_single_match_score(opportunity_id: str, current_user: dict = Depends(get_current_user)):
+    """Get match score for a specific opportunity"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    # Get player profile
+    player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+    
+    transfermarkt_url = player.get("transfermarkt_url")
+    if not transfermarkt_url:
+        return {"error": "Please add your Transfermarkt profile URL to get match scores"}
+    
+    # Get opportunity
+    opportunity = await db.opportunities.find_one({"id": opportunity_id}, {"_id": 0})
+    if not opportunity:
+        raise HTTPException(status_code=404, detail="Opportunity not found")
+    
+    # Load benchmark data
+    benchmark_data = await load_benchmark_data(db)
+    if not benchmark_data:
+        return {"error": "Benchmark data not available. Please ask admin to generate it."}
+    
+    try:
+        player_dict = build_player_dict_from_transfermarkt_url(transfermarkt_url)
+        match_score = calculate_match_score_for_opportunity(
+            player_dict=player_dict,
+            opportunity_league=opportunity.get("league_level", "USL Championship"),
+            opportunity_position=opportunity.get("position", ""),
+            benchmark_data=benchmark_data
+        )
+        return {
+            "opportunity_id": opportunity_id,
+            **match_score
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to calculate match score: {str(e)}")
 
 
 fastapi_app.include_router(api_router)

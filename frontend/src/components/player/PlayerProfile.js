@@ -373,6 +373,24 @@ const PlayerProfile = () => {
                 </label>
               </div>
             </div>
+
+            <div className="md:col-span-2">
+              <Label htmlFor="transfermarkt_url" className="text-sm font-medium uppercase tracking-wide">
+                Transfermarkt Profile Link
+              </Label>
+              <Input
+                id="transfermarkt_url"
+                data-testid="transfermarkt-url-input"
+                type="url"
+                value={formData.transfermarkt_url || ''}
+                onChange={(e) => handleChange('transfermarkt_url', e.target.value)}
+                className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+                placeholder="https://www.transfermarkt.us/player/profil/spieler/12345"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add your Transfermarkt profile to get AI-powered match scores for opportunities
+              </p>
+            </div>
           </div>
 
           <div className="mt-8 flex justify-end">
