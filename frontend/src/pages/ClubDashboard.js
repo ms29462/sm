@@ -6,6 +6,7 @@ import ClubOpportunities from '@/components/club/ClubOpportunities';
 import ClubPlayers from '@/components/club/ClubPlayers';
 import ClubApplications from '@/components/club/ClubApplications';
 import ClubFavorites from '@/components/club/ClubFavorites';
+import PlayerDetailView from '@/components/club/PlayerDetailView';
 import ChatList from '@/components/chat/ChatList';
 import VideoList from '@/components/video/VideoList';
 
@@ -17,6 +18,7 @@ const ClubDashboard = () => {
         <Route path="profile" element={<ClubProfile />} />
         <Route path="opportunities" element={<ClubOpportunities />} />
         <Route path="players" element={<ClubPlayers />} />
+        <Route path="player/:playerId" element={<PlayerDetailView />} />
         <Route path="applications" element={<ClubApplications />} />
         <Route path="favorites" element={<ClubFavorites />} />
         <Route path="chats" element={<ChatList />} />

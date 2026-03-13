@@ -442,6 +442,18 @@ async def update_application_status(
         raise HTTPException(status_code=404, detail="Application not found")
     return {"message": "Status updated"}
 
+@api_router.get("/players/{player_id}", response_model=PlayerProfile)
+async def get_player_detail(player_id: str, current_user: dict = Depends(get_current_user)):
+    """Get detailed player profile by user_id"""
+    if current_user['role'] != 'club':
+        raise HTTPException(status_code=403, detail="Not a club")
+    
+    player = await db.players.find_one({"user_id": player_id, "approved": True}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    return PlayerProfile(**player)
+
 @api_router.get("/players", response_model=List[PlayerProfile])
 async def get_players(
     position: Optional[str] = None,

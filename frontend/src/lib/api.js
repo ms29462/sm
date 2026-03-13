@@ -31,6 +31,7 @@ export const api = {
   getClubApplications: () => axios.get(`${API}/club/applications`, { headers: getAuthHeaders() }),
   updateApplicationStatus: (id, status) => axios.put(`${API}/applications/${id}/status`, { status }, { headers: getAuthHeaders() }),
   getPlayers: (filters) => axios.get(`${API}/players`, { params: filters, headers: getAuthHeaders() }),
+  getPlayerDetail: (playerId) => axios.get(`${API}/players/${playerId}`, { headers: getAuthHeaders() }),
   getRecommendedPlayers: () => axios.get(`${API}/players/recommended`, { headers: getAuthHeaders() }),
   addFavorite: (playerId) => axios.post(`${API}/favorites`, { player_id: playerId }, { headers: getAuthHeaders() }),
   getFavorites: () => axios.get(`${API}/favorites`, { headers: getAuthHeaders() }),

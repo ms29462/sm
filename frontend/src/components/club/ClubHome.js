@@ -105,7 +105,8 @@ const ClubHome = () => {
               <div
                 key={player.user_id}
                 data-testid={`player-card-${player.user_id}`}
-                className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors"
+                onClick={() => navigate(`/club/player/${player.user_id}`)}
+                className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer"
               >
                 <div className="flex items-start space-x-4 mb-4">
                   {player.profile_picture ? (
@@ -154,7 +155,10 @@ const ClubHome = () => {
                 </div>
                 <Button
                   data-testid={`favorite-btn-${player.user_id}`}
-                  onClick={() => handleAddFavorite(player.user_id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddFavorite(player.user_id);
+                  }}
                   className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10"
                 >
                   ADD TO FAVORITES

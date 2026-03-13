@@ -3,8 +3,10 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Heart, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ClubFavorites = () => {
+  const navigate = useNavigate();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,7 +61,8 @@ const ClubFavorites = () => {
             <div
               key={player.user_id}
               data-testid={`favorite-card-${player.user_id}`}
-              className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors"
+              onClick={() => navigate(`/club/player/${player.user_id}`)}
+              className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer"
             >
               <div className="flex items-start space-x-4 mb-4">
                 {player.profile_picture ? (
@@ -114,7 +117,10 @@ const ClubFavorites = () => {
               </div>
               <Button
                 data-testid={`remove-btn-${player.user_id}`}
-                onClick={() => handleRemove(player.user_id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemove(player.user_id);
+                }}
                 variant="outline"
                 className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white rounded-sm h-10"
               >
