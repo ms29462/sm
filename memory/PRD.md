@@ -34,20 +34,24 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 
 ### Phase 3 - Privacy & Chat Requests (Completed - Dec 2025)
 - [x] **Privacy Controls**: Email hidden from non-admin users
-  - `strip_player_private_info()` removes email from player responses
-  - `strip_club_private_info()` removes email from club responses
-  - Admin can still see all user data
-- [x] **Chat Request System**:
-  - Club requests chat → Player & Admin notified
-  - Player accepts → Admin creates chat room
-  - Player rejects → Admin & Club notified
-  - New endpoints: POST /api/chat-requests, GET /api/chat-requests/my, PUT /api/chat-requests/{id}/respond
-  - Admin endpoint: GET /api/admin/chat-requests
-- [x] **UI Updates**:
-  - PlayerDetailView: Removed email display, added "Request Interview Chat" button
-  - Player sidebar: Added "Chat Requests" navigation
-  - Admin sidebar: Added "Chat Requests" navigation
-  - New components: ChatRequests.js (player), AdminChatRequests.js (admin)
+- [x] **Chat Request System**: Club requests → Player accepts/rejects → Admin creates chat
+
+### Phase 4 - AI Matching & Transfermarkt Integration (Completed - Dec 2025)
+- [x] **Transfermarkt Profile Link**: New field in player profile to link Transfermarkt page
+- [x] **AI Matching Algorithm**: 
+  - Analyzes player stats from Transfermarkt
+  - Compares against league benchmarks (production score, market value, age, etc.)
+  - Calculates fit score and level assessment for each opportunity
+- [x] **Match Scores Display**:
+  - Opportunity cards show match score badges (0-100)
+  - Dedicated "Match Scores" page for players with detailed breakdown
+  - Color-coded fit labels (Excellent/Strong/Possible/Borderline/Weak)
+- [x] **League Selection for Opportunities**:
+  - 15 leagues available: CPL, USL Championship, USL League One, Challenger Pro League, MLS, Premier League, La Liga, Bundesliga, Serie A, Ligue 1, League One, League Two, National League, Semi-Professional, Amateur
+- [x] **Admin Benchmark Management**:
+  - Benchmark status page shows if data exists
+  - Generate benchmark button (scrapes Transfermarkt - takes 5-10 min)
+  - Data includes player stats from CPL, USL Championship, USL League One, Challenger Pro League
 
 ## Architecture
 
@@ -56,6 +60,7 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - **Auth**: JWT with bcrypt password hashing
 - **Real-time**: Socket.IO (python-socketio)
 - **Database**: MongoDB
+- **Matching**: pandas, numpy, scikit-learn for player analysis
 
 ### Frontend  
 - **Framework**: React with React Router
@@ -64,27 +69,35 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 
 ### Key Files
 - `/app/backend/server.py` - Main API endpoints
+- `/app/backend/player_matching.py` - AI matching algorithm
 - `/app/backend/chat_video_manager.py` - Chat/video session management
-- `/app/backend/chat_requests.py` - Chat request models
 - `/app/frontend/src/lib/api.js` - API client functions
 
 ## Database Collections
 - `users` - Authentication data
-- `players` - Player profiles
+- `players` - Player profiles (includes transfermarkt_url)
 - `clubs` - Club profiles
-- `opportunities` - Job postings
+- `opportunities` - Job postings (includes league_level)
 - `applications` - Player applications
 - `favorites` - Club's favorite players
 - `chat_rooms` - Chat room data
 - `chat_requests` - Chat request records
 - `notifications` - User notifications
+- `benchmark_data` - AI matching benchmark data
+
+## API Endpoints (New)
+- `GET /api/available-leagues` - List of leagues for matching
+- `GET /api/player/match-scores` - Get match scores for all opportunities
+- `GET /api/player/match-score/{opportunity_id}` - Get match score for specific opportunity
+- `GET /api/admin/benchmark-status` - Check benchmark data status
+- `POST /api/admin/generate-benchmark` - Generate benchmark data (admin only)
 
 ## Credentials
 - **Admin**: admin@soccermatch.com / admin123
 
 ## Future/Backlog Tasks (P2)
-- [ ] Advanced matching algorithm (AI-based recommendations)
-- [ ] Email notifications
+- [ ] Email notifications for chat requests and applications
 - [ ] Mobile app version
 - [ ] Analytics dashboard for clubs
 - [ ] Multi-language support
+- [ ] Automated benchmark data refresh (cron job)
