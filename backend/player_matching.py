@@ -816,7 +816,7 @@ def calculate_match_score_for_opportunity(
         player_dict=player,
         avg_appearances=bench["avg_appearances"],
         position_role=position_role_val,
-        position_group=position_group_val
+        position_group_val=position_group_val
     )
 
     row_minmax = prod_minmax_df[
