@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
-import { Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video } from 'lucide-react';
+import { Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare } from 'lucide-react';
 
 const PlayerLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -70,6 +70,16 @@ const PlayerLayout = ({ children }) => {
             >
               <FileText className="w-4 h-4 mr-3" />
               My Applications
+            </Button>
+          </Link>
+          <Link to="/player/chat-requests">
+            <Button
+              data-testid="nav-chat-requests-btn"
+              variant={isActive('/player/chat-requests') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <MessageSquare className="w-4 h-4 mr-3" />
+              Chat Requests
             </Button>
           </Link>
           <Link to="/player/chats">

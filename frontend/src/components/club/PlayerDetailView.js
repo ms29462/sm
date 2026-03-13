@@ -4,6 +4,7 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download } from 'lucide-react';
+import RequestChatDialog from './RequestChatDialog';
 
 const PlayerDetailView = () => {
   const { playerId } = useParams();
@@ -101,8 +102,7 @@ const PlayerDetailView = () => {
                   </span>
                 )}
               </div>
-              <p className="text-muted-foreground mb-4">{player.email}</p>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3 mt-4">
                 {player.position && (
                   <span className="bg-primary/10 text-primary border border-primary/20 uppercase text-sm tracking-wider px-4 py-2 rounded-sm font-bold">
                     {player.position}
@@ -115,7 +115,7 @@ const PlayerDetailView = () => {
                 )}
               </div>
             </div>
-            <div>
+            <div className="flex flex-col gap-3">
               <Button
                 data-testid="add-favorite-btn"
                 onClick={handleAddFavorite}
@@ -124,6 +124,7 @@ const PlayerDetailView = () => {
                 <Heart className="w-4 h-4 mr-2" />
                 ADD TO FAVORITES
               </Button>
+              <RequestChatDialog playerId={playerId} playerName={player.name} />
             </div>
           </div>
         </div>

@@ -14,6 +14,7 @@ from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
 from chat_video_manager import ChatRoomManager, VideoSessionManager, ChatMessage
+from chat_requests import ChatRequest, ChatRequestCreate, ChatRequestResponse
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -58,7 +59,7 @@ class PlayerProfile(BaseModel):
     model_config = ConfigDict(extra="ignore")
     user_id: str
     name: str
-    email: str
+    email: Optional[str] = None  # Only visible to admin
     profile_picture: Optional[str] = None
     position: Optional[str] = None
     age: Optional[int] = None
@@ -76,6 +77,14 @@ class PlayerProfile(BaseModel):
     approved: bool = False
     verified: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+# Helper function to strip private info from player data
+def strip_player_private_info(player_dict: dict) -> dict:
+    """Remove private information (email) from player data for non-admin users"""
+    sanitized = player_dict.copy()
+    sanitized.pop('email', None)
+    return sanitized
 
 class PlayerUpdate(BaseModel):
     name: Optional[str] = None
@@ -99,12 +108,20 @@ class ClubProfile(BaseModel):
     model_config = ConfigDict(extra="ignore")
     user_id: str
     name: str
-    email: str
+    email: Optional[str] = None  # Only visible to admin
     country: Optional[str] = None
     league: Optional[str] = None
     logo: Optional[str] = None
     approved: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+# Helper function to strip private info from club data
+def strip_club_private_info(club_dict: dict) -> dict:
+    """Remove private information (email) from club data for non-admin users"""
+    sanitized = club_dict.copy()
+    sanitized.pop('email', None)
+    return sanitized
 
 class ClubUpdate(BaseModel):
     name: Optional[str] = None
@@ -418,6 +435,8 @@ async def get_club_applications(current_user: dict = Depends(get_current_user)):
         player = await db.players.find_one({"user_id": app['player_id']}, {"_id": 0})
         opp = await db.opportunities.find_one({"id": app['opportunity_id']}, {"_id": 0})
         if player and opp:
+            # Strip private info from player data
+            player = strip_player_private_info(player)
             result.append({
                 **app,
                 "player": player,
@@ -445,12 +464,16 @@ async def update_application_status(
 @api_router.get("/players/{player_id}", response_model=PlayerProfile)
 async def get_player_detail(player_id: str, current_user: dict = Depends(get_current_user)):
     """Get detailed player profile by user_id"""
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'admin']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     player = await db.players.find_one({"user_id": player_id, "approved": True}, {"_id": 0})
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
+    
+    # Strip private info for non-admin users
+    if current_user['role'] != 'admin':
+        player = strip_player_private_info(player)
     
     return PlayerProfile(**player)
 
@@ -476,6 +499,8 @@ async def get_players(
         query['name'] = {"$regex": name, "$options": "i"}  # Case-insensitive search
     
     players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    # Strip private info for club users
+    players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
 
 @api_router.get("/players/recommended", response_model=List[PlayerProfile])
@@ -489,6 +514,8 @@ async def get_recommended_players(current_user: dict = Depends(get_current_user)
     
     if not opportunities:
         players = await db.players.find({"approved": True}, {"_id": 0}).to_list(20)
+        # Strip private info
+        players = [strip_player_private_info(p) for p in players]
         return [PlayerProfile(**p) for p in players]
     
     positions = list(set([opp['position'] for opp in opportunities]))
@@ -498,6 +525,8 @@ async def get_recommended_players(current_user: dict = Depends(get_current_user)
         query['nationality'] = club['country']
     
     players = await db.players.find(query, {"_id": 0}).to_list(100)
+    # Strip private info
+    players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
 
 @api_router.post("/favorites", response_model=Favorite)
@@ -530,6 +559,8 @@ async def get_favorites(current_user: dict = Depends(get_current_user)):
     player_ids = [fav['player_id'] for fav in favorites]
     
     players = await db.players.find({"user_id": {"$in": player_ids}}, {"_id": 0}).to_list(1000)
+    # Strip private info
+    players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
 
 @api_router.delete("/favorites/{player_id}")
@@ -857,6 +888,202 @@ async def get_my_videos(current_user: dict = Depends(get_current_user)):
     ]
 
 
+# ============ CHAT REQUEST ENDPOINTS ============
+@api_router.post("/chat-requests", response_model=dict)
+async def create_chat_request(
+    request_data: ChatRequestCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Club creates a chat request to connect with a player"""
+    if current_user['role'] != 'club':
+        raise HTTPException(status_code=403, detail="Only clubs can request chats")
+    
+    # Check if there's already a pending request
+    existing = await db.chat_requests.find_one({
+        "club_id": current_user['user_id'],
+        "player_id": request_data.player_id,
+        "status": "pending"
+    }, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="A pending request already exists for this player")
+    
+    # Get player and club info
+    player = await db.players.find_one({"user_id": request_data.player_id}, {"_id": 0})
+    club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    chat_request = {
+        "id": str(uuid.uuid4()),
+        "player_id": request_data.player_id,
+        "club_id": current_user['user_id'],
+        "player_name": player.get('name', 'Unknown Player'),
+        "club_name": club.get('name', 'Unknown Club'),
+        "status": "pending",
+        "message": request_data.message,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "responded_at": None
+    }
+    
+    await db.chat_requests.insert_one(chat_request)
+    
+    # Create notifications for player and admin
+    await db.notifications.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": request_data.player_id,
+        "type": "chat_request",
+        "title": "New Chat Request",
+        "message": f"{club.get('name', 'A club')} wants to chat with you",
+        "reference_id": chat_request["id"],
+        "read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # Admin notification
+    await db.notifications.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": "admin-001",
+        "type": "chat_request",
+        "title": "New Chat Request",
+        "message": f"{club.get('name', 'Unknown Club')} requests to chat with {player.get('name', 'Unknown Player')}",
+        "reference_id": chat_request["id"],
+        "read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {"message": "Chat request sent successfully", "request_id": chat_request["id"]}
+
+
+@api_router.get("/chat-requests/my", response_model=List[dict])
+async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
+    """Get chat requests for the current user (player sees incoming, club sees outgoing)"""
+    user_id = current_user['user_id']
+    role = current_user['role']
+    
+    if role == 'player':
+        requests = await db.chat_requests.find({"player_id": user_id}, {"_id": 0}).to_list(100)
+    elif role == 'club':
+        requests = await db.chat_requests.find({"club_id": user_id}, {"_id": 0}).to_list(100)
+    else:
+        return []
+    
+    return requests
+
+
+@api_router.put("/chat-requests/{request_id}/respond")
+async def respond_to_chat_request(
+    request_id: str,
+    response: ChatRequestResponse,
+    current_user: dict = Depends(get_current_user)
+):
+    """Player responds to a chat request (accept or reject)"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Only players can respond to chat requests")
+    
+    chat_request = await db.chat_requests.find_one({
+        "id": request_id,
+        "player_id": current_user['user_id'],
+        "status": "pending"
+    }, {"_id": 0})
+    
+    if not chat_request:
+        raise HTTPException(status_code=404, detail="Chat request not found or already responded")
+    
+    if response.status not in ['accepted', 'rejected']:
+        raise HTTPException(status_code=400, detail="Invalid response status")
+    
+    await db.chat_requests.update_one(
+        {"id": request_id},
+        {"$set": {
+            "status": response.status,
+            "responded_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    player_name = player.get('name', 'Unknown Player') if player else 'Unknown Player'
+    
+    if response.status == 'accepted':
+        # Notify admin to create the chat room
+        await db.notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": "admin-001",
+            "type": "chat_request_accepted",
+            "title": "Chat Request Accepted",
+            "message": f"{player_name} accepted chat request from {chat_request['club_name']}. Please create the chat room.",
+            "reference_id": request_id,
+            "player_id": chat_request['player_id'],
+            "club_id": chat_request['club_id'],
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        return {"message": "Chat request accepted. Admin will create the chat room."}
+    else:
+        # Notify admin and club about rejection
+        await db.notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": "admin-001",
+            "type": "chat_request_rejected",
+            "title": "Chat Request Rejected",
+            "message": f"{player_name} rejected chat request from {chat_request['club_name']}",
+            "reference_id": request_id,
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        await db.notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": chat_request['club_id'],
+            "type": "chat_request_rejected",
+            "title": "Chat Request Rejected",
+            "message": f"{player_name} has declined your chat request",
+            "reference_id": request_id,
+            "read": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        return {"message": "Chat request rejected"}
+
+
+@api_router.get("/admin/chat-requests", response_model=List[dict])
+async def get_all_chat_requests(current_user: dict = Depends(get_current_user)):
+    """Admin gets all chat requests"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    requests = await db.chat_requests.find({}, {"_id": 0}).to_list(1000)
+    return requests
+
+
+@api_router.get("/notifications", response_model=List[dict])
+async def get_notifications(current_user: dict = Depends(get_current_user)):
+    """Get notifications for the current user"""
+    notifications = await db.notifications.find(
+        {"user_id": current_user['user_id']},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    return notifications
+
+
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a notification as read"""
+    await db.notifications.update_one(
+        {"id": notification_id, "user_id": current_user['user_id']},
+        {"$set": {"read": True}}
+    )
+    return {"message": "Notification marked as read"}
+
+
+@api_router.get("/notifications/unread-count")
+async def get_unread_count(current_user: dict = Depends(get_current_user)):
+    """Get count of unread notifications"""
+    count = await db.notifications.count_documents({
+        "user_id": current_user['user_id'],
+        "read": False
+    })
+    return {"count": count}
+
 
 fastapi_app.include_router(api_router)
 
@@ -964,7 +1191,6 @@ async def join_video_session(sid, data):
 async def webrtc_offer(sid, data):
     """Forward WebRTC offer"""
     session_id = data.get('session_id')
-    target_user = data.get('target_user')
     offer = data.get('offer')
     from_user = data.get('from_user')
     

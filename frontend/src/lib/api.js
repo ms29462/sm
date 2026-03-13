@@ -61,4 +61,15 @@ export const api = {
   // Chat & Video - Player/Club
   getMyChats: () => axios.get(`${API}/my-chats`, { headers: getAuthHeaders() }),
   getMyVideos: () => axios.get(`${API}/my-videos`, { headers: getAuthHeaders() }),
+
+  // Chat Requests
+  requestChat: (playerId, message) => axios.post(`${API}/chat-requests`, { player_id: playerId, message }, { headers: getAuthHeaders() }),
+  getMyChatRequests: () => axios.get(`${API}/chat-requests/my`, { headers: getAuthHeaders() }),
+  respondToChatRequest: (requestId, status) => axios.put(`${API}/chat-requests/${requestId}/respond`, { status }, { headers: getAuthHeaders() }),
+  getAdminChatRequests: () => axios.get(`${API}/admin/chat-requests`, { headers: getAuthHeaders() }),
+
+  // Notifications
+  getNotifications: () => axios.get(`${API}/notifications`, { headers: getAuthHeaders() }),
+  markNotificationRead: (notificationId) => axios.put(`${API}/notifications/${notificationId}/read`, {}, { headers: getAuthHeaders() }),
+  getUnreadCount: () => axios.get(`${API}/notifications/unread-count`, { headers: getAuthHeaders() }),
 };

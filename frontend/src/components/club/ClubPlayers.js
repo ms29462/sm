@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,7 @@ import { Users, Search, Heart, CheckCircle } from 'lucide-react';
 import { POSITIONS, LEVELS, COUNTRIES } from '@/lib/constants';
 
 const ClubPlayers = () => {
+  const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({

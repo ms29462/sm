@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { Trophy, Shield, Users, Building, Briefcase, LogOut, MessageCircle, Video } from 'lucide-react';
+import { Trophy, Shield, Users, Building, Briefcase, LogOut, MessageCircle, Video, MessageSquare } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -70,6 +70,16 @@ const AdminLayout = ({ children }) => {
             >
               <Briefcase className="w-4 h-4 mr-3" />
               Opportunities
+            </Button>
+          </Link>
+          <Link to="/admin/chat-requests">
+            <Button
+              data-testid="nav-chat-requests-btn"
+              variant={isActive('/admin/chat-requests') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <MessageSquare className="w-4 h-4 mr-3" />
+              Chat Requests
             </Button>
           </Link>
           <Link to="/admin/chats">
