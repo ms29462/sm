@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { User, Camera, Upload, CheckCircle, Video, Plus, Trash2, ExternalLink } from 'lucide-react';
+import { User, Camera, Upload, CheckCircle, Video, Plus, Trash2, ExternalLink, Calendar, MapPin } from 'lucide-react';
 import { POSITIONS, LEVELS, FEET, COUNTRIES } from '@/lib/constants';
 
 const COMPETITION_LEVELS = [
@@ -39,9 +39,23 @@ const PlayerProfile = () => {
     position_played: ''
   });
 
+  // Match Calendar state
+  const [matchCalendar, setMatchCalendar] = useState([]);
+  const [showAddCalendarDialog, setShowAddCalendarDialog] = useState(false);
+  const [addingCalendarMatch, setAddingCalendarMatch] = useState(false);
+  const [newCalendarMatch, setNewCalendarMatch] = useState({
+    match_date: '',
+    match_time: '',
+    opponent: '',
+    competition: '',
+    stadium: '',
+    location: ''
+  });
+
   useEffect(() => {
     loadProfile();
     loadMatchArchive();
+    loadMatchCalendar();
   }, []);
 
   const loadProfile = async () => {
@@ -131,6 +145,59 @@ const PlayerProfile = () => {
       await api.deleteMatchFromArchive(matchId);
       toast.success('Match deleted');
       loadMatchArchive();
+    } catch (error) {
+      toast.error('Failed to delete match');
+    }
+  };
+
+  // Match Calendar functions
+  const loadMatchCalendar = async () => {
+    try {
+      const response = await api.getPlayerMatchCalendar();
+      setMatchCalendar(response.data || []);
+    } catch (error) {
+      console.error('Failed to load match calendar');
+    }
+  };
+
+  const handleNewCalendarMatchChange = (field, value) => {
+    setNewCalendarMatch((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddCalendarMatch = async () => {
+    if (!newCalendarMatch.match_date || !newCalendarMatch.opponent) {
+      toast.error('Please fill in match date and opponent');
+      return;
+    }
+
+    setAddingCalendarMatch(true);
+    try {
+      await api.addMatchToCalendar(newCalendarMatch);
+      toast.success('Match added to calendar!');
+      setShowAddCalendarDialog(false);
+      setNewCalendarMatch({
+        match_date: '',
+        match_time: '',
+        opponent: '',
+        competition: '',
+        stadium: '',
+        location: ''
+      });
+      loadMatchCalendar();
+    } catch (error) {
+      toast.error('Failed to add match');
+    } finally {
+      setAddingCalendarMatch(false);
+    }
+  };
+
+  const handleDeleteCalendarMatch = async (matchId) => {
+    if (!window.confirm('Are you sure you want to delete this match?')) return;
+
+    try {
+      await api.deleteMatchFromCalendar(matchId);
+      toast.success('Match deleted');
+      loadMatchCalendar();
     } catch (error) {
       toast.error('Failed to delete match');
     }
@@ -641,6 +708,162 @@ const PlayerProfile = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDeleteMatch(match.id)}
+                      className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Match Calendar Section */}
+        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <Calendar className="w-6 h-6 text-blue-500" />
+              <div>
+                <h2 className="text-xl font-heading font-bold uppercase">UPCOMING MATCHES</h2>
+                <p className="text-sm text-muted-foreground">Share your schedule with clubs and scouts for live scouting</p>
+              </div>
+            </div>
+            <Dialog open={showAddCalendarDialog} onOpenChange={setShowAddCalendarDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  data-testid="add-calendar-match-btn"
+                  className="bg-blue-500 text-white font-bold uppercase tracking-wide hover:bg-blue-600 rounded-sm"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  ADD MATCH
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-heading uppercase">Add Upcoming Match</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 mt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium uppercase tracking-wide">Match Date *</Label>
+                      <Input
+                        data-testid="calendar-match-date"
+                        type="date"
+                        value={newCalendarMatch.match_date}
+                        onChange={(e) => handleNewCalendarMatchChange('match_date', e.target.value)}
+                        className="mt-1 bg-black/20 border-white/10 h-10"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium uppercase tracking-wide">Kick-off Time</Label>
+                      <Input
+                        data-testid="calendar-match-time"
+                        type="time"
+                        value={newCalendarMatch.match_time}
+                        onChange={(e) => handleNewCalendarMatchChange('match_time', e.target.value)}
+                        className="mt-1 bg-black/20 border-white/10 h-10"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium uppercase tracking-wide">Opponent *</Label>
+                    <Input
+                      data-testid="calendar-opponent"
+                      type="text"
+                      value={newCalendarMatch.opponent}
+                      onChange={(e) => handleNewCalendarMatchChange('opponent', e.target.value)}
+                      placeholder="e.g., Manchester United"
+                      className="mt-1 bg-black/20 border-white/10 h-10"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium uppercase tracking-wide">Competition / League</Label>
+                    <Input
+                      data-testid="calendar-competition"
+                      type="text"
+                      value={newCalendarMatch.competition}
+                      onChange={(e) => handleNewCalendarMatchChange('competition', e.target.value)}
+                      placeholder="e.g., Premier League, Cup Match, Friendly"
+                      className="mt-1 bg-black/20 border-white/10 h-10"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium uppercase tracking-wide">Stadium</Label>
+                      <Input
+                        data-testid="calendar-stadium"
+                        type="text"
+                        value={newCalendarMatch.stadium}
+                        onChange={(e) => handleNewCalendarMatchChange('stadium', e.target.value)}
+                        placeholder="e.g., Old Trafford"
+                        className="mt-1 bg-black/20 border-white/10 h-10"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium uppercase tracking-wide">Location / City</Label>
+                      <Input
+                        data-testid="calendar-location"
+                        type="text"
+                        value={newCalendarMatch.location}
+                        onChange={(e) => handleNewCalendarMatchChange('location', e.target.value)}
+                        placeholder="e.g., Manchester, UK"
+                        className="mt-1 bg-black/20 border-white/10 h-10"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    data-testid="submit-calendar-match-btn"
+                    onClick={handleAddCalendarMatch}
+                    disabled={addingCalendarMatch}
+                    className="w-full bg-blue-500 text-white font-bold uppercase tracking-wide hover:bg-blue-600 h-12"
+                  >
+                    {addingCalendarMatch ? 'ADDING...' : 'ADD TO CALENDAR'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {matchCalendar.length === 0 ? (
+            <div className="text-center py-8 border border-dashed border-border rounded-sm">
+              <Calendar className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">No upcoming matches scheduled</p>
+              <p className="text-sm text-muted-foreground mt-1">Add your upcoming games so scouts can plan live visits</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {matchCalendar.map((match) => (
+                <div
+                  key={match.id}
+                  data-testid={`calendar-item-${match.id}`}
+                  className="flex items-center justify-between p-4 bg-background rounded-sm border border-border"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h4 className="font-heading font-bold">vs {match.opponent}</h4>
+                      {match.competition && (
+                        <span className="text-xs bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-sm">
+                          {match.competition}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span>{match.match_date}</span>
+                      {match.match_time && <span>at {match.match_time}</span>}
+                    </div>
+                    {(match.stadium || match.location) && (
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                        <MapPin className="w-3 h-3" />
+                        <span>{[match.stadium, match.location].filter(Boolean).join(', ')}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteCalendarMatch(match.id)}
                       className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                     >
                       <Trash2 className="w-4 h-4" />
