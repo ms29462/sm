@@ -82,4 +82,37 @@ export const api = {
   generateBenchmark: () => axios.post(`${API}/admin/generate-benchmark`, {}, { headers: getAuthHeaders() }),
   getBenchmarkStatus: () => axios.get(`${API}/admin/benchmark-status`, { headers: getAuthHeaders() }),
   getBenchmarkGenerationStatus: () => axios.get(`${API}/admin/benchmark-generation-status`, { headers: getAuthHeaders() }),
+
+  // Admin - Federations
+  getAllFederations: () => axios.get(`${API}/admin/federations`, { headers: getAuthHeaders() }),
+  approveFederation: (userId, approved) => axios.put(`${API}/admin/federations/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
+
+  // Federation
+  getFederationProfile: () => axios.get(`${API}/federation/profile`, { headers: getAuthHeaders() }),
+  updateFederationProfile: (data) => axios.put(`${API}/federation/profile`, data, { headers: getAuthHeaders() }),
+  getFederationPlayers: (filters) => axios.get(`${API}/federation/players`, { params: filters, headers: getAuthHeaders() }),
+  getRecommendedPlayersForFederation: () => axios.get(`${API}/federation/recommended-players`, { headers: getAuthHeaders() }),
+  addFederationFavorite: (playerId) => axios.post(`${API}/federation/favorites`, { player_id: playerId }, { headers: getAuthHeaders() }),
+  getFederationFavorites: () => axios.get(`${API}/federation/favorites`, { headers: getAuthHeaders() }),
+  removeFederationFavorite: (playerId) => axios.delete(`${API}/federation/favorites/${playerId}`, { headers: getAuthHeaders() }),
+  
+  // Federation Teams
+  getFederationTeams: () => axios.get(`${API}/federation/teams`, { headers: getAuthHeaders() }),
+  createFederationTeam: (data) => axios.post(`${API}/federation/teams`, data, { headers: getAuthHeaders() }),
+  deleteFederationTeam: (teamId) => axios.delete(`${API}/federation/teams/${teamId}`, { headers: getAuthHeaders() }),
+  getFederationTeamPlayers: (teamId) => axios.get(`${API}/federation/teams/${teamId}/players`, { headers: getAuthHeaders() }),
+  addPlayerToFederationTeam: (teamId, playerId, notes) => axios.post(`${API}/federation/teams/${teamId}/players`, { player_id: playerId, notes }, { headers: getAuthHeaders() }),
+  removePlayerFromFederationTeam: (teamId, playerId) => axios.delete(`${API}/federation/teams/${teamId}/players/${playerId}`, { headers: getAuthHeaders() }),
+
+  // Match Archive (Player)
+  getPlayerMatchArchive: () => axios.get(`${API}/player/match-archive`, { headers: getAuthHeaders() }),
+  addMatchToArchive: (data) => axios.post(`${API}/player/match-archive`, data, { headers: getAuthHeaders() }),
+  deleteMatchFromArchive: (matchId) => axios.delete(`${API}/player/match-archive/${matchId}`, { headers: getAuthHeaders() }),
+  getPlayerMatchArchivePublic: (playerId) => axios.get(`${API}/players/${playerId}/match-archive`, { headers: getAuthHeaders() }),
+
+  // Match Calendar (Player)
+  getPlayerMatchCalendar: () => axios.get(`${API}/player/match-calendar`, { headers: getAuthHeaders() }),
+  addMatchToCalendar: (data) => axios.post(`${API}/player/match-calendar`, data, { headers: getAuthHeaders() }),
+  deleteMatchFromCalendar: (matchId) => axios.delete(`${API}/player/match-calendar/${matchId}`, { headers: getAuthHeaders() }),
+  getPlayerMatchCalendarPublic: (playerId) => axios.get(`${API}/players/${playerId}/match-calendar`, { headers: getAuthHeaders() }),
 };

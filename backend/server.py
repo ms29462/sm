@@ -73,7 +73,10 @@ class PlayerProfile(BaseModel):
     profile_picture: Optional[str] = None
     position: Optional[str] = None
     age: Optional[int] = None
-    nationality: Optional[str] = None
+    nationality: Optional[str] = None  # Primary nationality (kept for backwards compatibility)
+    nationality_1: Optional[str] = None  # First nationality
+    nationality_2: Optional[str] = None  # Second nationality
+    nationality_3: Optional[str] = None  # Third nationality
     height: Optional[int] = None
     weight: Optional[int] = None
     preferred_foot: Optional[str] = None
@@ -97,12 +100,27 @@ def strip_player_private_info(player_dict: dict) -> dict:
     sanitized.pop('email', None)
     return sanitized
 
+
+# Helper to get all nationalities from a player
+def get_player_nationalities(player: dict) -> List[str]:
+    """Get all nationalities from a player document"""
+    nationalities = []
+    for key in ['nationality', 'nationality_1', 'nationality_2', 'nationality_3']:
+        val = player.get(key)
+        if val and val not in nationalities:
+            nationalities.append(val)
+    return nationalities
+
+
 class PlayerUpdate(BaseModel):
     name: Optional[str] = None
     profile_picture: Optional[str] = None
     position: Optional[str] = None
     age: Optional[int] = None
     nationality: Optional[str] = None
+    nationality_1: Optional[str] = None
+    nationality_2: Optional[str] = None
+    nationality_3: Optional[str] = None
     height: Optional[int] = None
     weight: Optional[int] = None
     preferred_foot: Optional[str] = None
@@ -114,6 +132,50 @@ class PlayerUpdate(BaseModel):
     highlight_video: Optional[str] = None
     cv: Optional[str] = None
     transfermarkt_url: Optional[str] = None
+
+
+# ============ MATCH ARCHIVE MODELS ============
+class MatchArchiveEntry(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    player_id: str
+    video_link: str
+    match_date: str
+    opponent: str
+    competition_level: str
+    description: Optional[str] = None
+    position_played: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class MatchArchiveCreate(BaseModel):
+    video_link: str
+    match_date: str
+    opponent: str
+    competition_level: str
+    description: Optional[str] = None
+    position_played: Optional[str] = None
+
+
+# ============ MATCH CALENDAR MODELS ============
+class MatchCalendarEntry(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    player_id: str
+    match_date: str
+    match_time: Optional[str] = None
+    location: Optional[str] = None
+    stadium: Optional[str] = None
+    opponent: str
+    competition: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class MatchCalendarCreate(BaseModel):
+    match_date: str
+    match_time: Optional[str] = None
+    location: Optional[str] = None
+    stadium: Optional[str] = None
+    opponent: str
+    competition: Optional[str] = None
 
 # ============ CLUB MODELS ============
 class ClubProfile(BaseModel):
@@ -140,6 +202,64 @@ class ClubUpdate(BaseModel):
     country: Optional[str] = None
     league: Optional[str] = None
     logo: Optional[str] = None
+
+
+# ============ FEDERATION MODELS ============
+class FederationProfile(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    user_id: str
+    name: str  # e.g., "Cameroon Football Federation"
+    email: Optional[str] = None  # Only visible to admin
+    country: str  # The country this federation represents
+    logo: Optional[str] = None
+    description: Optional[str] = None
+    approved: bool = False
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+def strip_federation_private_info(federation_dict: dict) -> dict:
+    """Remove private information from federation data for non-admin users"""
+    sanitized = federation_dict.copy()
+    sanitized.pop('email', None)
+    return sanitized
+
+
+class FederationUpdate(BaseModel):
+    name: Optional[str] = None
+    country: Optional[str] = None
+    logo: Optional[str] = None
+    description: Optional[str] = None
+
+
+# Federation Team Groups (Senior, U23, U20, U17, U15)
+class FederationTeam(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    federation_id: str
+    name: str  # e.g., "Senior Team", "U23", "U20", "U17", "U15"
+    description: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class FederationTeamCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+
+# Player assignment to federation teams
+class FederationTeamPlayer(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    team_id: str
+    federation_id: str
+    player_id: str
+    player_name: str
+    added_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    notes: Optional[str] = None
+
+
+class FederationTeamPlayerAdd(BaseModel):
+    player_id: str
+    notes: Optional[str] = None
+
 
 # ============ OPPORTUNITY MODELS ============
 class OpportunityCreate(BaseModel):
@@ -255,7 +375,17 @@ async def register(user: UserRegister):
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.players.insert_one(player_doc)
-    else:
+    elif user.role == 'federation':
+        federation_doc = {
+            "user_id": user_id,
+            "name": user.name,
+            "email": user.email,
+            "country": "",  # To be filled in profile
+            "approved": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.federations.insert_one(federation_doc)
+    else:  # club
         club_doc = {
             "user_id": user_id,
             "name": user.name,
@@ -476,7 +606,7 @@ async def update_application_status(
 @api_router.get("/players/{player_id}", response_model=PlayerProfile)
 async def get_player_detail(player_id: str, current_user: dict = Depends(get_current_user)):
     """Get detailed player profile by user_id"""
-    if current_user['role'] not in ['club', 'admin']:
+    if current_user['role'] not in ['club', 'admin', 'federation']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     player = await db.players.find_one({"user_id": player_id, "approved": True}, {"_id": 0})
@@ -593,15 +723,17 @@ async def get_admin_stats(current_user: dict = Depends(get_current_user)):
     
     total_players = await db.players.count_documents({})
     total_clubs = await db.clubs.count_documents({})
+    total_federations = await db.federations.count_documents({})
     total_applications = await db.applications.count_documents({})
     pending_players = await db.players.count_documents({"approved": False})
     pending_clubs = await db.clubs.count_documents({"approved": False})
+    pending_federations = await db.federations.count_documents({"approved": False})
     
     return AdminStats(
         total_players=total_players,
         total_clubs=total_clubs,
         total_applications=total_applications,
-        pending_approvals=pending_players + pending_clubs
+        pending_approvals=pending_players + pending_clubs + pending_federations
     )
 
 @api_router.get("/admin/players", response_model=List[PlayerProfile])
@@ -650,6 +782,27 @@ async def approve_club(user_id: str, approval: UserApproval, current_user: dict 
         raise HTTPException(status_code=404, detail="Club not found")
     return {"message": "Updated"}
 
+
+@api_router.get("/admin/federations", response_model=List[FederationProfile])
+async def get_all_federations(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    federations = await db.federations.find({}, {"_id": 0}).to_list(1000)
+    return [FederationProfile(**f) for f in federations]
+
+
+@api_router.put("/admin/federations/{user_id}/approve")
+async def approve_federation(user_id: str, approval: UserApproval, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    result = await db.federations.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Federation not found")
+    return {"message": "Updated"}
+
+
 @api_router.delete("/admin/users/{user_id}")
 async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
@@ -658,6 +811,7 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
     await db.users.delete_one({"id": user_id})
     await db.players.delete_one({"user_id": user_id})
     await db.clubs.delete_one({"user_id": user_id})
+    await db.federations.delete_one({"user_id": user_id})
     return {"message": "User deleted"}
 
 @api_router.get("/admin/opportunities", response_model=List[Opportunity])
@@ -677,6 +831,383 @@ async def delete_opportunity_admin(opportunity_id: str, current_user: dict = Dep
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Opportunity not found")
     return {"message": "Deleted"}
+
+
+# ============ FEDERATION ENDPOINTS ============
+@api_router.get("/federation/profile", response_model=FederationProfile)
+async def get_federation_profile(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    federation = await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not federation:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return FederationProfile(**federation)
+
+
+@api_router.put("/federation/profile", response_model=FederationProfile)
+async def update_federation_profile(update: FederationUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if update_data:
+        await db.federations.update_one(
+            {"user_id": current_user['user_id']},
+            {"$set": update_data}
+        )
+    
+    federation = await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    return FederationProfile(**federation)
+
+
+@api_router.get("/federation/players", response_model=List[PlayerProfile])
+async def get_federation_players(
+    position: Optional[str] = None,
+    nationality: Optional[str] = None,
+    level: Optional[str] = None,
+    name: Optional[str] = None,
+    min_age: Optional[int] = None,
+    max_age: Optional[int] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Federation searches for players with filters"""
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    query = {"approved": True}
+    if position:
+        query['position'] = position
+    if nationality:
+        # Search across all nationality fields
+        query['$or'] = [
+            {'nationality': nationality},
+            {'nationality_1': nationality},
+            {'nationality_2': nationality},
+            {'nationality_3': nationality}
+        ]
+    if level:
+        query['playing_level'] = level
+    if name:
+        query['name'] = {"$regex": name, "$options": "i"}
+    if min_age:
+        query['age'] = {"$gte": min_age}
+    if max_age:
+        if 'age' in query:
+            query['age']['$lte'] = max_age
+        else:
+            query['age'] = {"$lte": max_age}
+    
+    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    players = [strip_player_private_info(p) for p in players]
+    return [PlayerProfile(**p) for p in players]
+
+
+@api_router.get("/federation/recommended-players", response_model=List[PlayerProfile])
+async def get_recommended_players_for_federation(current_user: dict = Depends(get_current_user)):
+    """Get players recommended for this federation based on nationality match"""
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    federation = await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not federation or not federation.get('country'):
+        return []
+    
+    country = federation['country']
+    
+    # Find players with matching nationality
+    query = {
+        "approved": True,
+        "$or": [
+            {'nationality': country},
+            {'nationality_1': country},
+            {'nationality_2': country},
+            {'nationality_3': country}
+        ]
+    }
+    
+    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    players = [strip_player_private_info(p) for p in players]
+    return [PlayerProfile(**p) for p in players]
+
+
+# Federation favorites (scouting list)
+@api_router.post("/federation/favorites")
+async def add_federation_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    existing = await db.federation_favorites.find_one({
+        "federation_id": current_user['user_id'],
+        "player_id": fav.player_id
+    }, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already in scouting list")
+    
+    fav_doc = {
+        "id": str(uuid.uuid4()),
+        "federation_id": current_user['user_id'],
+        "player_id": fav.player_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.federation_favorites.insert_one(fav_doc)
+    return {"message": "Added to scouting list"}
+
+
+@api_router.get("/federation/favorites", response_model=List[PlayerProfile])
+async def get_federation_favorites(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    favorites = await db.federation_favorites.find({"federation_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
+    player_ids = [fav['player_id'] for fav in favorites]
+    
+    players = await db.players.find({"user_id": {"$in": player_ids}}, {"_id": 0}).to_list(1000)
+    players = [strip_player_private_info(p) for p in players]
+    return [PlayerProfile(**p) for p in players]
+
+
+@api_router.delete("/federation/favorites/{player_id}")
+async def remove_federation_favorite(player_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    result = await db.federation_favorites.delete_one({"federation_id": current_user['user_id'], "player_id": player_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not in scouting list")
+    return {"message": "Removed from scouting list"}
+
+
+# Federation Teams (U15, U17, U20, U23, Senior)
+@api_router.get("/federation/teams")
+async def get_federation_teams(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    teams = await db.federation_teams.find({"federation_id": current_user['user_id']}, {"_id": 0}).to_list(100)
+    return teams
+
+
+@api_router.post("/federation/teams")
+async def create_federation_team(team: FederationTeamCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    team_doc = {
+        "id": str(uuid.uuid4()),
+        "federation_id": current_user['user_id'],
+        "name": team.name,
+        "description": team.description,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.federation_teams.insert_one(team_doc)
+    return team_doc
+
+
+@api_router.delete("/federation/teams/{team_id}")
+async def delete_federation_team(team_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    result = await db.federation_teams.delete_one({"id": team_id, "federation_id": current_user['user_id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    # Also remove all players from this team
+    await db.federation_team_players.delete_many({"team_id": team_id})
+    return {"message": "Team deleted"}
+
+
+@api_router.get("/federation/teams/{team_id}/players")
+async def get_federation_team_players(team_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    team = await db.federation_teams.find_one({"id": team_id, "federation_id": current_user['user_id']}, {"_id": 0})
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    team_players = await db.federation_team_players.find({"team_id": team_id}, {"_id": 0}).to_list(1000)
+    player_ids = [tp['player_id'] for tp in team_players]
+    
+    players = await db.players.find({"user_id": {"$in": player_ids}}, {"_id": 0}).to_list(1000)
+    players = [strip_player_private_info(p) for p in players]
+    
+    # Add team-specific data
+    result = []
+    for p in players:
+        team_player = next((tp for tp in team_players if tp['player_id'] == p['user_id']), None)
+        result.append({
+            **p,
+            "added_at": team_player.get('added_at') if team_player else None,
+            "notes": team_player.get('notes') if team_player else None
+        })
+    
+    return result
+
+
+@api_router.post("/federation/teams/{team_id}/players")
+async def add_player_to_federation_team(
+    team_id: str,
+    player_data: FederationTeamPlayerAdd,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    team = await db.federation_teams.find_one({"id": team_id, "federation_id": current_user['user_id']}, {"_id": 0})
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    
+    player = await db.players.find_one({"user_id": player_data.player_id}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    # Check if already in team
+    existing = await db.federation_team_players.find_one({
+        "team_id": team_id,
+        "player_id": player_data.player_id
+    }, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Player already in this team")
+    
+    team_player_doc = {
+        "id": str(uuid.uuid4()),
+        "team_id": team_id,
+        "federation_id": current_user['user_id'],
+        "player_id": player_data.player_id,
+        "player_name": player.get('name', 'Unknown'),
+        "added_at": datetime.now(timezone.utc).isoformat(),
+        "notes": player_data.notes
+    }
+    await db.federation_team_players.insert_one(team_player_doc)
+    return {"message": "Player added to team"}
+
+
+@api_router.delete("/federation/teams/{team_id}/players/{player_id}")
+async def remove_player_from_federation_team(
+    team_id: str,
+    player_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user['role'] != 'federation':
+        raise HTTPException(status_code=403, detail="Not a federation")
+    
+    result = await db.federation_team_players.delete_one({
+        "team_id": team_id,
+        "federation_id": current_user['user_id'],
+        "player_id": player_id
+    })
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Player not in team")
+    return {"message": "Player removed from team"}
+
+
+# ============ MATCH ARCHIVE ENDPOINTS ============
+@api_router.get("/player/match-archive")
+async def get_player_match_archive(current_user: dict = Depends(get_current_user)):
+    """Player gets their match archive"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    matches = await db.match_archive.find({"player_id": current_user['user_id']}, {"_id": 0}).sort("match_date", -1).to_list(100)
+    return matches
+
+
+@api_router.post("/player/match-archive")
+async def add_match_to_archive(match: MatchArchiveCreate, current_user: dict = Depends(get_current_user)):
+    """Player adds a match to their archive"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    match_doc = {
+        "id": str(uuid.uuid4()),
+        "player_id": current_user['user_id'],
+        "video_link": match.video_link,
+        "match_date": match.match_date,
+        "opponent": match.opponent,
+        "competition_level": match.competition_level,
+        "description": match.description,
+        "position_played": match.position_played,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.match_archive.insert_one(match_doc)
+    return match_doc
+
+
+@api_router.delete("/player/match-archive/{match_id}")
+async def delete_match_from_archive(match_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    result = await db.match_archive.delete_one({"id": match_id, "player_id": current_user['user_id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Match not found")
+    return {"message": "Match deleted"}
+
+
+@api_router.get("/players/{player_id}/match-archive")
+async def get_player_match_archive_public(player_id: str, current_user: dict = Depends(get_current_user)):
+    """Clubs and federations can view player match archive"""
+    if current_user['role'] not in ['club', 'federation', 'admin']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    matches = await db.match_archive.find({"player_id": player_id}, {"_id": 0}).sort("match_date", -1).to_list(100)
+    return matches
+
+
+# ============ MATCH CALENDAR ENDPOINTS ============
+@api_router.get("/player/match-calendar")
+async def get_player_match_calendar(current_user: dict = Depends(get_current_user)):
+    """Player gets their upcoming match calendar"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    matches = await db.match_calendar.find({"player_id": current_user['user_id']}, {"_id": 0}).sort("match_date", 1).to_list(100)
+    return matches
+
+
+@api_router.post("/player/match-calendar")
+async def add_match_to_calendar(match: MatchCalendarCreate, current_user: dict = Depends(get_current_user)):
+    """Player adds an upcoming match to their calendar"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    match_doc = {
+        "id": str(uuid.uuid4()),
+        "player_id": current_user['user_id'],
+        "match_date": match.match_date,
+        "match_time": match.match_time,
+        "location": match.location,
+        "stadium": match.stadium,
+        "opponent": match.opponent,
+        "competition": match.competition,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.match_calendar.insert_one(match_doc)
+    return match_doc
+
+
+@api_router.delete("/player/match-calendar/{match_id}")
+async def delete_match_from_calendar(match_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    result = await db.match_calendar.delete_one({"id": match_id, "player_id": current_user['user_id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Match not found")
+    return {"message": "Match deleted"}
+
+
+@api_router.get("/players/{player_id}/match-calendar")
+async def get_player_match_calendar_public(player_id: str, current_user: dict = Depends(get_current_user)):
+    """Clubs and federations can view player upcoming matches"""
+    if current_user['role'] not in ['club', 'federation', 'admin']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    matches = await db.match_calendar.find({"player_id": player_id}, {"_id": 0}).sort("match_date", 1).to_list(100)
+    return matches
+
 
 # ============ CHAT & VIDEO ADMIN ENDPOINTS ============
 @api_router.post("/admin/chat/create")
