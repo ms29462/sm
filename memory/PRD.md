@@ -97,6 +97,26 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - [x] **Live Scouting**: Scouts can view player's upcoming games to plan visits
 - [x] **Second Nationality Field**: Players can add a second nationality to be scouted by multiple federations
 
+### Phase 7 - AI Video Analysis (Completed - Dec 2025)
+- [x] **AI Video Analysis Page**: Dedicated page for players to analyze highlight videos
+- [x] **Google Gemini Integration**: Uses Gemini AI for video understanding
+- [x] **Automatic Analysis**: Triggers when player updates highlight video URL
+- [x] **Comprehensive Metrics**:
+  - Video Quality: Resolution, lighting, stability, clarity, audio
+  - Player Assessment: Position detection, confidence level, playing style
+  - Technical Skills: Ball control, passing, shooting, dribbling, first touch, heading
+  - Physical Attributes: Pace, strength, stamina, agility
+  - Tactical Awareness: Positioning, decision making, work rate
+  - Key Moments: Goals, assists, skills, tackles with timestamps
+  - Strengths & Areas for Improvement
+  - Scout Summary & Similar Player Style
+  - Recommended Level (Amateur/Semi-Pro/Professional/Elite)
+- [x] **Analysis UI**: Beautiful results display with scores, badges, and progress bars
+- [x] **Re-analyze Option**: Players can re-run analysis anytime
+- [x] **Public Access**: Clubs and federations can view player video analysis
+- [x] **Background Processing**: Analysis runs asynchronously with status polling
+- **Note**: YouTube video download may fail due to platform restrictions. Direct video URLs (.mp4) work best.
+
 ## Architecture
 
 ### Backend

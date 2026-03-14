@@ -20,6 +20,7 @@ from player_matching import (
     build_player_dict_from_transfermarkt_url, calculate_match_score_for_opportunity,
     AVAILABLE_LEAGUES, DEFAULT_LEAGUES
 )
+from video_analysis import analyze_highlight_video, calculate_overall_score
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
@@ -88,6 +89,7 @@ class PlayerProfile(BaseModel):
     highlight_video: Optional[str] = None
     cv: Optional[str] = None
     transfermarkt_url: Optional[str] = None  # Transfermarkt profile link
+    video_analysis_score: Optional[int] = None  # AI video analysis score
     approved: bool = False
     verified: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -428,16 +430,179 @@ async def get_player_profile(current_user: dict = Depends(get_current_user)):
     return PlayerProfile(**player)
 
 @api_router.put("/player/profile", response_model=PlayerProfile)
-async def update_player_profile(update: PlayerUpdate, current_user: dict = Depends(get_current_user)):
+async def update_player_profile(update: PlayerUpdate, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'player':
         raise HTTPException(status_code=403, detail="Not a player")
     
     update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    
+    # Check if highlight_video is being updated - trigger auto analysis
+    trigger_analysis = False
+    if 'highlight_video' in update_data and update_data['highlight_video']:
+        # Check if it's a new or changed video URL
+        player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        if player and player.get('highlight_video') != update_data['highlight_video']:
+            trigger_analysis = True
+    
     if update_data:
         await db.players.update_one({"user_id": current_user['user_id']}, {"$set": update_data})
     
+    # Trigger background video analysis if video URL changed
+    if trigger_analysis:
+        background_tasks.add_task(
+            run_video_analysis_background,
+            current_user['user_id'],
+            update_data['highlight_video']
+        )
+    
     player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     return PlayerProfile(**player)
+
+
+# ============ VIDEO ANALYSIS ENDPOINTS ============
+
+async def run_video_analysis_background(player_id: str, video_url: str):
+    """Background task to run video analysis"""
+    try:
+        # Mark analysis as in progress
+        await db.video_analyses.update_one(
+            {"player_id": player_id},
+            {"$set": {
+                "status": "analyzing",
+                "video_url": video_url,
+                "started_at": datetime.now(timezone.utc).isoformat()
+            }},
+            upsert=True
+        )
+        
+        # Run the analysis
+        result = await analyze_highlight_video(video_url, player_id)
+        
+        if result["success"]:
+            # Calculate overall score
+            overall_score = calculate_overall_score(result["analysis"])
+            
+            # Store results
+            await db.video_analyses.update_one(
+                {"player_id": player_id},
+                {"$set": {
+                    "status": "completed",
+                    "analysis_id": result["analysis_id"],
+                    "video_url": video_url,
+                    "analysis": result["analysis"],
+                    "overall_score": overall_score,
+                    "analyzed_at": result["analyzed_at"],
+                    "error": None
+                }}
+            )
+            
+            # Update player profile with overall score
+            await db.players.update_one(
+                {"user_id": player_id},
+                {"$set": {"video_analysis_score": overall_score}}
+            )
+        else:
+            await db.video_analyses.update_one(
+                {"player_id": player_id},
+                {"$set": {
+                    "status": "failed",
+                    "error": result.get("error", "Analysis failed"),
+                    "analyzed_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+    except Exception as e:
+        await db.video_analyses.update_one(
+            {"player_id": player_id},
+            {"$set": {
+                "status": "failed",
+                "error": str(e),
+                "analyzed_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+
+
+@api_router.post("/player/video-analysis/trigger")
+async def trigger_video_analysis(background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
+    """Manually trigger video analysis for the current player"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    video_url = player.get('highlight_video')
+    if not video_url:
+        raise HTTPException(status_code=400, detail="No highlight video URL set in profile")
+    
+    # Check if analysis is already in progress
+    existing = await db.video_analyses.find_one({"player_id": current_user['user_id']})
+    if existing and existing.get('status') == 'analyzing':
+        return {"message": "Analysis already in progress", "status": "analyzing"}
+    
+    # Start background analysis
+    background_tasks.add_task(
+        run_video_analysis_background,
+        current_user['user_id'],
+        video_url
+    )
+    
+    return {"message": "Video analysis started", "status": "analyzing"}
+
+
+@api_router.get("/player/video-analysis")
+async def get_video_analysis(current_user: dict = Depends(get_current_user)):
+    """Get video analysis results for the current player"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    analysis = await db.video_analyses.find_one(
+        {"player_id": current_user['user_id']},
+        {"_id": 0}
+    )
+    
+    if not analysis:
+        return {"status": "not_analyzed", "message": "No video analysis available"}
+    
+    return analysis
+
+
+@api_router.get("/player/video-analysis/status")
+async def get_video_analysis_status(current_user: dict = Depends(get_current_user)):
+    """Get video analysis status for the current player"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Not a player")
+    
+    analysis = await db.video_analyses.find_one(
+        {"player_id": current_user['user_id']},
+        {"_id": 0, "status": 1, "error": 1, "analyzed_at": 1}
+    )
+    
+    if not analysis:
+        return {"status": "not_analyzed"}
+    
+    return {
+        "status": analysis.get("status", "unknown"),
+        "error": analysis.get("error"),
+        "analyzed_at": analysis.get("analyzed_at")
+    }
+
+
+@api_router.get("/players/{player_id}/video-analysis")
+async def get_player_video_analysis_public(player_id: str, current_user: dict = Depends(get_current_user)):
+    """Get video analysis for any player (clubs/federations/admins can view)"""
+    if current_user['role'] not in ['club', 'federation', 'admin']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    analysis = await db.video_analyses.find_one(
+        {"player_id": player_id, "status": "completed"},
+        {"_id": 0}
+    )
+    
+    if not analysis:
+        return {"status": "not_analyzed", "message": "No video analysis available for this player"}
+    
+    return analysis
 
 @api_router.get("/opportunities", response_model=List[Opportunity])
 async def get_opportunities(current_user: dict = Depends(get_current_user)):

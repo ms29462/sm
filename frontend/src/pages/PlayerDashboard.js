@@ -8,6 +8,7 @@ import ChatList from '@/components/chat/ChatList';
 import VideoList from '@/components/video/VideoList';
 import ChatRequests from '@/components/player/ChatRequests';
 import MatchScores from '@/components/player/MatchScores';
+import VideoAnalysis from '@/components/player/VideoAnalysis';
 
 const PlayerDashboard = () => {
   return (
@@ -17,6 +18,7 @@ const PlayerDashboard = () => {
         <Route path="profile" element={<PlayerProfile />} />
         <Route path="opportunities" element={<PlayerOpportunities />} />
         <Route path="match-scores" element={<MatchScores />} />
+        <Route path="video-analysis" element={<VideoAnalysis />} />
         <Route path="applications" element={<PlayerApplications />} />
         <Route path="chat-requests" element={<ChatRequests />} />
         <Route path="chats" element={<ChatList />} />

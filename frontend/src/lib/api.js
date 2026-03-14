@@ -115,4 +115,10 @@ export const api = {
   addMatchToCalendar: (data) => axios.post(`${API}/player/match-calendar`, data, { headers: getAuthHeaders() }),
   deleteMatchFromCalendar: (matchId) => axios.delete(`${API}/player/match-calendar/${matchId}`, { headers: getAuthHeaders() }),
   getPlayerMatchCalendarPublic: (playerId) => axios.get(`${API}/players/${playerId}/match-calendar`, { headers: getAuthHeaders() }),
+
+  // Video Analysis
+  triggerVideoAnalysis: () => axios.post(`${API}/player/video-analysis/trigger`, {}, { headers: getAuthHeaders() }),
+  getVideoAnalysis: () => axios.get(`${API}/player/video-analysis`, { headers: getAuthHeaders() }),
+  getVideoAnalysisStatus: () => axios.get(`${API}/player/video-analysis/status`, { headers: getAuthHeaders() }),
+  getPlayerVideoAnalysis: (playerId) => axios.get(`${API}/players/${playerId}/video-analysis`, { headers: getAuthHeaders() }),
 };
