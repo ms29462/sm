@@ -115,7 +115,17 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - [x] **Re-analyze Option**: Players can re-run analysis anytime
 - [x] **Public Access**: Clubs and federations can view player video analysis
 - [x] **Background Processing**: Analysis runs asynchronously with status polling
-- **Note**: YouTube video download may fail due to platform restrictions. Direct video URLs (.mp4) work best.
+
+### Phase 8 - Video Upload Feature (Completed - Dec 2025)
+- [x] **Direct Video Upload**: Upload videos directly instead of relying on YouTube/Vimeo URLs
+- [x] **Player Upload**: Players can upload their own highlight videos
+- [x] **Club/Federation Scout Upload**: Clubs and federations can upload and analyze player videos
+- [x] **Scout Video Analysis Page**: Dedicated page for clubs/federations to manage uploaded analyses
+- [x] **Upload Progress**: Real-time upload progress indicator
+- [x] **File Validation**: Supports MP4, WebM, MOV, AVI (Max 100MB)
+- [x] **Analysis History**: View all past uploaded video analyses
+- [x] **Delete Functionality**: Remove uploaded analyses and video files
+- [x] **Static File Serving**: Videos stored and served from backend
 
 ## Architecture
 

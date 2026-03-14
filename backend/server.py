@@ -1,11 +1,13 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, BackgroundTasks
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, BackgroundTasks, UploadFile, File, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 import socketio
+import shutil
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import List, Optional, Literal, Dict
@@ -20,7 +22,7 @@ from player_matching import (
     build_player_dict_from_transfermarkt_url, calculate_match_score_for_opportunity,
     AVAILABLE_LEAGUES, DEFAULT_LEAGUES
 )
-from video_analysis import analyze_highlight_video, calculate_overall_score
+from video_analysis import analyze_highlight_video, calculate_overall_score, analyze_video_with_gemini
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
@@ -28,6 +30,10 @@ from concurrent.futures import ThreadPoolExecutor
 background_executor = ThreadPoolExecutor(max_workers=2)
 
 ROOT_DIR = Path(__file__).parent
+
+# Create uploads directory
+UPLOADS_DIR = ROOT_DIR / "uploads" / "videos"
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 load_dotenv(ROOT_DIR / '.env')
 
 mongo_url = os.environ['MONGO_URL']
@@ -39,6 +45,9 @@ sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
 fastapi_app = FastAPI()
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
+
+# Mount static files for uploaded videos
+fastapi_app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR.parent)), name="uploads")
 
 # Initialize managers
 chat_room_manager = ChatRoomManager(db)
@@ -404,11 +413,12 @@ async def register(user: UserRegister):
 @api_router.post("/auth/login", response_model=AuthResponse)
 async def login(credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
-    if not user or not verify_password(credentials.password, user['password']):
+    if not user or not verify_password(credentials.password, user.get('password_hash', user.get('password', ''))):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    token = create_token(user['id'], user['email'], user['role'])
-    return AuthResponse(token=token, role=user['role'], user_id=user['id'], email=user['email'])
+    user_id = user.get('user_id', user.get('id'))
+    token = create_token(user_id, user['email'], user['role'])
+    return AuthResponse(token=token, role=user['role'], user_id=user_id, email=user['email'])
 
 @api_router.post("/auth/admin/login", response_model=AuthResponse)
 async def admin_login(credentials: UserLogin):
@@ -603,6 +613,198 @@ async def get_player_video_analysis_public(player_id: str, current_user: dict = 
         return {"status": "not_analyzed", "message": "No video analysis available for this player"}
     
     return analysis
+
+
+# ============ VIDEO UPLOAD ENDPOINTS ============
+
+MAX_VIDEO_SIZE = 100 * 1024 * 1024  # 100MB limit
+
+async def run_uploaded_video_analysis(analysis_id: str, video_path: str, uploader_id: str, uploader_role: str, player_id: str = None):
+    """Background task to analyze an uploaded video"""
+    try:
+        # Update status to analyzing
+        await db.uploaded_video_analyses.update_one(
+            {"analysis_id": analysis_id},
+            {"$set": {"status": "analyzing", "started_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        # Check file exists
+        if not os.path.exists(video_path):
+            raise Exception("Video file not found")
+        
+        # Analyze with Gemini
+        result = await analyze_video_with_gemini(video_path)
+        
+        if result["success"]:
+            overall_score = calculate_overall_score(result["analysis"])
+            
+            await db.uploaded_video_analyses.update_one(
+                {"analysis_id": analysis_id},
+                {"$set": {
+                    "status": "completed",
+                    "analysis": result["analysis"],
+                    "overall_score": overall_score,
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
+                    "error": None
+                }}
+            )
+            
+            # If this is a player analyzing their own video, update their profile score
+            if uploader_role == 'player' and not player_id:
+                await db.players.update_one(
+                    {"user_id": uploader_id},
+                    {"$set": {"video_analysis_score": overall_score}}
+                )
+        else:
+            await db.uploaded_video_analyses.update_one(
+                {"analysis_id": analysis_id},
+                {"$set": {
+                    "status": "failed",
+                    "error": result.get("error", "Analysis failed"),
+                    "completed_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+    except Exception as e:
+        await db.uploaded_video_analyses.update_one(
+            {"analysis_id": analysis_id},
+            {"$set": {
+                "status": "failed",
+                "error": str(e),
+                "completed_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+
+
+@api_router.post("/video-upload/analyze")
+async def upload_and_analyze_video(
+    background_tasks: BackgroundTasks,
+    video: UploadFile = File(...),
+    player_id: Optional[str] = Form(None),
+    video_title: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload a video for AI analysis.
+    - Players can upload their own highlight videos
+    - Clubs/Federations can upload videos for any player they're scouting
+    """
+    # Validate file type
+    content_type = video.content_type or ''
+    
+    if not any(t in content_type for t in ['video/', 'application/octet-stream']):
+        raise HTTPException(status_code=400, detail="File must be a video (MP4, WebM, MOV, AVI)")
+    
+    # Check file size by reading chunks
+    file_size = 0
+    chunks = []
+    while True:
+        chunk = await video.read(1024 * 1024)  # Read 1MB at a time
+        if not chunk:
+            break
+        chunks.append(chunk)
+        file_size += len(chunk)
+        if file_size > MAX_VIDEO_SIZE:
+            raise HTTPException(status_code=400, detail=f"Video must be under {MAX_VIDEO_SIZE // (1024*1024)}MB")
+    
+    # Generate unique filename
+    analysis_id = str(uuid.uuid4())
+    file_ext = video.filename.split('.')[-1] if '.' in video.filename else 'mp4'
+    filename = f"{analysis_id}.{file_ext}"
+    file_path = str(UPLOADS_DIR / filename)
+    
+    # Save file
+    with open(file_path, 'wb') as f:
+        for chunk in chunks:
+            f.write(chunk)
+    
+    # Determine target player
+    target_player_id = player_id if current_user['role'] in ['club', 'federation', 'admin'] and player_id else None
+    if current_user['role'] == 'player':
+        target_player_id = None  # Player is analyzing their own video
+    
+    # Create analysis record
+    analysis_record = {
+        "analysis_id": analysis_id,
+        "uploader_id": current_user['user_id'],
+        "uploader_role": current_user['role'],
+        "player_id": target_player_id,
+        "video_title": video_title or video.filename,
+        "video_path": file_path,
+        "video_filename": filename,
+        "file_size": file_size,
+        "status": "uploaded",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.uploaded_video_analyses.insert_one(analysis_record)
+    analysis_record.pop('_id', None)
+    
+    # Start background analysis
+    background_tasks.add_task(
+        run_uploaded_video_analysis,
+        analysis_id,
+        file_path,
+        current_user['user_id'],
+        current_user['role'],
+        target_player_id
+    )
+    
+    return {
+        "message": "Video uploaded successfully. Analysis started.",
+        "analysis_id": analysis_id,
+        "status": "analyzing"
+    }
+
+
+@api_router.get("/video-upload/analyses")
+async def get_uploaded_analyses(current_user: dict = Depends(get_current_user)):
+    """Get all video analyses uploaded by the current user"""
+    query = {"uploader_id": current_user['user_id']}
+    analyses = await db.uploaded_video_analyses.find(query, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return analyses
+
+
+@api_router.get("/video-upload/analysis/{analysis_id}")
+async def get_uploaded_analysis(analysis_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a specific uploaded video analysis"""
+    analysis = await db.uploaded_video_analyses.find_one(
+        {"analysis_id": analysis_id},
+        {"_id": 0}
+    )
+    
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Analysis not found")
+    
+    # Check access - owner or admin
+    if analysis['uploader_id'] != current_user['user_id'] and current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not authorized to view this analysis")
+    
+    return analysis
+
+
+@api_router.delete("/video-upload/analysis/{analysis_id}")
+async def delete_uploaded_analysis(analysis_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete an uploaded video analysis"""
+    analysis = await db.uploaded_video_analyses.find_one({"analysis_id": analysis_id})
+    
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Analysis not found")
+    
+    # Check access - owner or admin
+    if analysis['uploader_id'] != current_user['user_id'] and current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not authorized to delete this analysis")
+    
+    # Delete video file
+    try:
+        if analysis.get('video_path') and os.path.exists(analysis['video_path']):
+            os.remove(analysis['video_path'])
+    except Exception:
+        pass
+    
+    # Delete record
+    await db.uploaded_video_analyses.delete_one({"analysis_id": analysis_id})
+    
+    return {"message": "Analysis deleted successfully"}
 
 @api_router.get("/opportunities", response_model=List[Opportunity])
 async def get_opportunities(current_user: dict = Depends(get_current_user)):

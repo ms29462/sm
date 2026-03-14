@@ -1,21 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { 
   Video, Sparkles, Target, Zap, Brain, Trophy, 
   AlertCircle, CheckCircle, Clock, RefreshCw,
-  TrendingUp, Star, Activity
+  TrendingUp, Star, Activity, Upload, FileVideo
 } from 'lucide-react';
 
 const VideoAnalysis = () => {
   const [analysis, setAnalysis] = useState(null);
   const [status, setStatus] = useState('loading');
   const [polling, setPolling] = useState(false);
+  const [uploadedAnalyses, setUploadedAnalyses] = useState([]);
+  const [selectedUploadedAnalysis, setSelectedUploadedAnalysis] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     loadAnalysis();
+    loadUploadedAnalyses();
   }, []);
 
   useEffect(() => {
@@ -23,6 +31,7 @@ const VideoAnalysis = () => {
     if (polling) {
       interval = setInterval(() => {
         checkStatus();
+        loadUploadedAnalyses();
       }, 5000);
     }
     return () => clearInterval(interval);
@@ -48,6 +57,23 @@ const VideoAnalysis = () => {
     }
   };
 
+  const loadUploadedAnalyses = async () => {
+    try {
+      const response = await api.getUploadedAnalyses();
+      setUploadedAnalyses(response.data || []);
+      
+      // Check if any are still analyzing
+      const analyzing = response.data?.some(a => a.status === 'analyzing');
+      if (analyzing && !polling) {
+        setPolling(true);
+      } else if (!analyzing && polling) {
+        setPolling(false);
+      }
+    } catch (error) {
+      console.error('Failed to load uploaded analyses');
+    }
+  };
+
   const checkStatus = async () => {
     try {
       const response = await api.getVideoAnalysisStatus();
@@ -61,6 +87,64 @@ const VideoAnalysis = () => {
       }
     } catch (error) {
       console.error('Status check failed');
+    }
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.includes('video/')) {
+      toast.error('Please select a video file (MP4, WebM, MOV, AVI)');
+      return;
+    }
+
+    // Validate file size (100MB limit)
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('Video must be under 100MB');
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const formData = new FormData();
+      formData.append('video', file);
+      formData.append('video_title', file.name);
+
+      await api.uploadVideoForAnalysis(formData, (progressEvent) => {
+        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setUploadProgress(progress);
+      });
+
+      toast.success('Video uploaded! Analysis started.');
+      setPolling(true);
+      loadUploadedAnalyses();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to upload video');
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleDeleteAnalysis = async (analysisId) => {
+    if (!window.confirm('Are you sure you want to delete this analysis?')) return;
+
+    try {
+      await api.deleteUploadedAnalysis(analysisId);
+      toast.success('Analysis deleted');
+      loadUploadedAnalyses();
+      if (selectedUploadedAnalysis?.analysis_id === analysisId) {
+        setSelectedUploadedAnalysis(null);
+      }
+    } catch (error) {
+      toast.error('Failed to delete analysis');
     }
   };
 
@@ -100,6 +184,110 @@ const VideoAnalysis = () => {
     );
   }
 
+  // Render uploaded analyses list
+  const renderUploadedAnalysesList = () => {
+    if (uploadedAnalyses.length === 0) return null;
+
+    return (
+      <div className="bg-card border border-border/50 p-6 rounded-sm mb-6">
+        <h3 className="font-heading font-bold uppercase mb-4 flex items-center gap-2">
+          <FileVideo className="w-5 h-5 text-primary" />
+          YOUR UPLOADED ANALYSES ({uploadedAnalyses.length})
+        </h3>
+        <div className="space-y-3">
+          {uploadedAnalyses.map((ua) => (
+            <div
+              key={ua.analysis_id}
+              className={`p-4 bg-background rounded-sm border cursor-pointer transition-colors ${
+                selectedUploadedAnalysis?.analysis_id === ua.analysis_id
+                  ? 'border-primary'
+                  : 'border-border hover:border-primary/50'
+              }`}
+              onClick={() => ua.status === 'completed' && setSelectedUploadedAnalysis(ua)}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{ua.video_title || 'Untitled Video'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(ua.created_at).toLocaleDateString()} • 
+                    {(ua.file_size / (1024 * 1024)).toFixed(1)}MB
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {ua.status === 'completed' && (
+                    <span className={`text-lg font-bold ${getScoreColor(ua.overall_score || 0)}`}>
+                      {ua.overall_score || 0}
+                    </span>
+                  )}
+                  {ua.status === 'analyzing' && (
+                    <span className="text-xs bg-blue-500/10 text-blue-500 px-2 py-1 rounded-sm flex items-center gap-1">
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                      Analyzing...
+                    </span>
+                  )}
+                  {ua.status === 'failed' && (
+                    <span className="text-xs bg-red-500/10 text-red-500 px-2 py-1 rounded-sm">
+                      Failed
+                    </span>
+                  )}
+                  {ua.status === 'completed' && (
+                    <span className="text-xs bg-green-500/10 text-green-500 px-2 py-1 rounded-sm">
+                      Complete
+                    </span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteAnalysis(ua.analysis_id);
+                    }}
+                    className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Upload section component
+  const renderUploadSection = () => (
+    <div className="bg-card border border-dashed border-primary/50 p-8 rounded-sm text-center">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="video/*"
+        onChange={handleFileUpload}
+        className="hidden"
+        id="video-upload"
+      />
+      {uploading ? (
+        <div>
+          <RefreshCw className="w-10 h-10 text-primary mx-auto mb-4 animate-spin" />
+          <p className="font-heading font-bold uppercase mb-2">UPLOADING VIDEO...</p>
+          <Progress value={uploadProgress} className="h-2 max-w-xs mx-auto" />
+          <p className="text-sm text-muted-foreground mt-2">{uploadProgress}%</p>
+        </div>
+      ) : (
+        <label htmlFor="video-upload" className="cursor-pointer block">
+          <Upload className="w-10 h-10 text-primary mx-auto mb-4" />
+          <p className="font-heading font-bold uppercase mb-2">UPLOAD VIDEO</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Drag & drop or click to select a video file
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Supported: MP4, WebM, MOV, AVI (Max 100MB)
+          </p>
+        </label>
+      )}
+    </div>
+  );
+
   if (status === 'not_analyzed') {
     return (
       <div className="p-8">
@@ -108,28 +296,38 @@ const VideoAnalysis = () => {
           <p className="text-muted-foreground">Get AI-powered insights from your highlight video</p>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-card border border-border/50 p-12 rounded-sm text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
-              <Sparkles className="w-10 h-10 text-primary" />
+        <div className="max-w-3xl mx-auto">
+          {/* Upload Section */}
+          <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+                <Sparkles className="w-10 h-10 text-primary" />
+              </div>
+              <h2 className="text-2xl font-heading font-bold uppercase mb-4">Analyze Your Highlight Video</h2>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Our AI will analyze your video to assess quality, technical skills, 
+                physical attributes, and identify key moments.
+              </p>
             </div>
-            <h2 className="text-2xl font-heading font-bold uppercase mb-4">Analyze Your Highlight Video</h2>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Our AI will analyze your highlight video to assess video quality, technical skills, 
-              physical attributes, and identify key moments in your footage.
-            </p>
-            <Button
-              data-testid="trigger-analysis-btn"
-              onClick={handleTriggerAnalysis}
-              className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 h-12 px-8"
-            >
-              <Video className="w-5 h-5 mr-2" />
-              ANALYZE MY VIDEO
-            </Button>
-            <p className="text-xs text-muted-foreground mt-4">
-              Make sure you have a highlight video URL set in your profile
-            </p>
+            
+            {renderUploadSection()}
+            
+            <div className="mt-6 pt-6 border-t border-border text-center">
+              <p className="text-sm text-muted-foreground mb-3">Or analyze from your profile URL:</p>
+              <Button
+                data-testid="trigger-analysis-btn"
+                onClick={handleTriggerAnalysis}
+                variant="outline"
+                className="border-primary text-primary hover:bg-primary hover:text-black"
+              >
+                <Video className="w-4 h-4 mr-2" />
+                ANALYZE PROFILE VIDEO
+              </Button>
+            </div>
           </div>
+
+          {/* Uploaded Analyses List */}
+          {renderUploadedAnalysesList()}
         </div>
       </div>
     );
@@ -180,27 +378,28 @@ const VideoAnalysis = () => {
           <p className="text-muted-foreground">Analysis encountered an error</p>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-card border border-red-500/50 p-12 rounded-sm text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
-              <AlertCircle className="w-10 h-10 text-red-500" />
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-card border border-red-500/50 p-8 rounded-sm text-center mb-6">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-2xl font-heading font-bold uppercase mb-4">Analysis Failed</h2>
+            <h2 className="text-xl font-heading font-bold uppercase mb-2">Analysis Failed</h2>
             <p className="text-muted-foreground mb-4">
               {analysis?.error || 'An error occurred during video analysis.'}
             </p>
-            <p className="text-sm text-muted-foreground mb-8">
-              Please ensure your video URL is valid and accessible (YouTube, Vimeo, or direct link).
-            </p>
-            <Button
-              data-testid="retry-analysis-btn"
-              onClick={handleTriggerAnalysis}
-              className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 h-12 px-8"
-            >
-              <RefreshCw className="w-5 h-5 mr-2" />
-              TRY AGAIN
-            </Button>
           </div>
+
+          {/* Upload as alternative */}
+          <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+            <h3 className="font-heading font-bold uppercase mb-4 text-center">TRY UPLOADING DIRECTLY</h3>
+            <p className="text-sm text-muted-foreground text-center mb-6">
+              Upload your video file directly for more reliable analysis
+            </p>
+            {renderUploadSection()}
+          </div>
+
+          {/* Uploaded Analyses List */}
+          {renderUploadedAnalysesList()}
         </div>
       </div>
     );

@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { Trophy, Flag, Users, Heart, Briefcase, LogOut, Home, UserCircle, FolderOpen } from 'lucide-react';
+import { Trophy, Flag, Users, Heart, Briefcase, LogOut, Home, UserCircle, FolderOpen, Sparkles } from 'lucide-react';
 
 const FederationLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -90,6 +90,16 @@ const FederationLayout = ({ children }) => {
             >
               <FolderOpen className="w-4 h-4 mr-3" />
               Team Groups
+            </Button>
+          </Link>
+          <Link to="/federation/video-analysis">
+            <Button
+              data-testid="nav-video-analysis-btn"
+              variant={isActive('/federation/video-analysis') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <Sparkles className="w-4 h-4 mr-3" />
+              AI Video Analysis
             </Button>
           </Link>
         </nav>

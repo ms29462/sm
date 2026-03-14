@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
-import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video } from 'lucide-react';
+import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video, Sparkles } from 'lucide-react';
 
 const ClubLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -90,6 +90,16 @@ const ClubLayout = ({ children }) => {
             >
               <Heart className="w-4 h-4 mr-3" />
               Favorites
+            </Button>
+          </Link>
+          <Link to="/club/video-analysis">
+            <Button
+              data-testid="nav-video-analysis-btn"
+              variant={isActive('/club/video-analysis') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <Sparkles className="w-4 h-4 mr-3" />
+              AI Video Analysis
             </Button>
           </Link>
           <Link to="/club/chats">

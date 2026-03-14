@@ -121,4 +121,13 @@ export const api = {
   getVideoAnalysis: () => axios.get(`${API}/player/video-analysis`, { headers: getAuthHeaders() }),
   getVideoAnalysisStatus: () => axios.get(`${API}/player/video-analysis/status`, { headers: getAuthHeaders() }),
   getPlayerVideoAnalysis: (playerId) => axios.get(`${API}/players/${playerId}/video-analysis`, { headers: getAuthHeaders() }),
+
+  // Video Upload & Analysis
+  uploadVideoForAnalysis: (formData, onProgress) => axios.post(`${API}/video-upload/analyze`, formData, {
+    headers: { ...getAuthHeaders(), 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: onProgress
+  }),
+  getUploadedAnalyses: () => axios.get(`${API}/video-upload/analyses`, { headers: getAuthHeaders() }),
+  getUploadedAnalysis: (analysisId) => axios.get(`${API}/video-upload/analysis/${analysisId}`, { headers: getAuthHeaders() }),
+  deleteUploadedAnalysis: (analysisId) => axios.delete(`${API}/video-upload/analysis/${analysisId}`, { headers: getAuthHeaders() }),
 };
