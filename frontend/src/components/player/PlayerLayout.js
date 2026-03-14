@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
-import { Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles } from 'lucide-react';
+import { Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap } from 'lucide-react';
 
 const PlayerLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -80,6 +80,16 @@ const PlayerLayout = ({ children }) => {
             >
               <Sparkles className="w-4 h-4 mr-3" />
               AI Video Analysis
+            </Button>
+          </Link>
+          <Link to="/player/masterclass">
+            <Button
+              data-testid="nav-masterclass-btn"
+              variant={isActive('/player/masterclass') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <GraduationCap className="w-4 h-4 mr-3" />
+              Masterclass
             </Button>
           </Link>
           <Link to="/player/applications">

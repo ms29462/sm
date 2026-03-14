@@ -333,6 +333,69 @@ class UserApproval(BaseModel):
     user_id: str
     approved: bool
 
+
+# ============ MASTERCLASS MODELS ============
+MASTERCLASS_CATEGORIES = [
+    'medical_recovery',
+    'pro_masterclass',
+    'college_tips',
+    'fitness_conditioning',
+    'mental_performance'
+]
+
+MASTERCLASS_DIFFICULTIES = ['beginner', 'intermediate', 'advanced']
+
+MASTERCLASS_SUBCATEGORIES = {
+    'medical_recovery': ['ACL Recovery', 'Ankle Sprain', 'Hamstring Injury', 'Knee Injury', 'Muscle Recovery', 'General Rehabilitation'],
+    'pro_masterclass': ['Goalkeeper', 'Defender', 'Midfielder', 'Striker', 'Winger', 'General Skills'],
+    'college_tips': ['Recruitment Process', 'Academic Balance', 'Showcase Events', 'Communication with Coaches', 'Scholarship Tips'],
+    'fitness_conditioning': ['Speed Training', 'Strength Training', 'Endurance', 'Flexibility', 'Nutrition'],
+    'mental_performance': ['Pre-Match Preparation', 'Dealing with Pressure', 'Confidence Building', 'Recovery Mindset', 'Goal Setting']
+}
+
+class MasterclassCreate(BaseModel):
+    title: str
+    description: str
+    category: str  # One of MASTERCLASS_CATEGORIES
+    subcategory: Optional[str] = None
+    difficulty: str = 'beginner'  # beginner, intermediate, advanced
+    duration_minutes: int = 10
+    thumbnail: Optional[str] = None
+    video_url: Optional[str] = None  # YouTube/Vimeo URL
+    content: Optional[str] = None  # Rich text/markdown content
+    author_name: str  # e.g., "Cristiano Ronaldo" or "Coach John Smith"
+    author_credentials: Optional[str] = None  # e.g., "Former Real Madrid Player"
+    author_image: Optional[str] = None
+    tags: List[str] = []
+    featured: bool = False
+
+class MasterclassUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    subcategory: Optional[str] = None
+    difficulty: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    thumbnail: Optional[str] = None
+    video_url: Optional[str] = None
+    content: Optional[str] = None
+    author_name: Optional[str] = None
+    author_credentials: Optional[str] = None
+    author_image: Optional[str] = None
+    tags: Optional[List[str]] = None
+    featured: Optional[bool] = None
+    published: Optional[bool] = None
+
+class MasterclassComment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    masterclass_id: str
+    user_id: str
+    user_name: str
+    user_role: str
+    content: str
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
 # ============ AUTH UTILITIES ============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -805,6 +868,272 @@ async def delete_uploaded_analysis(analysis_id: str, current_user: dict = Depend
     await db.uploaded_video_analyses.delete_one({"analysis_id": analysis_id})
     
     return {"message": "Analysis deleted successfully"}
+
+
+# ============ MASTERCLASS ENDPOINTS ============
+
+@api_router.get("/masterclass/categories")
+async def get_masterclass_categories():
+    """Get all masterclass categories and subcategories"""
+    return {
+        "categories": MASTERCLASS_CATEGORIES,
+        "subcategories": MASTERCLASS_SUBCATEGORIES,
+        "difficulties": MASTERCLASS_DIFFICULTIES
+    }
+
+
+@api_router.get("/masterclass")
+async def get_masterclasses(
+    category: Optional[str] = None,
+    subcategory: Optional[str] = None,
+    difficulty: Optional[str] = None,
+    search: Optional[str] = None,
+    featured: Optional[bool] = None,
+    limit: int = 50
+):
+    """Get all published masterclasses with optional filters"""
+    query = {"published": True}
+    
+    if category:
+        query["category"] = category
+    if subcategory:
+        query["subcategory"] = subcategory
+    if difficulty:
+        query["difficulty"] = difficulty
+    if featured is not None:
+        query["featured"] = featured
+    if search:
+        query["$or"] = [
+            {"title": {"$regex": search, "$options": "i"}},
+            {"description": {"$regex": search, "$options": "i"}},
+            {"tags": {"$in": [search.lower()]}},
+            {"author_name": {"$regex": search, "$options": "i"}}
+        ]
+    
+    masterclasses = await db.masterclasses.find(query, {"_id": 0}).sort("created_at", -1).to_list(limit)
+    return masterclasses
+
+
+@api_router.get("/masterclass/{masterclass_id}")
+async def get_masterclass(masterclass_id: str):
+    """Get a single masterclass by ID"""
+    masterclass = await db.masterclasses.find_one(
+        {"id": masterclass_id, "published": True},
+        {"_id": 0}
+    )
+    if not masterclass:
+        raise HTTPException(status_code=404, detail="Masterclass not found")
+    
+    # Increment view count
+    await db.masterclasses.update_one(
+        {"id": masterclass_id},
+        {"$inc": {"views": 1}}
+    )
+    
+    return masterclass
+
+
+@api_router.post("/admin/masterclass")
+async def create_masterclass(masterclass: MasterclassCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new masterclass (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    if masterclass.category not in MASTERCLASS_CATEGORIES:
+        raise HTTPException(status_code=400, detail=f"Invalid category. Must be one of: {MASTERCLASS_CATEGORIES}")
+    
+    masterclass_doc = {
+        "id": str(uuid.uuid4()),
+        **masterclass.model_dump(),
+        "published": True,
+        "views": 0,
+        "bookmarks_count": 0,
+        "comments_count": 0,
+        "created_by": current_user['user_id'],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.masterclasses.insert_one(masterclass_doc)
+    masterclass_doc.pop('_id', None)
+    return masterclass_doc
+
+
+@api_router.put("/admin/masterclass/{masterclass_id}")
+async def update_masterclass(masterclass_id: str, update: MasterclassUpdate, current_user: dict = Depends(get_current_user)):
+    """Update a masterclass (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    existing = await db.masterclasses.find_one({"id": masterclass_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Masterclass not found")
+    
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.masterclasses.update_one({"id": masterclass_id}, {"$set": update_data})
+    
+    updated = await db.masterclasses.find_one({"id": masterclass_id}, {"_id": 0})
+    return updated
+
+
+@api_router.delete("/admin/masterclass/{masterclass_id}")
+async def delete_masterclass(masterclass_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a masterclass (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.masterclasses.delete_one({"id": masterclass_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Masterclass not found")
+    
+    # Also delete related bookmarks and comments
+    await db.masterclass_bookmarks.delete_many({"masterclass_id": masterclass_id})
+    await db.masterclass_comments.delete_many({"masterclass_id": masterclass_id})
+    
+    return {"message": "Masterclass deleted"}
+
+
+@api_router.get("/admin/masterclass")
+async def get_all_masterclasses_admin(current_user: dict = Depends(get_current_user)):
+    """Get all masterclasses including unpublished (admin only)"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    masterclasses = await db.masterclasses.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return masterclasses
+
+
+# Bookmarks
+@api_router.post("/masterclass/{masterclass_id}/bookmark")
+async def bookmark_masterclass(masterclass_id: str, current_user: dict = Depends(get_current_user)):
+    """Bookmark a masterclass"""
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Only players can bookmark masterclasses")
+    
+    masterclass = await db.masterclasses.find_one({"id": masterclass_id, "published": True})
+    if not masterclass:
+        raise HTTPException(status_code=404, detail="Masterclass not found")
+    
+    existing = await db.masterclass_bookmarks.find_one({
+        "masterclass_id": masterclass_id,
+        "user_id": current_user['user_id']
+    })
+    
+    if existing:
+        return {"message": "Already bookmarked"}
+    
+    await db.masterclass_bookmarks.insert_one({
+        "id": str(uuid.uuid4()),
+        "masterclass_id": masterclass_id,
+        "user_id": current_user['user_id'],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    await db.masterclasses.update_one({"id": masterclass_id}, {"$inc": {"bookmarks_count": 1}})
+    
+    return {"message": "Bookmarked successfully"}
+
+
+@api_router.delete("/masterclass/{masterclass_id}/bookmark")
+async def remove_bookmark(masterclass_id: str, current_user: dict = Depends(get_current_user)):
+    """Remove a bookmark"""
+    result = await db.masterclass_bookmarks.delete_one({
+        "masterclass_id": masterclass_id,
+        "user_id": current_user['user_id']
+    })
+    
+    if result.deleted_count > 0:
+        await db.masterclasses.update_one({"id": masterclass_id}, {"$inc": {"bookmarks_count": -1}})
+    
+    return {"message": "Bookmark removed"}
+
+
+@api_router.get("/masterclass/user/bookmarks")
+async def get_user_bookmarks(current_user: dict = Depends(get_current_user)):
+    """Get user's bookmarked masterclasses"""
+    bookmarks = await db.masterclass_bookmarks.find(
+        {"user_id": current_user['user_id']},
+        {"_id": 0}
+    ).to_list(100)
+    
+    masterclass_ids = [b['masterclass_id'] for b in bookmarks]
+    
+    masterclasses = await db.masterclasses.find(
+        {"id": {"$in": masterclass_ids}, "published": True},
+        {"_id": 0}
+    ).to_list(100)
+    
+    return masterclasses
+
+
+# Comments
+@api_router.post("/masterclass/{masterclass_id}/comments")
+async def add_comment(masterclass_id: str, content: dict, current_user: dict = Depends(get_current_user)):
+    """Add a comment to a masterclass"""
+    masterclass = await db.masterclasses.find_one({"id": masterclass_id, "published": True})
+    if not masterclass:
+        raise HTTPException(status_code=404, detail="Masterclass not found")
+    
+    comment_text = content.get('content', '').strip()
+    if not comment_text:
+        raise HTTPException(status_code=400, detail="Comment content is required")
+    
+    # Get user name
+    user_name = "Anonymous"
+    if current_user['role'] == 'player':
+        player = await db.players.find_one({"user_id": current_user['user_id']})
+        if player:
+            user_name = player.get('name', 'Anonymous')
+    elif current_user['role'] == 'admin':
+        user_name = "Admin"
+    
+    comment_doc = {
+        "id": str(uuid.uuid4()),
+        "masterclass_id": masterclass_id,
+        "user_id": current_user['user_id'],
+        "user_name": user_name,
+        "user_role": current_user['role'],
+        "content": comment_text,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.masterclass_comments.insert_one(comment_doc)
+    comment_doc.pop('_id', None)
+    
+    await db.masterclasses.update_one({"id": masterclass_id}, {"$inc": {"comments_count": 1}})
+    
+    return comment_doc
+
+
+@api_router.get("/masterclass/{masterclass_id}/comments")
+async def get_comments(masterclass_id: str, limit: int = 50):
+    """Get comments for a masterclass"""
+    comments = await db.masterclass_comments.find(
+        {"masterclass_id": masterclass_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(limit)
+    
+    return comments
+
+
+@api_router.delete("/masterclass/{masterclass_id}/comments/{comment_id}")
+async def delete_comment(masterclass_id: str, comment_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a comment (owner or admin)"""
+    comment = await db.masterclass_comments.find_one({"id": comment_id, "masterclass_id": masterclass_id})
+    
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    if comment['user_id'] != current_user['user_id'] and current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
+    
+    await db.masterclass_comments.delete_one({"id": comment_id})
+    await db.masterclasses.update_one({"id": masterclass_id}, {"$inc": {"comments_count": -1}})
+    
+    return {"message": "Comment deleted"}
+
 
 @api_router.get("/opportunities", response_model=List[Opportunity])
 async def get_opportunities(current_user: dict = Depends(get_current_user)):

@@ -9,6 +9,10 @@ import VideoList from '@/components/video/VideoList';
 import ChatRequests from '@/components/player/ChatRequests';
 import MatchScores from '@/components/player/MatchScores';
 import VideoAnalysis from '@/components/player/VideoAnalysis';
+import MasterclassHome from '@/components/masterclass/MasterclassHome';
+import MasterclassDetail from '@/components/masterclass/MasterclassDetail';
+import MasterclassCategory from '@/components/masterclass/MasterclassCategory';
+import MasterclassBookmarks from '@/components/masterclass/MasterclassBookmarks';
 
 const PlayerDashboard = () => {
   return (
@@ -19,6 +23,10 @@ const PlayerDashboard = () => {
         <Route path="opportunities" element={<PlayerOpportunities />} />
         <Route path="match-scores" element={<MatchScores />} />
         <Route path="video-analysis" element={<VideoAnalysis />} />
+        <Route path="masterclass" element={<MasterclassHome />} />
+        <Route path="masterclass/bookmarks" element={<MasterclassBookmarks />} />
+        <Route path="masterclass/category/:category" element={<MasterclassCategory />} />
+        <Route path="masterclass/:masterclassId" element={<MasterclassDetail />} />
         <Route path="applications" element={<PlayerApplications />} />
         <Route path="chat-requests" element={<ChatRequests />} />
         <Route path="chats" element={<ChatList />} />

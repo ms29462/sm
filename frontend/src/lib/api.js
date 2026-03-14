@@ -130,4 +130,21 @@ export const api = {
   getUploadedAnalyses: () => axios.get(`${API}/video-upload/analyses`, { headers: getAuthHeaders() }),
   getUploadedAnalysis: (analysisId) => axios.get(`${API}/video-upload/analysis/${analysisId}`, { headers: getAuthHeaders() }),
   deleteUploadedAnalysis: (analysisId) => axios.delete(`${API}/video-upload/analysis/${analysisId}`, { headers: getAuthHeaders() }),
+
+  // Masterclass
+  getMasterclassCategories: () => axios.get(`${API}/masterclass/categories`),
+  getMasterclasses: (params) => axios.get(`${API}/masterclass`, { params }),
+  getMasterclass: (id) => axios.get(`${API}/masterclass/${id}`),
+  getUserBookmarks: () => axios.get(`${API}/masterclass/user/bookmarks`, { headers: getAuthHeaders() }),
+  bookmarkMasterclass: (id) => axios.post(`${API}/masterclass/${id}/bookmark`, {}, { headers: getAuthHeaders() }),
+  removeBookmark: (id) => axios.delete(`${API}/masterclass/${id}/bookmark`, { headers: getAuthHeaders() }),
+  getMasterclassComments: (id) => axios.get(`${API}/masterclass/${id}/comments`),
+  addMasterclassComment: (id, content) => axios.post(`${API}/masterclass/${id}/comments`, { content }, { headers: getAuthHeaders() }),
+  deleteMasterclassComment: (masterclassId, commentId) => axios.delete(`${API}/masterclass/${masterclassId}/comments/${commentId}`, { headers: getAuthHeaders() }),
+
+  // Admin Masterclass
+  getAllMasterclassesAdmin: () => axios.get(`${API}/admin/masterclass`, { headers: getAuthHeaders() }),
+  createMasterclass: (data) => axios.post(`${API}/admin/masterclass`, data, { headers: getAuthHeaders() }),
+  updateMasterclass: (id, data) => axios.put(`${API}/admin/masterclass/${id}`, data, { headers: getAuthHeaders() }),
+  deleteMasterclass: (id) => axios.delete(`${API}/admin/masterclass/${id}`, { headers: getAuthHeaders() }),
 };

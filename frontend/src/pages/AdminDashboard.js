@@ -10,6 +10,7 @@ import AdminChatViewer from '@/components/admin/AdminChatViewer';
 import AdminVideoManagement from '@/components/admin/AdminVideoManagement';
 import AdminChatRequests from '@/components/admin/AdminChatRequests';
 import AdminBenchmark from '@/components/admin/AdminBenchmark';
+import AdminMasterclass from '@/components/admin/AdminMasterclass';
 
 const AdminDashboard = () => {
   return (
@@ -20,6 +21,7 @@ const AdminDashboard = () => {
         <Route path="clubs" element={<AdminClubs />} />
         <Route path="federations" element={<AdminFederations />} />
         <Route path="opportunities" element={<AdminOpportunities />} />
+        <Route path="masterclass" element={<AdminMasterclass />} />
         <Route path="chat-requests" element={<AdminChatRequests />} />
         <Route path="chats" element={<AdminChatManagement />} />
         <Route path="chat/:roomId" element={<AdminChatViewer />} />
