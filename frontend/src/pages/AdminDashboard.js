@@ -3,6 +3,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import AdminHome from '@/components/admin/AdminHome';
 import AdminPlayers from '@/components/admin/AdminPlayers';
 import AdminClubs from '@/components/admin/AdminClubs';
+import AdminFederations from '@/components/admin/AdminFederations';
 import AdminOpportunities from '@/components/admin/AdminOpportunities';
 import AdminChatManagement from '@/components/admin/AdminChatManagement';
 import AdminChatViewer from '@/components/admin/AdminChatViewer';
@@ -17,6 +18,7 @@ const AdminDashboard = () => {
         <Route path="dashboard" element={<AdminHome />} />
         <Route path="players" element={<AdminPlayers />} />
         <Route path="clubs" element={<AdminClubs />} />
+        <Route path="federations" element={<AdminFederations />} />
         <Route path="opportunities" element={<AdminOpportunities />} />
         <Route path="chat-requests" element={<AdminChatRequests />} />
         <Route path="chats" element={<AdminChatManagement />} />

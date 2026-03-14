@@ -51,7 +51,7 @@ JWT_EXPIRATION_HOURS = 24 * 7
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
-    role: Literal['player', 'club']
+    role: Literal['player', 'club', 'federation']
     name: str
 
 class UserLogin(BaseModel):
@@ -314,6 +314,7 @@ class Favorite(BaseModel):
 class AdminStats(BaseModel):
     total_players: int
     total_clubs: int
+    total_federations: int = 0
     total_applications: int
     pending_approvals: int
 
@@ -732,6 +733,7 @@ async def get_admin_stats(current_user: dict = Depends(get_current_user)):
     return AdminStats(
         total_players=total_players,
         total_clubs=total_clubs,
+        total_federations=total_federations,
         total_applications=total_applications,
         pending_approvals=pending_players + pending_clubs + pending_federations
     )
@@ -1001,6 +1003,8 @@ async def create_federation_team(team: FederationTeamCreate, current_user: dict 
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.federation_teams.insert_one(team_doc)
+    # Remove MongoDB _id before returning
+    team_doc.pop('_id', None)
     return team_doc
 
 
@@ -1747,7 +1751,7 @@ async def get_player_match_scores_endpoint(current_user: dict = Depends(get_curr
         return {"scores": scores}
     except Exception as e:
         logger.error(f"Failed to calculate match scores: {str(e)}")
-        return {"error": f"Failed to fetch player data from Transfermarkt. Please verify your profile URL is correct.", "scores": []}
+        return {"error": "Failed to fetch player data from Transfermarkt. Please verify your profile URL is correct.", "scores": []}
 
 
 @api_router.get("/player/match-score/{opportunity_id}")

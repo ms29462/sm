@@ -6,6 +6,7 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import PlayerDashboard from '@/pages/PlayerDashboard';
 import ClubDashboard from '@/pages/ClubDashboard';
+import FederationDashboard from '@/pages/FederationDashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
 import ChatRoom from '@/components/chat/ChatRoom';
 import VideoCall from '@/components/video/VideoCall';
@@ -37,6 +38,14 @@ function App() {
                 element={
                   <ProtectedRoute role="club">
                     <ClubDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/federation/*"
+                element={
+                  <ProtectedRoute role="federation">
+                    <FederationDashboard />
                   </ProtectedRoute>
                 }
               />

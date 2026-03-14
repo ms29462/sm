@@ -33,6 +33,8 @@ const Register = () => {
         navigate('/player/dashboard');
       } else if (userRole === 'club') {
         navigate('/club/dashboard');
+      } else if (userRole === 'federation') {
+        navigate('/federation/dashboard');
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registration failed');
@@ -56,7 +58,7 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Label className="text-sm font-medium uppercase tracking-wide mb-3 block">I AM A</Label>
-              <RadioGroup value={role} onValueChange={setRole} className="flex space-x-4">
+              <RadioGroup value={role} onValueChange={setRole} className="flex flex-wrap gap-4">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="player" id="player" data-testid="role-player-radio" />
                   <Label htmlFor="player" className="cursor-pointer">Player</Label>
@@ -65,12 +67,16 @@ const Register = () => {
                   <RadioGroupItem value="club" id="club" data-testid="role-club-radio" />
                   <Label htmlFor="club" className="cursor-pointer">Club</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="federation" id="federation" data-testid="role-federation-radio" />
+                  <Label htmlFor="federation" className="cursor-pointer">Federation</Label>
+                </div>
               </RadioGroup>
             </div>
 
             <div>
               <Label htmlFor="name" className="text-sm font-medium uppercase tracking-wide">
-                {role === 'player' ? 'Full Name' : 'Club Name'}
+                {role === 'player' ? 'Full Name' : role === 'club' ? 'Club Name' : 'Federation Name'}
               </Label>
               <Input
                 id="name"
@@ -79,7 +85,7 @@ const Register = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                placeholder={role === 'player' ? 'Enter your full name' : 'Enter club name'}
+                placeholder={role === 'player' ? 'Enter your full name' : role === 'club' ? 'Enter club name' : 'Enter federation name (e.g., Cameroon Football Federation)'}
                 required
               />
             </div>

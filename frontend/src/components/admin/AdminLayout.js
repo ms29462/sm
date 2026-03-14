@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { Trophy, Shield, Users, Building, Briefcase, LogOut, MessageCircle, Video, MessageSquare, Database } from 'lucide-react';
+import { Trophy, Shield, Users, Building, Flag, Briefcase, LogOut, MessageCircle, Video, MessageSquare, Database } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -60,6 +60,16 @@ const AdminLayout = ({ children }) => {
             >
               <Building className="w-4 h-4 mr-3" />
               Clubs
+            </Button>
+          </Link>
+          <Link to="/admin/federations">
+            <Button
+              data-testid="nav-federations-btn"
+              variant={isActive('/admin/federations') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <Flag className="w-4 h-4 mr-3" />
+              Federations
             </Button>
           </Link>
           <Link to="/admin/opportunities">
