@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { Trophy, Shield, Users, Building, Flag, Briefcase, LogOut, MessageCircle, Video, MessageSquare, Database } from 'lucide-react';
+import { Trophy, Shield, Users, Building, Flag, Briefcase, LogOut, MessageCircle, Video, MessageSquare, Database, GraduationCap } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -120,6 +120,16 @@ const AdminLayout = ({ children }) => {
             >
               <Database className="w-4 h-4 mr-3" />
               Benchmark Data
+            </Button>
+          </Link>
+          <Link to="/admin/masterclass">
+            <Button
+              data-testid="nav-masterclass-btn"
+              variant={isActive('/admin/masterclass') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <GraduationCap className="w-4 h-4 mr-3" />
+              Masterclass
             </Button>
           </Link>
         </nav>
