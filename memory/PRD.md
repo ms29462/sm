@@ -127,6 +127,29 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - [x] **Delete Functionality**: Remove uploaded analyses and video files
 - [x] **Static File Serving**: Videos stored and served from backend
 
+### Phase 9 - Masterclass Feature (Completed - March 2026)
+- [x] **Masterclass Home Page**: Landing page with 5 categories, featured content, search functionality
+- [x] **Categories**: Medical Recovery, Pro Masterclasses, College Tips, Fitness & Conditioning, Mental Performance
+- [x] **Subcategories**: Each category has specialized topics (e.g., ACL Recovery, Goalkeeper skills, etc.)
+- [x] **Difficulty Levels**: Beginner, Intermediate, Advanced with color-coded badges
+- [x] **Masterclass Detail Page**: 
+  - YouTube/Vimeo video embedding
+  - Markdown content rendering
+  - Author info with credentials
+  - Duration, views, comments count
+  - Tags display
+- [x] **Bookmark System**: Players can save masterclasses for later viewing
+- [x] **Saved Masterclasses Page**: View all bookmarked content
+- [x] **Category Browsing**: Filter masterclasses by category, subcategory, and difficulty
+- [x] **Search**: Search masterclasses by title, description, tags, or author
+- [x] **Comments System**: Players can add comments/questions to masterclasses
+- [x] **Admin Masterclass Management**:
+  - Create new masterclasses with full form (title, description, category, subcategory, difficulty, duration, video URL, content, author info, tags)
+  - Edit existing masterclasses
+  - Delete masterclasses (also removes related bookmarks and comments)
+  - Toggle featured status (featured items shown prominently on home page)
+  - View all masterclasses including unpublished
+
 ## Architecture
 
 ### Backend
@@ -164,6 +187,10 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - `chat_requests` - Chat request records
 - `notifications` - User notifications
 - `benchmark_data` - AI matching benchmark data
+- `masterclasses` - Educational content with categories, video URLs, markdown content
+- `masterclass_bookmarks` - User bookmarked masterclasses
+- `masterclass_comments` - Comments on masterclasses
+- `uploaded_video_analyses` - Video upload analysis records
 
 ## API Endpoints
 
@@ -191,11 +218,28 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - `GET /api/players/{id}/match-archive` - Public view (clubs/federations)
 - `GET /api/players/{id}/match-calendar` - Public view (clubs/federations)
 
+### Masterclass Endpoints
+- `GET /api/masterclass/categories` - Get all categories and subcategories
+- `GET /api/masterclass` - Get published masterclasses (with filters: category, subcategory, difficulty, search, featured)
+- `GET /api/masterclass/{id}` - Get single masterclass detail
+- `POST /api/masterclass/{id}/bookmark` - Bookmark a masterclass (player only)
+- `DELETE /api/masterclass/{id}/bookmark` - Remove bookmark
+- `GET /api/masterclass/user/bookmarks` - Get user's bookmarked masterclasses
+- `GET /api/masterclass/{id}/comments` - Get comments for a masterclass
+- `POST /api/masterclass/{id}/comments` - Add comment (authenticated users)
+- `DELETE /api/masterclass/{id}/comments/{comment_id}` - Delete own comment
+- `GET /api/admin/masterclass` - Get all masterclasses (admin only)
+- `POST /api/admin/masterclass` - Create masterclass (admin only)
+- `PUT /api/admin/masterclass/{id}` - Update masterclass (admin only)
+- `DELETE /api/admin/masterclass/{id}` - Delete masterclass (admin only)
+
 ## Credentials
 - **Admin**: admin@soccermatch.com / admin123
 - **Test Federation**: test.federation@soccermatch.com / test123
+- **Demo Player**: demo.player@soccermatch.com / demo123
 
 ## Future/Backlog Tasks (P1)
+- [ ] Add UI for third nationality in player profile
 - [ ] Clean up demo test data (duplicate Real Madrid matches)
 
 ## Future/Backlog Tasks (P2)

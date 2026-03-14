@@ -4,6 +4,7 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
 import { 
   ArrowLeft, Bookmark, Clock, User, Play, MessageCircle, 
   Send, Trash2, Eye, Calendar
@@ -222,8 +223,8 @@ const MasterclassDetail = () => {
         {masterclass.content && (
           <div className="bg-card border border-border/50 p-6 rounded-sm mb-6">
             <h2 className="font-heading font-bold uppercase mb-4">LESSON CONTENT</h2>
-            <div className="prose prose-invert max-w-none text-muted-foreground whitespace-pre-wrap">
-              {masterclass.content}
+            <div className="prose prose-invert prose-headings:text-foreground prose-headings:font-heading prose-headings:uppercase prose-p:text-muted-foreground prose-li:text-muted-foreground prose-strong:text-foreground max-w-none">
+              <ReactMarkdown>{masterclass.content}</ReactMarkdown>
             </div>
           </div>
         )}
