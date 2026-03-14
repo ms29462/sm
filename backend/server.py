@@ -1136,6 +1136,7 @@ async def add_match_to_archive(match: MatchArchiveCreate, current_user: dict = D
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.match_archive.insert_one(match_doc)
+    match_doc.pop('_id', None)
     return match_doc
 
 
@@ -1189,6 +1190,7 @@ async def add_match_to_calendar(match: MatchCalendarCreate, current_user: dict =
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.match_calendar.insert_one(match_doc)
+    match_doc.pop('_id', None)
     return match_doc
 
 

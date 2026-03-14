@@ -5,18 +5,43 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { User, Camera, Upload, CheckCircle } from 'lucide-react';
+import { User, Camera, Upload, CheckCircle, Video, Plus, Trash2, ExternalLink } from 'lucide-react';
 import { POSITIONS, LEVELS, FEET, COUNTRIES } from '@/lib/constants';
+
+const COMPETITION_LEVELS = [
+  'Professional',
+  'Semi-Professional',
+  'Amateur',
+  'University/College',
+  'Youth Academy',
+  'National Team',
+  'Friendly/Exhibition'
+];
 
 const PlayerProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({});
+  
+  // Match Archive state
+  const [matchArchive, setMatchArchive] = useState([]);
+  const [showAddMatchDialog, setShowAddMatchDialog] = useState(false);
+  const [addingMatch, setAddingMatch] = useState(false);
+  const [newMatch, setNewMatch] = useState({
+    video_link: '',
+    match_date: '',
+    opponent: '',
+    competition_level: '',
+    description: '',
+    position_played: ''
+  });
 
   useEffect(() => {
     loadProfile();
+    loadMatchArchive();
   }, []);
 
   const loadProfile = async () => {
@@ -31,8 +56,21 @@ const PlayerProfile = () => {
     }
   };
 
+  const loadMatchArchive = async () => {
+    try {
+      const response = await api.getPlayerMatchArchive();
+      setMatchArchive(response.data || []);
+    } catch (error) {
+      console.error('Failed to load match archive');
+    }
+  };
+
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleNewMatchChange = (field, value) => {
+    setNewMatch((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleImageUpload = (field, e) => {
@@ -56,6 +94,45 @@ const PlayerProfile = () => {
       toast.error('Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAddMatch = async () => {
+    if (!newMatch.video_link || !newMatch.match_date || !newMatch.opponent || !newMatch.competition_level) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setAddingMatch(true);
+    try {
+      await api.addMatchToArchive(newMatch);
+      toast.success('Match added to archive!');
+      setShowAddMatchDialog(false);
+      setNewMatch({
+        video_link: '',
+        match_date: '',
+        opponent: '',
+        competition_level: '',
+        description: '',
+        position_played: ''
+      });
+      loadMatchArchive();
+    } catch (error) {
+      toast.error('Failed to add match');
+    } finally {
+      setAddingMatch(false);
+    }
+  };
+
+  const handleDeleteMatch = async (matchId) => {
+    if (!window.confirm('Are you sure you want to delete this match?')) return;
+
+    try {
+      await api.deleteMatchFromArchive(matchId);
+      toast.success('Match deleted');
+      loadMatchArchive();
+    } catch (error) {
+      toast.error('Failed to delete match');
     }
   };
 
@@ -403,6 +480,176 @@ const PlayerProfile = () => {
               {saving ? 'SAVING...' : 'SAVE CHANGES'}
             </Button>
           </div>
+        </div>
+
+        {/* Match Archive Section */}
+        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <Video className="w-6 h-6 text-primary" />
+              <div>
+                <h2 className="text-xl font-heading font-bold uppercase">MATCH ARCHIVE</h2>
+                <p className="text-sm text-muted-foreground">Add full game videos for clubs and scouts to review</p>
+              </div>
+            </div>
+            <Dialog open={showAddMatchDialog} onOpenChange={setShowAddMatchDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  data-testid="add-match-btn"
+                  className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  ADD MATCH
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-heading uppercase">Add Match Video</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 mt-4">
+                  <div>
+                    <Label className="text-sm font-medium uppercase tracking-wide">Video Link *</Label>
+                    <Input
+                      data-testid="match-video-link"
+                      type="url"
+                      value={newMatch.video_link}
+                      onChange={(e) => handleNewMatchChange('video_link', e.target.value)}
+                      placeholder="https://youtube.com/watch?v=..."
+                      className="mt-1 bg-black/20 border-white/10 h-10"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium uppercase tracking-wide">Match Date *</Label>
+                      <Input
+                        data-testid="match-date"
+                        type="date"
+                        value={newMatch.match_date}
+                        onChange={(e) => handleNewMatchChange('match_date', e.target.value)}
+                        className="mt-1 bg-black/20 border-white/10 h-10"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium uppercase tracking-wide">Opponent *</Label>
+                      <Input
+                        data-testid="match-opponent"
+                        type="text"
+                        value={newMatch.opponent}
+                        onChange={(e) => handleNewMatchChange('opponent', e.target.value)}
+                        placeholder="e.g., FC Barcelona"
+                        className="mt-1 bg-black/20 border-white/10 h-10"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium uppercase tracking-wide">Competition Level *</Label>
+                      <Select
+                        value={newMatch.competition_level}
+                        onValueChange={(value) => handleNewMatchChange('competition_level', value)}
+                      >
+                        <SelectTrigger data-testid="match-level" className="mt-1 bg-black/20 border-white/10 h-10">
+                          <SelectValue placeholder="Select level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COMPETITION_LEVELS.map((level) => (
+                            <SelectItem key={level} value={level}>{level}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium uppercase tracking-wide">Position Played</Label>
+                      <Select
+                        value={newMatch.position_played}
+                        onValueChange={(value) => handleNewMatchChange('position_played', value)}
+                      >
+                        <SelectTrigger data-testid="match-position" className="mt-1 bg-black/20 border-white/10 h-10">
+                          <SelectValue placeholder="Select position" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {POSITIONS.map((pos) => (
+                            <SelectItem key={pos} value={pos}>{pos}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium uppercase tracking-wide">Description / Notes</Label>
+                    <Textarea
+                      data-testid="match-description"
+                      value={newMatch.description}
+                      onChange={(e) => handleNewMatchChange('description', e.target.value)}
+                      placeholder="e.g., League match - scored 2 goals, full 90 minutes played"
+                      className="mt-1 bg-black/20 border-white/10 min-h-[80px]"
+                    />
+                  </div>
+                  <Button
+                    data-testid="submit-match-btn"
+                    onClick={handleAddMatch}
+                    disabled={addingMatch}
+                    className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 h-12"
+                  >
+                    {addingMatch ? 'ADDING...' : 'ADD TO ARCHIVE'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {matchArchive.length === 0 ? (
+            <div className="text-center py-8 border border-dashed border-border rounded-sm">
+              <Video className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">No matches in your archive yet</p>
+              <p className="text-sm text-muted-foreground mt-1">Add full game videos to showcase your skills to scouts</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {matchArchive.map((match) => (
+                <div
+                  key={match.id}
+                  data-testid={`match-item-${match.id}`}
+                  className="flex items-center justify-between p-4 bg-background rounded-sm border border-border"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h4 className="font-heading font-bold">vs {match.opponent}</h4>
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-sm">
+                        {match.competition_level}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span>{match.match_date}</span>
+                      {match.position_played && <span>Played as {match.position_played}</span>}
+                    </div>
+                    {match.description && (
+                      <p className="text-sm text-muted-foreground mt-1">{match.description}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(match.video_link, '_blank')}
+                      className="border-primary text-primary hover:bg-primary hover:text-black"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-1" />
+                      WATCH
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteMatch(match.id)}
+                      className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

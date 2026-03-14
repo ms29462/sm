@@ -74,6 +74,18 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - [x] **Admin Federation Management**: Approve/revoke federations, view all federations
 - [x] **Admin Stats Update**: Federation count shown on dashboard
 
+### Phase 6 - Player Match Archive (Completed - Dec 2025)
+- [x] **Match Archive UI**: New section on player profile page
+- [x] **Add Match Dialog**: Form to add full game video links with:
+  - Video link (YouTube/Vimeo)
+  - Match date
+  - Opponent name
+  - Competition level (Professional, Semi-Professional, Amateur, University/College, Youth Academy, National Team, Friendly/Exhibition)
+  - Position played
+  - Description/notes
+- [x] **Match List**: Display all archived matches with WATCH and DELETE actions
+- [x] **Public View**: Clubs and federations can view player match archive
+
 ## Architecture
 
 ### Backend
@@ -143,8 +155,7 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - **Test Federation**: test.federation@soccermatch.com / test123
 
 ## Future/Backlog Tasks (P1)
-- [ ] Player profile UI updates (multiple nationalities input, match archive management, match calendar management)
-- [ ] Enhanced AI matching for federations
+- [ ] Player Match Calendar UI - Allow players to add upcoming matches
 
 ## Future/Backlog Tasks (P2)
 - [ ] Email notifications for chat requests and applications
