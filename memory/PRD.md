@@ -95,6 +95,7 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
   - Location / City
 - [x] **Calendar List**: Display upcoming matches with delete action
 - [x] **Live Scouting**: Scouts can view player's upcoming games to plan visits
+- [x] **Second Nationality Field**: Players can add a second nationality to be scouted by multiple federations
 
 ## Architecture
 

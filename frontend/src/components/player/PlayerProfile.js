@@ -328,7 +328,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="nationality" className="text-sm font-medium uppercase tracking-wide">
-                Nationality
+                Primary Nationality
               </Label>
               <Select value={formData.nationality || ''} onValueChange={(value) => handleChange('nationality', value)}>
                 <SelectTrigger
@@ -346,6 +346,33 @@ const PlayerProfile = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="nationality_2" className="text-sm font-medium uppercase tracking-wide">
+                Second Nationality
+                <span className="text-muted-foreground text-xs ml-2">(Optional)</span>
+              </Label>
+              <Select value={formData.nationality_2 || ''} onValueChange={(value) => handleChange('nationality_2', value)}>
+                <SelectTrigger
+                  id="nationality_2"
+                  data-testid="nationality-2-select"
+                  className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+                >
+                  <SelectValue placeholder="Select second nationality" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  <SelectItem value="none">None</SelectItem>
+                  {COUNTRIES.map((country) => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add a second nationality to be scouted by multiple federations
+              </p>
             </div>
 
             <div>
