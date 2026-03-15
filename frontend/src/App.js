@@ -14,90 +14,96 @@ import ChatRoom from '@/components/chat/ChatRoom';
 import VideoCall from '@/components/video/VideoCall';
 import { AuthProvider } from '@/context/AuthContext';
 import { NotificationProvider } from '@/context/NotificationContext';
+import { PWAProvider } from '@/context/PWAContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import PWAInstallBanner, { OfflineBanner } from '@/components/mobile/PWAInstallBanner';
 
 function App() {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <div className="App min-h-screen">
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/admin/login" element={<Login admin={true} />} />
-              <Route
-                path="/player/*"
-                element={
-                  <ProtectedRoute role="player">
-                    <PlayerDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/club/*"
-                element={
-                  <ProtectedRoute role="club">
-                    <ClubDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/federation/*"
-                element={
-                  <ProtectedRoute role="federation">
-                    <FederationDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/agent/*"
-                element={
-                  <ProtectedRoute role="agent">
-                    <AgentDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/specialist/*"
-                element={
-                  <ProtectedRoute role="specialist">
-                    <SpecialistDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/*"
-                element={
-                  <ProtectedRoute role="admin">
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/chat/:roomId"
-                element={
-                  <ProtectedRoute>
-                    <ChatRoom />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/video/:sessionId"
-                element={
-                  <ProtectedRoute>
-                    <VideoCall />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </BrowserRouter>
-          <Toaster position="top-right" richColors />
-        </div>
-      </NotificationProvider>
-    </AuthProvider>
+    <PWAProvider>
+      <AuthProvider>
+        <NotificationProvider>
+          <div className="App min-h-screen">
+            <OfflineBanner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/admin/login" element={<Login admin={true} />} />
+                <Route
+                  path="/player/*"
+                  element={
+                    <ProtectedRoute role="player">
+                      <PlayerDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/club/*"
+                  element={
+                    <ProtectedRoute role="club">
+                      <ClubDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/federation/*"
+                  element={
+                    <ProtectedRoute role="federation">
+                      <FederationDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/agent/*"
+                  element={
+                    <ProtectedRoute role="agent">
+                      <AgentDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/*"
+                  element={
+                    <ProtectedRoute role="specialist">
+                      <SpecialistDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/*"
+                  element={
+                    <ProtectedRoute role="admin">
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/chat/:roomId"
+                  element={
+                    <ProtectedRoute>
+                      <ChatRoom />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/video/:sessionId"
+                  element={
+                    <ProtectedRoute>
+                      <VideoCall />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+              <PWAInstallBanner />
+            </BrowserRouter>
+            <Toaster position="top-right" richColors />
+          </div>
+        </NotificationProvider>
+      </AuthProvider>
+    </PWAProvider>
   );
 }
 

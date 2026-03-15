@@ -1,6 +1,8 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import MobileBottomNav from '@/components/mobile/MobileBottomNav';
+import MobileHeader from '@/components/mobile/MobileHeader';
 import { Trophy, Briefcase, Users, Heart, LogOut, Home, UserCircle, FileText } from 'lucide-react';
 
 const AgentLayout = ({ children }) => {
@@ -16,7 +18,11 @@ const AgentLayout = ({ children }) => {
   const isActive = (path) => location.pathname.includes(path);
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Mobile Header */}
+      <MobileHeader title="SOCCERMATCH" />
+
+      {/* Desktop Sidebar */}
       <aside className="w-64 border-r border-border bg-background fixed h-full hidden md:block">
         <div className="p-6 border-b border-border">
           <div className="flex items-center space-x-3">
@@ -97,9 +103,13 @@ const AgentLayout = ({ children }) => {
         </div>
       </aside>
 
-      <main className="flex-1 md:ml-64">
+      {/* Main Content */}
+      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
         {children}
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav role="agent" />
     </div>
   );
 };

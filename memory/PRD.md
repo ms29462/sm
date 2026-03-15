@@ -281,6 +281,34 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - **Test Specialist**: test.specialist@soccermatch.com / test123
 - **Demo Player**: demo.player@soccermatch.com / demo123
 
+### Phase 11 - Progressive Web App (PWA) (Completed - March 2026)
+- [x] **PWA Configuration**:
+  - manifest.json with app name, icons, colors, shortcuts
+  - Service worker for offline caching and push notifications
+  - App icons (72x72 to 512x512 PNG)
+- [x] **Mobile-Optimized UI**:
+  - Mobile header with hamburger menu
+  - Bottom navigation bar for all user roles
+  - Safe area handling for notched devices
+  - Touch-optimized button sizes (44px minimum)
+  - Smooth scrolling and pull-to-refresh support
+- [x] **PWA Features**:
+  - "Add to Home Screen" install prompt
+  - Offline indicator banner
+  - Network-first caching with fallback
+  - Push notification support (ready for backend integration)
+- [x] **Mobile Layouts Updated**:
+  - PlayerLayout with bottom nav
+  - ClubLayout with bottom nav
+  - FederationLayout with bottom nav
+  - AgentLayout with bottom nav
+  - SpecialistLayout with bottom nav
+  - AdminLayout with bottom nav
+- [x] **PWA Context**:
+  - Install prompt management
+  - Online/offline status tracking
+  - Service worker registration
+
 ## Future/Backlog Tasks (P1)
 - [ ] Add UI for third nationality in player profile
 - [ ] Clean up demo test data (duplicate Real Madrid matches)
