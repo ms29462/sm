@@ -147,4 +147,34 @@ export const api = {
   createMasterclass: (data) => axios.post(`${API}/admin/masterclass`, data, { headers: getAuthHeaders() }),
   updateMasterclass: (id, data) => axios.put(`${API}/admin/masterclass/${id}`, data, { headers: getAuthHeaders() }),
   deleteMasterclass: (id) => axios.delete(`${API}/admin/masterclass/${id}`, { headers: getAuthHeaders() }),
+
+  // Agent
+  getAgentProfile: () => axios.get(`${API}/agent/profile`, { headers: getAuthHeaders() }),
+  updateAgentProfile: (data) => axios.put(`${API}/agent/profile`, data, { headers: getAuthHeaders() }),
+  getAgentPlayers: (filters) => axios.get(`${API}/agent/players`, { params: filters, headers: getAuthHeaders() }),
+  getAgentPlayerDetail: (playerId) => axios.get(`${API}/agent/player/${playerId}`, { headers: getAuthHeaders() }),
+  addAgentFavorite: (playerId) => axios.post(`${API}/agent/favorites`, { player_id: playerId }, { headers: getAuthHeaders() }),
+  getAgentFavorites: () => axios.get(`${API}/agent/favorites`, { headers: getAuthHeaders() }),
+  removeAgentFavorite: (playerId) => axios.delete(`${API}/agent/favorites/${playerId}`, { headers: getAuthHeaders() }),
+  getAgentOpportunities: () => axios.get(`${API}/agent/opportunities`, { headers: getAuthHeaders() }),
+
+  // Specialist
+  getSpecialistProfile: () => axios.get(`${API}/specialist/profile`, { headers: getAuthHeaders() }),
+  updateSpecialistProfile: (data) => axios.put(`${API}/specialist/profile`, data, { headers: getAuthHeaders() }),
+  getSpecialistPlayers: (filters) => axios.get(`${API}/specialist/players`, { params: filters, headers: getAuthHeaders() }),
+  getSpecialistPlayerDetail: (playerId) => axios.get(`${API}/specialist/player/${playerId}`, { headers: getAuthHeaders() }),
+  addSpecialistFavorite: (playerId) => axios.post(`${API}/specialist/favorites`, { player_id: playerId }, { headers: getAuthHeaders() }),
+  getSpecialistFavorites: () => axios.get(`${API}/specialist/favorites`, { headers: getAuthHeaders() }),
+  removeSpecialistFavorite: (playerId) => axios.delete(`${API}/specialist/favorites/${playerId}`, { headers: getAuthHeaders() }),
+  getSpecialistTypes: () => axios.get(`${API}/specialist/types`),
+
+  // Admin Agents
+  getAllAgents: () => axios.get(`${API}/admin/agents`, { headers: getAuthHeaders() }),
+  approveAgent: (userId, approved) => axios.put(`${API}/admin/agents/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
+  verifyAgent: (userId, verified) => axios.put(`${API}/admin/agents/${userId}/verify?verified=${verified}`, {}, { headers: getAuthHeaders() }),
+
+  // Admin Specialists
+  getAllSpecialists: () => axios.get(`${API}/admin/specialists`, { headers: getAuthHeaders() }),
+  approveSpecialist: (userId, approved) => axios.put(`${API}/admin/specialists/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
+  verifySpecialist: (userId, verified) => axios.put(`${API}/admin/specialists/${userId}/verify?verified=${verified}`, {}, { headers: getAuthHeaders() }),
 };

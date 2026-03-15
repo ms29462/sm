@@ -7,6 +7,8 @@ import Register from '@/pages/Register';
 import PlayerDashboard from '@/pages/PlayerDashboard';
 import ClubDashboard from '@/pages/ClubDashboard';
 import FederationDashboard from '@/pages/FederationDashboard';
+import AgentDashboard from '@/pages/AgentDashboard';
+import SpecialistDashboard from '@/pages/SpecialistDashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
 import ChatRoom from '@/components/chat/ChatRoom';
 import VideoCall from '@/components/video/VideoCall';
@@ -46,6 +48,22 @@ function App() {
                 element={
                   <ProtectedRoute role="federation">
                     <FederationDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/agent/*"
+                element={
+                  <ProtectedRoute role="agent">
+                    <AgentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/specialist/*"
+                element={
+                  <ProtectedRoute role="specialist">
+                    <SpecialistDashboard />
                   </ProtectedRoute>
                 }
               />

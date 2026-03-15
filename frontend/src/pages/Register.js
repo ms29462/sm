@@ -35,6 +35,10 @@ const Register = () => {
         navigate('/club/dashboard');
       } else if (userRole === 'federation') {
         navigate('/federation/dashboard');
+      } else if (userRole === 'agent') {
+        navigate('/agent/dashboard');
+      } else if (userRole === 'specialist') {
+        navigate('/specialist/dashboard');
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registration failed');
@@ -71,12 +75,20 @@ const Register = () => {
                   <RadioGroupItem value="federation" id="federation" data-testid="role-federation-radio" />
                   <Label htmlFor="federation" className="cursor-pointer">Federation</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="agent" id="agent" data-testid="role-agent-radio" />
+                  <Label htmlFor="agent" className="cursor-pointer">Agent</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="specialist" id="specialist" data-testid="role-specialist-radio" />
+                  <Label htmlFor="specialist" className="cursor-pointer">Specialist</Label>
+                </div>
               </RadioGroup>
             </div>
 
             <div>
               <Label htmlFor="name" className="text-sm font-medium uppercase tracking-wide">
-                {role === 'player' ? 'Full Name' : role === 'club' ? 'Club Name' : 'Federation Name'}
+                {role === 'player' ? 'Full Name' : role === 'club' ? 'Club Name' : role === 'federation' ? 'Federation Name' : role === 'agent' ? 'Agent/Agency Name' : 'Full Name'}
               </Label>
               <Input
                 id="name"
@@ -85,7 +97,13 @@ const Register = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                placeholder={role === 'player' ? 'Enter your full name' : role === 'club' ? 'Enter club name' : 'Enter federation name (e.g., Cameroon Football Federation)'}
+                placeholder={
+                  role === 'player' ? 'Enter your full name' : 
+                  role === 'club' ? 'Enter club name' : 
+                  role === 'federation' ? 'Enter federation name (e.g., Cameroon Football Federation)' :
+                  role === 'agent' ? 'Enter your name or agency name' :
+                  'Enter your full name'
+                }
                 required
               />
             </div>

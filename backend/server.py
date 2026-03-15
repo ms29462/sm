@@ -61,7 +61,7 @@ JWT_EXPIRATION_HOURS = 24 * 7
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
-    role: Literal['player', 'club', 'federation']
+    role: Literal['player', 'club', 'federation', 'agent', 'specialist']
     name: str
 
 class UserLogin(BaseModel):
@@ -272,6 +272,140 @@ class FederationTeamPlayerAdd(BaseModel):
     notes: Optional[str] = None
 
 
+# ============ AGENT MODELS ============
+AGENT_SPECIALIZATIONS = [
+    'Youth Players',
+    'Professional Players',
+    'International Transfers',
+    'Contract Negotiations',
+    'Endorsement Deals',
+    'Career Management'
+]
+
+class AgentProfile(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    user_id: str
+    name: str
+    email: Optional[str] = None  # Only visible to admin
+    agency_name: Optional[str] = None
+    license_number: Optional[str] = None
+    fifa_registered: bool = False
+    country: Optional[str] = None
+    phone: Optional[str] = None
+    profile_picture: Optional[str] = None
+    bio: Optional[str] = None
+    specializations: List[str] = []  # From AGENT_SPECIALIZATIONS
+    years_experience: Optional[int] = None
+    players_represented: Optional[int] = 0
+    successful_transfers: Optional[int] = 0
+    website: Optional[str] = None
+    linkedin: Optional[str] = None
+    approved: bool = False
+    verified: bool = False
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+def strip_agent_private_info(agent_dict: dict) -> dict:
+    """Remove private information from agent data for non-admin users"""
+    sanitized = agent_dict.copy()
+    sanitized.pop('email', None)
+    sanitized.pop('phone', None)
+    return sanitized
+
+
+class AgentUpdate(BaseModel):
+    name: Optional[str] = None
+    agency_name: Optional[str] = None
+    license_number: Optional[str] = None
+    fifa_registered: Optional[bool] = None
+    country: Optional[str] = None
+    phone: Optional[str] = None
+    profile_picture: Optional[str] = None
+    bio: Optional[str] = None
+    specializations: Optional[List[str]] = None
+    years_experience: Optional[int] = None
+    players_represented: Optional[int] = None
+    successful_transfers: Optional[int] = None
+    website: Optional[str] = None
+    linkedin: Optional[str] = None
+
+
+# ============ SPECIALIST MODELS ============
+SPECIALIST_TYPES = [
+    'Physical Trainer',
+    'Physiotherapist',
+    'Nutritionist',
+    'Sports Psychologist',
+    'Strength & Conditioning Coach',
+    'Recovery Specialist',
+    'Performance Analyst',
+    'Rehabilitation Specialist'
+]
+
+SPECIALIST_CERTIFICATIONS = [
+    'FIFA Diploma',
+    'UEFA Pro License',
+    'NSCA-CSCS',
+    'NASM-CPT',
+    'Licensed Physiotherapist',
+    'Registered Dietitian',
+    'Sports Psychology Certification',
+    'First Aid/CPR',
+    'Other'
+]
+
+class SpecialistProfile(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    user_id: str
+    name: str
+    email: Optional[str] = None  # Only visible to admin
+    specialist_type: Optional[str] = None  # From SPECIALIST_TYPES
+    profile_picture: Optional[str] = None
+    bio: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    phone: Optional[str] = None
+    certifications: List[str] = []  # From SPECIALIST_CERTIFICATIONS
+    years_experience: Optional[int] = None
+    current_club: Optional[str] = None  # If working with a club
+    hourly_rate: Optional[str] = None
+    availability: Optional[str] = None  # e.g., "Full-time", "Part-time", "Freelance"
+    services_offered: List[str] = []  # e.g., ["ACL Rehab", "Speed Training", "Nutrition Plans"]
+    languages: List[str] = []
+    website: Optional[str] = None
+    linkedin: Optional[str] = None
+    approved: bool = False
+    verified: bool = False
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+def strip_specialist_private_info(specialist_dict: dict) -> dict:
+    """Remove private information from specialist data for non-admin users"""
+    sanitized = specialist_dict.copy()
+    sanitized.pop('email', None)
+    sanitized.pop('phone', None)
+    return sanitized
+
+
+class SpecialistUpdate(BaseModel):
+    name: Optional[str] = None
+    specialist_type: Optional[str] = None
+    profile_picture: Optional[str] = None
+    bio: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    phone: Optional[str] = None
+    certifications: Optional[List[str]] = None
+    years_experience: Optional[int] = None
+    current_club: Optional[str] = None
+    hourly_rate: Optional[str] = None
+    availability: Optional[str] = None
+    services_offered: Optional[List[str]] = None
+    languages: Optional[List[str]] = None
+    website: Optional[str] = None
+    linkedin: Optional[str] = None
+
+
 # ============ OPPORTUNITY MODELS ============
 class OpportunityCreate(BaseModel):
     position: str
@@ -326,6 +460,8 @@ class AdminStats(BaseModel):
     total_players: int
     total_clubs: int
     total_federations: int = 0
+    total_agents: int = 0
+    total_specialists: int = 0
     total_applications: int
     pending_approvals: int
 
@@ -460,6 +596,24 @@ async def register(user: UserRegister):
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.federations.insert_one(federation_doc)
+    elif user.role == 'agent':
+        agent_doc = {
+            "user_id": user_id,
+            "name": user.name,
+            "email": user.email,
+            "approved": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.agents.insert_one(agent_doc)
+    elif user.role == 'specialist':
+        specialist_doc = {
+            "user_id": user_id,
+            "name": user.name,
+            "email": user.email,
+            "approved": False,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.specialists.insert_one(specialist_doc)
     else:  # club
         club_doc = {
             "user_id": user_id,
@@ -1421,17 +1575,23 @@ async def get_admin_stats(current_user: dict = Depends(get_current_user)):
     total_players = await db.players.count_documents({})
     total_clubs = await db.clubs.count_documents({})
     total_federations = await db.federations.count_documents({})
+    total_agents = await db.agents.count_documents({})
+    total_specialists = await db.specialists.count_documents({})
     total_applications = await db.applications.count_documents({})
     pending_players = await db.players.count_documents({"approved": False})
     pending_clubs = await db.clubs.count_documents({"approved": False})
     pending_federations = await db.federations.count_documents({"approved": False})
+    pending_agents = await db.agents.count_documents({"approved": False})
+    pending_specialists = await db.specialists.count_documents({"approved": False})
     
     return AdminStats(
         total_players=total_players,
         total_clubs=total_clubs,
         total_federations=total_federations,
+        total_agents=total_agents,
+        total_specialists=total_specialists,
         total_applications=total_applications,
-        pending_approvals=pending_players + pending_clubs + pending_federations
+        pending_approvals=pending_players + pending_clubs + pending_federations + pending_agents + pending_specialists
     )
 
 @api_router.get("/admin/players", response_model=List[PlayerProfile])
@@ -1510,6 +1670,8 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
     await db.players.delete_one({"user_id": user_id})
     await db.clubs.delete_one({"user_id": user_id})
     await db.federations.delete_one({"user_id": user_id})
+    await db.agents.delete_one({"user_id": user_id})
+    await db.specialists.delete_one({"user_id": user_id})
     return {"message": "User deleted"}
 
 @api_router.get("/admin/opportunities", response_model=List[Opportunity])
@@ -1801,6 +1963,347 @@ async def remove_player_from_federation_team(
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Player not in team")
     return {"message": "Player removed from team"}
+
+
+# ============ AGENT ENDPOINTS ============
+@api_router.get("/agent/profile", response_model=AgentProfile)
+async def get_agent_profile(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'agent':
+        raise HTTPException(status_code=403, detail="Not an agent")
+    
+    agent = await db.agents.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not agent:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return AgentProfile(**agent)
+
+
+@api_router.put("/agent/profile", response_model=AgentProfile)
+async def update_agent_profile(update: AgentUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'agent':
+        raise HTTPException(status_code=403, detail="Not an agent")
+    
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if update_data:
+        await db.agents.update_one(
+            {"user_id": current_user['user_id']},
+            {"$set": update_data}
+        )
+    
+    agent = await db.agents.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    return AgentProfile(**agent)
+
+
+@api_router.get("/agent/players", response_model=List[PlayerProfile])
+async def get_agent_players(
+    position: Optional[str] = None,
+    nationality: Optional[str] = None,
+    level: Optional[str] = None,
+    name: Optional[str] = None,
+    min_age: Optional[int] = None,
+    max_age: Optional[int] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Agent searches for players with filters"""
+    if current_user['role'] != 'agent':
+        raise HTTPException(status_code=403, detail="Not an agent")
+    
+    query = {"approved": True}
+    if position:
+        query['position'] = position
+    if nationality:
+        query['$or'] = [
+            {'nationality': nationality},
+            {'nationality_1': nationality},
+            {'nationality_2': nationality},
+            {'nationality_3': nationality}
+        ]
+    if level:
+        query['playing_level'] = level
+    if name:
+        query['name'] = {"$regex": name, "$options": "i"}
+    if min_age:
+        query['age'] = {"$gte": min_age}
+    if max_age:
+        if 'age' in query:
+            query['age']['$lte'] = max_age
+        else:
+            query['age'] = {"$lte": max_age}
+    
+    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    players = [strip_player_private_info(p) for p in players]
+    return [PlayerProfile(**p) for p in players]
+
+
+@api_router.get("/agent/player/{player_id}", response_model=PlayerProfile)
+async def get_agent_player_detail(player_id: str, current_user: dict = Depends(get_current_user)):
+    """Agent views a specific player's profile"""
+    if current_user['role'] != 'agent':
+        raise HTTPException(status_code=403, detail="Not an agent")
+    
+    player = await db.players.find_one({"user_id": player_id, "approved": True}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    player = strip_player_private_info(player)
+    return PlayerProfile(**player)
+
+
+# Agent favorites (watchlist)
+@api_router.post("/agent/favorites")
+async def add_agent_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'agent':
+        raise HTTPException(status_code=403, detail="Not an agent")
+    
+    existing = await db.agent_favorites.find_one({
+        "agent_id": current_user['user_id'],
+        "player_id": fav.player_id
+    }, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already in watchlist")
+    
+    fav_doc = {
+        "id": str(uuid.uuid4()),
+        "agent_id": current_user['user_id'],
+        "player_id": fav.player_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.agent_favorites.insert_one(fav_doc)
+    return {"message": "Added to watchlist"}
+
+
+@api_router.get("/agent/favorites", response_model=List[PlayerProfile])
+async def get_agent_favorites(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'agent':
+        raise HTTPException(status_code=403, detail="Not an agent")
+    
+    favorites = await db.agent_favorites.find({"agent_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
+    player_ids = [fav['player_id'] for fav in favorites]
+    
+    players = await db.players.find({"user_id": {"$in": player_ids}}, {"_id": 0}).to_list(1000)
+    players = [strip_player_private_info(p) for p in players]
+    return [PlayerProfile(**p) for p in players]
+
+
+@api_router.delete("/agent/favorites/{player_id}")
+async def remove_agent_favorite(player_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'agent':
+        raise HTTPException(status_code=403, detail="Not an agent")
+    
+    result = await db.agent_favorites.delete_one({
+        "agent_id": current_user['user_id'],
+        "player_id": player_id
+    })
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Favorite not found")
+    return {"message": "Removed from watchlist"}
+
+
+@api_router.get("/agent/opportunities", response_model=List[Opportunity])
+async def get_agent_opportunities(current_user: dict = Depends(get_current_user)):
+    """Agent views all opportunities to match with players"""
+    if current_user['role'] != 'agent':
+        raise HTTPException(status_code=403, detail="Not an agent")
+    
+    opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
+    return [Opportunity(**opp) for opp in opportunities]
+
+
+# Admin Agent endpoints
+@api_router.get("/admin/agents", response_model=List[AgentProfile])
+async def get_all_agents(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    agents = await db.agents.find({}, {"_id": 0}).to_list(1000)
+    return [AgentProfile(**a) for a in agents]
+
+
+@api_router.put("/admin/agents/{user_id}/approve")
+async def approve_agent(user_id: str, approval: UserApproval, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    result = await db.agents.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return {"message": "Updated"}
+
+
+@api_router.put("/admin/agents/{user_id}/verify")
+async def verify_agent(user_id: str, verified: bool, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    result = await db.agents.update_one({"user_id": user_id}, {"$set": {"verified": verified}})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return {"message": "Updated"}
+
+
+# ============ SPECIALIST ENDPOINTS ============
+@api_router.get("/specialist/profile", response_model=SpecialistProfile)
+async def get_specialist_profile(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'specialist':
+        raise HTTPException(status_code=403, detail="Not a specialist")
+    
+    specialist = await db.specialists.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not specialist:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return SpecialistProfile(**specialist)
+
+
+@api_router.put("/specialist/profile", response_model=SpecialistProfile)
+async def update_specialist_profile(update: SpecialistUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'specialist':
+        raise HTTPException(status_code=403, detail="Not a specialist")
+    
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if update_data:
+        await db.specialists.update_one(
+            {"user_id": current_user['user_id']},
+            {"$set": update_data}
+        )
+    
+    specialist = await db.specialists.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    return SpecialistProfile(**specialist)
+
+
+@api_router.get("/specialist/players", response_model=List[PlayerProfile])
+async def get_specialist_players(
+    position: Optional[str] = None,
+    nationality: Optional[str] = None,
+    level: Optional[str] = None,
+    name: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Specialist searches for players to offer services"""
+    if current_user['role'] != 'specialist':
+        raise HTTPException(status_code=403, detail="Not a specialist")
+    
+    query = {"approved": True}
+    if position:
+        query['position'] = position
+    if nationality:
+        query['$or'] = [
+            {'nationality': nationality},
+            {'nationality_1': nationality},
+            {'nationality_2': nationality},
+            {'nationality_3': nationality}
+        ]
+    if level:
+        query['playing_level'] = level
+    if name:
+        query['name'] = {"$regex": name, "$options": "i"}
+    
+    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    players = [strip_player_private_info(p) for p in players]
+    return [PlayerProfile(**p) for p in players]
+
+
+@api_router.get("/specialist/player/{player_id}", response_model=PlayerProfile)
+async def get_specialist_player_detail(player_id: str, current_user: dict = Depends(get_current_user)):
+    """Specialist views a specific player's profile"""
+    if current_user['role'] != 'specialist':
+        raise HTTPException(status_code=403, detail="Not a specialist")
+    
+    player = await db.players.find_one({"user_id": player_id, "approved": True}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    player = strip_player_private_info(player)
+    return PlayerProfile(**player)
+
+
+# Specialist favorites (client list)
+@api_router.post("/specialist/favorites")
+async def add_specialist_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'specialist':
+        raise HTTPException(status_code=403, detail="Not a specialist")
+    
+    existing = await db.specialist_favorites.find_one({
+        "specialist_id": current_user['user_id'],
+        "player_id": fav.player_id
+    }, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already in client list")
+    
+    fav_doc = {
+        "id": str(uuid.uuid4()),
+        "specialist_id": current_user['user_id'],
+        "player_id": fav.player_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.specialist_favorites.insert_one(fav_doc)
+    return {"message": "Added to client list"}
+
+
+@api_router.get("/specialist/favorites", response_model=List[PlayerProfile])
+async def get_specialist_favorites(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'specialist':
+        raise HTTPException(status_code=403, detail="Not a specialist")
+    
+    favorites = await db.specialist_favorites.find({"specialist_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
+    player_ids = [fav['player_id'] for fav in favorites]
+    
+    players = await db.players.find({"user_id": {"$in": player_ids}}, {"_id": 0}).to_list(1000)
+    players = [strip_player_private_info(p) for p in players]
+    return [PlayerProfile(**p) for p in players]
+
+
+@api_router.delete("/specialist/favorites/{player_id}")
+async def remove_specialist_favorite(player_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'specialist':
+        raise HTTPException(status_code=403, detail="Not a specialist")
+    
+    result = await db.specialist_favorites.delete_one({
+        "specialist_id": current_user['user_id'],
+        "player_id": player_id
+    })
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Favorite not found")
+    return {"message": "Removed from client list"}
+
+
+# Get specialist types and certifications
+@api_router.get("/specialist/types")
+async def get_specialist_types():
+    """Get available specialist types and certifications"""
+    return {
+        "types": SPECIALIST_TYPES,
+        "certifications": SPECIALIST_CERTIFICATIONS
+    }
+
+
+# Admin Specialist endpoints
+@api_router.get("/admin/specialists", response_model=List[SpecialistProfile])
+async def get_all_specialists(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    specialists = await db.specialists.find({}, {"_id": 0}).to_list(1000)
+    return [SpecialistProfile(**s) for s in specialists]
+
+
+@api_router.put("/admin/specialists/{user_id}/approve")
+async def approve_specialist(user_id: str, approval: UserApproval, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    result = await db.specialists.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Specialist not found")
+    return {"message": "Updated"}
+
+
+@api_router.put("/admin/specialists/{user_id}/verify")
+async def verify_specialist(user_id: str, verified: bool, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    result = await db.specialists.update_one({"user_id": user_id}, {"$set": {"verified": verified}})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Specialist not found")
+    return {"message": "Updated"}
 
 
 # ============ MATCH ARCHIVE ENDPOINTS ============

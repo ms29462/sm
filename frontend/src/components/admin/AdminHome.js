@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { Users, Building, Flag, FileText, AlertCircle } from 'lucide-react';
+import { Users, Building, Flag, FileText, AlertCircle, Briefcase, Activity } from 'lucide-react';
 
 const AdminHome = () => {
   const [stats, setStats] = useState(null);
@@ -37,7 +37,7 @@ const AdminHome = () => {
         <p className="text-muted-foreground">Platform overview and statistics</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div data-testid="stat-players" className="bg-card border border-border/50 p-6 rounded-sm">
           <div className="flex items-center justify-between mb-4">
             <Users className="w-8 h-8 text-primary" />
@@ -62,20 +62,38 @@ const AdminHome = () => {
           <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">FEDERATIONS</h3>
         </div>
 
+        <div data-testid="stat-pending" className="bg-card border border-yellow-500/50 p-6 rounded-sm">
+          <div className="flex items-center justify-between mb-4">
+            <AlertCircle className="w-8 h-8 text-yellow-500" />
+            <span className="text-3xl font-heading font-bold text-yellow-500">{stats?.pending_approvals || 0}</span>
+          </div>
+          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">PENDING APPROVALS</h3>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div data-testid="stat-agents" className="bg-card border border-border/50 p-6 rounded-sm">
+          <div className="flex items-center justify-between mb-4">
+            <Briefcase className="w-8 h-8 text-primary" />
+            <span className="text-3xl font-heading font-bold">{stats?.total_agents || 0}</span>
+          </div>
+          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">AGENTS</h3>
+        </div>
+
+        <div data-testid="stat-specialists" className="bg-card border border-border/50 p-6 rounded-sm">
+          <div className="flex items-center justify-between mb-4">
+            <Activity className="w-8 h-8 text-primary" />
+            <span className="text-3xl font-heading font-bold">{stats?.total_specialists || 0}</span>
+          </div>
+          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">SPECIALISTS</h3>
+        </div>
+
         <div data-testid="stat-applications" className="bg-card border border-border/50 p-6 rounded-sm">
           <div className="flex items-center justify-between mb-4">
             <FileText className="w-8 h-8 text-primary" />
             <span className="text-3xl font-heading font-bold">{stats?.total_applications || 0}</span>
           </div>
           <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">APPLICATIONS</h3>
-        </div>
-
-        <div data-testid="stat-pending" className="bg-card border border-yellow-500/50 p-6 rounded-sm">
-          <div className="flex items-center justify-between mb-4">
-            <AlertCircle className="w-8 h-8 text-yellow-500" />
-            <span className="text-3xl font-heading font-bold text-yellow-500">{stats?.pending_approvals || 0}</span>
-          </div>
-          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">PENDING</h3>
         </div>
       </div>
 

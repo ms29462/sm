@@ -37,6 +37,10 @@ const Login = ({ admin = false }) => {
         navigate('/club/dashboard');
       } else if (role === 'federation') {
         navigate('/federation/dashboard');
+      } else if (role === 'agent') {
+        navigate('/agent/dashboard');
+      } else if (role === 'specialist') {
+        navigate('/specialist/dashboard');
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Login failed');
