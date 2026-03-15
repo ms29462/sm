@@ -7,6 +7,8 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - **Players**: Create profiles, upload videos/CV, browse and apply to opportunities
 - **Clubs**: Create profiles, post opportunities, view player applications, save favorites
 - **Federations**: National team scouting, manage team groups (Senior, U23, U20, etc.), track eligible players
+- **Agents**: Represent players, search for talent, view club opportunities, manage watchlist
+- **Specialists**: Physiotherapists, nutritionists, trainers - offer services to players
 - **Admin**: Dashboard with stats, approve/verify users, manage content
 
 ### Core Requirements
@@ -150,6 +152,36 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
   - Toggle featured status (featured items shown prominently on home page)
   - View all masterclasses including unpublished
 
+### Phase 10 - Agent & Specialist User Types (Completed - March 2026)
+- [x] **Agent Registration**: New user role with dedicated portal
+- [x] **Specialist Registration**: New user role for physiotherapists, nutritionists, trainers, etc.
+- [x] **Agent Profile Management**:
+  - Agency name, license number, FIFA registration
+  - Country, contact info, bio
+  - Specializations (Youth Players, Professional Players, International Transfers, etc.)
+  - Years experience, players represented, successful transfers
+  - Website and LinkedIn links
+- [x] **Specialist Profile Management**:
+  - Specialist type (Physical Trainer, Physiotherapist, Nutritionist, Sports Psychologist, etc.)
+  - Certifications (FIFA Diploma, UEFA Pro License, NSCA-CSCS, etc.)
+  - Services offered (custom list)
+  - Languages, availability, hourly rate
+  - Current club affiliation
+- [x] **Agent Features**:
+  - Search players with filters (name, position, nationality, level)
+  - Watchlist to track interesting players
+  - View all club opportunities
+  - Dashboard with stats (watchlist count, opportunities)
+- [x] **Specialist Features**:
+  - Search players with filters
+  - Client list to track players
+  - Dashboard with stats (clients, specialization)
+- [x] **Admin Management**:
+  - Agents page with approve/verify controls
+  - Specialists page with approve/verify controls
+  - Updated dashboard stats showing agents and specialists counts
+- [x] **Chat/Video Access**: Both roles can use chat and video features
+
 ## Architecture
 
 ### Backend
@@ -175,12 +207,16 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - `players` - Player profiles (includes transfermarkt_url, nationality_1/2/3)
 - `clubs` - Club profiles
 - `federations` - Federation profiles (name, country, approved status)
+- `agents` - Agent profiles (agency, license, specializations)
+- `specialists` - Specialist profiles (type, certifications, services)
 - `opportunities` - Job postings (includes league_level)
 - `applications` - Player applications
 - `favorites` - Club's favorite players
 - `federation_favorites` - Federation's scouting list
 - `federation_teams` - Federation team groups (Senior, U23, etc.)
 - `federation_team_players` - Players assigned to federation teams
+- `agent_favorites` - Agent's player watchlist
+- `specialist_favorites` - Specialist's client list
 - `match_archive` - Player's past match videos
 - `match_calendar` - Player's upcoming matches
 - `chat_rooms` - Chat room data
@@ -236,6 +272,8 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 ## Credentials
 - **Admin**: admin@soccermatch.com / admin123
 - **Test Federation**: test.federation@soccermatch.com / test123
+- **Test Agent**: test.agent@soccermatch.com / test123
+- **Test Specialist**: test.specialist@soccermatch.com / test123
 - **Demo Player**: demo.player@soccermatch.com / demo123
 
 ## Future/Backlog Tasks (P1)
@@ -248,3 +286,4 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - [ ] Analytics dashboard for clubs
 - [ ] Multi-language support
 - [ ] Automated benchmark data refresh (cron job)
+- [ ] Cloud storage for video uploads (AWS S3/GCS)
