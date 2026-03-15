@@ -1,14 +1,19 @@
+from dotenv import load_dotenv
+import os
+from pathlib import Path
+
+# Load environment variables FIRST before any other imports that might need them
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
+
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, BackgroundTasks, UploadFile, File, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
-from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-import os
 import logging
 import socketio
 import shutil
-from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import List, Optional, Literal, Dict
 import uuid
@@ -29,12 +34,9 @@ from concurrent.futures import ThreadPoolExecutor
 # Background task executor for heavy operations
 background_executor = ThreadPoolExecutor(max_workers=2)
 
-ROOT_DIR = Path(__file__).parent
-
 # Create uploads directory
 UPLOADS_DIR = ROOT_DIR / "uploads" / "videos"
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-load_dotenv(ROOT_DIR / '.env')
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -53,7 +55,7 @@ fastapi_app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR.parent)), na
 chat_room_manager = ChatRoomManager(db)
 video_session_manager = VideoSessionManager(db)
 
-JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
+JWT_SECRET = os.environ['JWT_SECRET']
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24 * 7
 
@@ -639,7 +641,9 @@ async def login(credentials: UserLogin):
 
 @api_router.post("/auth/admin/login", response_model=AuthResponse)
 async def admin_login(credentials: UserLogin):
-    if credentials.email == "admin@soccermatch.com" and credentials.password == "admin123":
+    admin_email = os.environ.get('ADMIN_EMAIL')
+    admin_password = os.environ.get('ADMIN_PASSWORD')
+    if credentials.email == admin_email and credentials.password == admin_password:
         user_id = "admin-001"
         token = create_token(user_id, credentials.email, 'admin')
         return AuthResponse(token=token, role='admin', user_id=user_id, email=credentials.email)

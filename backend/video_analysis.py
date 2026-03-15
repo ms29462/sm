@@ -17,7 +17,7 @@ import httpx
 # Emergent integrations for Gemini
 from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
 
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', 'sk-emergent-0B9390e34C4B56e981')
+EMERGENT_LLM_KEY = os.environ['EMERGENT_LLM_KEY']
 
 # Analysis prompt for comprehensive video analysis
 ANALYSIS_PROMPT = """You are an expert football (soccer) scout and video analyst. Analyze this highlight video and provide a comprehensive assessment.
