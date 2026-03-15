@@ -2123,9 +2123,12 @@ async def approve_agent(user_id: str, approval: UserApproval, current_user: dict
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
     
-    result = await db.agents.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
-    if result.modified_count == 0:
+    # First check if agent exists
+    agent = await db.agents.find_one({"user_id": user_id}, {"_id": 0})
+    if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
+    
+    await db.agents.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
     return {"message": "Updated"}
 
 
@@ -2289,9 +2292,12 @@ async def approve_specialist(user_id: str, approval: UserApproval, current_user:
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
     
-    result = await db.specialists.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
-    if result.modified_count == 0:
+    # First check if specialist exists
+    specialist = await db.specialists.find_one({"user_id": user_id}, {"_id": 0})
+    if not specialist:
         raise HTTPException(status_code=404, detail="Specialist not found")
+    
+    await db.specialists.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
     return {"message": "Updated"}
 
 
@@ -2642,32 +2648,47 @@ async def create_chat_request(
     request_data: ChatRequestCreate,
     current_user: dict = Depends(get_current_user)
 ):
-    """Club creates a chat request to connect with a player"""
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Only clubs can request chats")
+    """Club, Agent, or Specialist creates a chat request to connect with a player"""
+    role = current_user['role']
+    if role not in ['club', 'agent', 'specialist']:
+        raise HTTPException(status_code=403, detail="Only clubs, agents, and specialists can request chats")
     
-    # Check if there's already a pending request
+    # Check if there's already a pending request from this requester
     existing = await db.chat_requests.find_one({
-        "club_id": current_user['user_id'],
+        "requester_id": current_user['user_id'],
         "player_id": request_data.player_id,
         "status": "pending"
     }, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="A pending request already exists for this player")
     
-    # Get player and club info
+    # Get player info
     player = await db.players.find_one({"user_id": request_data.player_id}, {"_id": 0})
-    club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
-    
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
+    
+    # Get requester info based on role
+    requester_name = "Unknown"
+    if role == 'club':
+        requester = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        requester_name = requester.get('name', 'Unknown Club') if requester else 'Unknown Club'
+    elif role == 'agent':
+        requester = await db.agents.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        requester_name = requester.get('name', 'Unknown Agent') if requester else 'Unknown Agent'
+    elif role == 'specialist':
+        requester = await db.specialists.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        requester_name = requester.get('name', 'Unknown Specialist') if requester else 'Unknown Specialist'
     
     chat_request = {
         "id": str(uuid.uuid4()),
         "player_id": request_data.player_id,
-        "club_id": current_user['user_id'],
+        "requester_id": current_user['user_id'],
+        "requester_type": role,
         "player_name": player.get('name', 'Unknown Player'),
-        "club_name": club.get('name', 'Unknown Club'),
+        "requester_name": requester_name,
+        # Legacy fields for backwards compatibility
+        "club_id": current_user['user_id'] if role == 'club' else None,
+        "club_name": requester_name if role == 'club' else None,
         "status": "pending",
         "message": request_data.message,
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -2676,13 +2697,14 @@ async def create_chat_request(
     
     await db.chat_requests.insert_one(chat_request)
     
-    # Create notifications for player and admin
+    # Create notification for player
+    role_label = role.capitalize()
     await db.notifications.insert_one({
         "id": str(uuid.uuid4()),
         "user_id": request_data.player_id,
         "type": "chat_request",
-        "title": "New Chat Request",
-        "message": f"{club.get('name', 'A club')} wants to chat with you",
+        "title": f"New Chat Request from {role_label}",
+        "message": f"{requester_name} ({role_label}) wants to chat with you",
         "reference_id": chat_request["id"],
         "read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -2693,8 +2715,8 @@ async def create_chat_request(
         "id": str(uuid.uuid4()),
         "user_id": "admin-001",
         "type": "chat_request",
-        "title": "New Chat Request",
-        "message": f"{club.get('name', 'Unknown Club')} requests to chat with {player.get('name', 'Unknown Player')}",
+        "title": f"New Chat Request ({role_label})",
+        "message": f"{requester_name} ({role_label}) requests to chat with {player.get('name', 'Unknown Player')}",
         "reference_id": chat_request["id"],
         "read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -2705,14 +2727,14 @@ async def create_chat_request(
 
 @api_router.get("/chat-requests/my", response_model=List[dict])
 async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
-    """Get chat requests for the current user (player sees incoming, club sees outgoing)"""
+    """Get chat requests for the current user (player sees incoming, others see outgoing)"""
     user_id = current_user['user_id']
     role = current_user['role']
     
     if role == 'player':
         requests = await db.chat_requests.find({"player_id": user_id}, {"_id": 0}).to_list(100)
-    elif role == 'club':
-        requests = await db.chat_requests.find({"club_id": user_id}, {"_id": 0}).to_list(100)
+    elif role in ['club', 'agent', 'specialist']:
+        requests = await db.chat_requests.find({"requester_id": user_id}, {"_id": 0}).to_list(100)
     else:
         return []
     
@@ -2752,6 +2774,11 @@ async def respond_to_chat_request(
     player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     player_name = player.get('name', 'Unknown Player') if player else 'Unknown Player'
     
+    # Get requester info - support both new and legacy format
+    requester_name = chat_request.get('requester_name') or chat_request.get('club_name', 'Unknown')
+    requester_type = chat_request.get('requester_type', 'club')
+    requester_id = chat_request.get('requester_id') or chat_request.get('club_id')
+    
     if response.status == 'accepted':
         # Notify admin to create the chat room
         await db.notifications.insert_one({
@@ -2759,37 +2786,42 @@ async def respond_to_chat_request(
             "user_id": "admin-001",
             "type": "chat_request_accepted",
             "title": "Chat Request Accepted",
-            "message": f"{player_name} accepted chat request from {chat_request['club_name']}. Please create the chat room.",
+            "message": f"{player_name} accepted chat request from {requester_name} ({requester_type}). Please create the chat room.",
             "reference_id": request_id,
             "player_id": chat_request['player_id'],
-            "club_id": chat_request['club_id'],
+            "requester_id": requester_id,
+            "requester_type": requester_type,
+            # Legacy fields
+            "club_id": chat_request.get('club_id'),
             "read": False,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         return {"message": "Chat request accepted. Admin will create the chat room."}
     else:
-        # Notify admin and club about rejection
+        # Notify admin about rejection
         await db.notifications.insert_one({
             "id": str(uuid.uuid4()),
             "user_id": "admin-001",
             "type": "chat_request_rejected",
             "title": "Chat Request Rejected",
-            "message": f"{player_name} rejected chat request from {chat_request['club_name']}",
+            "message": f"{player_name} rejected chat request from {requester_name} ({requester_type})",
             "reference_id": request_id,
             "read": False,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         
-        await db.notifications.insert_one({
-            "id": str(uuid.uuid4()),
-            "user_id": chat_request['club_id'],
-            "type": "chat_request_rejected",
-            "title": "Chat Request Rejected",
-            "message": f"{player_name} has declined your chat request",
-            "reference_id": request_id,
-            "read": False,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        })
+        # Notify requester about rejection
+        if requester_id:
+            await db.notifications.insert_one({
+                "id": str(uuid.uuid4()),
+                "user_id": requester_id,
+                "type": "chat_request_rejected",
+                "title": "Chat Request Rejected",
+                "message": f"{player_name} has declined your chat request",
+                "reference_id": request_id,
+                "read": False,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
         return {"message": "Chat request rejected"}
 
 

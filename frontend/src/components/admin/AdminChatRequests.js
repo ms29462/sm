@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { MessageSquare, CheckCircle, XCircle, Clock, Plus } from 'lucide-react';
+import { MessageSquare, CheckCircle, XCircle, Clock, Plus, Building, Briefcase, Activity } from 'lucide-react';
 
 const AdminChatRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -27,7 +27,9 @@ const AdminChatRequests = () => {
   const handleCreateChat = async (request) => {
     setCreatingChat(request.id);
     try {
-      await api.createChatRoom(request.player_id, request.club_id);
+      // Use requester_id if available, fall back to club_id for legacy requests
+      const requesterId = request.requester_id || request.club_id;
+      await api.createChatRoom(request.player_id, requesterId);
       toast.success('Chat room created successfully!');
       loadRequests();
     } catch (error) {
@@ -65,6 +67,29 @@ const AdminChatRequests = () => {
     }
   };
 
+  const getRequesterTypeBadge = (requesterType) => {
+    switch (requesterType) {
+      case 'agent':
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-sm bg-purple-500/10 text-purple-500">
+            <Briefcase className="w-3 h-3 mr-1" /> Agent
+          </span>
+        );
+      case 'specialist':
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-sm bg-cyan-500/10 text-cyan-500">
+            <Activity className="w-3 h-3 mr-1" /> Specialist
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-sm bg-blue-500/10 text-blue-500">
+            <Building className="w-3 h-3 mr-1" /> Club
+          </span>
+        );
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
@@ -77,7 +102,7 @@ const AdminChatRequests = () => {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-heading font-bold uppercase mb-2">CHAT REQUESTS</h1>
-        <p className="text-muted-foreground">Manage chat requests from clubs to players</p>
+        <p className="text-muted-foreground">Manage chat requests from clubs, agents, and specialists to players</p>
       </div>
 
       {requests.length === 0 ? (
@@ -97,11 +122,12 @@ const AdminChatRequests = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
                     {getStatusBadge(request.status)}
+                    {getRequesterTypeBadge(request.requester_type)}
                   </div>
                   <div className="grid grid-cols-2 gap-4 mb-3">
                     <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Club</p>
-                      <p className="font-medium">{request.club_name}</p>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Requester</p>
+                      <p className="font-medium">{request.requester_name || request.club_name}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Player</p>

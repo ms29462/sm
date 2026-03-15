@@ -172,14 +172,19 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
   - Watchlist to track interesting players
   - View all club opportunities
   - Dashboard with stats (watchlist count, opportunities)
+  - Player detail page with full profile
+  - **Chat Request**: Request to connect with players
 - [x] **Specialist Features**:
   - Search players with filters
   - Client list to track players
   - Dashboard with stats (clients, specialization)
+  - Player detail page with physical/performance data
+  - **Chat Request**: Offer services to players
 - [x] **Admin Management**:
   - Agents page with approve/verify controls
   - Specialists page with approve/verify controls
   - Updated dashboard stats showing agents and specialists counts
+  - Chat Requests page shows requester type badges (Club/Agent/Specialist)
 - [x] **Chat/Video Access**: Both roles can use chat and video features
 
 ## Architecture
