@@ -28,6 +28,7 @@ from player_matching import (
     AVAILABLE_LEAGUES, DEFAULT_LEAGUES
 )
 from video_analysis import analyze_highlight_video, calculate_overall_score, analyze_video_with_gemini
+from chatbot_service import SoccerMatchChatbot, search_players_from_criteria, search_opportunities_from_criteria, format_player_results, format_opportunity_results
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
@@ -3030,6 +3031,99 @@ async def get_single_match_score(opportunity_id: str, current_user: dict = Depen
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to calculate match score: {str(e)}")
+
+
+# ============ CHATBOT ENDPOINTS ============
+
+class ChatbotQuery(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+
+class ChatbotResponse(BaseModel):
+    action: str
+    response: Optional[str] = None
+    results: Optional[List[dict]] = None
+    criteria: Optional[dict] = None
+
+# Store chatbot sessions per user
+chatbot_sessions: Dict[str, SoccerMatchChatbot] = {}
+
+@api_router.post("/chatbot/query", response_model=ChatbotResponse)
+async def chatbot_query(
+    query: ChatbotQuery,
+    current_user: dict = Depends(get_current_user)
+):
+    """Process a natural language query through the AI chatbot"""
+    user_id = current_user["user_id"]
+    user_role = current_user["role"]
+    
+    # Get or create chatbot session for this user
+    session_key = query.session_id or user_id
+    if session_key not in chatbot_sessions:
+        chatbot_sessions[session_key] = SoccerMatchChatbot(session_id=session_key)
+    
+    chatbot = chatbot_sessions[session_key]
+    
+    try:
+        # Process the query through the LLM
+        result = await chatbot.process_query(query.message, user_role)
+        
+        action = result.get("action", "conversation")
+        
+        if action == "search_players":
+            # Execute player search
+            criteria = result.get("criteria", {})
+            players = await search_players_from_criteria(db, criteria)
+            formatted = format_player_results(players)
+            return ChatbotResponse(
+                action="search_players",
+                response=formatted,
+                results=players[:10],
+                criteria=criteria
+            )
+        
+        elif action == "search_opportunities":
+            # Execute opportunity search
+            criteria = result.get("criteria", {})
+            opportunities = await search_opportunities_from_criteria(db, criteria)
+            formatted = format_opportunity_results(opportunities)
+            return ChatbotResponse(
+                action="search_opportunities",
+                response=formatted,
+                results=opportunities[:10],
+                criteria=criteria
+            )
+        
+        elif action == "error":
+            return ChatbotResponse(
+                action="error",
+                response=result.get("response", "Une erreur s'est produite")
+            )
+        
+        else:
+            # Regular conversation response
+            return ChatbotResponse(
+                action="conversation",
+                response=result.get("response", "")
+            )
+    
+    except Exception as e:
+        logger.error(f"Chatbot error: {e}")
+        return ChatbotResponse(
+            action="error",
+            response=f"Désolé, une erreur s'est produite: {str(e)}"
+        )
+
+
+@api_router.delete("/chatbot/session")
+async def clear_chatbot_session(
+    current_user: dict = Depends(get_current_user)
+):
+    """Clear the chatbot session for the current user"""
+    user_id = current_user["user_id"]
+    if user_id in chatbot_sessions:
+        del chatbot_sessions[user_id]
+    return {"success": True, "message": "Session cleared"}
 
 
 fastapi_app.include_router(api_router)

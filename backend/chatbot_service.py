@@ -5,8 +5,9 @@ Handles natural language queries and searches the database accordingly
 import os
 import json
 import re
+import uuid
 from typing import List, Dict, Any, Optional
-from emergentintegrations.llm.chat import Chat, Message
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 EMERGENT_LLM_KEY = os.environ['EMERGENT_LLM_KEY']
 
@@ -58,13 +59,15 @@ IMPORTANT:
 - Les positions en anglais: Milieu de terrain = "Midfielder", Défenseur = "Defender", Attaquant = "Forward"/"Striker", Gardien = "Goalkeeper", Ailier = "Winger"
 """
 
+
 class SoccerMatchChatbot:
-    def __init__(self):
-        self.chat = Chat(
+    def __init__(self, session_id: str = None):
+        self.session_id = session_id or f"chatbot-{uuid.uuid4()}"
+        self.chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
-            model="gemini-2.0-flash",
-            system_prompt=SYSTEM_PROMPT
-        )
+            session_id=self.session_id,
+            system_message=SYSTEM_PROMPT
+        ).with_model("gemini", "gemini-2.5-flash")
     
     async def process_query(self, user_message: str, user_role: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
         """
@@ -73,19 +76,12 @@ class SoccerMatchChatbot:
         # Add context about user role
         context = f"[Contexte: L'utilisateur est un(e) {self._translate_role(user_role)}]\n\n{user_message}"
         
-        # Build messages from history
-        messages = []
-        if conversation_history:
-            for msg in conversation_history[-5:]:  # Keep last 5 messages for context
-                messages.append(Message(
-                    role="user" if msg.get("role") == "user" else "assistant",
-                    content=msg.get("content", "")
-                ))
-        
-        messages.append(Message(role="user", content=context))
-        
         try:
-            response = self.chat.message(messages=messages)
+            # Create user message
+            message = UserMessage(text=context)
+            
+            # Send message and get response
+            response = await self.chat.send_message(message)
             return self._parse_response(response)
         except Exception as e:
             return {
@@ -108,8 +104,17 @@ class SoccerMatchChatbot:
         """Parse the LLM response and extract JSON if present"""
         # Try to find JSON in the response
         try:
+            # Clean up response - remove markdown code blocks if present
+            response_text = response.strip()
+            if response_text.startswith('```json'):
+                response_text = response_text[7:]
+            if response_text.startswith('```'):
+                response_text = response_text[3:]
+            if response_text.endswith('```'):
+                response_text = response_text[:-3]
+            
             # Look for JSON block
-            json_match = re.search(r'\{[\s\S]*\}', response)
+            json_match = re.search(r'\{[\s\S]*\}', response_text)
             if json_match:
                 json_str = json_match.group()
                 parsed = json.loads(json_str)

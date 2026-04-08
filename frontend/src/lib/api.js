@@ -177,4 +177,8 @@ export const api = {
   getAllSpecialists: () => axios.get(`${API}/admin/specialists`, { headers: getAuthHeaders() }),
   approveSpecialist: (userId, approved) => axios.put(`${API}/admin/specialists/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
   verifySpecialist: (userId, verified) => axios.put(`${API}/admin/specialists/${userId}/verify?verified=${verified}`, {}, { headers: getAuthHeaders() }),
+
+  // Chatbot
+  sendChatbotQuery: (message, sessionId = null) => axios.post(`${API}/chatbot/query`, { message, session_id: sessionId }, { headers: getAuthHeaders() }),
+  clearChatbotSession: () => axios.delete(`${API}/chatbot/session`, { headers: getAuthHeaders() }),
 };
