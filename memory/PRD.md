@@ -274,6 +274,10 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - `PUT /api/admin/masterclass/{id}` - Update masterclass (admin only)
 - `DELETE /api/admin/masterclass/{id}` - Delete masterclass (admin only)
 
+### Chatbot Endpoints
+- `POST /api/chatbot/query` - Process natural language query (returns action, response, results)
+- `DELETE /api/chatbot/session` - Clear chatbot session for current user
+
 ## Credentials
 - **Admin**: admin@soccermatch.com / admin123
 - **Test Federation**: test.federation@soccermatch.com / test123
@@ -320,3 +324,33 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
 - [ ] Multi-language support
 - [ ] Automated benchmark data refresh (cron job)
 - [ ] Cloud storage for video uploads (AWS S3/GCS)
+
+### Phase 12 - AI Database Chatbot (Completed - April 2026)
+- [x] **Floating Chatbot UI**:
+  - Floating button (bottom-right) with sparkle indicator
+  - Chat window with modern dark theme (emerald accents)
+  - Message bubbles for user and assistant
+  - Loading indicator during AI processing
+  - Clear conversation button
+  - "Propulsé par l'IA Gemini" branding
+- [x] **Natural Language to Database Queries**:
+  - French language support (system prompt in French)
+  - Translates queries like "milieux gauchers franco-gambiens" to MongoDB filters
+  - Supports player searches by: position, nationality (multiple), preferred foot, age, playing level, name
+  - Supports opportunity searches by: position, country, league level
+- [x] **AI Integration**:
+  - Google Gemini (gemini-2.5-flash) via emergentintegrations library
+  - EMERGENT_LLM_KEY for authentication
+  - Session management per user
+- [x] **API Endpoints**:
+  - POST /api/chatbot/query - Process natural language query
+  - DELETE /api/chatbot/session - Clear chat session
+- [x] **Multi-Role Access**:
+  - Available to all logged-in users (Player, Club, Admin, Federation, Agent, Specialist)
+  - Role context included in AI prompts
+- [x] **Response Types**:
+  - "conversation" - General questions/answers
+  - "search_players" - Player database search with formatted results
+  - "search_opportunities" - Opportunity database search
+  - "error" - Error handling with French messages
+
