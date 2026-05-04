@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -166,7 +166,43 @@ const ClubProfile = () => {
                 className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
               />
             </div>
-
+<div>
+  <Label htmlFor="city" className="text-sm font-medium uppercase tracking-wide">
+    City
+  </Label>
+  <Input
+    id="city"
+    type="text"
+    value={formData.city || ''}
+    onChange={(e) => handleChange('city', e.target.value)}
+    className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+  />
+</div>
+<div>
+  <Label htmlFor="stadium" className="text-sm font-medium uppercase tracking-wide">
+    Stadium
+  </Label>
+  <Input
+    id="stadium"
+    type="text"
+    value={formData.stadium || ''}
+    onChange={(e) => handleChange('stadium', e.target.value)}
+    className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+  />
+</div>
+<div>
+  <Label htmlFor="founded_year" className="text-sm font-medium uppercase tracking-wide">
+    Founded Year
+  </Label>
+  <Input
+    id="founded_year"
+    type="number"
+    value={formData.founded_year || ''}
+    onChange={(e) => handleChange('founded_year', parseInt(e.target.value))}
+    placeholder="e.g. 1905"
+    className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+  />
+</div>
             {/* League dropdown */}
             <div>
               <Label htmlFor="league" className="text-sm font-medium uppercase tracking-wide">
@@ -180,12 +216,12 @@ const ClubProfile = () => {
                 className={selectClass}
               >
                 <option value="">Select a league...</option>
-                <optgroup label="Europe — Top 5">
+                <optgroup label="Europe â€” Top 5">
                   {['Premier League','La Liga','Bundesliga','Serie A','Ligue 1'].map(l => (
                     <option key={l} value={l}>{l}</option>
                   ))}
                 </optgroup>
-                <optgroup label="Europe — Secondary">
+                <optgroup label="Europe â€” Secondary">
                   {['Eredivisie','Primeira Liga','Pro League','Challenger Pro League','Championship','League One','League Two'].map(l => (
                     <option key={l} value={l}>{l}</option>
                   ))}

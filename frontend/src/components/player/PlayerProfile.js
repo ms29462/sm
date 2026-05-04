@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -438,7 +438,49 @@ const PlayerProfile = () => {
                 className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
               />
             </div>
-
+<div>
+  <Label htmlFor="contract_until" className="text-sm font-medium uppercase tracking-wide">
+    Contract Until
+  </Label>
+  <Input
+    id="contract_until"
+    type="text"
+    value={formData.contract_until || ''}
+    onChange={(e) => handleChange('contract_until', e.target.value)}
+    placeholder="e.g. June 2026"
+    className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+  />
+</div>
+<div>
+  <Label htmlFor="market_value" className="text-sm font-medium uppercase tracking-wide">
+    Market Value
+  </Label>
+  <Input
+    id="market_value"
+    type="text"
+    value={formData.market_value || ''}
+    onChange={(e) => handleChange('market_value', e.target.value)}
+    placeholder="e.g. €500,000"
+    className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+  />
+</div>
+<div>
+  <Label htmlFor="visibility" className="text-sm font-medium uppercase tracking-wide">
+    Profile Visibility
+  </Label>
+  <select
+    id="visibility"
+    value={formData.visibility || 'public'}
+    onChange={(e) => handleChange('visibility', e.target.value)}
+    className="mt-2 w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white appearance-none cursor-pointer"
+  >
+    <option value="public">Public — visible to everyone</option>
+    <option value="clubs_only">Clubs only</option>
+    <option value="agents_only">Agents only</option>
+    <option value="private">Private — only me</option>
+  </select>
+  <p className="text-xs text-muted-foreground mt-1">Control who can see your profile</p>
+</div>
             <div>
               <Label htmlFor="playing_level" className="text-sm font-medium uppercase tracking-wide">
                 Playing Level
