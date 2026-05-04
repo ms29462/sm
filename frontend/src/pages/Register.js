@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ const Register = () => {
     try {
       const response = await api.register({ name, email, password, role });
       const { token, role: userRole, user_id, email: userEmail } = response.data;
-      login(token, userRole, user_id, userEmail);
+      login(token, userRole, user_id, userEmail, response.data.refresh_token);
       toast.success('Registration successful!');
 
       if (userRole === 'player') {

@@ -1,4 +1,4 @@
-from dotenv import load_dotenv
+﻿from dotenv import load_dotenv
 import os
 from pathlib import Path
 
@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, BackgroundTasks, UploadFile, File, Form
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, BackgroundTasks, UploadFile, File, Form, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
@@ -196,9 +196,11 @@ class ClubProfile(BaseModel):
     model_config = ConfigDict(extra="ignore")
     user_id: str
     name: str
-    email: Optional[str] = None  # Only visible to admin
+    email: Optional[str] = None
     country: Optional[str] = None
     league: Optional[str] = None
+    league_level: Optional[str] = None
+    playing_level: Optional[Literal['Amateur', 'Semi-Professional', 'Professional']] = None
     logo: Optional[str] = None
     approved: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -215,6 +217,8 @@ class ClubUpdate(BaseModel):
     name: Optional[str] = None
     country: Optional[str] = None
     league: Optional[str] = None
+    league_level: Optional[str] = None
+    playing_level: Optional[Literal['Amateur', 'Semi-Professional', 'Professional']] = None
     logo: Optional[str] = None
 
 
@@ -639,6 +643,34 @@ async def login(credentials: UserLogin):
     user_id = user.get('user_id', user.get('id'))
     token = create_token(user_id, user['email'], user['role'])
     return AuthResponse(token=token, role=user['role'], user_id=user_id, email=user['email'])
+
+@api_router.post("/auth/refresh")
+async def refresh_token(request: Request):
+    """Get a new access token using a refresh token"""
+    body = await request.json()
+    refresh_token = body.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=400, detail="Refresh token required")
+    try:
+        payload = jwt.decode(refresh_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        user_id = payload["user_id"]
+        email = payload["email"]
+        role = payload["role"]
+        new_access_token = create_token(user_id, email, role)
+        new_refresh_token = create_refresh_token(user_id, email, role)
+        return {
+            "token": new_access_token,
+            "refresh_token": new_refresh_token,
+            "role": role,
+            "user_id": user_id,
+            "email": email
+        }
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Refresh token expired - please login again")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
 
 @api_router.post("/auth/admin/login", response_model=AuthResponse)
 async def admin_login(credentials: UserLogin):
@@ -1501,7 +1533,7 @@ async def get_players(
     players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
 
-@api_router.get("/players/recommended", response_model=List[PlayerProfile])
+@api_router.get("/players/recommended-list", response_model=List[PlayerProfile])
 async def get_recommended_players(current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'club':
         raise HTTPException(status_code=403, detail="Not a club")
@@ -2621,6 +2653,35 @@ async def get_my_chats(current_user: dict = Depends(get_current_user)):
         for r in my_rooms
     ]
 
+@api_router.get("/chat/{room_id}/messages")
+async def get_chat_messages(room_id: str, before: str = None, limit: int = 50, current_user: dict = Depends(get_current_user)):
+    """Get paginated messages for a chat room"""
+    user_id = current_user["user_id"]
+    
+    # Verify user belongs to this room
+    room = await db.chat_rooms.find_one({"id": room_id}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Chat room not found")
+    if user_id not in [room.get("player_id"), room.get("club_id")] and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Build query - load messages before a given timestamp for pagination
+    query = {"room_id": room_id}
+    if before:
+        query["timestamp"] = {"$lt": before}
+    
+    messages = await db.chat_messages.find(
+        query, {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    # Reverse to get chronological order
+    messages.reverse()
+    
+    return {
+        "messages": messages,
+        "has_more": len(messages) == limit
+    }
+
 @api_router.get("/my-videos")
 async def get_my_videos(current_user: dict = Depends(get_current_user)):
     """Get video sessions for current user (player or club)"""
@@ -3111,7 +3172,7 @@ async def chatbot_query(
         logger.error(f"Chatbot error: {e}")
         return ChatbotResponse(
             action="error",
-            response=f"Désolé, une erreur s'est produite: {str(e)}"
+            response=f"DÃ©solÃ©, une erreur s'est produite: {str(e)}"
         )
 
 
@@ -3164,11 +3225,12 @@ async def join_chat_room(sid, data):
         await sio.enter_room(sid, room_id)
         logger.info(f"User {user_id} joined chat room {room_id}")
         
-        # Load previous messages
         room = await chat_room_manager.get_chat_room(room_id)
+        
         if room:
+            
             await sio.emit('previous_messages', {
-                'messages': [m.model_dump() for m in room.messages[-50:]]  # Last 50 messages
+                'messages': [m.model_dump() for m in room.messages[-50:]]
             }, room=sid)
 
 @sio.event
@@ -3287,3 +3349,18 @@ async def shutdown_db_client():
 # Wrap FastAPI with Socket.IO
 socket_app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app, socketio_path='/api/socket.io')
 app = socket_app
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

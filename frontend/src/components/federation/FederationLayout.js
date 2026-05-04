@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+﻿import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
@@ -98,16 +98,6 @@ const FederationLayout = ({ children }) => {
               Team Groups
             </Button>
           </Link>
-          <Link to="/federation/video-analysis">
-            <Button
-              data-testid="nav-video-analysis-btn"
-              variant={isActive('/federation/video-analysis') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Sparkles className="w-4 h-4 mr-3" />
-              AI Video Analysis
-            </Button>
-          </Link>
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
@@ -135,3 +125,4 @@ const FederationLayout = ({ children }) => {
 };
 
 export default FederationLayout;
+

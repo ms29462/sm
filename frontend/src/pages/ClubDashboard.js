@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+﻿import { Routes, Route } from 'react-router-dom';
 import ClubLayout from '@/components/club/ClubLayout';
 import ClubHome from '@/components/club/ClubHome';
 import ClubProfile from '@/components/club/ClubProfile';
@@ -9,7 +9,6 @@ import ClubFavorites from '@/components/club/ClubFavorites';
 import PlayerDetailView from '@/components/club/PlayerDetailView';
 import ChatList from '@/components/chat/ChatList';
 import VideoList from '@/components/video/VideoList';
-import ScoutVideoAnalysis from '@/components/shared/ScoutVideoAnalysis';
 
 const ClubDashboard = () => {
   return (
@@ -22,7 +21,6 @@ const ClubDashboard = () => {
         <Route path="player/:playerId" element={<PlayerDetailView />} />
         <Route path="applications" element={<ClubApplications />} />
         <Route path="favorites" element={<ClubFavorites />} />
-        <Route path="video-analysis" element={<ScoutVideoAnalysis />} />
         <Route path="chats" element={<ChatList />} />
         <Route path="videos" element={<VideoList />} />
         <Route path="*" element={<ClubHome />} />

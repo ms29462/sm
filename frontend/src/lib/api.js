@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -32,7 +32,7 @@ export const api = {
   updateApplicationStatus: (id, status) => axios.put(`${API}/applications/${id}/status`, { status }, { headers: getAuthHeaders() }),
   getPlayers: (filters) => axios.get(`${API}/players`, { params: filters, headers: getAuthHeaders() }),
   getPlayerDetail: (playerId) => axios.get(`${API}/players/${playerId}`, { headers: getAuthHeaders() }),
-  getRecommendedPlayers: () => axios.get(`${API}/players/recommended`, { headers: getAuthHeaders() }),
+  getRecommendedPlayers: () => axios.get(`${API}/players/recommended-list`, { headers: getAuthHeaders() }),
   addFavorite: (playerId) => axios.post(`${API}/favorites`, { player_id: playerId }, { headers: getAuthHeaders() }),
   getFavorites: () => axios.get(`${API}/favorites`, { headers: getAuthHeaders() }),
   removeFavorite: (playerId) => axios.delete(`${API}/favorites/${playerId}`, { headers: getAuthHeaders() }),
@@ -116,21 +116,7 @@ export const api = {
   deleteMatchFromCalendar: (matchId) => axios.delete(`${API}/player/match-calendar/${matchId}`, { headers: getAuthHeaders() }),
   getPlayerMatchCalendarPublic: (playerId) => axios.get(`${API}/players/${playerId}/match-calendar`, { headers: getAuthHeaders() }),
 
-  // Video Analysis
-  triggerVideoAnalysis: () => axios.post(`${API}/player/video-analysis/trigger`, {}, { headers: getAuthHeaders() }),
-  getVideoAnalysis: () => axios.get(`${API}/player/video-analysis`, { headers: getAuthHeaders() }),
-  getVideoAnalysisStatus: () => axios.get(`${API}/player/video-analysis/status`, { headers: getAuthHeaders() }),
-  getPlayerVideoAnalysis: (playerId) => axios.get(`${API}/players/${playerId}/video-analysis`, { headers: getAuthHeaders() }),
-
-  // Video Upload & Analysis
-  uploadVideoForAnalysis: (formData, onProgress) => axios.post(`${API}/video-upload/analyze`, formData, {
-    headers: { ...getAuthHeaders(), 'Content-Type': 'multipart/form-data' },
-    onUploadProgress: onProgress
-  }),
-  getUploadedAnalyses: () => axios.get(`${API}/video-upload/analyses`, { headers: getAuthHeaders() }),
-  getUploadedAnalysis: (analysisId) => axios.get(`${API}/video-upload/analysis/${analysisId}`, { headers: getAuthHeaders() }),
-  deleteUploadedAnalysis: (analysisId) => axios.delete(`${API}/video-upload/analysis/${analysisId}`, { headers: getAuthHeaders() }),
-
+  
   // Masterclass
   getMasterclassCategories: () => axios.get(`${API}/masterclass/categories`),
   getMasterclasses: (params) => axios.get(`${API}/masterclass`, { params }),
@@ -178,7 +164,7 @@ export const api = {
   approveSpecialist: (userId, approved) => axios.put(`${API}/admin/specialists/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
   verifySpecialist: (userId, verified) => axios.put(`${API}/admin/specialists/${userId}/verify?verified=${verified}`, {}, { headers: getAuthHeaders() }),
 
-  // Chatbot
-  sendChatbotQuery: (message, sessionId = null) => axios.post(`${API}/chatbot/query`, { message, session_id: sessionId }, { headers: getAuthHeaders() }),
-  clearChatbotSession: () => axios.delete(`${API}/chatbot/session`, { headers: getAuthHeaders() }),
+
 };
+
+

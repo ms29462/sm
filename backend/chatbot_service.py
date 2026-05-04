@@ -7,9 +7,9 @@ import json
 import re
 import uuid
 from typing import List, Dict, Any, Optional
-from emergentintegrations.llm.chat import LlmChat, UserMessage
 
-EMERGENT_LLM_KEY = os.environ['EMERGENT_LLM_KEY']
+
+
 
 # System prompt for the AI assistant
 SYSTEM_PROMPT = """Tu es l'assistant IA de SoccerMatch, une plateforme qui connecte les joueurs de football avec les clubs, agents et spécialistes.
@@ -60,35 +60,31 @@ IMPORTANT:
 """
 
 
+import google.generativeai as genai
+
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+genai.configure(api_key=GEMINI_API_KEY)
+
 class SoccerMatchChatbot:
     def __init__(self, session_id: str = None):
         self.session_id = session_id or f"chatbot-{uuid.uuid4()}"
-        self.chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=self.session_id,
-            system_message=SYSTEM_PROMPT
-        ).with_model("gemini", "gemini-2.5-flash")
-    
+        self.model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=SYSTEM_PROMPT
+        )
+        self.chat = self.model.start_chat(history=[])
+
     async def process_query(self, user_message: str, user_role: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
-        """
-        Process a user query and return either search results or a conversation response
-        """
-        # Add context about user role
         context = f"[Contexte: L'utilisateur est un(e) {self._translate_role(user_role)}]\n\n{user_message}"
-        
         try:
-            # Create user message
-            message = UserMessage(text=context)
-            
-            # Send message and get response
-            response = await self.chat.send_message(message)
-            return self._parse_response(response)
+            response = self.chat.send_message(context)
+            return self._parse_response(response.text)
         except Exception as e:
             return {
                 "action": "error",
                 "response": f"Désolé, une erreur s'est produite: {str(e)}"
             }
-    
+
     def _translate_role(self, role: str) -> str:
         translations = {
             "player": "joueur",
@@ -99,12 +95,9 @@ class SoccerMatchChatbot:
             "admin": "administrateur"
         }
         return translations.get(role, role)
-    
+
     def _parse_response(self, response: str) -> Dict[str, Any]:
-        """Parse the LLM response and extract JSON if present"""
-        # Try to find JSON in the response
         try:
-            # Clean up response - remove markdown code blocks if present
             response_text = response.strip()
             if response_text.startswith('```json'):
                 response_text = response_text[7:]
@@ -112,17 +105,12 @@ class SoccerMatchChatbot:
                 response_text = response_text[3:]
             if response_text.endswith('```'):
                 response_text = response_text[:-3]
-            
-            # Look for JSON block
             json_match = re.search(r'\{[\s\S]*\}', response_text)
             if json_match:
-                json_str = json_match.group()
-                parsed = json.loads(json_str)
+                parsed = json.loads(json_match.group())
                 return parsed
         except json.JSONDecodeError:
             pass
-        
-        # If no valid JSON, return as conversation
         return {
             "action": "conversation",
             "response": response

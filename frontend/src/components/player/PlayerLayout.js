@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+﻿import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -76,16 +76,6 @@ const PlayerLayout = ({ children }) => {
             >
               <Target className="w-4 h-4 mr-3" />
               Match Scores
-            </Button>
-          </Link>
-          <Link to="/player/video-analysis">
-            <Button
-              data-testid="nav-video-analysis-btn"
-              variant={isActive('/player/video-analysis') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Sparkles className="w-4 h-4 mr-3" />
-              AI Video Analysis
             </Button>
           </Link>
           <Link to="/player/masterclass">

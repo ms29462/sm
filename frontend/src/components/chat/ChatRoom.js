@@ -1,13 +1,26 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import useSocket from '@/hooks/useSocket';
-import { useNotifications } from '@/context/NotificationContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+﻿import { useState, useEffect, useRef, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import useSocket from "@/hooks/useSocket";
+import { useNotifications } from "@/context/NotificationContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Send, ArrowLeft, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { api } from "@/lib/api";
+
+const formatMessageTime = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+  const timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (diffDays === 0) return timeStr;
+  if (diffDays === 1) return `Yesterday ${timeStr}`;
+  if (diffDays < 7) return `${date.toLocaleDateString([], { weekday: "short" })} ${timeStr}`;
+  return `${date.toLocaleDateString([], { day: "2-digit", month: "short" })} ${timeStr}`;
+};
 
 const ChatRoom = () => {
   const { roomId } = useParams();
@@ -15,62 +28,122 @@ const ChatRoom = () => {
   const { user } = useAuth();
   const { markChatAsRead } = useNotifications();
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [roomInfo, setRoomInfo] = useState(null);
+  const [newMessage, setNewMessage] = useState("");
+  const [typingUser, setTypingUser] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const messagesEndRef = useRef(null);
+  const scrollAreaRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const isTypingRef = useRef(false);
   const { socket, emit, on, off, isConnected } = useSocket();
 
   useEffect(() => {
-    // Mark this chat as read when opened
     markChatAsRead(roomId);
   }, [roomId, markChatAsRead]);
 
   useEffect(() => {
     if (socket && isConnected && roomId) {
-      // Join chat room
-      emit('join_chat_room', {
+      emit("join_chat_room", {
         room_id: roomId,
         user_id: user.userId
       });
 
-      // Listen for previous messages
       const handlePreviousMessages = (data) => {
         setMessages(data.messages);
+        setHasMore(data.messages.length === 50);
       };
 
-      // Listen for new messages
       const handleNewMessage = (message) => {
         setMessages(prev => [...prev, message]);
+        setTypingUser(null);
       };
 
-      on('previous_messages', handlePreviousMessages);
-      on('new_chat_message', handleNewMessage);
+      const handleUserTyping = (data) => {
+        if (data.user_id !== user.userId) {
+          setTypingUser(data.sender_name);
+        }
+      };
+
+      const handleUserStoppedTyping = (data) => {
+        if (data.user_id !== user.userId) {
+          setTypingUser(null);
+        }
+      };
+
+      on("previous_messages", handlePreviousMessages);
+      on("new_chat_message", handleNewMessage);
+      on("user_typing", handleUserTyping);
+      on("user_stopped_typing", handleUserStoppedTyping);
 
       return () => {
-        off('previous_messages', handlePreviousMessages);
-        off('new_chat_message', handleNewMessage);
+        off("previous_messages", handlePreviousMessages);
+        off("new_chat_message", handleNewMessage);
+        off("user_typing", handleUserTyping);
+        off("user_stopped_typing", handleUserStoppedTyping);
       };
     }
   }, [socket, isConnected, roomId, emit, on, off, user]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, typingUser]);
+
+  const loadOlderMessages = async () => {
+    if (!hasMore || loadingMore || messages.length === 0) return;
+    setLoadingMore(true);
+    try {
+      const oldest = messages[0];
+      const response = await api.getChatMessages(roomId, oldest.timestamp, 50);
+      const older = response.data.messages;
+      setMessages(prev => [...older, ...prev]);
+      setHasMore(response.data.has_more);
+    } catch (error) {
+      console.error("Failed to load older messages:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const handleTyping = useCallback((value) => {
+    setNewMessage(value);
+    if (!isTypingRef.current && value.length > 0) {
+      isTypingRef.current = true;
+      emit("typing_start", {
+        room_id: roomId,
+        user_id: user.userId,
+        sender_name: user.email
+      });
+    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    if (value.length > 0) {
+      typingTimeoutRef.current = setTimeout(() => {
+        isTypingRef.current = false;
+        emit("typing_stop", { room_id: roomId, user_id: user.userId });
+      }, 2000);
+    } else {
+      isTypingRef.current = false;
+      emit("typing_stop", { room_id: roomId, user_id: user.userId });
+    }
+  }, [roomId, user, emit]);
 
   const handleSendMessage = () => {
     if (newMessage.trim() && isConnected) {
-      emit('send_chat_message', {
+      isTypingRef.current = false;
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      emit("typing_stop", { room_id: roomId, user_id: user.userId });
+      emit("send_chat_message", {
         room_id: roomId,
         sender_id: user.userId,
         sender_name: user.email,
         message: newMessage.trim()
       });
-      setNewMessage('');
+      setNewMessage("");
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -90,26 +163,46 @@ const ChatRoom = () => {
         <div>
           <h2 className="text-xl font-heading font-bold uppercase">CHAT ROOM</h2>
           <p className="text-sm text-muted-foreground">
-            {isConnected ? 'Connected' : 'Connecting...'}
+            {isConnected ? "Connected" : "Connecting..."}
           </p>
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         <div className="space-y-4 max-w-4xl mx-auto">
+
+          {/* Load older messages button */}
+          {hasMore && (
+            <div className="flex justify-center py-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={loadOlderMessages}
+                disabled={loadingMore}
+                className="text-xs text-muted-foreground hover:text-white"
+              >
+                {loadingMore ? (
+                  <><Loader2 className="w-3 h-3 mr-2 animate-spin" /> Loading...</>
+                ) : (
+                  "Load older messages"
+                )}
+              </Button>
+            </div>
+          )}
+
           {messages.map((message) => {
             const isMe = message.sender_id === user.userId;
             return (
               <div
                 key={message.id}
                 data-testid={`message-${message.id}`}
-                className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${isMe ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`max-w-[70%] rounded-sm p-4 ${
                     isMe
-                      ? 'bg-primary text-black'
-                      : 'bg-card border border-border'
+                      ? "bg-primary text-black"
+                      : "bg-card border border-border"
                   }`}
                 >
                   {!isMe && (
@@ -119,12 +212,27 @@ const ChatRoom = () => {
                   )}
                   <p className="text-sm break-words">{message.message}</p>
                   <p className="text-xs mt-2 opacity-70">
-                    {new Date(message.timestamp).toLocaleTimeString()}
+                    {formatMessageTime(message.timestamp)}
                   </p>
                 </div>
               </div>
             );
           })}
+
+          {/* Typing indicator */}
+          {typingUser && (
+            <div className="flex justify-start">
+              <div className="bg-card border border-border rounded-sm px-4 py-3 flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{typingUser} is typing</span>
+                <div className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
@@ -134,7 +242,7 @@ const ChatRoom = () => {
           <Input
             data-testid="message-input"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => handleTyping(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             className="flex-1 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"

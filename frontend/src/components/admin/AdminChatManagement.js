@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { MessageCircle, Trash2, Eye, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+﻿import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { MessageCircle, Trash2, Eye, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const AdminChatManagement = () => {
   const navigate = useNavigate();
@@ -15,9 +16,10 @@ const AdminChatManagement = () => {
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [selectedPlayer, setSelectedPlayer] = useState('');
-  const [selectedClub, setSelectedClub] = useState('');
+  const [selectedPlayer, setSelectedPlayer] = useState("");
+  const [selectedClub, setSelectedClub] = useState("");
   const [creating, setCreating] = useState(false);
+  const [deleteRoomId, setDeleteRoomId] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -34,7 +36,7 @@ const AdminChatManagement = () => {
       setPlayers(playersRes.data.filter(p => p.approved));
       setClubs(clubsRes.data.filter(c => c.approved));
     } catch (error) {
-      toast.error('Failed to load data');
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -42,34 +44,34 @@ const AdminChatManagement = () => {
 
   const handleCreateChatRoom = async () => {
     if (!selectedPlayer || !selectedClub) {
-      toast.error('Please select both player and club');
+      toast.error("Please select both player and club");
       return;
     }
-
     setCreating(true);
     try {
-      const response = await api.createChatRoom(selectedPlayer, selectedClub);
-      toast.success('Chat room created!');
+      await api.createChatRoom(selectedPlayer, selectedClub);
+      toast.success("Chat room created!");
       setShowCreateDialog(false);
-      setSelectedPlayer('');
-      setSelectedClub('');
+      setSelectedPlayer("");
+      setSelectedClub("");
       loadData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to create chat room');
+      toast.error(error.response?.data?.detail || "Failed to create chat room");
     } finally {
       setCreating(false);
     }
   };
 
-  const handleDeleteChatRoom = async (roomId) => {
-    if (!window.confirm('Are you sure you want to delete this chat room?')) return;
-
+  const handleDeleteConfirmed = async () => {
+    if (!deleteRoomId) return;
     try {
-      await api.deleteChatRoom(roomId);
-      toast.success('Chat room deleted');
+      await api.deleteChatRoom(deleteRoomId);
+      toast.success("Chat room deleted");
       loadData();
     } catch (error) {
-      toast.error('Failed to delete chat room');
+      toast.error("Failed to delete chat room");
+    } finally {
+      setDeleteRoomId(null);
     }
   };
 
@@ -87,6 +89,30 @@ const AdminChatManagement = () => {
 
   return (
     <div className="p-8">
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteRoomId} onOpenChange={(open) => !open && setDeleteRoomId(null)}>
+        <AlertDialogContent className="bg-card border border-border/50">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading uppercase">Delete Chat Room</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              Are you sure you want to delete this chat room? All messages will be permanently lost and cannot be recovered.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-sm uppercase text-xs tracking-wide">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirmed}
+              className="bg-destructive text-white hover:bg-destructive/90 rounded-sm uppercase text-xs tracking-wide"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-heading font-bold uppercase mb-2">CHAT MANAGEMENT</h1>
@@ -122,7 +148,7 @@ const AdminChatManagement = () => {
                   <SelectContent>
                     {players.map((player) => (
                       <SelectItem key={player.user_id} value={player.user_id}>
-                        {player.name} ({player.position || 'N/A'})
+                        {player.name} ({player.position || "N/A"})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -143,7 +169,7 @@ const AdminChatManagement = () => {
                   <SelectContent>
                     {clubs.map((club) => (
                       <SelectItem key={club.user_id} value={club.user_id}>
-                        {club.name} ({club.country || 'N/A'})
+                        {club.name} ({club.country || "N/A"})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -155,7 +181,7 @@ const AdminChatManagement = () => {
                 disabled={creating}
                 className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
               >
-                {creating ? 'CREATING...' : 'CREATE CHAT ROOM'}
+                {creating ? "CREATING..." : "CREATE CHAT ROOM"}
               </Button>
             </div>
           </DialogContent>
@@ -178,19 +204,12 @@ const AdminChatManagement = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h3 className="text-xl font-heading font-bold uppercase mb-2">
-                    {room.player_name} ↔ {room.club_name}
+                    {room.player_name} - {room.club_name}
                   </h3>
                   <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                    <span>Messages: {room.message_count}</span>
                     <span>Created: {new Date(room.created_at).toLocaleDateString()}</span>
-                    <span
-                      className={`px-2 py-1 rounded-sm text-xs uppercase ${
-                        room.is_active
-                          ? 'bg-green-500/10 text-green-500'
-                          : 'bg-red-500/10 text-red-500'
-                      }`}
-                    >
-                      {room.is_active ? 'ACTIVE' : 'INACTIVE'}
+                    <span className={`px-2 py-1 rounded-sm text-xs uppercase ${room.is_active ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>
+                      {room.is_active ? "ACTIVE" : "INACTIVE"}
                     </span>
                   </div>
                 </div>
@@ -207,7 +226,7 @@ const AdminChatManagement = () => {
                     data-testid={`delete-btn-${room.id}`}
                     size="icon"
                     variant="ghost"
-                    onClick={() => handleDeleteChatRoom(room.id)}
+                    onClick={() => setDeleteRoomId(room.id)}
                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="w-4 h-4" />

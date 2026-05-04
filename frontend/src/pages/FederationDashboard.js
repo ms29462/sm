@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+﻿import { Routes, Route } from 'react-router-dom';
 import FederationLayout from '@/components/federation/FederationLayout';
 import FederationHome from '@/components/federation/FederationHome';
 import FederationProfile from '@/components/federation/FederationProfile';
@@ -7,7 +7,7 @@ import FederationRecommended from '@/components/federation/FederationRecommended
 import FederationScouting from '@/components/federation/FederationScouting';
 import FederationTeams from '@/components/federation/FederationTeams';
 import FederationPlayerDetailView from '@/components/federation/FederationPlayerDetailView';
-import ScoutVideoAnalysis from '@/components/shared/ScoutVideoAnalysis';
+
 
 const FederationDashboard = () => {
   return (
@@ -20,7 +20,6 @@ const FederationDashboard = () => {
         <Route path="recommended" element={<FederationRecommended />} />
         <Route path="scouting" element={<FederationScouting />} />
         <Route path="teams" element={<FederationTeams />} />
-        <Route path="video-analysis" element={<ScoutVideoAnalysis />} />
         <Route path="*" element={<FederationHome />} />
       </Routes>
     </FederationLayout>
@@ -28,3 +27,4 @@ const FederationDashboard = () => {
 };
 
 export default FederationDashboard;
+

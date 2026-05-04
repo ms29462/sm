@@ -25,44 +25,121 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9"
 }
 
-# Configurable leagues - can be extended
+# Expanded leagues — 25 leagues across 6 continents
 DEFAULT_LEAGUES = {
-    "CPL": "https://www.transfermarkt.us/canadian-premier-league/startseite/wettbewerb/CDN1",
-    "USL Championship": "https://www.transfermarkt.us/usl-championship/startseite/wettbewerb/USL",
-    "USL League One": "https://www.transfermarkt.us/usl-league-one/startseite/wettbewerb/USC3",
-    "Challenger Pro League": "https://www.transfermarkt.us/challenger-pro-league/startseite/wettbewerb/BE2"
+    # North America
+    "CPL":                  "https://www.transfermarkt.us/canadian-premier-league/startseite/wettbewerb/CDN1",
+    "USL Championship":     "https://www.transfermarkt.us/usl-championship/startseite/wettbewerb/USL",
+    "USL League One":       "https://www.transfermarkt.us/usl-league-one/startseite/wettbewerb/USC3",
+    "MLS":                  "https://www.transfermarkt.us/major-league-soccer/startseite/wettbewerb/MLS1",
+    "Liga MX":              "https://www.transfermarkt.us/liga-mx-apertura/startseite/wettbewerb/MEX1",
+
+    # Europe — Top 5
+    "Premier League":       "https://www.transfermarkt.us/premier-league/startseite/wettbewerb/GB1",
+    "La Liga":              "https://www.transfermarkt.us/laliga/startseite/wettbewerb/ES1",
+    "Bundesliga":           "https://www.transfermarkt.us/bundesliga/startseite/wettbewerb/L1",
+    "Serie A":              "https://www.transfermarkt.us/serie-a/startseite/wettbewerb/IT1",
+    "Ligue 1":              "https://www.transfermarkt.us/ligue-1/startseite/wettbewerb/FR1",
+
+    # Europe — Secondary
+    "Eredivisie":           "https://www.transfermarkt.us/eredivisie/startseite/wettbewerb/NL1",
+    "Primeira Liga":        "https://www.transfermarkt.us/liga-nos/startseite/wettbewerb/PO1",
+    "Pro League":           "https://www.transfermarkt.us/jupiler-pro-league/startseite/wettbewerb/BE1",
+    "Challenger Pro League":"https://www.transfermarkt.us/challenger-pro-league/startseite/wettbewerb/BE2",
+    "Championship":         "https://www.transfermarkt.us/championship/startseite/wettbewerb/GB2",
+    "League One":           "https://www.transfermarkt.us/league-one/startseite/wettbewerb/GB3",
+    "League Two":           "https://www.transfermarkt.us/league-two/startseite/wettbewerb/GB4",
+
+    # Africa
+    "South African PSL":    "https://www.transfermarkt.us/dstv-premiership/startseite/wettbewerb/SA1",
+    "Egyptian Premier":     "https://www.transfermarkt.us/egyptian-premier-league/startseite/wettbewerb/EGY1",
+    "Botola Pro":           "https://www.transfermarkt.us/botola-pro/startseite/wettbewerb/MAR1",
+
+    # Asia & Middle East
+    "Saudi Pro League":     "https://www.transfermarkt.us/saudi-professional-league/startseite/wettbewerb/SA1L",
+    "J1 League":            "https://www.transfermarkt.us/j1-league/startseite/wettbewerb/JAP1",
+
+    # South America
+    "Brasileirao":          "https://www.transfermarkt.us/campeonato-brasileiro-serie-a/startseite/wettbewerb/BRA1",
+    "Primera Division":     "https://www.transfermarkt.us/superliga/startseite/wettbewerb/AR1N",
+    "Colombian Primera":    "https://www.transfermarkt.us/liga-betplay-dimayor/startseite/wettbewerb/COL1",
+}
+
+# Expanded league strength ratings
+LEAGUE_STRENGTH = {
+    # Elite
+    "Premier League":       1.80,
+    "La Liga":              1.70,
+    "Bundesliga":           1.60,
+    "Serie A":              1.55,
+    "Ligue 1":              1.45,
+
+    # Strong
+    "Eredivisie":           1.35,
+    "Primeira Liga":        1.30,
+    "Pro League":           1.25,
+    "Saudi Pro League":     1.25,
+    "Brasileirao":          1.20,
+    "MLS":                  1.20,
+    "Liga MX":              1.15,
+    "Primera Division":     1.10,
+    "Colombian Primera":    1.05,
+
+    # Mid
+    "Challenger Pro League":1.10,
+    "Championship":         1.05,
+    "J1 League":            1.00,
+    "USL Championship":     0.95,
+    "Egyptian Premier":     0.95,
+    "South African PSL":    0.90,
+    "Botola Pro":           0.85,
+    "League One":           0.90,
+    "CPL":                  0.85,
+    "USL League One":       0.75,
+    "League Two":           0.80,
+
+    # Lower
+    "National League":      0.70,
+    "Semi-Professional":    0.60,
+    "Amateur":              0.50,
 }
 
 CURRENT_SEASON = 2025
 USE_PREVIOUS_SEASON_ONLY = True
 ANALYSIS_SEASON = CURRENT_SEASON - 1 if USE_PREVIOUS_SEASON_ONLY else CURRENT_SEASON
 
-MAX_WORKERS_CLUBS = 6
-MAX_WORKERS_STATS = 8
+# Performance tuning
+MAX_WORKERS_CLUBS = 10   # increased from 6
+MAX_WORKERS_STATS = 16   # increased from 8
+BENCHMARK_TTL_HOURS = 48 # re-scrape only if data is older than 48 hours
 K_SMALL_SAMPLE = 900
 MIN_ROLE_PLAYERS = 8
 K_NEIGHBORS = 5
 
-LEAGUE_STRENGTH = {
-    "Ligue 1": 1.45,
-    "Challenger Pro League": 1.10,
-    "USL Championship": 0.95,
-    "CPL": 0.85,
-    "USL League One": 0.75,
-    "MLS": 1.20,
-    "Premier League": 1.80,
-    "La Liga": 1.70,
-    "Bundesliga": 1.60,
-    "Serie A": 1.55,
-    "League One": 0.90,
-    "League Two": 0.80,
-    "National League": 0.70,
-    "Semi-Professional": 0.60,
-    "Amateur": 0.50
-}
-
 session = requests.Session()
 session.headers.update(HEADERS)
+
+# In-memory cache to avoid re-scraping within the same server session
+_scrape_cache: Dict[str, Any] = {}
+CACHE_TTL_SECONDS = 3600  # 1 hour
+
+def get_soup_cached(url: str, timeout: int = 30) -> Optional[BeautifulSoup]:
+    """Cached version of get_soup — avoids hitting the same URL twice"""
+    import time
+    now = time.time()
+    if url in _scrape_cache:
+        cached_at, soup = _scrape_cache[url]
+        if now - cached_at < CACHE_TTL_SECONDS:
+            return soup
+    try:
+        r = session.get(url, timeout=timeout)
+        if r.status_code == 200:
+            soup = BeautifulSoup(r.text, "html.parser")
+            _scrape_cache[url] = (now, soup)
+            return soup
+    except Exception:
+        pass
+    return None
 
 # =========================================================
 # HELPERS

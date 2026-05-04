@@ -17,15 +17,9 @@ import { NotificationProvider } from '@/context/NotificationContext';
 import { PWAProvider } from '@/context/PWAContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PWAInstallBanner, { OfflineBanner } from '@/components/mobile/PWAInstallBanner';
-import FloatingChatbot from '@/components/shared/FloatingChatbot';
 
-// Wrapper component to conditionally render chatbot
-const ChatbotWrapper = () => {
-  const { user } = useAuth();
-  // Only show chatbot for logged-in users
-  if (!user) return null;
-  return <FloatingChatbot />;
-};
+
+
 
 function App() {
   return (
@@ -107,7 +101,7 @@ function App() {
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
               <PWAInstallBanner />
-              <ChatbotWrapper />
+              
             </BrowserRouter>
             <Toaster position="top-right" richColors />
           </div>

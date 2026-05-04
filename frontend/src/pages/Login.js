@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ const Login = ({ admin = false }) => {
         : await api.login({ email, password });
 
       const { token, role, user_id, email: userEmail } = response.data;
-      login(token, role, user_id, userEmail);
+      login(token, role, user_id, userEmail, response.data.refresh_token);
       toast.success('Login successful!');
 
       if (role === 'admin') {

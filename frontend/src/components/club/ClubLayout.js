@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+﻿import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -96,16 +96,6 @@ const ClubLayout = ({ children }) => {
             >
               <Heart className="w-4 h-4 mr-3" />
               Favorites
-            </Button>
-          </Link>
-          <Link to="/club/video-analysis">
-            <Button
-              data-testid="nav-video-analysis-btn"
-              variant={isActive('/club/video-analysis') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Sparkles className="w-4 h-4 mr-3" />
-              AI Video Analysis
             </Button>
           </Link>
           <Link to="/club/chats">

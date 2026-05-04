@@ -96,14 +96,7 @@ const MobileHeader = ({ title, showMenu = true, children }) => {
                     <span>My Applications</span>
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </Link>
-                  <Link
-                    to="/player/video-analysis"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center justify-between p-3 rounded-sm hover:bg-white/5 transition-colors"
-                  >
-                    <span>Video Analysis</span>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </Link>
+
                 </>
               )}
             </nav>

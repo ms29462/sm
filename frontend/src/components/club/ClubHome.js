@@ -1,41 +1,59 @@
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { Users, TrendingUp, AlertCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+﻿import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Users, TrendingUp, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import useSocket from "@/hooks/useSocket";
 
 const ClubHome = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { on, off, isConnected } = useSocket();
 
   useEffect(() => {
-    loadData();
+    loadProfile();
+    loadRecommended();
   }, []);
 
-  const loadData = async () => {
+  // Listen for approval notification from admin
+  useEffect(() => {
+    const handleApproved = (data) => {
+      toast.success(data.message || "Your account has been approved!");
+      loadProfile(); // Refresh profile to show updated approval status
+    };
+    on("account_approved", handleApproved);
+    return () => off("account_approved", handleApproved);
+  }, [on, off]);
+
+  const loadProfile = async () => {
     try {
-      const [profileRes, recommendedRes] = await Promise.all([
-        api.getClubProfile(),
-        api.getRecommendedPlayers(),
-      ]);
+      const profileRes = await api.getClubProfile();
       setProfile(profileRes.data);
-      setRecommended(recommendedRes.data);
     } catch (error) {
-      toast.error('Failed to load data');
+      toast.error("Failed to load profile");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRecommended = async () => {
+    try {
+      const recommendedRes = await api.getRecommendedPlayers();
+      setRecommended(recommendedRes.data || []);
+    } catch (error) {
+      setRecommended([]);
     }
   };
 
   const handleAddFavorite = async (playerId) => {
     try {
       await api.addFavorite(playerId);
-      toast.success('Added to favorites!');
+      toast.success("Added to favorites!");
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to add favorite');
+      toast.error(error.response?.data?.detail || "Failed to add favorite");
     }
   };
 
@@ -67,12 +85,19 @@ const ClubHome = () => {
             </p>
             <Button
               data-testid="complete-profile-btn"
-              onClick={() => navigate('/club/profile')}
+              onClick={() => navigate("/club/profile")}
               className="mt-4 bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10 px-6"
             >
               COMPLETE PROFILE
             </Button>
           </div>
+        </div>
+      )}
+
+      {profile?.approved && (
+        <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-sm mb-8 flex items-center gap-3">
+          <div className="w-2 h-2 bg-green-500 rounded-full" />
+          <p className="text-green-500 text-sm font-medium">Your account is approved — all features are active</p>
         </div>
       )}
 
@@ -86,7 +111,7 @@ const ClubHome = () => {
             data-testid="view-all-players-btn"
             variant="ghost"
             className="text-primary hover:text-primary/80"
-            onClick={() => navigate('/club/players')}
+            onClick={() => navigate("/club/players")}
           >
             VIEW ALL
           </Button>

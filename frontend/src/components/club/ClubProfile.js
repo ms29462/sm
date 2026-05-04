@@ -6,6 +6,21 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Building, Camera } from 'lucide-react';
 
+const LEAGUES = [
+  'Premier League', 'La Liga', 'Bundesliga', 'Serie A', 'Ligue 1',
+  'Eredivisie', 'Primeira Liga', 'Pro League', 'Challenger Pro League',
+  'Championship', 'League One', 'League Two',
+  'MLS', 'USL Championship', 'USL League One', 'CPL', 'Liga MX',
+  'Brasileirao', 'Primera Division', 'Colombian Primera',
+  'Saudi Pro League', 'J1 League',
+  'South African PSL', 'Egyptian Premier', 'Botola Pro',
+  'National League', 'Semi-Professional', 'Amateur', 'Other',
+];
+
+const PLAYING_LEVELS = ['Amateur', 'Semi-Professional', 'Professional'];
+
+const selectClass = "mt-2 w-full bg-black/20 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12 px-3 text-sm text-white appearance-none cursor-pointer";
+
 const ClubProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -73,6 +88,8 @@ const ClubProfile = () => {
 
       <div className="max-w-4xl">
         <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+
+          {/* Logo & identity */}
           <div className="flex items-center space-x-6 mb-8">
             <div className="relative">
               {formData.logo ? (
@@ -117,7 +134,10 @@ const ClubProfile = () => {
             </div>
           </div>
 
+          {/* Form fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Club Name */}
             <div>
               <Label htmlFor="name" className="text-sm font-medium uppercase tracking-wide">
                 Club Name
@@ -132,6 +152,7 @@ const ClubProfile = () => {
               />
             </div>
 
+            {/* Country */}
             <div>
               <Label htmlFor="country" className="text-sm font-medium uppercase tracking-wide">
                 Country
@@ -146,21 +167,93 @@ const ClubProfile = () => {
               />
             </div>
 
-            <div className="md:col-span-2">
+            {/* League dropdown */}
+            <div>
               <Label htmlFor="league" className="text-sm font-medium uppercase tracking-wide">
                 League
               </Label>
-              <Input
+              <select
                 id="league"
                 data-testid="league-input"
-                type="text"
                 value={formData.league || ''}
                 onChange={(e) => handleChange('league', e.target.value)}
-                className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                placeholder="e.g., Premier League, La Liga, Bundesliga"
-              />
+                className={selectClass}
+              >
+                <option value="">Select a league...</option>
+                <optgroup label="Europe — Top 5">
+                  {['Premier League','La Liga','Bundesliga','Serie A','Ligue 1'].map(l => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Europe — Secondary">
+                  {['Eredivisie','Primeira Liga','Pro League','Challenger Pro League','Championship','League One','League Two'].map(l => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="North America">
+                  {['MLS','USL Championship','USL League One','CPL','Liga MX'].map(l => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="South America">
+                  {['Brasileirao','Primera Division','Colombian Primera'].map(l => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Asia & Middle East">
+                  {['Saudi Pro League','J1 League'].map(l => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Africa">
+                  {['South African PSL','Egyptian Premier','Botola Pro'].map(l => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Other">
+                  {['National League','Semi-Professional','Amateur','Other'].map(l => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </optgroup>
+              </select>
             </div>
+
+            {/* Playing Level dropdown */}
+            <div>
+              <Label htmlFor="playing_level" className="text-sm font-medium uppercase tracking-wide">
+                Playing Level
+              </Label>
+              <select
+                id="playing_level"
+                data-testid="playing-level-input"
+                value={formData.playing_level || ''}
+                onChange={(e) => handleChange('playing_level', e.target.value)}
+                className={selectClass}
+              >
+                <option value="">Select a level...</option>
+                {PLAYING_LEVELS.map(l => (
+                  <option key={l} value={l}>{l}</option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Used by the player matching algorithm to find suitable candidates
+              </p>
+            </div>
+
           </div>
+
+          {/* Matching info banner */}
+          {formData.league && formData.playing_level && (
+            <div className="mt-6 bg-primary/10 border border-primary/20 rounded-sm p-4">
+              <p className="text-sm text-primary font-medium uppercase tracking-wide mb-1">
+                Matching Algorithm Active
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Your club is set to <strong className="text-white">{formData.league}</strong> at <strong className="text-white">{formData.playing_level}</strong> level.
+                The algorithm will automatically rank players based on their suitability for your league and level.
+              </p>
+            </div>
+          )}
 
           <div className="mt-8 flex justify-end">
             <Button
