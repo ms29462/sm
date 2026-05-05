@@ -219,10 +219,10 @@ const SpecialistPlayerDetail = () => {
             <h2 className="font-heading font-bold uppercase">OFFER SERVICES</h2>
             
             <RequestChatDialog 
-              playerId={playerId}
-              playerName={player.name}
-              requesterType="specialist"
-            />
+  playerId={playerId}
+  playerName={player.name}
+  requesterType="specialist"
+/>
 
             <Button
               onClick={toggleFavorite}

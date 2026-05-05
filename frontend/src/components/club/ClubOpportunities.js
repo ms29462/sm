@@ -1,43 +1,42 @@
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { toast } from 'sonner';
-import { Briefcase, Plus, Trash2 } from 'lucide-react';
-import { POSITIONS } from '@/lib/constants';
+﻿import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { Briefcase, Plus, Trash2, Lock, CheckCircle, Circle } from "lucide-react";
+import { POSITIONS } from "@/lib/constants";
 
 const LEAGUES = [
-  "CPL",
-  "USL Championship",
-  "USL League One",
-  "Challenger Pro League",
-  "MLS",
-  "Premier League",
-  "La Liga",
-  "Bundesliga",
-  "Serie A",
-  "Ligue 1",
-  "League One",
-  "League Two",
-  "National League",
-  "Semi-Professional",
-  "Amateur"
+  "Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1",
+  "Eredivisie", "Primeira Liga", "Pro League", "Challenger Pro League",
+  "Championship", "League One", "League Two",
+  "MLS", "USL Championship", "USL League One", "CPL", "Liga MX",
+  "Brasileirao", "Primera Division", "Colombian Primera",
+  "Saudi Pro League", "J1 League",
+  "South African PSL", "Egyptian Premier", "Botola Pro",
+  "National League", "Semi-Professional", "Amateur"
 ];
+
+const STATUS_COLORS = {
+  open: "bg-green-500/10 text-green-500 border-green-500/20",
+  closed: "bg-red-500/10 text-red-500 border-red-500/20",
+  filled: "bg-blue-500/10 text-blue-500 border-blue-500/20"
+};
 
 const ClubOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   const [formData, setFormData] = useState({
-    position: '',
-    league_level: '',
-    salary_range: '',
-    contract_duration: '',
-    description: '',
+    position: "", league_level: "", salary_range: "",
+    contract_duration: "", description: "",
+    deadline: "", max_applicants: "", age_min: "", age_max: ""
   });
 
   useEffect(() => {
@@ -49,7 +48,7 @@ const ClubOpportunities = () => {
       const response = await api.getClubOpportunities();
       setOpportunities(response.data);
     } catch (error) {
-      toast.error('Failed to load opportunities');
+      toast.error("Failed to load opportunities");
     } finally {
       setLoading(false);
     }
@@ -61,36 +60,44 @@ const ClubOpportunities = () => {
 
   const handleCreate = async () => {
     if (!formData.position || !formData.league_level || !formData.description) {
-      toast.error('Please fill in all required fields');
+      toast.error("Please fill in all required fields");
       return;
     }
-
     try {
       await api.createOpportunity(formData);
-      toast.success('Opportunity created!');
+      toast.success("Opportunity created!");
       setShowDialog(false);
       setFormData({
-        position: '',
-        league_level: '',
-        salary_range: '',
-        contract_duration: '',
-        description: '',
+        position: "", league_level: "", salary_range: "",
+        contract_duration: "", description: "",
+        deadline: "", max_applicants: "", age_min: "", age_max: ""
       });
       loadOpportunities();
     } catch (error) {
-      toast.error('Failed to create opportunity');
+      toast.error("Failed to create opportunity");
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this opportunity?')) return;
-
+  const handleStatusChange = async (id, status) => {
     try {
-      await api.deleteOpportunity(id);
-      toast.success('Opportunity deleted');
+      await api.updateOpportunityStatus(id, status);
+      toast.success(`Opportunity marked as ${status}`);
       loadOpportunities();
     } catch (error) {
-      toast.error('Failed to delete opportunity');
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleDeleteConfirmed = async () => {
+    if (!deleteId) return;
+    try {
+      await api.deleteOpportunity(deleteId);
+      toast.success("Opportunity deleted");
+      loadOpportunities();
+    } catch (error) {
+      toast.error("Failed to delete opportunity");
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -104,6 +111,26 @@ const ClubOpportunities = () => {
 
   return (
     <div className="p-8">
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent className="bg-card border border-border/50">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading uppercase">Delete Opportunity</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              Are you sure you want to delete this opportunity? All applications will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-sm uppercase text-xs tracking-wide">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirmed}
+              className="bg-destructive text-white hover:bg-destructive/90 rounded-sm uppercase text-xs tracking-wide"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-heading font-bold uppercase mb-2">OPPORTUNITIES</h1>
@@ -119,100 +146,68 @@ const ClubOpportunities = () => {
               POST OPPORTUNITY
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border border-border/50 max-w-2xl">
+          <DialogContent className="bg-card border border-border/50 max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-2xl font-heading font-bold uppercase">POST NEW OPPORTUNITY</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-4">
               <div>
-                <Label htmlFor="position" className="text-sm font-medium uppercase tracking-wide">
-                  Position *
-                </Label>
-                <Select value={formData.position} onValueChange={(value) => handleChange('position', value)}>
-                  <SelectTrigger
-                    id="position"
-                    data-testid="position-select"
-                    className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                  >
+                <Label className="text-sm font-medium uppercase tracking-wide">Position *</Label>
+                <Select value={formData.position} onValueChange={(v) => handleChange("position", v)}>
+                  <SelectTrigger data-testid="position-select" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12">
                     <SelectValue placeholder="Select position" />
                   </SelectTrigger>
                   <SelectContent>
-                    {POSITIONS.map((pos) => (
-                      <SelectItem key={pos} value={pos}>
-                        {pos}
-                      </SelectItem>
-                    ))}
+                    {POSITIONS.map((pos) => <SelectItem key={pos} value={pos}>{pos}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="league_level" className="text-sm font-medium uppercase tracking-wide">
-                  League Level *
-                </Label>
-                <Select value={formData.league_level} onValueChange={(value) => handleChange('league_level', value)}>
-                  <SelectTrigger
-                    id="league_level"
-                    data-testid="league-level-select"
-                    className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                  >
+                <Label className="text-sm font-medium uppercase tracking-wide">League Level *</Label>
+                <Select value={formData.league_level} onValueChange={(v) => handleChange("league_level", v)}>
+                  <SelectTrigger data-testid="league-level-select" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12">
                     <SelectValue placeholder="Select league level" />
                   </SelectTrigger>
                   <SelectContent>
-                    {LEAGUES.map((league) => (
-                      <SelectItem key={league} value={league}>
-                        {league}
-                      </SelectItem>
-                    ))}
+                    {LEAGUES.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Used for AI-powered player matching
-                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Salary Range</Label>
+                  <Input data-testid="salary-range-input" value={formData.salary_range} onChange={(e) => handleChange("salary_range", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., $50k - $100k" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Contract Duration</Label>
+                  <Input data-testid="contract-duration-input" value={formData.contract_duration} onChange={(e) => handleChange("contract_duration", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 2 years" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Age Min</Label>
+                  <Input type="number" value={formData.age_min} onChange={(e) => handleChange("age_min", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 18" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Age Max</Label>
+                  <Input type="number" value={formData.age_max} onChange={(e) => handleChange("age_max", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 28" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Deadline</Label>
+                  <Input type="date" value={formData.deadline} onChange={(e) => handleChange("deadline", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Max Applicants</Label>
+                  <Input type="number" value={formData.max_applicants} onChange={(e) => handleChange("max_applicants", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 50" />
+                </div>
               </div>
               <div>
-                <Label htmlFor="salary_range" className="text-sm font-medium uppercase tracking-wide">
-                  Salary Range
-                </Label>
-                <Input
-                  id="salary_range"
-                  data-testid="salary-range-input"
-                  value={formData.salary_range}
-                  onChange={(e) => handleChange('salary_range', e.target.value)}
-                  className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                  placeholder="e.g., $50k - $100k"
-                />
+                <Label className="text-sm font-medium uppercase tracking-wide">Description *</Label>
+                <Textarea data-testid="description-input" value={formData.description} onChange={(e) => handleChange("description", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" placeholder="Describe the opportunity..." />
               </div>
-              <div>
-                <Label htmlFor="contract_duration" className="text-sm font-medium uppercase tracking-wide">
-                  Contract Duration
-                </Label>
-                <Input
-                  id="contract_duration"
-                  data-testid="contract-duration-input"
-                  value={formData.contract_duration}
-                  onChange={(e) => handleChange('contract_duration', e.target.value)}
-                  className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                  placeholder="e.g., 2 years"
-                />
-              </div>
-              <div>
-                <Label htmlFor="description" className="text-sm font-medium uppercase tracking-wide">
-                  Description *
-                </Label>
-                <Textarea
-                  id="description"
-                  data-testid="description-input"
-                  value={formData.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm min-h-[120px]"
-                  placeholder="Describe the opportunity..."
-                />
-              </div>
-              <Button
-                data-testid="submit-opportunity-btn"
-                onClick={handleCreate}
-                className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
-              >
+              <Button data-testid="submit-opportunity-btn" onClick={handleCreate} className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12">
                 POST OPPORTUNITY
               </Button>
             </div>
@@ -228,44 +223,45 @@ const ClubOpportunities = () => {
       ) : (
         <div className="space-y-4">
           {opportunities.map((opp) => (
-            <div
-              key={opp.id}
-              data-testid={`opportunity-card-${opp.id}`}
-              className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors"
-            >
+            <div key={opp.id} data-testid={`opportunity-card-${opp.id}`} className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <h3 className="text-xl font-heading font-bold uppercase">{opp.position}</h3>
-                    <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">
-                      {opp.league_level}
+                    <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">{opp.league_level}</span>
+                    <span className={`px-2 py-1 text-[10px] uppercase tracking-wider border rounded-sm ${STATUS_COLORS[opp.status || "open"]}`}>
+                      {opp.status || "open"}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">{opp.description}</p>
+                  <p className="text-sm text-muted-foreground mb-3">{opp.description}</p>
                   <div className="flex flex-wrap gap-4 text-sm">
-                    {opp.salary_range && (
-                      <div>
-                        <span className="text-muted-foreground">Salary: </span>
-                        <span className="font-medium font-mono">{opp.salary_range}</span>
-                      </div>
-                    )}
-                    {opp.contract_duration && (
-                      <div>
-                        <span className="text-muted-foreground">Duration: </span>
-                        <span className="font-medium">{opp.contract_duration}</span>
-                      </div>
-                    )}
+                    {opp.salary_range && <div><span className="text-muted-foreground">Salary: </span><span className="font-medium font-mono">{opp.salary_range}</span></div>}
+                    {opp.contract_duration && <div><span className="text-muted-foreground">Duration: </span><span className="font-medium">{opp.contract_duration}</span></div>}
+                    {opp.deadline && <div><span className="text-muted-foreground">Deadline: </span><span className="font-medium">{new Date(opp.deadline).toLocaleDateString()}</span></div>}
+                    {opp.age_min && opp.age_max && <div><span className="text-muted-foreground">Age: </span><span className="font-medium">{opp.age_min} - {opp.age_max}</span></div>}
+                    {opp.max_applicants && <div><span className="text-muted-foreground">Max applicants: </span><span className="font-medium">{opp.max_applicants}</span></div>}
                   </div>
                 </div>
-                <Button
-                  data-testid={`delete-btn-${opp.id}`}
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDelete(opp.id)}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-2 ml-4">
+                  {(!opp.status || opp.status === "open") && (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => handleStatusChange(opp.id, "closed")} className="border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-sm text-xs">
+                        <Lock className="w-3 h-3 mr-1" /> Close
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => handleStatusChange(opp.id, "filled")} className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10 rounded-sm text-xs">
+                        <CheckCircle className="w-3 h-3 mr-1" /> Filled
+                      </Button>
+                    </>
+                  )}
+                  {opp.status === "closed" && (
+                    <Button size="sm" variant="outline" onClick={() => handleStatusChange(opp.id, "open")} className="border-green-500/50 text-green-400 hover:bg-green-500/10 rounded-sm text-xs">
+                      <Circle className="w-3 h-3 mr-1" /> Reopen
+                    </Button>
+                  )}
+                  <Button data-testid={`delete-btn-${opp.id}`} variant="ghost" size="icon" onClick={() => setDeleteId(opp.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

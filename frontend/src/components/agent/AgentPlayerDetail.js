@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import RequestChatDialog from '@/components/shared/RequestChatDialog';
+
 import { 
   ArrowLeft, User, MapPin, Calendar, Trophy, Target, 
   Heart, ExternalLink, Video, FileText
@@ -219,10 +219,10 @@ const AgentPlayerDetail = () => {
             <h2 className="font-heading font-bold uppercase">ACTIONS</h2>
             
             <RequestChatDialog 
-              playerId={playerId}
-              playerName={player.name}
-              requesterType="agent"
-            />
+  playerId={playerId}
+  playerName={player.name}
+  requesterType="agent"
+/>
 
             <Button
               onClick={toggleFavorite}
@@ -249,3 +249,4 @@ const AgentPlayerDetail = () => {
 };
 
 export default AgentPlayerDetail;
+

@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, FolderPlus, Video, Calendar } from 'lucide-react';
+import RequestChatDialog from '@/components/shared/RequestChatDialog';
 
 const FederationPlayerDetailView = () => {
   const { playerId } = useParams();
@@ -171,6 +172,11 @@ const FederationPlayerDetailView = () => {
                 <Heart className="w-4 h-4 mr-2" />
                 ADD TO SCOUTING
               </Button>
+              <RequestChatDialog 
+  playerId={playerId} 
+  playerName={player.name}
+  requesterType="federation"
+/>
               <Dialog open={showAddToTeamDialog} onOpenChange={setShowAddToTeamDialog}>
                 <DialogTrigger asChild>
                   <Button

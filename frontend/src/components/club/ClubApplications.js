@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { FileText, X, User, Trophy, Activity, Flag, Ruler, Weight, Footprints, Building, ExternalLink } from "lucide-react";
+import RequestChatDialog from '@/components/club/RequestChatDialog';
 
-const STATUS_OPTIONS = ["submitted", "viewed", "shortlisted", "rejected", "accepted"];
+const STATUS_OPTIONS = ["submitted", "viewed", "shortlisted", "interview_requested", "accepted", "rejected"];
 const STATUS_COLORS = {
   submitted: "bg-blue-500/10 text-blue-500 border-blue-500/20",
   viewed: "bg-purple-500/10 text-purple-500 border-purple-500/20",
   shortlisted: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+  interview_requested: "bg-orange-500/10 text-orange-500 border-orange-500/20",
   rejected: "bg-red-500/10 text-red-500 border-red-500/20",
   accepted: "bg-green-500/10 text-green-500 border-green-500/20",
 };
@@ -120,6 +122,9 @@ const PlayerProfilePopup = ({ player, onClose }) => {
               </a>
             )}
           </div>
+          <div className="border-t border-border pt-4 mt-2">
+            <RequestChatDialog playerId={player.user_id} playerName={player.name} />
+          </div>
         </div>
       </div>
     </div>
@@ -225,3 +230,5 @@ const ClubApplications = () => {
 };
 
 export default ClubApplications;
+
+
