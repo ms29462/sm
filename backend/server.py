@@ -1698,6 +1698,51 @@ async def approve_federation(user_id: str, approval: UserApproval, current_user:
     return {"message": "Updated"}
 
 
+@api_router.put("/admin/federations/{user_id}/verify")
+async def verify_federation(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Admin verifies a federation - gives them a verified badge"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    result = await db.federations.update_one(
+        {"user_id": user_id},
+        {"$set": {"verified": True, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Federation not found")
+    
+    # Notify federation
+    notification = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "type": "verification",
+        "title": "Federation Verified!",
+        "message": "Your federation has been verified. A verified badge will now appear on your profile.",
+        "read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.notifications.insert_one(notification)
+    await sio.emit("account_approved", {
+        "approved": True,
+        "message": notification["message"]
+    }, room=f"user_{user_id}")
+    
+    return {"message": "Federation verified successfully"}
+
+@api_router.put("/admin/federations/{user_id}/unverify")
+async def unverify_federation(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Admin removes verification from a federation"""
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    
+    result = await db.federations.update_one(
+        {"user_id": user_id},
+        {"$set": {"verified": False, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Federation not found")
+    return {"message": "Federation verification removed"}
+
 @api_router.delete("/admin/users/{user_id}")
 async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
@@ -3349,6 +3394,8 @@ async def shutdown_db_client():
 # Wrap FastAPI with Socket.IO
 socket_app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app, socketio_path='/api/socket.io')
 app = socket_app
+
+
 
 
 
