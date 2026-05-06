@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -376,19 +376,19 @@ const AdminMasterclass = () => {
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="capitalize">{mc.category?.replace('_', ' ')}</span>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <span className="capitalize">{mc.difficulty}</span>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {mc.duration_minutes}m
                   </span>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <span className="flex items-center gap-1">
                     <Eye className="w-3 h-3" />
                     {mc.views || 0}
                   </span>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <span className="flex items-center gap-1">
                     <User className="w-3 h-3" />
                     {mc.author_name}
@@ -431,3 +431,5 @@ const AdminMasterclass = () => {
 };
 
 export default AdminMasterclass;
+
+

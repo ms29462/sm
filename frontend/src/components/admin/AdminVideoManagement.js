@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -178,7 +178,7 @@ const AdminVideoManagement = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h3 className="text-xl font-heading font-bold uppercase mb-2">
-                    {session.player_name} ↔ {session.club_name}
+                    {session.player_name} â†” {session.club_name}
                   </h3>
                   <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-2">
                     <span className="flex items-center">
@@ -228,3 +228,5 @@ const AdminVideoManagement = () => {
 };
 
 export default AdminVideoManagement;
+
+

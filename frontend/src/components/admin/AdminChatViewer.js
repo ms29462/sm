@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import useSocket from '@/hooks/useSocket';
-import { api } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+﻿import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import useSocket from "@/hooks/useSocket";
+import { useAuth } from "@/context/AuthContext";
+import { api } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const AdminChatViewer = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [roomInfo, setRoomInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,35 +23,34 @@ const AdminChatViewer = () => {
   }, [roomId]);
 
   useEffect(() => {
-    if (socket && isConnected && roomId) {
-      // Admin joins as observer
-      emit('join_chat_room', {
+    if (socket && isConnected && roomId && user) {
+      // Admin joins as observer using their actual user ID
+      emit("join_chat_room", {
         room_id: roomId,
-        user_id: 'admin'
+        user_id: user.userId
       });
 
       const handleNewMessage = (message) => {
         setMessages(prev => [...prev, message]);
       };
 
-      on('new_chat_message', handleNewMessage);
-
+      on("new_chat_message", handleNewMessage);
       return () => {
-        off('new_chat_message', handleNewMessage);
+        off("new_chat_message", handleNewMessage);
       };
     }
-  }, [socket, isConnected, roomId, emit, on, off]);
+  }, [socket, isConnected, roomId, emit, on, off, user]);
 
   const loadChatRoom = async () => {
     try {
       const response = await api.getChatRoomMessages(roomId);
       setRoomInfo({
         player_name: response.data.player_name,
-        club_name: response.data.club_name
+        other_party: response.data.club_name || "Unknown"
       });
       setMessages(response.data.messages);
     } catch (error) {
-      toast.error('Failed to load chat room');
+      toast.error("Failed to load chat room");
     } finally {
       setLoading(false);
     }
@@ -70,16 +71,16 @@ const AdminChatViewer = () => {
           data-testid="back-btn"
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/admin/chats')}
+          onClick={() => navigate("/admin/chats")}
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
           <h1 className="text-3xl font-heading font-bold uppercase mb-2">
-            {roomInfo?.player_name} ↔ {roomInfo?.club_name}
+            {roomInfo?.player_name} ↔ {roomInfo?.other_party}
           </h1>
           <p className="text-muted-foreground">
-            Monitoring chat room • {isConnected ? 'Live' : 'Offline'}
+            Monitoring chat room · {isConnected ? "Live" : "Offline"}
           </p>
         </div>
       </div>

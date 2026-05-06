@@ -1,4 +1,5 @@
-import '@/App.css';
+﻿import '@/App.css';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import Landing from '@/pages/Landing';
@@ -23,6 +24,7 @@ import PWAInstallBanner, { OfflineBanner } from '@/components/mobile/PWAInstallB
 
 function App() {
   return (
+    <ErrorBoundary>
     <PWAProvider>
       <AuthProvider>
         <NotificationProvider>
@@ -108,7 +110,11 @@ function App() {
         </NotificationProvider>
       </AuthProvider>
     </PWAProvider>
+    </ErrorBoundary>
   );
 }
 
 export default App;
+
+
+

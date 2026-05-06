@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Users, Check, X, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 const AdminPlayers = () => {
   const [players, setPlayers] = useState([]);
@@ -187,3 +188,4 @@ const AdminPlayers = () => {
 };
 
 export default AdminPlayers;
+

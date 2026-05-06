@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -262,7 +262,7 @@ const FederationTeams = () => {
                           <div>
                             <p className="font-medium">{player.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {player.position || 'Position not set'} • {player.age ? `${player.age} yrs` : 'Age not set'}
+                              {player.position || 'Position not set'} â€¢ {player.age ? `${player.age} yrs` : 'Age not set'}
                             </p>
                           </div>
                         </div>
@@ -292,3 +292,5 @@ const FederationTeams = () => {
 };
 
 export default FederationTeams;
+
+

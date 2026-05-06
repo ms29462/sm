@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -73,7 +73,7 @@ const AdminOpportunities = () => {
                   </div>
                   <p className="text-sm text-muted-foreground mb-1">
                     Posted by: <span className="font-medium">{opp.club_name}</span>
-                    {opp.club_country && ` · ${opp.club_country}`}
+                    {opp.club_country && ` Â· ${opp.club_country}`}
                   </p>
                   <p className="text-sm text-muted-foreground mb-4">{opp.description}</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -114,3 +114,4 @@ const AdminOpportunities = () => {
 };
 
 export default AdminOpportunities;
+

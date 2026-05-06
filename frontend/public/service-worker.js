@@ -1,4 +1,4 @@
-const CACHE_NAME = 'soccermatch-v1';
+﻿const CACHE_NAME = 'soccermatch-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -128,3 +128,4 @@ self.addEventListener('notificationclick', (event) => {
       })
   );
 });
+
