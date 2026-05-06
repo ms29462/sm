@@ -1,4 +1,4 @@
-﻿import '@/App.css';
+import '@/App.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
@@ -10,6 +10,7 @@ import ClubDashboard from '@/pages/ClubDashboard';
 import FederationDashboard from '@/pages/FederationDashboard';
 import AgentDashboard from '@/pages/AgentDashboard';
 import SpecialistDashboard from '@/pages/SpecialistDashboard';
+import CollegeDashboard from '@/pages/CollegeDashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
 import ChatRoom from '@/components/chat/ChatRoom';
 import VideoCall from '@/components/video/VideoCall';
@@ -18,9 +19,6 @@ import { NotificationProvider } from '@/context/NotificationContext';
 import { PWAProvider } from '@/context/PWAContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PWAInstallBanner, { OfflineBanner } from '@/components/mobile/PWAInstallBanner';
-
-
-
 
 function App() {
   return (
@@ -77,6 +75,14 @@ function App() {
                   }
                 />
                 <Route
+                  path="/college/*"
+                  element={
+                    <ProtectedRoute role="college">
+                      <ClubDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/admin/*"
                   element={
                     <ProtectedRoute role="admin">
@@ -103,7 +109,6 @@ function App() {
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
               <PWAInstallBanner />
-              
             </BrowserRouter>
             <Toaster position="top-right" richColors />
           </div>
@@ -115,6 +120,3 @@ function App() {
 }
 
 export default App;
-
-
-

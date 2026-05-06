@@ -19,6 +19,7 @@ const LEAGUES = [
   "Brasileirao", "Primera Division", "Colombian Primera",
   "Saudi Pro League", "J1 League",
   "South African PSL", "Egyptian Premier", "Botola Pro",
+  "NCAA Division I", "NCAA Division II", "NAIA", "NJCAA",
   "National League", "Semi-Professional", "Amateur"
 ];
 
@@ -272,3 +273,4 @@ const ClubOpportunities = () => {
 };
 
 export default ClubOpportunities;
+

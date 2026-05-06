@@ -135,6 +135,11 @@ export const api = {
   updateMasterclass: (id, data) => axios.put(`${API}/admin/masterclass/${id}`, data, { headers: getAuthHeaders() }),
   deleteMasterclass: (id) => axios.delete(`${API}/admin/masterclass/${id}`, { headers: getAuthHeaders() }),
 
+  // College
+  getCollegeProfile: () => axios.get(`${API}/college/profile`, { headers: getAuthHeaders() }),
+  updateCollegeProfile: (data) => axios.put(`${API}/college/profile`, data, { headers: getAuthHeaders() }),
+  getCollegePlayers: (filters) => axios.get(`${API}/college/players`, { params: filters, headers: getAuthHeaders() }),
+
   // Agent
   getAgentProfile: () => axios.get(`${API}/agent/profile`, { headers: getAuthHeaders() }),
   updateAgentProfile: (data) => axios.put(`${API}/agent/profile`, data, { headers: getAuthHeaders() }),
@@ -167,6 +172,7 @@ export const api = {
 
 
 };
+
 
 
 

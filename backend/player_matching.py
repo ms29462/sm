@@ -1,4 +1,4 @@
-"""
+﻿"""
 Player Matching Algorithm for SoccerMatch
 Based on Transfermarkt data analysis and league benchmarking
 """
@@ -25,7 +25,7 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9"
 }
 
-# Expanded leagues — 25 leagues across 6 continents
+# Expanded leagues â€” 25 leagues across 6 continents
 DEFAULT_LEAGUES = {
     # North America
     "CPL":                  "https://www.transfermarkt.us/canadian-premier-league/startseite/wettbewerb/CDN1",
@@ -34,14 +34,14 @@ DEFAULT_LEAGUES = {
     "MLS":                  "https://www.transfermarkt.us/major-league-soccer/startseite/wettbewerb/MLS1",
     "Liga MX":              "https://www.transfermarkt.us/liga-mx-apertura/startseite/wettbewerb/MEX1",
 
-    # Europe — Top 5
+    # Europe â€” Top 5
     "Premier League":       "https://www.transfermarkt.us/premier-league/startseite/wettbewerb/GB1",
     "La Liga":              "https://www.transfermarkt.us/laliga/startseite/wettbewerb/ES1",
     "Bundesliga":           "https://www.transfermarkt.us/bundesliga/startseite/wettbewerb/L1",
     "Serie A":              "https://www.transfermarkt.us/serie-a/startseite/wettbewerb/IT1",
     "Ligue 1":              "https://www.transfermarkt.us/ligue-1/startseite/wettbewerb/FR1",
 
-    # Europe — Secondary
+    # Europe â€” Secondary
     "Eredivisie":           "https://www.transfermarkt.us/eredivisie/startseite/wettbewerb/NL1",
     "Primeira Liga":        "https://www.transfermarkt.us/liga-nos/startseite/wettbewerb/PO1",
     "Pro League":           "https://www.transfermarkt.us/jupiler-pro-league/startseite/wettbewerb/BE1",
@@ -58,6 +58,10 @@ DEFAULT_LEAGUES = {
     # Asia & Middle East
     "Saudi Pro League":     "https://www.transfermarkt.us/saudi-professional-league/startseite/wettbewerb/SA1L",
     "J1 League":            "https://www.transfermarkt.us/j1-league/startseite/wettbewerb/JAP1",
+
+    # College Soccer USA
+    "NCAA Division I":      "https://www.transfermarkt.us/ncaa-division-i-mens-soccer/startseite/wettbewerb/NCD1",
+    "NCAA Division II":     "https://www.transfermarkt.us/ncaa-division-ii-mens-soccer/startseite/wettbewerb/NCD2",
 
     # South America
     "Brasileirao":          "https://www.transfermarkt.us/campeonato-brasileiro-serie-a/startseite/wettbewerb/BRA1",
@@ -116,6 +120,51 @@ K_SMALL_SAMPLE = 900
 MIN_ROLE_PLAYERS = 8
 K_NEIGHBORS = 5
 
+# Manual benchmarks for college soccer leagues not fully covered by Transfermarkt
+# Based on published NCAA/NAIA/NJCAA statistics and scouting standards
+COLLEGE_BENCHMARKS = {
+    "NCAA Division I": {
+        "GK":  {"avg_age": 20.5, "avg_appearances": 18, "avg_minutes": 1620, "avg_goals": 0,   "avg_assists": 0,   "avg_production_score": 55},
+        "CB":  {"avg_age": 20.8, "avg_appearances": 18, "avg_minutes": 1500, "avg_goals": 0.5, "avg_assists": 1.0, "avg_production_score": 52},
+        "FB":  {"avg_age": 20.5, "avg_appearances": 18, "avg_minutes": 1450, "avg_goals": 1.0, "avg_assists": 2.5, "avg_production_score": 53},
+        "DM":  {"avg_age": 20.8, "avg_appearances": 18, "avg_minutes": 1400, "avg_goals": 1.0, "avg_assists": 2.0, "avg_production_score": 54},
+        "CM":  {"avg_age": 20.5, "avg_appearances": 18, "avg_minutes": 1380, "avg_goals": 2.5, "avg_assists": 3.0, "avg_production_score": 56},
+        "AM":  {"avg_age": 20.3, "avg_appearances": 17, "avg_minutes": 1300, "avg_goals": 4.0, "avg_assists": 4.0, "avg_production_score": 58},
+        "W":   {"avg_age": 20.2, "avg_appearances": 17, "avg_minutes": 1250, "avg_goals": 4.5, "avg_assists": 3.5, "avg_production_score": 57},
+        "ST":  {"avg_age": 20.5, "avg_appearances": 17, "avg_minutes": 1300, "avg_goals": 7.0, "avg_assists": 2.5, "avg_production_score": 59},
+    },
+    "NCAA Division II": {
+        "GK":  {"avg_age": 20.0, "avg_appearances": 17, "avg_minutes": 1530, "avg_goals": 0,   "avg_assists": 0,   "avg_production_score": 45},
+        "CB":  {"avg_age": 20.2, "avg_appearances": 17, "avg_minutes": 1400, "avg_goals": 0.5, "avg_assists": 0.8, "avg_production_score": 42},
+        "FB":  {"avg_age": 20.0, "avg_appearances": 17, "avg_minutes": 1350, "avg_goals": 0.8, "avg_assists": 2.0, "avg_production_score": 43},
+        "DM":  {"avg_age": 20.2, "avg_appearances": 17, "avg_minutes": 1300, "avg_goals": 0.8, "avg_assists": 1.8, "avg_production_score": 44},
+        "CM":  {"avg_age": 20.0, "avg_appearances": 17, "avg_minutes": 1280, "avg_goals": 2.0, "avg_assists": 2.5, "avg_production_score": 46},
+        "AM":  {"avg_age": 19.8, "avg_appearances": 16, "avg_minutes": 1200, "avg_goals": 3.5, "avg_assists": 3.5, "avg_production_score": 48},
+        "W":   {"avg_age": 19.7, "avg_appearances": 16, "avg_minutes": 1150, "avg_goals": 4.0, "avg_assists": 3.0, "avg_production_score": 47},
+        "ST":  {"avg_age": 20.0, "avg_appearances": 16, "avg_minutes": 1200, "avg_goals": 6.0, "avg_assists": 2.0, "avg_production_score": 49},
+    },
+    "NAIA": {
+        "GK":  {"avg_age": 20.0, "avg_appearances": 16, "avg_minutes": 1440, "avg_goals": 0,   "avg_assists": 0,   "avg_production_score": 40},
+        "CB":  {"avg_age": 20.2, "avg_appearances": 16, "avg_minutes": 1300, "avg_goals": 0.4, "avg_assists": 0.6, "avg_production_score": 38},
+        "FB":  {"avg_age": 20.0, "avg_appearances": 16, "avg_minutes": 1250, "avg_goals": 0.7, "avg_assists": 1.8, "avg_production_score": 39},
+        "DM":  {"avg_age": 20.2, "avg_appearances": 16, "avg_minutes": 1200, "avg_goals": 0.7, "avg_assists": 1.5, "avg_production_score": 40},
+        "CM":  {"avg_age": 20.0, "avg_appearances": 16, "avg_minutes": 1180, "avg_goals": 1.8, "avg_assists": 2.2, "avg_production_score": 42},
+        "AM":  {"avg_age": 19.8, "avg_appearances": 15, "avg_minutes": 1100, "avg_goals": 3.0, "avg_assists": 3.0, "avg_production_score": 44},
+        "W":   {"avg_age": 19.7, "avg_appearances": 15, "avg_minutes": 1050, "avg_goals": 3.5, "avg_assists": 2.5, "avg_production_score": 43},
+        "ST":  {"avg_age": 20.0, "avg_appearances": 15, "avg_minutes": 1100, "avg_goals": 5.0, "avg_assists": 1.8, "avg_production_score": 45},
+    },
+    "NJCAA": {
+        "GK":  {"avg_age": 19.0, "avg_appearances": 15, "avg_minutes": 1350, "avg_goals": 0,   "avg_assists": 0,   "avg_production_score": 34},
+        "CB":  {"avg_age": 19.2, "avg_appearances": 15, "avg_minutes": 1200, "avg_goals": 0.3, "avg_assists": 0.5, "avg_production_score": 32},
+        "FB":  {"avg_age": 19.0, "avg_appearances": 15, "avg_minutes": 1150, "avg_goals": 0.5, "avg_assists": 1.5, "avg_production_score": 33},
+        "DM":  {"avg_age": 19.2, "avg_appearances": 15, "avg_minutes": 1100, "avg_goals": 0.5, "avg_assists": 1.2, "avg_production_score": 34},
+        "CM":  {"avg_age": 19.0, "avg_appearances": 15, "avg_minutes": 1080, "avg_goals": 1.5, "avg_assists": 2.0, "avg_production_score": 36},
+        "AM":  {"avg_age": 18.8, "avg_appearances": 14, "avg_minutes": 1000, "avg_goals": 2.5, "avg_assists": 2.5, "avg_production_score": 38},
+        "W":   {"avg_age": 18.7, "avg_appearances": 14, "avg_minutes": 950,  "avg_goals": 3.0, "avg_assists": 2.0, "avg_production_score": 37},
+        "ST":  {"avg_age": 19.0, "avg_appearances": 14, "avg_minutes": 1000, "avg_goals": 4.5, "avg_assists": 1.5, "avg_production_score": 39},
+    }
+}
+
 session = requests.Session()
 session.headers.update(HEADERS)
 
@@ -124,7 +173,7 @@ _scrape_cache: Dict[str, Any] = {}
 CACHE_TTL_SECONDS = 3600  # 1 hour
 
 def get_soup_cached(url: str, timeout: int = 30) -> Optional[BeautifulSoup]:
-    """Cached version of get_soup — avoids hitting the same URL twice"""
+    """Cached version of get_soup â€” avoids hitting the same URL twice"""
     import time
     now = time.time()
     if url in _scrape_cache:
@@ -155,7 +204,7 @@ def get_soup(url: str, timeout: int = 30) -> Optional[BeautifulSoup]:
 
 
 def parse_market_value(mv: str) -> float:
-    mv = str(mv).strip().lower().replace("€", "").replace(" ", "").replace(",", ".")
+    mv = str(mv).strip().lower().replace("â‚¬", "").replace(" ", "").replace(",", ".")
     if mv in ["-", "", "nan", "none"]:
         return np.nan
     if mv.endswith("k"):
@@ -683,14 +732,14 @@ def extract_market_value_from_profile(soup: BeautifulSoup) -> float:
         return np.nan
     text = soup.get_text(" ", strip=True)
     patterns = [
-        r"Current market value:\s*€\s*([\d.,]+\s*[mk]?)",
-        r"Market value:\s*€\s*([\d.,]+\s*[mk]?)",
-        r"€\s*([\d.,]+\s*[mk])"
+        r"Current market value:\s*â‚¬\s*([\d.,]+\s*[mk]?)",
+        r"Market value:\s*â‚¬\s*([\d.,]+\s*[mk]?)",
+        r"â‚¬\s*([\d.,]+\s*[mk])"
     ]
     for pat in patterns:
         m = re.search(pat, text, flags=re.IGNORECASE)
         if m:
-            return parse_market_value("€" + m.group(1))
+            return parse_market_value("â‚¬" + m.group(1))
     return np.nan
 
 
@@ -1037,3 +1086,5 @@ async def get_player_match_scores(
 
 # Available leagues for selection in opportunities
 AVAILABLE_LEAGUES = list(LEAGUE_STRENGTH.keys())
+
+

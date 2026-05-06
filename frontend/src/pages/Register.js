@@ -41,7 +41,9 @@ const Register = () => {
         navigate('/specialist/dashboard');
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Registration failed');
+      const detail = error.response?.data?.detail;
+      const msg = Array.isArray(detail) ? detail[0]?.msg || 'Registration failed' : (typeof detail === 'string' ? detail : 'Registration failed');
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -83,12 +85,16 @@ const Register = () => {
                   <RadioGroupItem value="specialist" id="specialist" data-testid="role-specialist-radio" />
                   <Label htmlFor="specialist" className="cursor-pointer">Specialist</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+  <RadioGroupItem value="college" id="college" data-testid="role-college-radio" />
+  <Label htmlFor="college" className="cursor-pointer">College / University</Label>
+</div>
               </RadioGroup>
             </div>
 
             <div>
               <Label htmlFor="name" className="text-sm font-medium uppercase tracking-wide">
-                {role === 'player' ? 'Full Name' : role === 'club' ? 'Club Name' : role === 'federation' ? 'Federation Name' : role === 'agent' ? 'Agent/Agency Name' : 'Full Name'}
+                {role === 'player' ? 'Full Name' : role === 'club' ? 'Club Name' : role === 'federation' ? 'Federation Name' : role === 'agent' ? 'Agent/Agency Name' : role === 'college' ? 'College / University Name' : 'Full Name'}
               </Label>
               <Input
                 id="name"
@@ -180,3 +186,6 @@ const Register = () => {
 };
 
 export default Register;
+
+
+

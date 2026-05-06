@@ -7,7 +7,7 @@ import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
 import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video, Sparkles } from 'lucide-react';
 
-const ClubLayout = ({ children }) => {
+const ClubLayout = ({ children, isCollege = false }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,13 +32,13 @@ const ClubLayout = ({ children }) => {
             <Trophy className="w-8 h-8 text-primary" />
             <div>
               <h1 className="text-xl font-heading font-bold tracking-tight">SOCCERMATCH</h1>
-              <p className="text-xs text-muted-foreground uppercase">Club Portal</p>
+              <p className="text-xs text-muted-foreground uppercase">{isCollege ? "College Portal" : "Club Portal"}</p>
             </div>
           </div>
         </div>
 
         <nav className="p-4 space-y-2">
-          <Link to="/club/dashboard">
+          <Link to={isCollege ? "/college/dashboard" : "/club/dashboard"}>
             <Button
               data-testid="nav-dashboard-btn"
               variant={isActive('/club/dashboard') ? 'secondary' : 'ghost'}
@@ -48,7 +48,7 @@ const ClubLayout = ({ children }) => {
               Dashboard
             </Button>
           </Link>
-          <Link to="/club/profile">
+          <Link to={isCollege ? "/college/profile" : "/club/profile"}>
             <Button
               data-testid="nav-profile-btn"
               variant={isActive('/club/profile') ? 'secondary' : 'ghost'}
@@ -58,7 +58,7 @@ const ClubLayout = ({ children }) => {
               Club Profile
             </Button>
           </Link>
-          <Link to="/club/opportunities">
+          <Link to={isCollege ? "/college/opportunities" : "/club/opportunities"}>
             <Button
               data-testid="nav-opportunities-btn"
               variant={isActive('/club/opportunities') ? 'secondary' : 'ghost'}
@@ -68,7 +68,7 @@ const ClubLayout = ({ children }) => {
               Opportunities
             </Button>
           </Link>
-          <Link to="/club/players">
+          <Link to={isCollege ? "/college/players" : "/club/players"}>
             <Button
               data-testid="nav-players-btn"
               variant={isActive('/club/players') ? 'secondary' : 'ghost'}
@@ -78,7 +78,7 @@ const ClubLayout = ({ children }) => {
               Browse Players
             </Button>
           </Link>
-          <Link to="/club/applications">
+          <Link to={isCollege ? "/college/applications" : "/club/applications"}>
             <Button
               data-testid="nav-applications-btn"
               variant={isActive('/club/applications') ? 'secondary' : 'ghost'}
@@ -88,7 +88,7 @@ const ClubLayout = ({ children }) => {
               Applications
             </Button>
           </Link>
-          <Link to="/club/favorites">
+          <Link to={isCollege ? "/college/favorites" : "/club/favorites"}>
             <Button
               data-testid="nav-favorites-btn"
               variant={isActive('/club/favorites') ? 'secondary' : 'ghost'}
@@ -98,7 +98,7 @@ const ClubLayout = ({ children }) => {
               Favorites
             </Button>
           </Link>
-          <Link to="/club/chats">
+          <Link to={isCollege ? "/college/chats" : "/club/chats"}>
             <Button
               data-testid="nav-chats-btn"
               variant={isActive('/club/chats') ? 'secondary' : 'ghost'}
@@ -109,7 +109,7 @@ const ClubLayout = ({ children }) => {
               <Badge count={totalUnread} />
             </Button>
           </Link>
-          <Link to="/club/videos">
+          <Link to={isCollege ? "/college/videos" : "/club/videos"}>
             <Button
               data-testid="nav-videos-btn"
               variant={isActive('/club/videos') ? 'secondary' : 'ghost'}
@@ -147,3 +147,4 @@ const ClubLayout = ({ children }) => {
 };
 
 export default ClubLayout;
+

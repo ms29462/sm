@@ -5,9 +5,12 @@ import { toast } from "sonner";
 import { Users, TrendingUp, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useSocket from "@/hooks/useSocket";
+import { useAuth } from "@/context/AuthContext";
 
 const ClubHome = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isCollege = user?.role === "college";
   const [profile, setProfile] = useState(null);
   const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +33,7 @@ const ClubHome = () => {
 
   const loadProfile = async () => {
     try {
-      const profileRes = await api.getClubProfile();
+      const profileRes = isCollege ? await api.getCollegeProfile() : await api.getClubProfile();
       setProfile(profileRes.data);
     } catch (error) {
       toast.error("Failed to load profile");
@@ -85,7 +88,7 @@ const ClubHome = () => {
             </p>
             <Button
               data-testid="complete-profile-btn"
-              onClick={() => navigate("/club/profile")}
+              onClick={() => navigate(isCollege ? "/college/profile" : "/club/profile")}
               className="mt-4 bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10 px-6"
             >
               COMPLETE PROFILE
@@ -111,7 +114,7 @@ const ClubHome = () => {
             data-testid="view-all-players-btn"
             variant="ghost"
             className="text-primary hover:text-primary/80"
-            onClick={() => navigate("/club/players")}
+            onClick={() => navigate(isCollege ? "/college/players" : "/club/players")}
           >
             VIEW ALL
           </Button>
@@ -198,3 +201,4 @@ const ClubHome = () => {
 };
 
 export default ClubHome;
+

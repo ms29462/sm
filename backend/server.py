@@ -64,7 +64,7 @@ JWT_EXPIRATION_HOURS = 24 * 7
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
-    role: Literal['player', 'club', 'federation', 'agent', 'specialist']
+    role: Literal['player', 'club', 'federation', 'agent', 'specialist', 'college']
     name: str
 
 class UserLogin(BaseModel):
@@ -221,6 +221,42 @@ class ClubUpdate(BaseModel):
     playing_level: Optional[Literal['Amateur', 'Semi-Professional', 'Professional']] = None
     logo: Optional[str] = None
 
+
+# ============ COLLEGE MODELS ============
+class CollegeProfile(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    user_id: str
+    name: str
+    email: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    conference: Optional[str] = None
+    division: Optional[Literal["NCAA Division I", "NCAA Division II", "NAIA", "NJCAA"]] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    description: Optional[str] = None
+    approved: bool = False
+    verified: bool = False
+    schema_version: Optional[int] = 1
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: Optional[str] = None
+
+def strip_college_private_info(college_dict: dict) -> dict:
+    sanitized = college_dict.copy()
+    sanitized.pop("email", None)
+    return sanitized
+
+class CollegeUpdate(BaseModel):
+    name: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    conference: Optional[str] = None
+    division: Optional[Literal["NCAA Division I", "NCAA Division II", "NAIA", "NJCAA"]] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    description: Optional[str] = None
 
 # ============ FEDERATION MODELS ============
 class FederationProfile(BaseModel):
@@ -1397,8 +1433,8 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
 # ============ CLUB ENDPOINTS ============
 @api_router.get("/club/profile", response_model=ClubProfile)
 async def get_club_profile(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     if not club:
@@ -1407,8 +1443,8 @@ async def get_club_profile(current_user: dict = Depends(get_current_user)):
 
 @api_router.put("/club/profile", response_model=ClubProfile)
 async def update_club_profile(update: ClubUpdate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     update_data = {k: v for k, v in update.model_dump().items() if v is not None}
     if update_data:
@@ -1419,8 +1455,8 @@ async def update_club_profile(update: ClubUpdate, current_user: dict = Depends(g
 
 @api_router.post("/opportunities", response_model=Opportunity)
 async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     
@@ -1437,16 +1473,16 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
 
 @api_router.get("/club/opportunities", response_model=List[Opportunity])
 async def get_club_opportunities(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     opportunities = await db.opportunities.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
     return [Opportunity(**opp) for opp in opportunities]
 
 @api_router.delete("/opportunities/{opportunity_id}")
 async def delete_opportunity(opportunity_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     result = await db.opportunities.delete_one({"id": opportunity_id, "club_id": current_user['user_id']})
     if result.deleted_count == 0:
@@ -1455,8 +1491,8 @@ async def delete_opportunity(opportunity_id: str, current_user: dict = Depends(g
 
 @api_router.get("/club/applications", response_model=List[dict])
 async def get_club_applications(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     applications = await db.applications.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
     
@@ -1480,8 +1516,8 @@ async def update_application_status(
     status_update: ApplicationStatusUpdate,
     current_user: dict = Depends(get_current_user)
 ):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     result = await db.applications.update_one(
         {"id": application_id, "club_id": current_user['user_id']},
@@ -1515,8 +1551,8 @@ async def get_players(
     name: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     query = {"approved": True}
     if position:
@@ -1535,8 +1571,8 @@ async def get_players(
 
 @api_router.get("/players/recommended-list", response_model=List[PlayerProfile])
 async def get_recommended_players(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     
@@ -1561,8 +1597,8 @@ async def get_recommended_players(current_user: dict = Depends(get_current_user)
 
 @api_router.post("/favorites", response_model=Favorite)
 async def add_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     existing = await db.favorites.find_one({
         "club_id": current_user['user_id'],
@@ -1582,8 +1618,8 @@ async def add_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_cur
 
 @api_router.get("/favorites", response_model=List[PlayerProfile])
 async def get_favorites(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     favorites = await db.favorites.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
     player_ids = [fav['player_id'] for fav in favorites]
@@ -1595,8 +1631,8 @@ async def get_favorites(current_user: dict = Depends(get_current_user)):
 
 @api_router.delete("/favorites/{player_id}")
 async def remove_favorite(player_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] != 'club':
-        raise HTTPException(status_code=403, detail="Not a club")
+    if current_user['role'] not in ['club', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     result = await db.favorites.delete_one({"club_id": current_user['user_id'], "player_id": player_id})
     if result.deleted_count == 0:
@@ -1774,6 +1810,56 @@ async def delete_opportunity_admin(opportunity_id: str, current_user: dict = Dep
         raise HTTPException(status_code=404, detail="Opportunity not found")
     return {"message": "Deleted"}
 
+
+# ============ COLLEGE ENDPOINTS ============
+@api_router.get("/college/profile", response_model=CollegeProfile)
+async def get_college_profile(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'college':
+        raise HTTPException(status_code=403, detail="Not a college")
+    college = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not college:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return CollegeProfile(**college)
+
+@api_router.put("/college/profile", response_model=CollegeProfile)
+async def update_college_profile(update: CollegeUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'college':
+        raise HTTPException(status_code=403, detail="Not a college")
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if update_data:
+        update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.colleges.update_one(
+            {"user_id": current_user['user_id']},
+            {"$set": update_data},
+            upsert=True
+        )
+    college = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not college:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return CollegeProfile(**college)
+
+@api_router.get("/college/players", response_model=List[PlayerProfile])
+async def get_college_players(
+    position: Optional[str] = None,
+    nationality: Optional[str] = None,
+    level: Optional[str] = None,
+    name: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user['role'] != 'college':
+        raise HTTPException(status_code=403, detail="Not a college")
+    query = {"approved": True, "visibility": {"$in": ["public", "clubs_only", None]}}
+    if position:
+        query["position"] = position
+    if nationality:
+        query["nationality"] = nationality
+    if level:
+        query["playing_level"] = level
+    if name:
+        query["name"] = {"$regex": name, "$options": "i"}
+    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    players = [strip_player_private_info(p) for p in players]
+    return [PlayerProfile(**p) for p in players]
 
 # ============ FEDERATION ENDPOINTS ============
 @api_router.get("/federation/profile", response_model=FederationProfile)
@@ -3394,6 +3480,10 @@ async def shutdown_db_client():
 # Wrap FastAPI with Socket.IO
 socket_app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app, socketio_path='/api/socket.io')
 app = socket_app
+
+
+
+
 
 
 
