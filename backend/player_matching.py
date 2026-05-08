@@ -165,6 +165,365 @@ COLLEGE_BENCHMARKS = {
     }
 }
 
+
+# =========================================================
+# MANUAL LEAGUE BENCHMARKS - 2024-2025 season
+# =========================================================
+MANUAL_LEAGUE_BENCHMARKS = {
+    "Premier League": {
+        "GK":  {"avg_age": 27.5, "avg_appearances": 30, "avg_minutes": 2700, "avg_goals": 0,    "avg_assists": 0.5,  "avg_production_score": 75},
+        "CB":  {"avg_age": 27.0, "avg_appearances": 28, "avg_minutes": 2400, "avg_goals": 1.5,  "avg_assists": 1.5,  "avg_production_score": 68},
+        "FB":  {"avg_age": 26.5, "avg_appearances": 28, "avg_minutes": 2350, "avg_goals": 2.0,  "avg_assists": 5.0,  "avg_production_score": 70},
+        "DM":  {"avg_age": 27.0, "avg_appearances": 28, "avg_minutes": 2200, "avg_goals": 2.0,  "avg_assists": 4.0,  "avg_production_score": 72},
+        "CM":  {"avg_age": 26.5, "avg_appearances": 28, "avg_minutes": 2100, "avg_goals": 5.0,  "avg_assists": 6.0,  "avg_production_score": 74},
+        "AM":  {"avg_age": 26.0, "avg_appearances": 27, "avg_minutes": 1900, "avg_goals": 8.0,  "avg_assists": 8.0,  "avg_production_score": 76},
+        "W":   {"avg_age": 25.5, "avg_appearances": 27, "avg_minutes": 1800, "avg_goals": 9.0,  "avg_assists": 7.0,  "avg_production_score": 77},
+        "ST":  {"avg_age": 27.0, "avg_appearances": 27, "avg_minutes": 2000, "avg_goals": 14.0, "avg_assists": 4.0,  "avg_production_score": 78},
+        "OTHER": {"avg_age": 26.5, "avg_appearances": 25, "avg_minutes": 1800, "avg_goals": 2.0, "avg_assists": 3.0, "avg_production_score": 68},
+    },
+    "La Liga": {
+        "GK":  {"avg_age": 28.0, "avg_appearances": 30, "avg_minutes": 2700, "avg_goals": 0,    "avg_assists": 0.3,  "avg_production_score": 73},
+        "CB":  {"avg_age": 27.5, "avg_appearances": 28, "avg_minutes": 2350, "avg_goals": 1.2,  "avg_assists": 1.2,  "avg_production_score": 66},
+        "FB":  {"avg_age": 27.0, "avg_appearances": 28, "avg_minutes": 2300, "avg_goals": 1.8,  "avg_assists": 4.5,  "avg_production_score": 68},
+        "DM":  {"avg_age": 27.5, "avg_appearances": 28, "avg_minutes": 2150, "avg_goals": 1.8,  "avg_assists": 3.8,  "avg_production_score": 70},
+        "CM":  {"avg_age": 27.0, "avg_appearances": 27, "avg_minutes": 2050, "avg_goals": 4.5,  "avg_assists": 5.5,  "avg_production_score": 72},
+        "AM":  {"avg_age": 26.5, "avg_appearances": 27, "avg_minutes": 1850, "avg_goals": 7.5,  "avg_assists": 7.5,  "avg_production_score": 74},
+        "W":   {"avg_age": 26.0, "avg_appearances": 27, "avg_minutes": 1750, "avg_goals": 8.5,  "avg_assists": 6.5,  "avg_production_score": 75},
+        "ST":  {"avg_age": 27.5, "avg_appearances": 27, "avg_minutes": 1950, "avg_goals": 13.0, "avg_assists": 3.5,  "avg_production_score": 76},
+        "OTHER": {"avg_age": 27.0, "avg_appearances": 25, "avg_minutes": 1750, "avg_goals": 1.8, "avg_assists": 2.8, "avg_production_score": 66},
+    },
+    "Bundesliga": {
+        "GK":  {"avg_age": 27.0, "avg_appearances": 29, "avg_minutes": 2610, "avg_goals": 0,    "avg_assists": 0.4,  "avg_production_score": 71},
+        "CB":  {"avg_age": 27.0, "avg_appearances": 27, "avg_minutes": 2300, "avg_goals": 1.0,  "avg_assists": 1.0,  "avg_production_score": 64},
+        "FB":  {"avg_age": 26.5, "avg_appearances": 27, "avg_minutes": 2250, "avg_goals": 1.5,  "avg_assists": 4.0,  "avg_production_score": 66},
+        "DM":  {"avg_age": 27.0, "avg_appearances": 27, "avg_minutes": 2100, "avg_goals": 1.5,  "avg_assists": 3.5,  "avg_production_score": 68},
+        "CM":  {"avg_age": 26.5, "avg_appearances": 27, "avg_minutes": 2000, "avg_goals": 4.0,  "avg_assists": 5.0,  "avg_production_score": 70},
+        "AM":  {"avg_age": 26.0, "avg_appearances": 26, "avg_minutes": 1800, "avg_goals": 7.0,  "avg_assists": 7.0,  "avg_production_score": 72},
+        "W":   {"avg_age": 25.5, "avg_appearances": 26, "avg_minutes": 1700, "avg_goals": 8.0,  "avg_assists": 6.0,  "avg_production_score": 73},
+        "ST":  {"avg_age": 27.0, "avg_appearances": 26, "avg_minutes": 1900, "avg_goals": 12.0, "avg_assists": 3.0,  "avg_production_score": 74},
+        "OTHER": {"avg_age": 26.5, "avg_appearances": 24, "avg_minutes": 1700, "avg_goals": 1.5, "avg_assists": 2.5, "avg_production_score": 64},
+    },
+    "Serie A": {
+        "GK":  {"avg_age": 28.5, "avg_appearances": 30, "avg_minutes": 2700, "avg_goals": 0,    "avg_assists": 0.3,  "avg_production_score": 70},
+        "CB":  {"avg_age": 28.0, "avg_appearances": 27, "avg_minutes": 2300, "avg_goals": 1.0,  "avg_assists": 1.0,  "avg_production_score": 63},
+        "FB":  {"avg_age": 27.5, "avg_appearances": 27, "avg_minutes": 2250, "avg_goals": 1.5,  "avg_assists": 3.5,  "avg_production_score": 65},
+        "DM":  {"avg_age": 28.0, "avg_appearances": 27, "avg_minutes": 2100, "avg_goals": 1.5,  "avg_assists": 3.0,  "avg_production_score": 67},
+        "CM":  {"avg_age": 27.5, "avg_appearances": 27, "avg_minutes": 2000, "avg_goals": 4.0,  "avg_assists": 4.5,  "avg_production_score": 69},
+        "AM":  {"avg_age": 27.0, "avg_appearances": 26, "avg_minutes": 1800, "avg_goals": 7.0,  "avg_assists": 6.5,  "avg_production_score": 71},
+        "W":   {"avg_age": 26.5, "avg_appearances": 26, "avg_minutes": 1700, "avg_goals": 8.0,  "avg_assists": 5.5,  "avg_production_score": 72},
+        "ST":  {"avg_age": 28.0, "avg_appearances": 26, "avg_minutes": 1900, "avg_goals": 12.0, "avg_assists": 3.0,  "avg_production_score": 73},
+        "OTHER": {"avg_age": 27.5, "avg_appearances": 24, "avg_minutes": 1700, "avg_goals": 1.5, "avg_assists": 2.5, "avg_production_score": 63},
+    },
+    "Ligue 1": {
+        "GK":  {"avg_age": 27.0, "avg_appearances": 29, "avg_minutes": 2610, "avg_goals": 0,    "avg_assists": 0.3,  "avg_production_score": 68},
+        "CB":  {"avg_age": 26.5, "avg_appearances": 27, "avg_minutes": 2250, "avg_goals": 1.0,  "avg_assists": 1.0,  "avg_production_score": 61},
+        "FB":  {"avg_age": 26.0, "avg_appearances": 27, "avg_minutes": 2200, "avg_goals": 1.5,  "avg_assists": 3.5,  "avg_production_score": 63},
+        "DM":  {"avg_age": 26.5, "avg_appearances": 27, "avg_minutes": 2050, "avg_goals": 1.5,  "avg_assists": 3.0,  "avg_production_score": 65},
+        "CM":  {"avg_age": 26.0, "avg_appearances": 26, "avg_minutes": 1950, "avg_goals": 3.5,  "avg_assists": 4.5,  "avg_production_score": 67},
+        "AM":  {"avg_age": 25.5, "avg_appearances": 26, "avg_minutes": 1750, "avg_goals": 6.5,  "avg_assists": 6.5,  "avg_production_score": 69},
+        "W":   {"avg_age": 25.0, "avg_appearances": 26, "avg_minutes": 1650, "avg_goals": 7.5,  "avg_assists": 5.5,  "avg_production_score": 70},
+        "ST":  {"avg_age": 26.5, "avg_appearances": 26, "avg_minutes": 1850, "avg_goals": 11.0, "avg_assists": 3.0,  "avg_production_score": 71},
+        "OTHER": {"avg_age": 26.0, "avg_appearances": 24, "avg_minutes": 1650, "avg_goals": 1.5, "avg_assists": 2.5, "avg_production_score": 61},
+    },
+    "MLS": {
+        "GK":  {"avg_age": 27.5, "avg_appearances": 28, "avg_minutes": 2520, "avg_goals": 0,    "avg_assists": 0.3,  "avg_production_score": 65},
+        "CB":  {"avg_age": 27.0, "avg_appearances": 26, "avg_minutes": 2200, "avg_goals": 1.0,  "avg_assists": 1.0,  "avg_production_score": 58},
+        "FB":  {"avg_age": 26.5, "avg_appearances": 26, "avg_minutes": 2150, "avg_goals": 1.5,  "avg_assists": 3.5,  "avg_production_score": 60},
+        "DM":  {"avg_age": 27.0, "avg_appearances": 26, "avg_minutes": 2000, "avg_goals": 1.5,  "avg_assists": 3.0,  "avg_production_score": 62},
+        "CM":  {"avg_age": 26.5, "avg_appearances": 25, "avg_minutes": 1900, "avg_goals": 3.5,  "avg_assists": 4.5,  "avg_production_score": 64},
+        "AM":  {"avg_age": 26.0, "avg_appearances": 25, "avg_minutes": 1700, "avg_goals": 6.5,  "avg_assists": 6.0,  "avg_production_score": 66},
+        "W":   {"avg_age": 25.5, "avg_appearances": 25, "avg_minutes": 1600, "avg_goals": 7.5,  "avg_assists": 5.5,  "avg_production_score": 67},
+        "ST":  {"avg_age": 27.0, "avg_appearances": 25, "avg_minutes": 1800, "avg_goals": 11.0, "avg_assists": 3.0,  "avg_production_score": 68},
+        "OTHER": {"avg_age": 26.5, "avg_appearances": 23, "avg_minutes": 1600, "avg_goals": 1.5, "avg_assists": 2.5, "avg_production_score": 58},
+    },
+    "USL Championship": {
+        "GK":  {"avg_age": 26.5, "avg_appearances": 26, "avg_minutes": 2340, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 58},
+        "CB":  {"avg_age": 26.0, "avg_appearances": 24, "avg_minutes": 2000, "avg_goals": 0.8,  "avg_assists": 0.8,  "avg_production_score": 51},
+        "FB":  {"avg_age": 25.5, "avg_appearances": 24, "avg_minutes": 1950, "avg_goals": 1.2,  "avg_assists": 2.8,  "avg_production_score": 53},
+        "DM":  {"avg_age": 26.0, "avg_appearances": 24, "avg_minutes": 1800, "avg_goals": 1.2,  "avg_assists": 2.5,  "avg_production_score": 55},
+        "CM":  {"avg_age": 25.5, "avg_appearances": 23, "avg_minutes": 1700, "avg_goals": 2.8,  "avg_assists": 3.5,  "avg_production_score": 57},
+        "AM":  {"avg_age": 25.0, "avg_appearances": 23, "avg_minutes": 1550, "avg_goals": 5.0,  "avg_assists": 5.0,  "avg_production_score": 59},
+        "W":   {"avg_age": 24.5, "avg_appearances": 23, "avg_minutes": 1450, "avg_goals": 6.0,  "avg_assists": 4.5,  "avg_production_score": 60},
+        "ST":  {"avg_age": 26.0, "avg_appearances": 23, "avg_minutes": 1600, "avg_goals": 9.0,  "avg_assists": 2.5,  "avg_production_score": 61},
+        "OTHER": {"avg_age": 25.5, "avg_appearances": 21, "avg_minutes": 1450, "avg_goals": 1.0, "avg_assists": 2.0, "avg_production_score": 51},
+    },
+    "USL League One": {
+        "GK":  {"avg_age": 25.5, "avg_appearances": 24, "avg_minutes": 2160, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 52},
+        "CB":  {"avg_age": 25.0, "avg_appearances": 22, "avg_minutes": 1850, "avg_goals": 0.6,  "avg_assists": 0.6,  "avg_production_score": 45},
+        "FB":  {"avg_age": 24.5, "avg_appearances": 22, "avg_minutes": 1800, "avg_goals": 1.0,  "avg_assists": 2.5,  "avg_production_score": 47},
+        "DM":  {"avg_age": 25.0, "avg_appearances": 22, "avg_minutes": 1650, "avg_goals": 1.0,  "avg_assists": 2.2,  "avg_production_score": 49},
+        "CM":  {"avg_age": 24.5, "avg_appearances": 21, "avg_minutes": 1550, "avg_goals": 2.5,  "avg_assists": 3.0,  "avg_production_score": 51},
+        "AM":  {"avg_age": 24.0, "avg_appearances": 21, "avg_minutes": 1400, "avg_goals": 4.5,  "avg_assists": 4.5,  "avg_production_score": 53},
+        "W":   {"avg_age": 23.5, "avg_appearances": 21, "avg_minutes": 1300, "avg_goals": 5.0,  "avg_assists": 4.0,  "avg_production_score": 54},
+        "ST":  {"avg_age": 25.0, "avg_appearances": 21, "avg_minutes": 1450, "avg_goals": 8.0,  "avg_assists": 2.0,  "avg_production_score": 55},
+        "OTHER": {"avg_age": 24.5, "avg_appearances": 19, "avg_minutes": 1300, "avg_goals": 0.8, "avg_assists": 1.8, "avg_production_score": 45},
+    },
+    "CPL": {
+        "GK":  {"avg_age": 25.0, "avg_appearances": 22, "avg_minutes": 1980, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 50},
+        "CB":  {"avg_age": 24.5, "avg_appearances": 20, "avg_minutes": 1700, "avg_goals": 0.6,  "avg_assists": 0.6,  "avg_production_score": 43},
+        "FB":  {"avg_age": 24.0, "avg_appearances": 20, "avg_minutes": 1650, "avg_goals": 1.0,  "avg_assists": 2.2,  "avg_production_score": 45},
+        "DM":  {"avg_age": 24.5, "avg_appearances": 20, "avg_minutes": 1500, "avg_goals": 1.0,  "avg_assists": 2.0,  "avg_production_score": 47},
+        "CM":  {"avg_age": 24.0, "avg_appearances": 19, "avg_minutes": 1400, "avg_goals": 2.2,  "avg_assists": 2.8,  "avg_production_score": 49},
+        "AM":  {"avg_age": 23.5, "avg_appearances": 19, "avg_minutes": 1250, "avg_goals": 4.0,  "avg_assists": 4.0,  "avg_production_score": 51},
+        "W":   {"avg_age": 23.0, "avg_appearances": 19, "avg_minutes": 1150, "avg_goals": 4.5,  "avg_assists": 3.5,  "avg_production_score": 52},
+        "ST":  {"avg_age": 24.5, "avg_appearances": 19, "avg_minutes": 1300, "avg_goals": 7.0,  "avg_assists": 2.0,  "avg_production_score": 53},
+        "OTHER": {"avg_age": 24.0, "avg_appearances": 17, "avg_minutes": 1150, "avg_goals": 0.8, "avg_assists": 1.5, "avg_production_score": 43},
+    },
+    "Liga MX": {
+        "GK":  {"avg_age": 27.0, "avg_appearances": 17, "avg_minutes": 1530, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 63},
+        "CB":  {"avg_age": 26.5, "avg_appearances": 16, "avg_minutes": 1350, "avg_goals": 0.8,  "avg_assists": 0.8,  "avg_production_score": 56},
+        "FB":  {"avg_age": 26.0, "avg_appearances": 16, "avg_minutes": 1300, "avg_goals": 1.2,  "avg_assists": 3.0,  "avg_production_score": 58},
+        "DM":  {"avg_age": 26.5, "avg_appearances": 16, "avg_minutes": 1200, "avg_goals": 1.2,  "avg_assists": 2.5,  "avg_production_score": 60},
+        "CM":  {"avg_age": 26.0, "avg_appearances": 15, "avg_minutes": 1150, "avg_goals": 3.0,  "avg_assists": 3.5,  "avg_production_score": 62},
+        "AM":  {"avg_age": 25.5, "avg_appearances": 15, "avg_minutes": 1050, "avg_goals": 5.5,  "avg_assists": 5.0,  "avg_production_score": 64},
+        "W":   {"avg_age": 25.0, "avg_appearances": 15, "avg_minutes": 1000, "avg_goals": 6.0,  "avg_assists": 4.5,  "avg_production_score": 65},
+        "ST":  {"avg_age": 26.5, "avg_appearances": 15, "avg_minutes": 1100, "avg_goals": 9.0,  "avg_assists": 2.5,  "avg_production_score": 66},
+        "OTHER": {"avg_age": 26.0, "avg_appearances": 14, "avg_minutes": 1000, "avg_goals": 1.2, "avg_assists": 2.0, "avg_production_score": 56},
+    },
+    "Brasileirao": {
+        "GK":  {"avg_age": 28.0, "avg_appearances": 28, "avg_minutes": 2520, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 62},
+        "CB":  {"avg_age": 27.5, "avg_appearances": 26, "avg_minutes": 2200, "avg_goals": 1.0,  "avg_assists": 0.8,  "avg_production_score": 55},
+        "FB":  {"avg_age": 27.0, "avg_appearances": 26, "avg_minutes": 2150, "avg_goals": 1.5,  "avg_assists": 3.0,  "avg_production_score": 57},
+        "DM":  {"avg_age": 27.5, "avg_appearances": 26, "avg_minutes": 2000, "avg_goals": 1.5,  "avg_assists": 2.8,  "avg_production_score": 59},
+        "CM":  {"avg_age": 27.0, "avg_appearances": 25, "avg_minutes": 1900, "avg_goals": 3.5,  "avg_assists": 4.0,  "avg_production_score": 61},
+        "AM":  {"avg_age": 26.5, "avg_appearances": 25, "avg_minutes": 1700, "avg_goals": 6.5,  "avg_assists": 5.5,  "avg_production_score": 63},
+        "W":   {"avg_age": 26.0, "avg_appearances": 25, "avg_minutes": 1600, "avg_goals": 7.5,  "avg_assists": 5.0,  "avg_production_score": 64},
+        "ST":  {"avg_age": 27.5, "avg_appearances": 25, "avg_minutes": 1800, "avg_goals": 11.0, "avg_assists": 2.8,  "avg_production_score": 65},
+        "OTHER": {"avg_age": 27.0, "avg_appearances": 23, "avg_minutes": 1600, "avg_goals": 1.2, "avg_assists": 2.2, "avg_production_score": 55},
+    },
+    "Eredivisie": {
+        "GK":  {"avg_age": 26.5, "avg_appearances": 29, "avg_minutes": 2610, "avg_goals": 0,    "avg_assists": 0.3,  "avg_production_score": 65},
+        "CB":  {"avg_age": 26.0, "avg_appearances": 27, "avg_minutes": 2250, "avg_goals": 1.0,  "avg_assists": 1.0,  "avg_production_score": 58},
+        "FB":  {"avg_age": 25.5, "avg_appearances": 27, "avg_minutes": 2200, "avg_goals": 1.5,  "avg_assists": 3.5,  "avg_production_score": 60},
+        "DM":  {"avg_age": 26.0, "avg_appearances": 27, "avg_minutes": 2050, "avg_goals": 1.5,  "avg_assists": 3.0,  "avg_production_score": 62},
+        "CM":  {"avg_age": 25.5, "avg_appearances": 26, "avg_minutes": 1950, "avg_goals": 3.5,  "avg_assists": 4.5,  "avg_production_score": 64},
+        "AM":  {"avg_age": 25.0, "avg_appearances": 26, "avg_minutes": 1750, "avg_goals": 6.5,  "avg_assists": 6.0,  "avg_production_score": 66},
+        "W":   {"avg_age": 24.5, "avg_appearances": 26, "avg_minutes": 1650, "avg_goals": 7.5,  "avg_assists": 5.5,  "avg_production_score": 67},
+        "ST":  {"avg_age": 26.0, "avg_appearances": 26, "avg_minutes": 1850, "avg_goals": 11.0, "avg_assists": 3.0,  "avg_production_score": 68},
+        "OTHER": {"avg_age": 25.5, "avg_appearances": 24, "avg_minutes": 1650, "avg_goals": 1.5, "avg_assists": 2.5, "avg_production_score": 58},
+    },
+    "Primeira Liga": {
+        "GK":  {"avg_age": 27.0, "avg_appearances": 28, "avg_minutes": 2520, "avg_goals": 0,    "avg_assists": 0.3,  "avg_production_score": 63},
+        "CB":  {"avg_age": 26.5, "avg_appearances": 26, "avg_minutes": 2200, "avg_goals": 1.0,  "avg_assists": 1.0,  "avg_production_score": 56},
+        "FB":  {"avg_age": 26.0, "avg_appearances": 26, "avg_minutes": 2150, "avg_goals": 1.5,  "avg_assists": 3.0,  "avg_production_score": 58},
+        "DM":  {"avg_age": 26.5, "avg_appearances": 26, "avg_minutes": 2000, "avg_goals": 1.5,  "avg_assists": 2.8,  "avg_production_score": 60},
+        "CM":  {"avg_age": 26.0, "avg_appearances": 25, "avg_minutes": 1900, "avg_goals": 3.0,  "avg_assists": 4.0,  "avg_production_score": 62},
+        "AM":  {"avg_age": 25.5, "avg_appearances": 25, "avg_minutes": 1700, "avg_goals": 6.0,  "avg_assists": 5.5,  "avg_production_score": 64},
+        "W":   {"avg_age": 25.0, "avg_appearances": 25, "avg_minutes": 1600, "avg_goals": 7.0,  "avg_assists": 5.0,  "avg_production_score": 65},
+        "ST":  {"avg_age": 26.5, "avg_appearances": 25, "avg_minutes": 1800, "avg_goals": 10.0, "avg_assists": 2.8,  "avg_production_score": 66},
+        "OTHER": {"avg_age": 26.0, "avg_appearances": 23, "avg_minutes": 1600, "avg_goals": 1.2, "avg_assists": 2.2, "avg_production_score": 56},
+    },
+    "Pro League": {
+        "GK":  {"avg_age": 27.0, "avg_appearances": 28, "avg_minutes": 2520, "avg_goals": 0,    "avg_assists": 0.3,  "avg_production_score": 61},
+        "CB":  {"avg_age": 26.5, "avg_appearances": 26, "avg_minutes": 2200, "avg_goals": 1.0,  "avg_assists": 1.0,  "avg_production_score": 54},
+        "FB":  {"avg_age": 26.0, "avg_appearances": 26, "avg_minutes": 2150, "avg_goals": 1.5,  "avg_assists": 3.2,  "avg_production_score": 56},
+        "DM":  {"avg_age": 26.5, "avg_appearances": 26, "avg_minutes": 2000, "avg_goals": 1.5,  "avg_assists": 2.8,  "avg_production_score": 58},
+        "CM":  {"avg_age": 26.0, "avg_appearances": 25, "avg_minutes": 1900, "avg_goals": 3.2,  "avg_assists": 4.2,  "avg_production_score": 60},
+        "AM":  {"avg_age": 25.5, "avg_appearances": 25, "avg_minutes": 1700, "avg_goals": 6.0,  "avg_assists": 5.8,  "avg_production_score": 62},
+        "W":   {"avg_age": 25.0, "avg_appearances": 25, "avg_minutes": 1600, "avg_goals": 7.0,  "avg_assists": 5.2,  "avg_production_score": 63},
+        "ST":  {"avg_age": 26.5, "avg_appearances": 25, "avg_minutes": 1800, "avg_goals": 10.5, "avg_assists": 2.8,  "avg_production_score": 64},
+        "OTHER": {"avg_age": 26.0, "avg_appearances": 23, "avg_minutes": 1600, "avg_goals": 1.2, "avg_assists": 2.2, "avg_production_score": 54},
+    },
+    "Challenger Pro League": {
+        "GK":  {"avg_age": 25.5, "avg_appearances": 26, "avg_minutes": 2340, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 56},
+        "CB":  {"avg_age": 25.0, "avg_appearances": 24, "avg_minutes": 2000, "avg_goals": 0.8,  "avg_assists": 0.8,  "avg_production_score": 49},
+        "FB":  {"avg_age": 24.5, "avg_appearances": 24, "avg_minutes": 1950, "avg_goals": 1.2,  "avg_assists": 2.8,  "avg_production_score": 51},
+        "DM":  {"avg_age": 25.0, "avg_appearances": 24, "avg_minutes": 1800, "avg_goals": 1.2,  "avg_assists": 2.5,  "avg_production_score": 53},
+        "CM":  {"avg_age": 24.5, "avg_appearances": 23, "avg_minutes": 1700, "avg_goals": 2.8,  "avg_assists": 3.5,  "avg_production_score": 55},
+        "AM":  {"avg_age": 24.0, "avg_appearances": 23, "avg_minutes": 1550, "avg_goals": 5.0,  "avg_assists": 5.0,  "avg_production_score": 57},
+        "W":   {"avg_age": 23.5, "avg_appearances": 23, "avg_minutes": 1450, "avg_goals": 5.5,  "avg_assists": 4.5,  "avg_production_score": 58},
+        "ST":  {"avg_age": 25.0, "avg_appearances": 23, "avg_minutes": 1600, "avg_goals": 8.5,  "avg_assists": 2.2,  "avg_production_score": 59},
+        "OTHER": {"avg_age": 24.5, "avg_appearances": 21, "avg_minutes": 1450, "avg_goals": 0.8, "avg_assists": 1.8, "avg_production_score": 49},
+    },
+    "Championship": {
+        "GK":  {"avg_age": 27.0, "avg_appearances": 36, "avg_minutes": 3240, "avg_goals": 0,    "avg_assists": 0.3,  "avg_production_score": 62},
+        "CB":  {"avg_age": 27.0, "avg_appearances": 34, "avg_minutes": 2900, "avg_goals": 2.0,  "avg_assists": 1.5,  "avg_production_score": 55},
+        "FB":  {"avg_age": 26.5, "avg_appearances": 34, "avg_minutes": 2850, "avg_goals": 2.5,  "avg_assists": 5.0,  "avg_production_score": 57},
+        "DM":  {"avg_age": 27.0, "avg_appearances": 34, "avg_minutes": 2700, "avg_goals": 2.5,  "avg_assists": 4.0,  "avg_production_score": 59},
+        "CM":  {"avg_age": 26.5, "avg_appearances": 33, "avg_minutes": 2600, "avg_goals": 5.0,  "avg_assists": 6.0,  "avg_production_score": 61},
+        "AM":  {"avg_age": 26.0, "avg_appearances": 33, "avg_minutes": 2400, "avg_goals": 8.0,  "avg_assists": 7.0,  "avg_production_score": 63},
+        "W":   {"avg_age": 25.5, "avg_appearances": 33, "avg_minutes": 2300, "avg_goals": 9.0,  "avg_assists": 6.0,  "avg_production_score": 64},
+        "ST":  {"avg_age": 27.0, "avg_appearances": 33, "avg_minutes": 2500, "avg_goals": 14.0, "avg_assists": 3.5,  "avg_production_score": 65},
+        "OTHER": {"avg_age": 26.5, "avg_appearances": 30, "avg_minutes": 2300, "avg_goals": 2.0, "avg_assists": 3.0, "avg_production_score": 55},
+    },
+    "League One": {
+        "GK":  {"avg_age": 26.0, "avg_appearances": 35, "avg_minutes": 3150, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 55},
+        "CB":  {"avg_age": 25.5, "avg_appearances": 33, "avg_minutes": 2800, "avg_goals": 1.5,  "avg_assists": 1.2,  "avg_production_score": 48},
+        "FB":  {"avg_age": 25.0, "avg_appearances": 33, "avg_minutes": 2750, "avg_goals": 2.0,  "avg_assists": 4.0,  "avg_production_score": 50},
+        "DM":  {"avg_age": 25.5, "avg_appearances": 33, "avg_minutes": 2600, "avg_goals": 2.0,  "avg_assists": 3.5,  "avg_production_score": 52},
+        "CM":  {"avg_age": 25.0, "avg_appearances": 32, "avg_minutes": 2500, "avg_goals": 4.5,  "avg_assists": 5.0,  "avg_production_score": 54},
+        "AM":  {"avg_age": 24.5, "avg_appearances": 32, "avg_minutes": 2300, "avg_goals": 7.5,  "avg_assists": 6.0,  "avg_production_score": 56},
+        "W":   {"avg_age": 24.0, "avg_appearances": 32, "avg_minutes": 2200, "avg_goals": 8.5,  "avg_assists": 5.5,  "avg_production_score": 57},
+        "ST":  {"avg_age": 25.5, "avg_appearances": 32, "avg_minutes": 2400, "avg_goals": 13.0, "avg_assists": 3.0,  "avg_production_score": 58},
+        "OTHER": {"avg_age": 25.0, "avg_appearances": 29, "avg_minutes": 2200, "avg_goals": 1.8, "avg_assists": 2.5, "avg_production_score": 48},
+    },
+    "League Two": {
+        "GK":  {"avg_age": 25.5, "avg_appearances": 35, "avg_minutes": 3150, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 50},
+        "CB":  {"avg_age": 25.0, "avg_appearances": 33, "avg_minutes": 2800, "avg_goals": 1.5,  "avg_assists": 1.0,  "avg_production_score": 43},
+        "FB":  {"avg_age": 24.5, "avg_appearances": 33, "avg_minutes": 2750, "avg_goals": 1.8,  "avg_assists": 3.5,  "avg_production_score": 45},
+        "DM":  {"avg_age": 25.0, "avg_appearances": 33, "avg_minutes": 2600, "avg_goals": 1.8,  "avg_assists": 3.0,  "avg_production_score": 47},
+        "CM":  {"avg_age": 24.5, "avg_appearances": 32, "avg_minutes": 2500, "avg_goals": 4.0,  "avg_assists": 4.5,  "avg_production_score": 49},
+        "AM":  {"avg_age": 24.0, "avg_appearances": 32, "avg_minutes": 2300, "avg_goals": 7.0,  "avg_assists": 5.5,  "avg_production_score": 51},
+        "W":   {"avg_age": 23.5, "avg_appearances": 32, "avg_minutes": 2200, "avg_goals": 7.5,  "avg_assists": 5.0,  "avg_production_score": 52},
+        "ST":  {"avg_age": 25.0, "avg_appearances": 32, "avg_minutes": 2400, "avg_goals": 12.0, "avg_assists": 2.8,  "avg_production_score": 53},
+        "OTHER": {"avg_age": 24.5, "avg_appearances": 29, "avg_minutes": 2200, "avg_goals": 1.5, "avg_assists": 2.2, "avg_production_score": 43},
+    },
+    "Saudi Pro League": {
+        "GK":  {"avg_age": 28.0, "avg_appearances": 26, "avg_minutes": 2340, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 63},
+        "CB":  {"avg_age": 27.5, "avg_appearances": 24, "avg_minutes": 2050, "avg_goals": 1.0,  "avg_assists": 0.8,  "avg_production_score": 56},
+        "FB":  {"avg_age": 27.0, "avg_appearances": 24, "avg_minutes": 2000, "avg_goals": 1.5,  "avg_assists": 3.0,  "avg_production_score": 58},
+        "DM":  {"avg_age": 27.5, "avg_appearances": 24, "avg_minutes": 1850, "avg_goals": 1.5,  "avg_assists": 2.8,  "avg_production_score": 60},
+        "CM":  {"avg_age": 27.0, "avg_appearances": 23, "avg_minutes": 1750, "avg_goals": 3.5,  "avg_assists": 4.0,  "avg_production_score": 62},
+        "AM":  {"avg_age": 26.5, "avg_appearances": 23, "avg_minutes": 1550, "avg_goals": 6.5,  "avg_assists": 5.5,  "avg_production_score": 64},
+        "W":   {"avg_age": 26.0, "avg_appearances": 23, "avg_minutes": 1450, "avg_goals": 7.5,  "avg_assists": 5.0,  "avg_production_score": 65},
+        "ST":  {"avg_age": 27.5, "avg_appearances": 23, "avg_minutes": 1650, "avg_goals": 11.0, "avg_assists": 2.8,  "avg_production_score": 66},
+        "OTHER": {"avg_age": 27.0, "avg_appearances": 21, "avg_minutes": 1450, "avg_goals": 1.2, "avg_assists": 2.2, "avg_production_score": 56},
+    },
+    "J1 League": {
+        "GK":  {"avg_age": 27.5, "avg_appearances": 26, "avg_minutes": 2340, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 58},
+        "CB":  {"avg_age": 27.0, "avg_appearances": 24, "avg_minutes": 2050, "avg_goals": 0.8,  "avg_assists": 0.8,  "avg_production_score": 51},
+        "FB":  {"avg_age": 26.5, "avg_appearances": 24, "avg_minutes": 2000, "avg_goals": 1.2,  "avg_assists": 2.8,  "avg_production_score": 53},
+        "DM":  {"avg_age": 27.0, "avg_appearances": 24, "avg_minutes": 1850, "avg_goals": 1.2,  "avg_assists": 2.5,  "avg_production_score": 55},
+        "CM":  {"avg_age": 26.5, "avg_appearances": 23, "avg_minutes": 1750, "avg_goals": 3.0,  "avg_assists": 3.5,  "avg_production_score": 57},
+        "AM":  {"avg_age": 26.0, "avg_appearances": 23, "avg_minutes": 1550, "avg_goals": 5.5,  "avg_assists": 5.0,  "avg_production_score": 59},
+        "W":   {"avg_age": 25.5, "avg_appearances": 23, "avg_minutes": 1450, "avg_goals": 6.0,  "avg_assists": 4.5,  "avg_production_score": 60},
+        "ST":  {"avg_age": 27.0, "avg_appearances": 23, "avg_minutes": 1650, "avg_goals": 9.5,  "avg_assists": 2.5,  "avg_production_score": 61},
+        "OTHER": {"avg_age": 26.5, "avg_appearances": 21, "avg_minutes": 1450, "avg_goals": 1.0, "avg_assists": 2.0, "avg_production_score": 51},
+    },
+    "Egyptian Premier": {
+        "GK":  {"avg_age": 27.0, "avg_appearances": 24, "avg_minutes": 2160, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 56},
+        "CB":  {"avg_age": 26.5, "avg_appearances": 22, "avg_minutes": 1850, "avg_goals": 0.8,  "avg_assists": 0.6,  "avg_production_score": 49},
+        "FB":  {"avg_age": 26.0, "avg_appearances": 22, "avg_minutes": 1800, "avg_goals": 1.2,  "avg_assists": 2.5,  "avg_production_score": 51},
+        "DM":  {"avg_age": 26.5, "avg_appearances": 22, "avg_minutes": 1650, "avg_goals": 1.2,  "avg_assists": 2.2,  "avg_production_score": 53},
+        "CM":  {"avg_age": 26.0, "avg_appearances": 21, "avg_minutes": 1550, "avg_goals": 2.8,  "avg_assists": 3.2,  "avg_production_score": 55},
+        "AM":  {"avg_age": 25.5, "avg_appearances": 21, "avg_minutes": 1400, "avg_goals": 5.0,  "avg_assists": 4.5,  "avg_production_score": 57},
+        "W":   {"avg_age": 25.0, "avg_appearances": 21, "avg_minutes": 1300, "avg_goals": 5.5,  "avg_assists": 4.0,  "avg_production_score": 58},
+        "ST":  {"avg_age": 26.5, "avg_appearances": 21, "avg_minutes": 1500, "avg_goals": 8.5,  "avg_assists": 2.2,  "avg_production_score": 59},
+        "OTHER": {"avg_age": 26.0, "avg_appearances": 19, "avg_minutes": 1300, "avg_goals": 1.0, "avg_assists": 1.8, "avg_production_score": 49},
+    },
+    "South African PSL": {
+        "GK":  {"avg_age": 27.0, "avg_appearances": 22, "avg_minutes": 1980, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 54},
+        "CB":  {"avg_age": 26.5, "avg_appearances": 20, "avg_minutes": 1700, "avg_goals": 0.8,  "avg_assists": 0.6,  "avg_production_score": 47},
+        "FB":  {"avg_age": 26.0, "avg_appearances": 20, "avg_minutes": 1650, "avg_goals": 1.0,  "avg_assists": 2.2,  "avg_production_score": 49},
+        "DM":  {"avg_age": 26.5, "avg_appearances": 20, "avg_minutes": 1500, "avg_goals": 1.0,  "avg_assists": 2.0,  "avg_production_score": 51},
+        "CM":  {"avg_age": 26.0, "avg_appearances": 19, "avg_minutes": 1400, "avg_goals": 2.5,  "avg_assists": 3.0,  "avg_production_score": 53},
+        "AM":  {"avg_age": 25.5, "avg_appearances": 19, "avg_minutes": 1250, "avg_goals": 4.5,  "avg_assists": 4.0,  "avg_production_score": 55},
+        "W":   {"avg_age": 25.0, "avg_appearances": 19, "avg_minutes": 1150, "avg_goals": 5.0,  "avg_assists": 3.5,  "avg_production_score": 56},
+        "ST":  {"avg_age": 26.5, "avg_appearances": 19, "avg_minutes": 1350, "avg_goals": 7.5,  "avg_assists": 2.0,  "avg_production_score": 57},
+        "OTHER": {"avg_age": 26.0, "avg_appearances": 17, "avg_minutes": 1150, "avg_goals": 0.8, "avg_assists": 1.5, "avg_production_score": 47},
+    },
+    "Botola Pro": {
+        "GK":  {"avg_age": 27.0, "avg_appearances": 22, "avg_minutes": 1980, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 52},
+        "CB":  {"avg_age": 26.5, "avg_appearances": 20, "avg_minutes": 1700, "avg_goals": 0.6,  "avg_assists": 0.5,  "avg_production_score": 45},
+        "FB":  {"avg_age": 26.0, "avg_appearances": 20, "avg_minutes": 1650, "avg_goals": 1.0,  "avg_assists": 2.0,  "avg_production_score": 47},
+        "DM":  {"avg_age": 26.5, "avg_appearances": 20, "avg_minutes": 1500, "avg_goals": 1.0,  "avg_assists": 1.8,  "avg_production_score": 49},
+        "CM":  {"avg_age": 26.0, "avg_appearances": 19, "avg_minutes": 1400, "avg_goals": 2.2,  "avg_assists": 2.8,  "avg_production_score": 51},
+        "AM":  {"avg_age": 25.5, "avg_appearances": 19, "avg_minutes": 1250, "avg_goals": 4.0,  "avg_assists": 3.8,  "avg_production_score": 53},
+        "W":   {"avg_age": 25.0, "avg_appearances": 19, "avg_minutes": 1150, "avg_goals": 4.5,  "avg_assists": 3.2,  "avg_production_score": 54},
+        "ST":  {"avg_age": 26.5, "avg_appearances": 19, "avg_minutes": 1350, "avg_goals": 7.0,  "avg_assists": 1.8,  "avg_production_score": 55},
+        "OTHER": {"avg_age": 26.0, "avg_appearances": 17, "avg_minutes": 1150, "avg_goals": 0.8, "avg_assists": 1.5, "avg_production_score": 45},
+    },
+    "Primera Division": {
+        "GK":  {"avg_age": 27.5, "avg_appearances": 22, "avg_minutes": 1980, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 60},
+        "CB":  {"avg_age": 27.0, "avg_appearances": 20, "avg_minutes": 1700, "avg_goals": 0.8,  "avg_assists": 0.8,  "avg_production_score": 53},
+        "FB":  {"avg_age": 26.5, "avg_appearances": 20, "avg_minutes": 1650, "avg_goals": 1.2,  "avg_assists": 2.8,  "avg_production_score": 55},
+        "DM":  {"avg_age": 27.0, "avg_appearances": 20, "avg_minutes": 1550, "avg_goals": 1.2,  "avg_assists": 2.5,  "avg_production_score": 57},
+        "CM":  {"avg_age": 26.5, "avg_appearances": 19, "avg_minutes": 1450, "avg_goals": 3.0,  "avg_assists": 3.5,  "avg_production_score": 59},
+        "AM":  {"avg_age": 26.0, "avg_appearances": 19, "avg_minutes": 1300, "avg_goals": 5.5,  "avg_assists": 5.0,  "avg_production_score": 61},
+        "W":   {"avg_age": 25.5, "avg_appearances": 19, "avg_minutes": 1200, "avg_goals": 6.0,  "avg_assists": 4.5,  "avg_production_score": 62},
+        "ST":  {"avg_age": 27.0, "avg_appearances": 19, "avg_minutes": 1400, "avg_goals": 9.0,  "avg_assists": 2.5,  "avg_production_score": 63},
+        "OTHER": {"avg_age": 26.5, "avg_appearances": 17, "avg_minutes": 1200, "avg_goals": 1.0, "avg_assists": 2.0, "avg_production_score": 53},
+    },
+    "Colombian Primera": {
+        "GK":  {"avg_age": 27.0, "avg_appearances": 20, "avg_minutes": 1800, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 58},
+        "CB":  {"avg_age": 26.5, "avg_appearances": 18, "avg_minutes": 1550, "avg_goals": 0.8,  "avg_assists": 0.8,  "avg_production_score": 51},
+        "FB":  {"avg_age": 26.0, "avg_appearances": 18, "avg_minutes": 1500, "avg_goals": 1.2,  "avg_assists": 2.5,  "avg_production_score": 53},
+        "DM":  {"avg_age": 26.5, "avg_appearances": 18, "avg_minutes": 1400, "avg_goals": 1.2,  "avg_assists": 2.2,  "avg_production_score": 55},
+        "CM":  {"avg_age": 26.0, "avg_appearances": 17, "avg_minutes": 1300, "avg_goals": 2.8,  "avg_assists": 3.2,  "avg_production_score": 57},
+        "AM":  {"avg_age": 25.5, "avg_appearances": 17, "avg_minutes": 1150, "avg_goals": 5.0,  "avg_assists": 4.5,  "avg_production_score": 59},
+        "W":   {"avg_age": 25.0, "avg_appearances": 17, "avg_minutes": 1050, "avg_goals": 5.5,  "avg_assists": 4.0,  "avg_production_score": 60},
+        "ST":  {"avg_age": 26.5, "avg_appearances": 17, "avg_minutes": 1250, "avg_goals": 8.5,  "avg_assists": 2.2,  "avg_production_score": 61},
+        "OTHER": {"avg_age": 26.0, "avg_appearances": 15, "avg_minutes": 1050, "avg_goals": 1.0, "avg_assists": 1.8, "avg_production_score": 51},
+    },
+    "National League": {
+        "GK":  {"avg_age": 25.0, "avg_appearances": 32, "avg_minutes": 2880, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 46},
+        "CB":  {"avg_age": 24.5, "avg_appearances": 30, "avg_minutes": 2550, "avg_goals": 1.2,  "avg_assists": 0.8,  "avg_production_score": 39},
+        "FB":  {"avg_age": 24.0, "avg_appearances": 30, "avg_minutes": 2500, "avg_goals": 1.5,  "avg_assists": 3.0,  "avg_production_score": 41},
+        "DM":  {"avg_age": 24.5, "avg_appearances": 30, "avg_minutes": 2350, "avg_goals": 1.5,  "avg_assists": 2.5,  "avg_production_score": 43},
+        "CM":  {"avg_age": 24.0, "avg_appearances": 29, "avg_minutes": 2250, "avg_goals": 3.5,  "avg_assists": 4.0,  "avg_production_score": 45},
+        "AM":  {"avg_age": 23.5, "avg_appearances": 29, "avg_minutes": 2050, "avg_goals": 6.0,  "avg_assists": 5.0,  "avg_production_score": 47},
+        "W":   {"avg_age": 23.0, "avg_appearances": 29, "avg_minutes": 1950, "avg_goals": 7.0,  "avg_assists": 4.5,  "avg_production_score": 48},
+        "ST":  {"avg_age": 24.5, "avg_appearances": 29, "avg_minutes": 2150, "avg_goals": 11.0, "avg_assists": 2.5,  "avg_production_score": 49},
+        "OTHER": {"avg_age": 24.0, "avg_appearances": 26, "avg_minutes": 1950, "avg_goals": 1.5, "avg_assists": 2.0, "avg_production_score": 39},
+    },
+    "Semi-Professional": {
+        "GK":  {"avg_age": 24.0, "avg_appearances": 24, "avg_minutes": 2160, "avg_goals": 0,    "avg_assists": 0.2,  "avg_production_score": 40},
+        "CB":  {"avg_age": 23.5, "avg_appearances": 22, "avg_minutes": 1850, "avg_goals": 0.8,  "avg_assists": 0.6,  "avg_production_score": 33},
+        "FB":  {"avg_age": 23.0, "avg_appearances": 22, "avg_minutes": 1800, "avg_goals": 1.0,  "avg_assists": 2.0,  "avg_production_score": 35},
+        "DM":  {"avg_age": 23.5, "avg_appearances": 22, "avg_minutes": 1650, "avg_goals": 1.0,  "avg_assists": 1.8,  "avg_production_score": 37},
+        "CM":  {"avg_age": 23.0, "avg_appearances": 21, "avg_minutes": 1550, "avg_goals": 2.5,  "avg_assists": 3.0,  "avg_production_score": 39},
+        "AM":  {"avg_age": 22.5, "avg_appearances": 21, "avg_minutes": 1400, "avg_goals": 4.5,  "avg_assists": 4.0,  "avg_production_score": 41},
+        "W":   {"avg_age": 22.0, "avg_appearances": 21, "avg_minutes": 1300, "avg_goals": 5.0,  "avg_assists": 3.5,  "avg_production_score": 42},
+        "ST":  {"avg_age": 23.5, "avg_appearances": 21, "avg_minutes": 1500, "avg_goals": 8.0,  "avg_assists": 2.0,  "avg_production_score": 43},
+        "OTHER": {"avg_age": 23.0, "avg_appearances": 19, "avg_minutes": 1300, "avg_goals": 1.0, "avg_assists": 1.5, "avg_production_score": 33},
+    },
+    "Amateur": {
+        "GK":  {"avg_age": 22.0, "avg_appearances": 20, "avg_minutes": 1800, "avg_goals": 0,    "avg_assists": 0.1,  "avg_production_score": 35},
+        "CB":  {"avg_age": 21.5, "avg_appearances": 18, "avg_minutes": 1550, "avg_goals": 0.5,  "avg_assists": 0.4,  "avg_production_score": 28},
+        "FB":  {"avg_age": 21.0, "avg_appearances": 18, "avg_minutes": 1500, "avg_goals": 0.8,  "avg_assists": 1.5,  "avg_production_score": 30},
+        "DM":  {"avg_age": 21.5, "avg_appearances": 18, "avg_minutes": 1350, "avg_goals": 0.8,  "avg_assists": 1.2,  "avg_production_score": 32},
+        "CM":  {"avg_age": 21.0, "avg_appearances": 17, "avg_minutes": 1250, "avg_goals": 2.0,  "avg_assists": 2.2,  "avg_production_score": 34},
+        "AM":  {"avg_age": 20.5, "avg_appearances": 17, "avg_minutes": 1100, "avg_goals": 3.5,  "avg_assists": 3.0,  "avg_production_score": 36},
+        "W":   {"avg_age": 20.0, "avg_appearances": 17, "avg_minutes": 1000, "avg_goals": 4.0,  "avg_assists": 2.5,  "avg_production_score": 37},
+        "ST":  {"avg_age": 21.5, "avg_appearances": 17, "avg_minutes": 1200, "avg_goals": 6.5,  "avg_assists": 1.5,  "avg_production_score": 38},
+        "OTHER": {"avg_age": 21.0, "avg_appearances": 15, "avg_minutes": 1000, "avg_goals": 0.8, "avg_assists": 1.2, "avg_production_score": 28},
+    },
+    "NCAA Division I": {
+        "GK":  {"avg_age": 20.5, "avg_appearances": 18, "avg_minutes": 1620, "avg_goals": 0,    "avg_assists": 0,    "avg_production_score": 55},
+        "CB":  {"avg_age": 20.8, "avg_appearances": 18, "avg_minutes": 1500, "avg_goals": 0.5,  "avg_assists": 1.0,  "avg_production_score": 52},
+        "FB":  {"avg_age": 20.5, "avg_appearances": 18, "avg_minutes": 1450, "avg_goals": 1.0,  "avg_assists": 2.5,  "avg_production_score": 53},
+        "DM":  {"avg_age": 20.8, "avg_appearances": 18, "avg_minutes": 1400, "avg_goals": 1.0,  "avg_assists": 2.0,  "avg_production_score": 54},
+        "CM":  {"avg_age": 20.5, "avg_appearances": 18, "avg_minutes": 1380, "avg_goals": 2.5,  "avg_assists": 3.0,  "avg_production_score": 56},
+        "AM":  {"avg_age": 20.3, "avg_appearances": 17, "avg_minutes": 1300, "avg_goals": 4.0,  "avg_assists": 4.0,  "avg_production_score": 58},
+        "W":   {"avg_age": 20.2, "avg_appearances": 17, "avg_minutes": 1250, "avg_goals": 4.5,  "avg_assists": 3.5,  "avg_production_score": 57},
+        "ST":  {"avg_age": 20.5, "avg_appearances": 17, "avg_minutes": 1300, "avg_goals": 7.0,  "avg_assists": 2.5,  "avg_production_score": 59},
+        "OTHER": {"avg_age": 20.5, "avg_appearances": 17, "avg_minutes": 1300, "avg_goals": 1.5, "avg_assists": 2.0, "avg_production_score": 52},
+    },
+    "NCAA Division II": {
+        "GK":  {"avg_age": 20.0, "avg_appearances": 17, "avg_minutes": 1530, "avg_goals": 0,    "avg_assists": 0,    "avg_production_score": 45},
+        "CB":  {"avg_age": 20.2, "avg_appearances": 17, "avg_minutes": 1400, "avg_goals": 0.5,  "avg_assists": 0.8,  "avg_production_score": 42},
+        "FB":  {"avg_age": 20.0, "avg_appearances": 17, "avg_minutes": 1350, "avg_goals": 0.8,  "avg_assists": 2.0,  "avg_production_score": 43},
+        "DM":  {"avg_age": 20.2, "avg_appearances": 17, "avg_minutes": 1300, "avg_goals": 0.8,  "avg_assists": 1.8,  "avg_production_score": 44},
+        "CM":  {"avg_age": 20.0, "avg_appearances": 17, "avg_minutes": 1280, "avg_goals": 2.0,  "avg_assists": 2.5,  "avg_production_score": 46},
+        "AM":  {"avg_age": 19.8, "avg_appearances": 16, "avg_minutes": 1200, "avg_goals": 3.5,  "avg_assists": 3.5,  "avg_production_score": 48},
+        "W":   {"avg_age": 19.7, "avg_appearances": 16, "avg_minutes": 1150, "avg_goals": 4.0,  "avg_assists": 3.0,  "avg_production_score": 47},
+        "ST":  {"avg_age": 20.0, "avg_appearances": 16, "avg_minutes": 1200, "avg_goals": 6.0,  "avg_assists": 2.0,  "avg_production_score": 49},
+        "OTHER": {"avg_age": 20.0, "avg_appearances": 16, "avg_minutes": 1200, "avg_goals": 1.2, "avg_assists": 1.8, "avg_production_score": 42},
+    },
+    "NAIA": {
+        "GK":  {"avg_age": 20.0, "avg_appearances": 16, "avg_minutes": 1440, "avg_goals": 0,    "avg_assists": 0,    "avg_production_score": 40},
+        "CB":  {"avg_age": 20.2, "avg_appearances": 16, "avg_minutes": 1300, "avg_goals": 0.4,  "avg_assists": 0.6,  "avg_production_score": 38},
+        "FB":  {"avg_age": 20.0, "avg_appearances": 16, "avg_minutes": 1250, "avg_goals": 0.7,  "avg_assists": 1.8,  "avg_production_score": 39},
+        "DM":  {"avg_age": 20.2, "avg_appearances": 16, "avg_minutes": 1200, "avg_goals": 0.7,  "avg_assists": 1.5,  "avg_production_score": 40},
+        "CM":  {"avg_age": 20.0, "avg_appearances": 16, "avg_minutes": 1180, "avg_goals": 1.8,  "avg_assists": 2.2,  "avg_production_score": 42},
+        "AM":  {"avg_age": 19.8, "avg_appearances": 15, "avg_minutes": 1100, "avg_goals": 3.0,  "avg_assists": 3.0,  "avg_production_score": 44},
+        "W":   {"avg_age": 19.7, "avg_appearances": 15, "avg_minutes": 1050, "avg_goals": 3.5,  "avg_assists": 2.5,  "avg_production_score": 43},
+        "ST":  {"avg_age": 20.0, "avg_appearances": 15, "avg_minutes": 1100, "avg_goals": 5.0,  "avg_assists": 1.8,  "avg_production_score": 45},
+        "OTHER": {"avg_age": 20.0, "avg_appearances": 15, "avg_minutes": 1100, "avg_goals": 1.0, "avg_assists": 1.5, "avg_production_score": 38},
+    },
+    "NJCAA": {
+        "GK":  {"avg_age": 19.0, "avg_appearances": 15, "avg_minutes": 1350, "avg_goals": 0,    "avg_assists": 0,    "avg_production_score": 34},
+        "CB":  {"avg_age": 19.2, "avg_appearances": 15, "avg_minutes": 1200, "avg_goals": 0.3,  "avg_assists": 0.5,  "avg_production_score": 32},
+        "FB":  {"avg_age": 19.0, "avg_appearances": 15, "avg_minutes": 1150, "avg_goals": 0.5,  "avg_assists": 1.5,  "avg_production_score": 33},
+        "DM":  {"avg_age": 19.2, "avg_appearances": 15, "avg_minutes": 1100, "avg_goals": 0.5,  "avg_assists": 1.2,  "avg_production_score": 34},
+        "CM":  {"avg_age": 19.0, "avg_appearances": 15, "avg_minutes": 1080, "avg_goals": 1.5,  "avg_assists": 2.0,  "avg_production_score": 36},
+        "AM":  {"avg_age": 18.8, "avg_appearances": 14, "avg_minutes": 1000, "avg_goals": 2.5,  "avg_assists": 2.5,  "avg_production_score": 38},
+        "W":   {"avg_age": 18.7, "avg_appearances": 14, "avg_minutes": 950,  "avg_goals": 3.0,  "avg_assists": 2.0,  "avg_production_score": 37},
+        "ST":  {"avg_age": 19.0, "avg_appearances": 14, "avg_minutes": 1000, "avg_goals": 4.5,  "avg_assists": 1.5,  "avg_production_score": 39},
+        "OTHER": {"avg_age": 19.0, "avg_appearances": 14, "avg_minutes": 1000, "avg_goals": 0.8, "avg_assists": 1.2, "avg_production_score": 32},
+    },
+}
+
 session = requests.Session()
 session.headers.update(HEADERS)
 
@@ -246,9 +605,24 @@ def position_group(pos: str) -> str:
 
 
 def position_role_from_text(position_clean: str) -> str:
-    pos = str(position_clean).lower()
-    if "goalkeeper" in pos:
+    pos = str(position_clean).strip().lower()
+    if any(k in pos for k in ["goalkeeper", "gk", "goalie", "keeper"]):
         return "GK"
+    if any(k in pos for k in ["centre-back", "center back", "cb", "central def", "sweeper", "libero"]):
+        return "CB"
+    if any(k in pos for k in ["left-back", "right-back", "lb", "rb", "fullback", "full back", "wingback", "wing back", "lwb", "rwb"]):
+        return "FB"
+    if any(k in pos for k in ["defensive mid", "cdm", "dm", "holding", "pivot", "defensive midfield"]):
+        return "DM"
+    if any(k in pos for k in ["central mid", "cm", "box to box", "b2b", "mezzala", "central midfield"]):
+        return "CM"
+    if any(k in pos for k in ["attacking mid", "cam", "am", "playmaker", "number 10", "trequartista", "attacking midfield"]):
+        return "AM"
+    if any(k in pos for k in ["winger", "lw", "rw", "left winger", "right winger", "wide forward", "inverted"]):
+        return "W"
+    if any(k in pos for k in ["striker", "st", "centre-forward", "cf", "forward", "second striker", "ss"]):
+        return "ST"
+    return "OTHER"
     if any(x in pos for x in ["centre-back", "center-back", "central defender", "centre back", "center back"]):
         return "CB"
     if any(x in pos for x in ["left-back", "right-back", "full-back", "wing-back", "left back", "right back"]):
@@ -926,6 +1300,20 @@ def calculate_match_score_for_opportunity(
     elif not bench_group.empty:
         bench = bench_group.iloc[0]
         benchmark_level = "group"
+    elif opportunity_league in MANUAL_LEAGUE_BENCHMARKS:
+        # Use manual benchmark
+        league_bench = MANUAL_LEAGUE_BENCHMARKS[opportunity_league]
+        role_data = league_bench.get(position_role_val, league_bench.get("OTHER", league_bench.get("CM", {})))
+        bench = pd.Series({
+            "avg_age": role_data.get("avg_age", 25.0),
+            "avg_market_value": None,
+            "avg_appearances": role_data.get("avg_appearances", 20),
+            "avg_minutes": role_data.get("avg_minutes", 1500),
+            "avg_goals": role_data.get("avg_goals", 2.0),
+            "avg_assists": role_data.get("avg_assists", 2.0),
+            "avg_production_score": role_data.get("avg_production_score", 50)
+        })
+        benchmark_level = "manual"
     else:
         # No benchmark data for this league - return basic score
         return {
@@ -954,12 +1342,21 @@ def calculate_match_score_for_opportunity(
         mn = row_minmax["prod_min"].iloc[0]
         mx = row_minmax["prod_max"].iloc[0]
         raw = prod.get("production_score_adj_raw", np.nan)
-        if pd.isna(raw) or pd.isna(mn) or pd.isna(mx):
-            production_score = np.nan
-        elif mx == mn:
-            production_score = 50
+        if pd.isna(raw) or pd.isna(mn) or pd.isna(mx) or mx == mn:
+            # Fall back to manual benchmark production score
+            if benchmark_level == "manual" and opportunity_league in MANUAL_LEAGUE_BENCHMARKS:
+                league_bench = MANUAL_LEAGUE_BENCHMARKS[opportunity_league]
+                role_data = league_bench.get(position_role_val, league_bench.get("OTHER", {}))
+                production_score = role_data.get("avg_production_score", 50)
+            else:
+                production_score = 50
         else:
             production_score = ((raw - mn) / (mx - mn)) * 100
+    elif benchmark_level == "manual" and opportunity_league in MANUAL_LEAGUE_BENCHMARKS:
+        # No scraped minmax - use manual benchmark
+        league_bench = MANUAL_LEAGUE_BENCHMARKS[opportunity_league]
+        role_data = league_bench.get(position_role_val, league_bench.get("OTHER", {}))
+        production_score = role_data.get("avg_production_score", 50)
     else:
         production_score = np.nan
 
@@ -1047,20 +1444,49 @@ def calculate_match_score_for_opportunity(
 async def get_player_match_scores(
     db,
     player_transfermarkt_url: str,
-    opportunities: List[Dict]
+    opportunities: List[Dict],
+    player_profile: Dict = None
 ) -> List[Dict]:
     """Get match scores for a player against multiple opportunities"""
     
-    # Load benchmark data
+    # Load benchmark data (manual benchmarks work even without scraped data)
     benchmark_data = await load_benchmark_data(db)
     if not benchmark_data:
-        return [{"error": "Benchmark data not available. Please ask admin to generate it."}]
+        benchmark_data = {
+            "df_model": pd.DataFrame(),
+            "benchmark_role": pd.DataFrame(),
+            "benchmark_group": pd.DataFrame(),
+            "prod_minmax": pd.DataFrame(),
+            "player_count": 0,
+            "generated_at": None
+        }
 
-    # Fetch player data from Transfermarkt
-    try:
-        player_dict = build_player_dict_from_transfermarkt_url(player_transfermarkt_url)
-    except Exception as e:
-        return [{"error": f"Failed to fetch player data: {str(e)}"}]
+    # Fetch player data from Transfermarkt - fall back to player profile if blocked
+    player_dict = None
+    if player_transfermarkt_url:
+        try:
+            player_dict = build_player_dict_from_transfermarkt_url(player_transfermarkt_url)
+        except Exception as e:
+            player_dict = None
+
+    # If Transfermarkt failed or no URL, build player dict from their profile stats
+    if not player_dict and player_profile:
+        position_val = player_profile.get("position", "")
+        player_dict = {
+            "age": player_profile.get("age", 25),
+            "market_value_eur": None,
+            "appearances": player_profile.get("games", 0),
+            "minutes": (player_profile.get("games", 0) or 0) * 80,
+            "goals": player_profile.get("goals", 0),
+            "assists": player_profile.get("assists", 0),
+            "position_clean": position_val,
+            "position_group": position_group(position_val),
+            "position_role": position_role_from_text(position_val),
+            "league": player_profile.get("playing_level", "Amateur"),
+        }
+    
+    if not player_dict:
+        return [{"error": "Could not build player profile for matching."}]
 
     results = []
     for opp in opportunities:
