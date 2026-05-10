@@ -8,6 +8,7 @@ import ChatList from '@/components/chat/ChatList';
 import VideoList from '@/components/video/VideoList';
 import ChatRequests from '@/components/player/ChatRequests';
 import MatchScores from '@/components/player/MatchScores';
+import KatoPage from '@/components/player/KatoPage';
 import MasterclassHome from '@/components/masterclass/MasterclassHome';
 import MasterclassDetail from '@/components/masterclass/MasterclassDetail';
 import MasterclassCategory from '@/components/masterclass/MasterclassCategory';
@@ -20,6 +21,7 @@ const PlayerDashboard = () => {
         <Route path="dashboard" element={<PlayerHome />} />
         <Route path="profile" element={<PlayerProfile />} />
         <Route path="opportunities" element={<PlayerOpportunities />} />
+        <Route path="kato" element={<KatoPage />} />
         <Route path="match-scores" element={<MatchScores />} />
         <Route path="masterclass" element={<MasterclassHome />} />
         <Route path="masterclass/bookmarks" element={<MasterclassBookmarks />} />

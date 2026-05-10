@@ -127,6 +127,7 @@ def get_player_nationalities(player: dict) -> List[str]:
 
 
 class PlayerUpdate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     name: Optional[str] = None
     profile_picture: Optional[str] = None
     position: Optional[str] = None
@@ -146,6 +147,13 @@ class PlayerUpdate(BaseModel):
     highlight_video: Optional[str] = None
     cv: Optional[str] = None
     transfermarkt_url: Optional[str] = None
+    has_baccalaureate: Optional[bool] = None
+    bac_year: Optional[int] = None
+    bac_grade: Optional[str] = None
+    english_level: Optional[int] = None
+    has_postsecondary: Optional[bool] = None
+    postsecondary_start_date: Optional[str] = None
+    annual_budget: Optional[str] = None
 
 
 # ============ MATCH ARCHIVE MODELS ============
@@ -734,7 +742,7 @@ async def update_player_profile(update: PlayerUpdate, background_tasks: Backgrou
     if current_user['role'] != 'player':
         raise HTTPException(status_code=403, detail="Not a player")
     
-    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None or isinstance(v, bool)}
     
     # Check if highlight_video is being updated - trigger auto analysis
     trigger_analysis = False

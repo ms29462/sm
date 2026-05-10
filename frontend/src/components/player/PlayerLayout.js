@@ -68,6 +68,16 @@ const PlayerLayout = ({ children }) => {
               Opportunities
             </Button>
           </Link>
+          <Link to="/player/kato">
+            <Button
+              data-testid="nav-kato-btn"
+              variant={isActive("/player/kato") ? "secondary" : "ghost"}
+              className="w-full justify-start"
+            >
+              <GraduationCap className="w-4 h-4 mr-3" />
+              Kato
+            </Button>
+          </Link>
           <Link to="/player/match-scores">
             <Button
               data-testid="nav-match-scores-btn"
