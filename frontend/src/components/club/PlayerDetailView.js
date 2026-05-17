@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download } from 'lucide-react';
+import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play } from 'lucide-react';
 import RequestChatDialog from './RequestChatDialog';
 
 const PlayerDetailView = () => {
@@ -11,6 +11,7 @@ const PlayerDetailView = () => {
   const navigate = useNavigate();
   const [player, setPlayer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [matchArchive, setMatchArchive] = useState([]);
 
   useEffect(() => {
     loadPlayerProfile();
@@ -18,8 +19,12 @@ const PlayerDetailView = () => {
 
   const loadPlayerProfile = async () => {
     try {
-      const response = await api.getPlayerDetail(playerId);
-      setPlayer(response.data);
+      const [playerRes, archiveRes] = await Promise.all([
+        api.getPlayerDetail(playerId),
+        api.getPlayerMatchArchivePublic(playerId).catch(() => ({ data: [] }))
+      ]);
+      setPlayer(playerRes.data);
+      setMatchArchive(archiveRes.data || []);
     } catch (error) {
       toast.error('Failed to load player profile');
     } finally {
@@ -266,6 +271,36 @@ const PlayerDetailView = () => {
             </div>
           </div>
         )}
+      {/* Match Video Archive */}
+      {matchArchive.length > 0 && (
+        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">
+            Match Video Archive
+          </h3>
+          <div className="space-y-3">
+            {matchArchive.map((match) => (
+              <div key={match.id} className="flex items-center justify-between p-4 bg-background rounded-sm border border-border hover:border-primary/50 transition-colors">
+                <div className="flex-1">
+                  <p className="font-medium">{match.opponent}</p>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                    <span>{match.match_date}</span>
+                    {match.competition_level && <span className="bg-white/10 px-2 py-0.5 rounded-sm text-xs uppercase">{match.competition_level}</span>}
+                    {match.position_played && <span>· {match.position_played}</span>}
+                  </div>
+                  {match.description && <p className="text-xs text-muted-foreground mt-1">{match.description}</p>}
+                </div>
+                {match.video_link && (
+                  <a href={match.video_link} target="_blank" rel="noopener noreferrer"
+                    className="ml-4 px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-black rounded-sm text-sm font-medium transition-colors">
+                    Watch
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       </div>
     </div>
   );
