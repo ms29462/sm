@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,6 +18,8 @@ const STATUS_COLORS = {
 };
 
 const PlayerProfilePopup = ({ player, onClose }) => {
+  const navigate = useNavigate();
+  const goToFullProfile = () => { onClose(); navigate(`/club/player/${player.user_id}`); };
   if (!player) return null;
   const nationalities = [player.nationality_1, player.nationality_2, player.nationality_3]
     .filter(Boolean).join(", ") || player.nationality || "N/A";
@@ -33,7 +36,7 @@ const PlayerProfilePopup = ({ player, onClose }) => {
               </div>
             )}
             <div>
-              <h2 className="text-2xl font-heading font-bold uppercase">{player.name}</h2>
+              <h2 className="text-2xl font-heading font-bold uppercase cursor-pointer hover:text-primary transition-colors" onClick={goToFullProfile}>{player.name}</h2>
               <p className="text-sm text-muted-foreground">{player.position} - {player.playing_level}</p>
               <div className="flex items-center gap-2 mt-1">
                 {player.verified && (
@@ -45,9 +48,14 @@ const PlayerProfilePopup = ({ player, onClose }) => {
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-white transition-colors p-1">
-            <X className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={goToFullProfile} className="px-3 py-1.5 border border-primary text-primary hover:bg-primary hover:text-black rounded-sm text-xs font-bold uppercase tracking-wide transition-colors">
+              View Full Profile
+            </button>
+            <button onClick={onClose} className="text-muted-foreground hover:text-white transition-colors p-1">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
         <div className="p-6 space-y-6">
           <div>
