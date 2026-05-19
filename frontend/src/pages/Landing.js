@@ -100,9 +100,9 @@ const Landing = () => {
             onClick={() => navigate('/register?role=club')}
           >
             <Trophy className="w-12 h-12 text-primary mb-6" />
-            <h3 className="text-2xl font-heading font-bold uppercase mb-4">FOR CLUBS</h3>
+            <h3 className="text-2xl font-heading font-bold uppercase mb-4">FOR ORGANIZATIONS</h3>
             <p className="text-muted-foreground mb-6">
-              Post opportunities, discover talented players, and build your squad. Access a global network of football talent.
+              Post opportunities, discover talented players, and build your network. Clubs, universities, federations and agents welcome.
             </p>
             <ul className="space-y-2 mb-8 text-sm">
               <li className="flex items-center space-x-2">
@@ -126,7 +126,7 @@ const Landing = () => {
               data-testid="club-register-btn"
               className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
             >
-              JOIN AS CLUB
+              JOIN AS ORGANIZATION
             </Button>
           </div>
         </div>
