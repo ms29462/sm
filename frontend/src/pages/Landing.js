@@ -38,14 +38,12 @@ const Landing = () => {
       <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-20">
         <div className="text-center mb-20">
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold uppercase mb-6 leading-tight">
-            CONNECT WITH
+            YOUR NEXT MOVE
             <br />
-            <span className="text-primary">FOOTBALL CLUBS</span>
-            <br />
-            WORLDWIDE
+            <span className="text-primary">STARTS HERE</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-            The premier platform connecting talented players with professional clubs, scouts, and universities around the globe.
+            SoccerMatch connects players with clubs, universities, federations and agents worldwide. Build your profile, showcase your talent, get discovered — and use Kato to find your path to US college soccer.
           </p>
         </div>
 
