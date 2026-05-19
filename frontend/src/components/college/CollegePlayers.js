@@ -74,7 +74,7 @@ const CollegePlayers = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {players.map((player) => (
-            <div key={player.user_id} className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer">
+            <div key={player.user_id} onClick={() => navigate(`/college/player/${player.user_id}`)} className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer">
               <div className="flex items-start space-x-4 mb-4">
                 {player.profile_picture ? (
                   <img src={player.profile_picture} alt={player.name} className="w-14 h-14 rounded-sm object-cover border-2 border-primary" />

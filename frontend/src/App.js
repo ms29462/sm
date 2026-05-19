@@ -45,7 +45,7 @@ function App() {
                 <Route
                   path="/club/*"
                   element={
-                    <ProtectedRoute role="club">
+                    <ProtectedRoute roles={["club", "college"]}>
                       <ClubDashboard />
                     </ProtectedRoute>
                   }

@@ -1538,7 +1538,7 @@ async def update_application_status(
 @api_router.get("/players/{player_id}", response_model=PlayerProfile)
 async def get_player_detail(player_id: str, current_user: dict = Depends(get_current_user)):
     """Get detailed player profile by user_id"""
-    if current_user['role'] not in ['club', 'admin', 'federation']:
+    if current_user['role'] not in ['club', 'admin', 'federation', 'college', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     player = await db.players.find_one({"user_id": player_id, "approved": True}, {"_id": 0})
