@@ -31,15 +31,7 @@ const Landing = () => {
             >
               LOGIN
             </Button>
-            <Button
-              data-testid="landing-admin-btn"
-              variant="ghost"
-              className="text-white/60 hover:text-primary text-sm"
-              onClick={() => navigate('/admin/login')}
-            >
-              ADMIN
-            </Button>
-          </div>
+              </div>
         </div>
       </nav>
 
