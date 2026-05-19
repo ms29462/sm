@@ -17,6 +17,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState(searchParams.get('role') || 'player');
+  const isOrgFlow = searchParams.get('role') === 'club';
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -66,8 +67,12 @@ const Register = () => {
               <Label className="text-sm font-medium uppercase tracking-wide mb-3 block">I AM A</Label>
               <RadioGroup value={role} onValueChange={setRole} className="flex flex-wrap gap-4">
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="player" id="player" data-testid="role-player-radio" />
-                  <Label htmlFor="player" className="cursor-pointer">Player</Label>
+                  {!isOrgFlow && (
+                    <>
+                      <RadioGroupItem value="player" id="player" data-testid="role-player-radio" />
+                      <Label htmlFor="player" className="cursor-pointer">Player</Label>
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="club" id="club" data-testid="role-club-radio" />
