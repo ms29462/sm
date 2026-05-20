@@ -3324,7 +3324,12 @@ fastapi_app.include_router(api_router)
 fastapi_app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=[
+        "https://www.soccer-match.org",
+        "https://soccer-match.org",
+        "http://localhost:3000",
+        "*"
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -3463,7 +3468,12 @@ fastapi_app.include_router(api_router)
 fastapi_app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=[
+        "https://www.soccer-match.org",
+        "https://soccer-match.org",
+        "http://localhost:3000",
+        "*"
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
