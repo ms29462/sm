@@ -124,7 +124,13 @@ const Landing = () => {
 
       <footer className="relative z-10 border-t border-white/10 mt-20">
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-8 text-center text-muted-foreground text-sm">
-          <p>&copy; 2026 SoccerMatch. All rights reserved.</p>
+          <div className="flex items-center justify-center gap-6 mb-4 flex-wrap">
+            <button onClick={() => navigate('/cgu')} className="hover:text-primary transition-colors">Terms of Use</button>
+            <button onClick={() => navigate('/mentions-legales')} className="hover:text-primary transition-colors">Mentions Légales</button>
+            <button onClick={() => navigate('/privacy-policy')} className="hover:text-primary transition-colors">Privacy Policy</button>
+            <a href="mailto:contact@soccermatch.ca" className="hover:text-primary transition-colors">Contact</a>
+          </div>
+          <p>&copy; 2026 Soccer Match Inc. — Montréal, Québec, Canada. All rights reserved.</p>
         </div>
       </footer>
     </div>

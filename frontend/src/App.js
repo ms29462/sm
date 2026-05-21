@@ -12,6 +12,9 @@ import AgentDashboard from '@/pages/AgentDashboard';
 import SpecialistDashboard from '@/pages/SpecialistDashboard';
 import CollegeDashboard from '@/pages/CollegeDashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
+import CGU from '@/pages/CGU';
+import MentionsLegales from '@/pages/MentionsLegales';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import ChatRoom from '@/components/chat/ChatRoom';
 import VideoCall from '@/components/video/VideoCall';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
@@ -106,6 +109,9 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/cgu" element={<CGU />} />
+                <Route path="/mentions-legales" element={<MentionsLegales />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
               <PWAInstallBanner />
