@@ -58,37 +58,35 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": ["sports", "social", "business"],
+  "categories": [
+    "sports",
+    "social",
+    "business"
+  ],
   "shortcuts": [
     {
       "name": "Player Dashboard",
       "short_name": "Player",
       "description": "Go to player dashboard",
       "url": "/player/dashboard",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Search Players",
       "short_name": "Search",
       "description": "Search for players",
       "url": "/club/players",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshots/dashboard.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Dashboard view"
-    },
-    {
-      "src": "/screenshots/mobile.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Mobile view"
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }
