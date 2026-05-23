@@ -44,7 +44,7 @@ const labelClass = "text-xs text-muted-foreground uppercase tracking-wide";
 const ScoutingHub = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const scoutingBase = user?.role === "college" ? "/college/scouting" : "/club/scouting";
+  const scoutingBase = user?.role === "college" ? "/college/scouting" : user?.role === "federation" ? "/federation/scouting" : "/club/scouting";
   const [activeTab, setActiveTab] = useState("Tracked Players");
   const [trackedPlayers, setTrackedPlayers] = useState([]);
   const [groups, setGroups] = useState([]);

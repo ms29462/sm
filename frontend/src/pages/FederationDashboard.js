@@ -5,6 +5,8 @@ import FederationProfile from '@/components/federation/FederationProfile';
 import FederationPlayers from '@/components/federation/FederationPlayers';
 import FederationRecommended from '@/components/federation/FederationRecommended';
 import FederationScouting from '@/components/federation/FederationScouting';
+import ScoutingHub from '@/components/club/ScoutingHub';
+import TrackingOverview from '@/components/club/TrackingOverview';
 import FederationTeams from '@/components/federation/FederationTeams';
 import FederationPlayerDetailView from '@/components/federation/FederationPlayerDetailView';
 
@@ -18,7 +20,9 @@ const FederationDashboard = () => {
         <Route path="players" element={<FederationPlayers />} />
         <Route path="player/:playerId" element={<FederationPlayerDetailView />} />
         <Route path="recommended" element={<FederationRecommended />} />
-        <Route path="scouting" element={<FederationScouting />} />
+        <Route path="scouting" element={<ScoutingHub />} />
+        <Route path="scouting/:playerId" element={<TrackingOverview />} />
+        <Route path="scouting-old" element={<FederationScouting />} />
         <Route path="teams" element={<FederationTeams />} />
         <Route path="*" element={<FederationHome />} />
       </Routes>
