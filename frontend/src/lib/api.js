@@ -171,9 +171,30 @@ export const api = {
   verifySpecialist: (userId, verified) => axios.put(`${API}/admin/specialists/${userId}/verify?verified=${verified}`, {}, { headers: getAuthHeaders() }),
 
 
+
+  // Scouting Notes
+  createScoutingNote: (data) => axios.post(`${API}/scouting/notes`, data, { headers: getAuthHeaders() }),
+  getScoutingNotes: (playerId) => axios.get(`${API}/scouting/notes/${playerId}`, { headers: getAuthHeaders() }),
+  updateScoutingNote: (noteId, data) => axios.put(`${API}/scouting/notes/${noteId}`, data, { headers: getAuthHeaders() }),
+  deleteScoutingNote: (noteId) => axios.delete(`${API}/scouting/notes/${noteId}`, { headers: getAuthHeaders() }),
+
+  // Post Mortems
+  createPostMortem: (data) => axios.post(`${API}/scouting/post-mortems`, data, { headers: getAuthHeaders() }),
+  getPostMortems: (playerId) => axios.get(`${API}/scouting/post-mortems/${playerId}`, { headers: getAuthHeaders() }),
+  deletePostMortem: (pmId) => axios.delete(`${API}/scouting/post-mortems/${pmId}`, { headers: getAuthHeaders() }),
+  updatePostMortem: (pmId, data) => axios.put(`${API}/scouting/post-mortems/${pmId}`, data, { headers: getAuthHeaders() }),
+
+  // Player Tracking
+  trackPlayer: (playerId) => axios.post(`${API}/scouting/track/${playerId}`, {}, { headers: getAuthHeaders() }),
+  untrackPlayer: (playerId) => axios.delete(`${API}/scouting/track/${playerId}`, { headers: getAuthHeaders() }),
+  getTrackedPlayers: () => axios.get(`${API}/scouting/tracked`, { headers: getAuthHeaders() }),
+
+  // Scouting Groups
+  createScoutingGroup: (data) => axios.post(`${API}/scouting/groups`, data, { headers: getAuthHeaders() }),
+  getScoutingGroups: () => axios.get(`${API}/scouting/groups`, { headers: getAuthHeaders() }),
+  joinScoutingGroup: (token) => axios.get(`${API}/scouting/groups/join/${token}`, { headers: getAuthHeaders() }),
+  deleteScoutingGroup: (groupId) => axios.delete(`${API}/scouting/groups/${groupId}`, { headers: getAuthHeaders() }),
+  groupTrackPlayer: (groupId, playerId) => axios.post(`${API}/scouting/groups/${groupId}/track/${playerId}`, {}, { headers: getAuthHeaders() }),
+  getGroupMessages: (groupId) => axios.get(`${API}/scouting/groups/${groupId}/messages`, { headers: getAuthHeaders() }),
+  sendGroupMessage: (groupId, data) => axios.post(`${API}/scouting/groups/${groupId}/messages`, data, { headers: getAuthHeaders() }),
 };
-
-
-
-
-

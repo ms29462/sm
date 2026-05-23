@@ -156,6 +156,97 @@ class PlayerUpdate(BaseModel):
     annual_budget: Optional[str] = None
 
 
+
+# ============ SCOUTING MODELS ============
+class ScoutingNote(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    player_id: str
+    author_id: str
+    author_name: str
+    content: str
+    visibility: Literal["private", "group", "org"] = "private"
+    shared_with: List[str] = []
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ScoutingNoteCreate(BaseModel):
+    player_id: str
+    content: str
+    visibility: Literal["private", "group", "org"] = "private"
+    shared_with: List[str] = []
+
+class ScoutingNoteUpdate(BaseModel):
+    content: Optional[str] = None
+    visibility: Optional[Literal["private", "group", "org"]] = None
+    shared_with: Optional[List[str]] = None
+
+class PostMortem(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    player_id: str
+    author_id: str
+    author_name: str
+    match_date: str
+    opponent: str
+    position_played: Optional[str] = None
+    overall_rating: int
+    physical: int
+    technical: int
+    tactical: int
+    mental: int
+    strengths: str
+    weaknesses: str
+    recommendation: Literal["sign", "monitor", "reject"]
+    visibility: Literal["private", "group", "org"] = "private"
+    shared_with: List[str] = []
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class PostMortemCreate(BaseModel):
+    player_id: str
+    match_date: str
+    opponent: str
+    position_played: Optional[str] = None
+    overall_rating: int
+    physical: int
+    technical: int
+    tactical: int
+    mental: int
+    strengths: str
+    weaknesses: str
+    recommendation: Literal["sign", "monitor", "reject"]
+    visibility: Literal["private", "group", "org"] = "private"
+    shared_with: List[str] = []
+
+class ScoutingGroup(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    org_id: str
+    org_name: str
+    admin_id: str
+    name: str
+    description: Optional[str] = None
+    members: List[str] = []
+    invite_token: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    visibility: Literal["private", "org_wide"] = "private"
+    players_tracked: List[str] = []
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ScoutingGroupCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    visibility: Literal["private", "org_wide"] = "private"
+
+class GroupMessage(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    group_id: str
+    author_id: str
+    author_name: str
+    content: str
+    player_id: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class GroupMessageCreate(BaseModel):
+    content: str
+    player_id: Optional[str] = None
+
 # ============ MATCH ARCHIVE MODELS ============
 class MatchArchiveEntry(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -3319,6 +3410,233 @@ async def clear_chatbot_session(
     return {"success": True, "message": "Session cleared"}
 
 
+# ============ SCOUTING ENDPOINTS ============
+
+# --- Scouting Notes ---
+@api_router.post("/scouting/notes", response_model=ScoutingNote)
+async def create_scouting_note(note: ScoutingNoteCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    org = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    author_name = org.get("name", current_user.get("email", "Unknown")) if org else current_user.get("email", "Unknown")
+    note_doc = {
+        "id": str(uuid.uuid4()),
+        "player_id": note.player_id,
+        "author_id": current_user['user_id'],
+        "author_name": author_name,
+        "content": note.content,
+        "visibility": note.visibility,
+        "shared_with": note.shared_with,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.scouting_notes.insert_one(note_doc)
+    return ScoutingNote(**note_doc)
+
+@api_router.get("/scouting/notes/{player_id}")
+async def get_scouting_notes(player_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    notes = await db.scouting_notes.find({
+        "player_id": player_id,
+        "$or": [
+            {"author_id": current_user['user_id']},
+            {"visibility": "org"},
+            {"shared_with": current_user['user_id']}
+        ]
+    }, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return notes
+
+@api_router.put("/scouting/notes/{note_id}")
+async def update_scouting_note(note_id: str, update: ScoutingNoteUpdate, current_user: dict = Depends(get_current_user)):
+    note = await db.scouting_notes.find_one({"id": note_id, "author_id": current_user['user_id']})
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.scouting_notes.update_one({"id": note_id}, {"$set": update_data})
+    return {"message": "Updated"}
+
+@api_router.delete("/scouting/notes/{note_id}")
+async def delete_scouting_note(note_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.scouting_notes.delete_one({"id": note_id, "author_id": current_user['user_id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return {"message": "Deleted"}
+
+# --- Post Mortems ---
+@api_router.post("/scouting/post-mortems", response_model=PostMortem)
+async def create_post_mortem(pm: PostMortemCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    org = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    author_name = org.get("name", current_user.get("email", "Unknown")) if org else current_user.get("email", "Unknown")
+    pm_doc = {
+        "id": str(uuid.uuid4()),
+        "author_id": current_user['user_id'],
+        "author_name": author_name,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        **pm.model_dump()
+    }
+    await db.post_mortems.insert_one(pm_doc)
+    return PostMortem(**pm_doc)
+
+@api_router.get("/scouting/post-mortems/{player_id}")
+async def get_post_mortems(player_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    pms = await db.post_mortems.find({
+        "player_id": player_id,
+        "$or": [
+            {"author_id": current_user['user_id']},
+            {"visibility": "org"},
+            {"shared_with": current_user['user_id']}
+        ]
+    }, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return pms
+
+@api_router.put("/scouting/post-mortems/{pm_id}")
+async def update_post_mortem(pm_id: str, update: dict, current_user: dict = Depends(get_current_user)):
+    pm = await db.post_mortems.find_one({"id": pm_id, "author_id": current_user['user_id']})
+    if not pm:
+        raise HTTPException(status_code=404, detail="Report not found")
+    update.pop("id", None)
+    update.pop("author_id", None)
+    update.pop("created_at", None)
+    await db.post_mortems.update_one({"id": pm_id}, {"$set": update})
+    return {"message": "Updated"}
+
+@api_router.delete("/scouting/post-mortems/{pm_id}")
+async def delete_post_mortem(pm_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.post_mortems.delete_one({"id": pm_id, "author_id": current_user['user_id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Post-mortem not found")
+    return {"message": "Deleted"}
+
+# --- Player Tracking ---
+@api_router.post("/scouting/track/{player_id}")
+async def track_player(player_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    existing = await db.tracked_players.find_one({"tracker_id": current_user['user_id'], "player_id": player_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already tracking this player")
+    await db.tracked_players.insert_one({
+        "id": str(uuid.uuid4()),
+        "tracker_id": current_user['user_id'],
+        "player_id": player_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"message": "Player tracked"}
+
+@api_router.delete("/scouting/track/{player_id}")
+async def untrack_player(player_id: str, current_user: dict = Depends(get_current_user)):
+    await db.tracked_players.delete_one({"tracker_id": current_user['user_id'], "player_id": player_id})
+    return {"message": "Player untracked"}
+
+@api_router.get("/scouting/tracked")
+async def get_tracked_players(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    tracked = await db.tracked_players.find({"tracker_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
+    player_ids = [t["player_id"] for t in tracked]
+    players = await db.players.find({"user_id": {"$in": player_ids}, "approved": True}, {"_id": 0}).to_list(1000)
+    players = [strip_player_private_info(p) for p in players]
+    return players
+
+# --- Scouting Groups ---
+@api_router.post("/scouting/groups")
+async def create_scouting_group(group: ScoutingGroupCreate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] not in ['club', 'federation', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    org = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    org_name = org.get("name", "Unknown") if org else "Unknown"
+    group_doc = {
+        "id": str(uuid.uuid4()),
+        "org_id": current_user['user_id'],
+        "org_name": org_name,
+        "admin_id": current_user['user_id'],
+        "name": group.name,
+        "description": group.description,
+        "members": [current_user['user_id']],
+        "invite_token": str(uuid.uuid4()),
+        "visibility": group.visibility,
+        "players_tracked": [],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.scouting_groups.insert_one(group_doc)
+    return group_doc
+
+@api_router.get("/scouting/groups")
+async def get_scouting_groups(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] not in ['club', 'federation', 'college']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    groups = await db.scouting_groups.find({
+        "$or": [
+            {"org_id": current_user['user_id']},
+            {"members": current_user['user_id']}
+        ]
+    }, {"_id": 0}).to_list(100)
+    return groups
+
+@api_router.get("/scouting/groups/join/{invite_token}")
+async def join_scouting_group(invite_token: str, current_user: dict = Depends(get_current_user)):
+    group = await db.scouting_groups.find_one({"invite_token": invite_token}, {"_id": 0})
+    if not group:
+        raise HTTPException(status_code=404, detail="Invalid invite link")
+    if current_user['user_id'] not in group['members']:
+        await db.scouting_groups.update_one(
+            {"invite_token": invite_token},
+            {"$push": {"members": current_user['user_id']}}
+        )
+    return {"message": "Joined group", "group_id": group['id']}
+
+@api_router.delete("/scouting/groups/{group_id}")
+async def delete_scouting_group(group_id: str, current_user: dict = Depends(get_current_user)):
+    group = await db.scouting_groups.find_one({"id": group_id, "admin_id": current_user['user_id']})
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found or not authorized")
+    await db.scouting_groups.delete_one({"id": group_id})
+    await db.group_messages.delete_many({"group_id": group_id})
+    return {"message": "Group deleted"}
+
+@api_router.post("/scouting/groups/{group_id}/track/{player_id}")
+async def group_track_player(group_id: str, player_id: str, current_user: dict = Depends(get_current_user)):
+    group = await db.scouting_groups.find_one({"id": group_id, "members": current_user['user_id']})
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    await db.scouting_groups.update_one({"id": group_id}, {"$addToSet": {"players_tracked": player_id}})
+    return {"message": "Player added to group watchlist"}
+
+# --- Group Messages ---
+@api_router.post("/scouting/groups/{group_id}/messages")
+async def send_group_message(group_id: str, msg: GroupMessageCreate, current_user: dict = Depends(get_current_user)):
+    group = await db.scouting_groups.find_one({"id": group_id, "members": current_user['user_id']})
+    if not group:
+        raise HTTPException(status_code=403, detail="Not a member of this group")
+    org = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    author_name = org.get("name", current_user.get("email", "Unknown")) if org else current_user.get("email", "Unknown")
+    msg_doc = {
+        "id": str(uuid.uuid4()),
+        "group_id": group_id,
+        "author_id": current_user['user_id'],
+        "author_name": author_name,
+        "content": msg.content,
+        "player_id": msg.player_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.group_messages.insert_one(msg_doc)
+    return msg_doc
+
+@api_router.get("/scouting/groups/{group_id}/messages")
+async def get_group_messages(group_id: str, current_user: dict = Depends(get_current_user)):
+    group = await db.scouting_groups.find_one({"id": group_id, "members": current_user['user_id']})
+    if not group:
+        raise HTTPException(status_code=403, detail="Not a member of this group")
+    messages = await db.group_messages.find({"group_id": group_id}, {"_id": 0}).sort("created_at", 1).to_list(500)
+    return messages
+
+
 fastapi_app.include_router(api_router)
 
 fastapi_app.add_middleware(
@@ -3491,35 +3809,3 @@ async def shutdown_db_client():
 # Wrap FastAPI with Socket.IO
 socket_app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app, socketio_path='/api/socket.io')
 app = socket_app
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

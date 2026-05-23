@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play } from 'lucide-react';
+import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play, Target } from 'lucide-react';
 import RequestChatDialog from './RequestChatDialog';
 
 const PlayerDetailView = () => {
@@ -12,6 +12,7 @@ const PlayerDetailView = () => {
   const [player, setPlayer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [matchArchive, setMatchArchive] = useState([]);
+  const [isTracked, setIsTracked] = useState(false);
 
   useEffect(() => {
     loadPlayerProfile();
@@ -32,6 +33,22 @@ const PlayerDetailView = () => {
     }
   };
 
+  const handleTrackPlayer = async () => {
+    try {
+      if (isTracked) {
+        await api.untrackPlayer(playerId);
+        setIsTracked(false);
+        toast.success('Removed from watchlist');
+      } else {
+        await api.trackPlayer(playerId);
+        setIsTracked(true);
+        toast.success('Added to watchlist!');
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to update watchlist');
+    }
+  };
+
   const handleAddFavorite = async () => {
     try {
       await api.addFavorite(playerId);
@@ -39,6 +56,10 @@ const PlayerDetailView = () => {
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to add to favorites');
     }
+  };
+
+  const handleDownloadCV = () => {
+    if (player?.cv) window.open(player.cv, '_blank');
   };
 
   if (loading) {
@@ -51,226 +72,145 @@ const PlayerDetailView = () => {
 
   if (!player) {
     return (
-      <div className="p-8">
-        <div className="text-center">
-          <p className="text-muted-foreground">Player not found</p>
-          <Button onClick={() => navigate(-1)} className="mt-4">
-            Go Back
-          </Button>
-        </div>
+      <div className="p-8 text-center">
+        <p className="text-muted-foreground">Player not found</p>
+        <Button onClick={() => navigate(-1)} className="mt-4">Go Back</Button>
       </div>
     );
   }
 
+  const nationalities = [player.nationality_1, player.nationality_2, player.nationality_3]
+    .filter(Boolean).join(', ') || player.nationality || 'N/A';
+
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-center space-x-4">
-        <Button
-          data-testid="back-btn"
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(-1)}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-heading font-bold uppercase mb-2">PLAYER PROFILE</h1>
-          <p className="text-muted-foreground">Complete athletic information</p>
+    <div className="p-6 max-w-4xl mx-auto">
+      {/* Back button */}
+      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-muted-foreground hover:text-primary mb-6 transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Back
+      </button>
+
+      {/* Header */}
+      <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+        <div className="flex flex-col md:flex-row items-start gap-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-4 mb-4">
+              {player.profile_picture ? (
+                <img src={player.profile_picture} alt={player.name} className="w-20 h-20 rounded-sm object-cover border-2 border-primary" />
+              ) : (
+                <div className="w-20 h-20 rounded-sm bg-muted flex items-center justify-center border-2 border-border">
+                  <User className="w-10 h-10 text-muted-foreground" />
+                </div>
+              )}
+              <div>
+                <h1 className="text-2xl font-heading font-bold uppercase">{player.name}</h1>
+                <p className="text-muted-foreground">{player.position} · {player.playing_level}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  {player.verified && (
+                    <span className="inline-flex items-center px-3 py-1 text-xs uppercase tracking-wider rounded-sm bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                      <CheckCircle className="w-3 h-3 mr-1" /> Verified
+                    </span>
+                  )}
+                  {player.approved && (
+                    <span className="bg-primary/10 text-primary border border-primary/20 uppercase text-sm tracking-wider px-4 py-2 rounded-sm font-bold">
+                      Approved
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={handleTrackPlayer}
+              variant="outline"
+              className={`rounded-sm h-12 px-6 font-bold uppercase tracking-wide ${isTracked ? "border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black" : "border-white/20 text-white hover:bg-white/10"}`}
+            >
+              <Target className="w-4 h-4 mr-2" />
+              {isTracked ? "Tracked ✓" : "Track Player"}
+            </Button>
+            <Button
+              data-testid="add-favorite-btn"
+              onClick={handleAddFavorite}
+              className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12 px-6"
+            >
+              <Heart className="w-4 h-4 mr-2" />
+              ADD TO FAVORITES
+            </Button>
+            <RequestChatDialog playerId={player.user_id} playerName={player.name} />
+          </div>
         </div>
       </div>
 
-      <div className="max-w-5xl">
-        {/* Header Card with Profile Picture and Basic Info */}
-        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
-          <div className="flex items-start space-x-8 mb-6">
-            {player.profile_picture ? (
-              <img
-                src={player.profile_picture}
-                alt={player.name}
-                className="w-32 h-32 rounded-sm object-cover border-4 border-primary"
-              />
-            ) : (
-              <div className="w-32 h-32 rounded-sm bg-muted flex items-center justify-center border-4 border-border">
-                <User className="w-16 h-16 text-muted-foreground" />
-              </div>
-            )}
-            <div className="flex-1">
-              <div className="flex items-center space-x-3 mb-2">
-                <h2 className="text-3xl font-heading font-bold uppercase">{player.name}</h2>
-                {player.verified && (
-                  <span
-                    data-testid="verified-badge"
-                    className="inline-flex items-center px-3 py-1 text-xs uppercase tracking-wider rounded-sm bg-blue-500/10 text-blue-500 border border-blue-500/20"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-1" />
-                    VERIFIED
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-3 mt-4">
-                {player.position && (
-                  <span className="bg-primary/10 text-primary border border-primary/20 uppercase text-sm tracking-wider px-4 py-2 rounded-sm font-bold">
-                    {player.position}
-                  </span>
-                )}
-                {player.playing_level && (
-                  <span className="bg-white/5 text-white border border-white/20 uppercase text-sm tracking-wider px-4 py-2 rounded-sm">
-                    {player.playing_level}
-                  </span>
-                )}
-              </div>
+      {/* Stats */}
+      <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+        <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">Player Information</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {[
+            { label: "Age", value: player.age ? `${player.age} years` : "N/A" },
+            { label: "Nationality", value: nationalities },
+            { label: "Height", value: player.height ? `${player.height} cm` : "N/A" },
+            { label: "Weight", value: player.weight ? `${player.weight} kg` : "N/A" },
+            { label: "Preferred Foot", value: player.preferred_foot || "N/A" },
+            { label: "Current Club", value: player.current_club || "Free Agent" },
+            { label: "Games", value: player.games || 0 },
+            { label: "Goals", value: player.goals || 0 },
+            { label: "Assists", value: player.assists || 0 },
+          ].map(({ label, value }) => (
+            <div key={label} className="bg-background border border-border/50 rounded-sm p-3">
+              <p className="text-xs text-muted-foreground uppercase mb-1">{label}</p>
+              <p className="font-medium">{value}</p>
             </div>
-            <div className="flex flex-col gap-3">
-              <Button
-                data-testid="add-favorite-btn"
-                onClick={handleAddFavorite}
-                className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12 px-6"
-              >
-                <Heart className="w-4 h-4 mr-2" />
-                ADD TO FAVORITES
-              </Button>
-              <RequestChatDialog playerId={playerId} playerName={player.name} />
-            </div>
-          </div>
+          ))}
         </div>
+      </div>
 
-        {/* Personal Information */}
+      {/* Media */}
+      {(player.highlight_video || player.cv || player.transfermarkt_url) && (
         <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
-          <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">
-            PERSONAL INFORMATION
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {player.age && (
-              <div>
-                <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Age</p>
-                <p className="text-lg font-medium">{player.age} years</p>
+          <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">Media & Links</h3>
+          <div className="space-y-4">
+            {player.highlight_video && (
+              <div className="flex items-center justify-between p-4 bg-background rounded-sm border border-border">
+                <div>
+                  <p className="font-medium mb-1">Highlight Video</p>
+                  <p className="text-sm text-muted-foreground">YouTube / Vimeo</p>
+                </div>
+                <Button variant="outline" onClick={() => window.open(player.highlight_video, '_blank')}
+                  className="border-primary text-primary hover:bg-primary hover:text-black">
+                  <ExternalLink className="w-4 h-4 mr-2" /> WATCH VIDEO
+                </Button>
               </div>
             )}
-            {player.nationality && (
-              <div>
-                <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Nationality</p>
-                <p className="text-lg font-medium">{player.nationality}</p>
+            {player.cv && (
+              <div className="flex items-center justify-between p-4 bg-background rounded-sm border border-border">
+                <div>
+                  <p className="font-medium mb-1">CV / Resume</p>
+                  <p className="text-sm text-muted-foreground">Player curriculum vitae</p>
+                </div>
+                <Button variant="outline" onClick={handleDownloadCV}
+                  className="border-white/20 text-white hover:bg-white/10">
+                  <Download className="w-4 h-4 mr-2" /> DOWNLOAD CV
+                </Button>
               </div>
             )}
-            {player.height && (
-              <div>
-                <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Height</p>
-                <p className="text-lg font-medium">{player.height} cm</p>
-              </div>
-            )}
-            {player.weight && (
-              <div>
-                <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Weight</p>
-                <p className="text-lg font-medium">{player.weight} kg</p>
-              </div>
-            )}
-            {player.preferred_foot && (
-              <div>
-                <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Preferred Foot</p>
-                <p className="text-lg font-medium">{player.preferred_foot}</p>
-              </div>
-            )}
-            {player.current_club && (
-              <div>
-                <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Current Club</p>
-                <p className="text-lg font-medium">{player.current_club}</p>
+            {player.transfermarkt_url && (
+              <div className="flex items-center justify-between p-4 bg-background rounded-sm border border-border">
+                <div>
+                  <p className="font-medium mb-1">Transfermarkt Profile</p>
+                  <p className="text-sm text-muted-foreground">Professional stats and market value</p>
+                </div>
+                <Button variant="outline" onClick={() => window.open(player.transfermarkt_url, '_blank')}
+                  className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white">
+                  <ExternalLink className="w-4 h-4 mr-2" /> VIEW PROFILE
+                </Button>
               </div>
             )}
           </div>
         </div>
+      )}
 
-        {/* Statistics */}
-        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
-          <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">
-            CAREER STATISTICS
-          </h3>
-          <div className="grid grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-background rounded-sm border border-border">
-              <p className="text-4xl font-heading font-bold text-primary mb-2">{player.games || 0}</p>
-              <p className="text-sm text-muted-foreground uppercase tracking-wide">Games Played</p>
-            </div>
-            <div className="text-center p-6 bg-background rounded-sm border border-border">
-              <p className="text-4xl font-heading font-bold text-primary mb-2">{player.goals || 0}</p>
-              <p className="text-sm text-muted-foreground uppercase tracking-wide">Goals</p>
-            </div>
-            <div className="text-center p-6 bg-background rounded-sm border border-border">
-              <p className="text-4xl font-heading font-bold text-primary mb-2">{player.assists || 0}</p>
-              <p className="text-sm text-muted-foreground uppercase tracking-wide">Assists</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Media */}
-        {(player.highlight_video || player.cv || player.transfermarkt_url) && (
-          <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
-            <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">
-              MEDIA & DOCUMENTS
-            </h3>
-            <div className="space-y-4">
-              {player.highlight_video && (
-                <div className="flex items-center justify-between p-4 bg-background rounded-sm border border-border">
-                  <div>
-                    <p className="font-medium mb-1">Highlight Video</p>
-                    <p className="text-sm text-muted-foreground">YouTube / Vimeo</p>
-                  </div>
-                  <Button
-                    data-testid="view-video-btn"
-                    variant="outline"
-                    onClick={() => window.open(player.highlight_video, '_blank')}
-                    className="border-primary text-primary hover:bg-primary hover:text-black"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    WATCH VIDEO
-                  </Button>
-                </div>
-              )}
-              {player.cv && (
-                <div className="flex items-center justify-between p-4 bg-background rounded-sm border border-border">
-                  <div>
-                    <p className="font-medium mb-1">Player CV / Resume</p>
-                    <p className="text-sm text-muted-foreground">Professional document</p>
-                  </div>
-                  <Button
-                    data-testid="download-cv-btn"
-                    variant="outline"
-                    onClick={() => {
-                      if (player.cv.startsWith('http')) {
-                        window.open(player.cv, '_blank');
-                      } else {
-                        // Handle base64 download
-                        const link = document.createElement('a');
-                        link.href = player.cv;
-                        link.download = `${player.name}_CV.pdf`;
-                        link.click();
-                      }
-                    }}
-                    className="border-primary text-primary hover:bg-primary hover:text-black"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    VIEW CV
-                  </Button>
-                </div>
-              )}
-              {player.transfermarkt_url && (
-                <div className="flex items-center justify-between p-4 bg-background rounded-sm border border-border">
-                  <div>
-                    <p className="font-medium mb-1">Transfermarkt Profile</p>
-                    <p className="text-sm text-muted-foreground">Professional stats and market value</p>
-                  </div>
-                  <Button
-                    data-testid="view-transfermarkt-btn"
-                    variant="outline"
-                    onClick={() => window.open(player.transfermarkt_url, '_blank')}
-                    className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    VIEW PROFILE
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       {/* Match Video Archive */}
       {matchArchive.length > 0 && (
         <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
@@ -300,8 +240,6 @@ const PlayerDetailView = () => {
           </div>
         </div>
       )}
-
-      </div>
     </div>
   );
 };
