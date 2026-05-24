@@ -5,28 +5,28 @@ const MobileNavConfig = {
   player: [
     { path: '/player/dashboard', icon: Home, label: 'Home' },
     { path: '/player/profile', icon: User, label: 'Profile' },
-    { path: '/player/opportunities', icon: FileText, label: 'Jobs' },
-    { path: '/player/masterclass', icon: GraduationCap, label: 'Learn' },
-    { path: '/player/chat-requests', icon: MessageCircle, label: 'Chat' }
+    { path: '/player/opportunities', icon: FileText, label: 'Opportunities' },
+    { path: '/player/masterclass', icon: GraduationCap, label: 'Masterclass' },
+    { path: '/player/chat-requests', icon: MessageCircle, label: 'Chats' }
   ],
   club: [
     { path: '/club/dashboard', icon: Home, label: 'Home' },
     { path: '/club/players', icon: Users, label: 'Players' },
-    { path: '/club/scouting', icon: Target, label: 'Scout' },
-    { path: '/club/applications', icon: FileText, label: 'Apps' },
+    { path: '/club/scouting', icon: Target, label: 'Scouting' },
+    { path: '/club/applications', icon: FileText, label: 'Applications' },
     { path: '/club/chats', icon: MessageCircle, label: 'Chats' }
   ],
   college: [
     { path: '/college/dashboard', icon: Home, label: 'Home' },
     { path: '/college/players', icon: Users, label: 'Players' },
-    { path: '/college/scouting', icon: Target, label: 'Scout' },
+    { path: '/college/scouting', icon: Target, label: 'Scouting' },
     { path: '/college/chats', icon: MessageCircle, label: 'Chats' },
     { path: '/college/profile', icon: Building, label: 'Profile' }
   ],
   federation: [
     { path: '/federation/dashboard', icon: Home, label: 'Home' },
     { path: '/federation/players', icon: Users, label: 'Players' },
-    { path: '/federation/scouting', icon: Target, label: 'Scout' },
+    { path: '/federation/scouting', icon: Target, label: 'Scouting' },
     { path: '/federation/teams', icon: Shield, label: 'Teams' },
     { path: '/federation/chats', icon: MessageCircle, label: 'Chats' }
   ],
