@@ -1,4 +1,6 @@
-﻿import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState } from 'react';
+﻿import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import MobileBottomNav from "@/components/mobile/MobileBottomNav";
@@ -6,6 +8,7 @@ import MobileHeader from "@/components/mobile/MobileHeader";
 import { Trophy, Users, Home, UserCircle, LogOut, GraduationCap } from "lucide-react";
 
 const CollegeLayout = ({ children }) => {
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,6 +21,7 @@ const CollegeLayout = ({ children }) => {
   const isActive = (path) => location.pathname.includes(path);
 
   return (
+    <>
     <div className="min-h-screen flex flex-col md:flex-row">
       <MobileHeader title="SOCCERMATCH" />
       <aside className="w-64 border-r border-border bg-background fixed h-full hidden md:block">
@@ -51,7 +55,7 @@ const CollegeLayout = ({ children }) => {
           </Link>
         </nav>
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
-          <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleLogout}>
+          <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" onClick={confirmLogout}>
             <LogOut className="w-4 h-4 mr-3" />Logout
           </Button>
         </div>
@@ -59,6 +63,19 @@ const CollegeLayout = ({ children }) => {
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">{children}</main>
       <MobileBottomNav role="college" />
     </div>
+  );
+};
+
+      <ConfirmDialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        title="Sign Out"
+        description="Are you sure you want to sign out?"
+        confirmLabel="Sign Out"
+        confirmVariant="destructive"
+        onConfirm={handleLogout}
+      />
+    </>
   );
 };
 

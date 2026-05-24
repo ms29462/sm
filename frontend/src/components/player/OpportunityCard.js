@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { api } from "@/lib/api";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { toast } from "sonner";
 import { Target, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,14 +20,19 @@ const getFitScoreBg = (score) => {
 };
 
 const OpportunityCard = ({ opp, matchScore, score, onApply, testId }) => {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [applying, setApplying] = useState(false);
   const handleApply = async () => {
+    setApplying(true);
     try {
       await api.createApplication({ opportunity_id: opp.id });
       toast.success("Application submitted successfully!");
+      setShowConfirm(false);
       if (onApply) onApply(opp.id);
     } catch (error) {
       toast.error(error.response?.data?.detail || "Failed to apply");
     }
+    setApplying(false);
   };
 
   // Support both simple score number and full score object
@@ -108,11 +115,21 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId }) => {
       {/* Apply Button */}
       <Button
         data-testid={`apply-btn-${opp.id}`}
-        onClick={handleApply}
+        onClick={() => setShowConfirm(true)}
         className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12 mt-auto"
       >
         APPLY NOW
       </Button>
+      <ConfirmDialog
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        title="Apply to Opportunity"
+        description={`Are you sure you want to apply to this ${opp.position} position at ${opp.club_name}?`}
+        confirmLabel="Apply Now"
+        confirmVariant="primary"
+        onConfirm={handleApply}
+        loading={applying}
+      />
     </div>
   );
 };

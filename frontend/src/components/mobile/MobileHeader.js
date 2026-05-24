@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -76,6 +77,7 @@ const getRoleLabel = (role) => {
 
 const MobileHeader = ({ title, showMenu = true, children }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -84,6 +86,8 @@ const MobileHeader = ({ title, showMenu = true, children }) => {
     navigate('/');
     setMenuOpen(false);
   };
+
+  const confirmLogout = () => setShowLogoutConfirm(true);
 
   const links = NAV_LINKS[user?.role] || [];
 
@@ -101,7 +105,7 @@ const MobileHeader = ({ title, showMenu = true, children }) => {
                 <Menu className="w-6 h-6" />
               </button>
             )}
-            <button onClick={handleLogout} className="p-2 -mr-2 text-muted-foreground hover:text-destructive transition-colors">
+            <button onClick={confirmLogout} className="p-2 -mr-2 text-muted-foreground hover:text-destructive transition-colors">
               <LogOut className="w-5 h-5" />
             </button>
           </div>
@@ -145,6 +149,15 @@ const MobileHeader = ({ title, showMenu = true, children }) => {
           </div>
         </div>
       )}
+    <ConfirmDialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        title="Sign Out"
+        description="Are you sure you want to sign out?"
+        confirmLabel="Sign Out"
+        confirmVariant="destructive"
+        onConfirm={handleLogout}
+      />
     </>
   );
 };

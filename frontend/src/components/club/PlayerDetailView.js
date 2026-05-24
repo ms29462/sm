@@ -4,6 +4,7 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play, Target } from 'lucide-react';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import RequestChatDialog from './RequestChatDialog';
 
 const PlayerDetailView = () => {
@@ -13,6 +14,8 @@ const PlayerDetailView = () => {
   const [loading, setLoading] = useState(true);
   const [matchArchive, setMatchArchive] = useState([]);
   const [isTracked, setIsTracked] = useState(false);
+  const [showTrackConfirm, setShowTrackConfirm] = useState(false);
+  const [showFavConfirm, setShowFavConfirm] = useState(false);
 
   useEffect(() => {
     loadPlayerProfile();
@@ -240,6 +243,24 @@ const PlayerDetailView = () => {
           </div>
         </div>
       )}
+    <ConfirmDialog
+        open={showTrackConfirm}
+        onOpenChange={setShowTrackConfirm}
+        title={isTracked ? "Remove from Watchlist" : "Track Player"}
+        description={isTracked ? "Remove this player from your scouting watchlist?" : "Add this player to your scouting watchlist?"}
+        confirmLabel={isTracked ? "Remove" : "Track"}
+        confirmVariant={isTracked ? "destructive" : "primary"}
+        onConfirm={() => { setShowTrackConfirm(false); handleTrackPlayer(); }}
+      />
+      <ConfirmDialog
+        open={showFavConfirm}
+        onOpenChange={setShowFavConfirm}
+        title="Add to Favorites"
+        description="Add this player to your favorites list?"
+        confirmLabel="Add to Favorites"
+        confirmVariant="primary"
+        onConfirm={() => { setShowFavConfirm(false); handleAddFavorite(); }}
+      />
     </div>
   );
 };
