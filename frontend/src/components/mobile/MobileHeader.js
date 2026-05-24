@@ -95,11 +95,16 @@ const MobileHeader = ({ title, showMenu = true, children }) => {
             <Trophy className="w-6 h-6 text-primary" />
             <span className="font-heading font-bold text-lg">{title || 'SOCCERMATCH'}</span>
           </div>
-          {showMenu && (
-            <button onClick={() => setMenuOpen(true)} className="p-2 -mr-2 text-foreground">
-              <Menu className="w-6 h-6" />
+          <div className="flex items-center gap-1">
+            {showMenu && (
+              <button onClick={() => setMenuOpen(true)} className="p-2 text-foreground">
+                <Menu className="w-6 h-6" />
+              </button>
+            )}
+            <button onClick={handleLogout} className="p-2 -mr-2 text-muted-foreground hover:text-destructive transition-colors">
+              <LogOut className="w-5 h-5" />
             </button>
-          )}
+          </div>
         </div>
         {children}
       </header>
