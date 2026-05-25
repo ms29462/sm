@@ -13,6 +13,14 @@ const PlayerOpportunities = () => {
   const [appliedIds, setAppliedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterPosition, setFilterPosition] = useState('');
+  const [filterCountry, setFilterCountry] = useState('');
+  const [filterLeague, setFilterLeague] = useState('');
+  const [filterMinSalary, setFilterMinSalary] = useState('');
+  const [filterMaxSalary, setFilterMaxSalary] = useState('');
+  const [filterMinAge, setFilterMinAge] = useState('');
+  const [filterMaxAge, setFilterMaxAge] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     loadOpportunities();
@@ -21,18 +29,44 @@ const PlayerOpportunities = () => {
   }, []);
 
   useEffect(() => {
+    let filtered = opportunities;
     if (searchTerm) {
-      const filtered = opportunities.filter(
-        (opp) =>
-          opp.club_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          opp.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          opp.league_level.toLowerCase().includes(searchTerm.toLowerCase())
+      const s = searchTerm.toLowerCase();
+      filtered = filtered.filter(o =>
+        o.club_name?.toLowerCase().includes(s) ||
+        o.position?.toLowerCase().includes(s) ||
+        o.league_level?.toLowerCase().includes(s)
       );
-      setFilteredOpportunities(filtered);
-    } else {
-      setFilteredOpportunities(opportunities);
     }
-  }, [searchTerm, opportunities]);
+    if (filterPosition) {
+      filtered = filtered.filter(o => o.position?.toLowerCase().includes(filterPosition.toLowerCase()));
+    }
+    if (filterCountry) {
+      filtered = filtered.filter(o => o.club_country?.toLowerCase().includes(filterCountry.toLowerCase()) || o.country?.toLowerCase().includes(filterCountry.toLowerCase()));
+    }
+    if (filterLeague) {
+      filtered = filtered.filter(o => o.league_level?.toLowerCase().includes(filterLeague.toLowerCase()));
+    }
+    if (filterMinSalary) {
+      filtered = filtered.filter(o => {
+        const salary = parseFloat((o.salary_range || '').replace(/[^0-9.]/g, ''));
+        return !isNaN(salary) && salary >= parseFloat(filterMinSalary);
+      });
+    }
+    if (filterMaxSalary) {
+      filtered = filtered.filter(o => {
+        const salary = parseFloat((o.salary_range || '').replace(/[^0-9.]/g, ''));
+        return !isNaN(salary) && salary <= parseFloat(filterMaxSalary);
+      });
+    }
+    if (filterMinAge) {
+      filtered = filtered.filter(o => !o.age_min || o.age_min >= parseInt(filterMinAge));
+    }
+    if (filterMaxAge) {
+      filtered = filtered.filter(o => !o.age_max || o.age_max <= parseInt(filterMaxAge));
+    }
+    setFilteredOpportunities(filtered);
+  }, [searchTerm, filterPosition, filterCountry, filterLeague, filterMinSalary, filterMaxSalary, filterMinAge, filterMaxAge, opportunities]);
 
   const loadMyApplications = async () => {
     try {
@@ -111,19 +145,81 @@ const PlayerOpportunities = () => {
         <p className="text-muted-foreground">Browse and apply to club opportunities</p>
       </div>
 
-      <div className="mb-6">
-        <div className="relative max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            data-testid="search-opportunities-input"
-            type="text"
-            placeholder="Search by club, position, or league..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-          />
+      <div className="mb-6 space-y-3">
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                data-testid="search-opportunities-input"
+                type="text"
+                placeholder="Search by club, position, or league..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-12 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
+              />
+            </div>
+            <Button variant="outline" onClick={() => setShowFilters(f => !f)}
+              className={`rounded-sm h-12 px-4 border-white/20 ${showFilters ? "border-primary text-primary" : "text-muted-foreground"}`}>
+              Filters {(filterPosition || filterCountry || filterLeague || filterMinSalary || filterMaxSalary || filterMinAge || filterMaxAge) ? "●" : ""}
+            </Button>
+            {(filterPosition || filterCountry || filterLeague || filterMinSalary || filterMaxSalary || filterMinAge || filterMaxAge) && (
+              <Button variant="ghost" onClick={() => { setFilterPosition(""); setFilterCountry(""); setFilterLeague(""); setFilterMinSalary(""); setFilterMaxSalary(""); setFilterMinAge(""); setFilterMaxAge(""); }}
+                className="rounded-sm h-12 text-muted-foreground hover:text-white">Clear</Button>
+            )}
+          </div>
+          {showFilters && (
+            <div className="bg-card border border-border/50 p-4 rounded-sm grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Position</label>
+                <select value={filterPosition} onChange={e => setFilterPosition(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                  <option value="">All Positions</option>
+                  {[...new Set(opportunities.map(o => o.position).filter(Boolean).flatMap(p => p.split(", ")))].sort().map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Country</label>
+                <select value={filterCountry} onChange={e => setFilterCountry(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                  <option value="">All Countries</option>
+                  {[...new Set(opportunities.map(o => o.club_country || o.country).filter(Boolean))].sort().map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">League</label>
+                <select value={filterLeague} onChange={e => setFilterLeague(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                  <option value="">All Leagues</option>
+                  {[...new Set(opportunities.map(o => o.league_level).filter(Boolean))].sort().map(l => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Age Range</label>
+                <div className="flex gap-1">
+                  <input type="number" value={filterMinAge} onChange={e => setFilterMinAge(e.target.value)}
+                    placeholder="Min" className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-2 text-sm text-white outline-none" />
+                  <input type="number" value={filterMaxAge} onChange={e => setFilterMaxAge(e.target.value)}
+                    placeholder="Max" className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-2 text-sm text-white outline-none" />
+                </div>
+              </div>
+              <div className="col-span-2 md:col-span-4">
+                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Salary Range</label>
+                <div className="flex gap-2">
+                  <input type="number" value={filterMinSalary} onChange={e => setFilterMinSalary(e.target.value)}
+                    placeholder="Min salary" className="flex-1 bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none" />
+                  <input type="number" value={filterMaxSalary} onChange={e => setFilterMaxSalary(e.target.value)}
+                    placeholder="Max salary" className="flex-1 bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none" />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
 
       {filteredOpportunities.length === 0 ? (
         <div data-testid="no-opportunities" className="bg-card border border-border/50 p-12 rounded-sm text-center">
