@@ -10,12 +10,14 @@ const PlayerOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [filteredOpportunities, setFilteredOpportunities] = useState([]);
   const [matchScores, setMatchScores] = useState({});
+  const [appliedIds, setAppliedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadOpportunities();
     loadMatchScores();
+    loadMyApplications();
   }, []);
 
   useEffect(() => {
@@ -31,6 +33,14 @@ const PlayerOpportunities = () => {
       setFilteredOpportunities(opportunities);
     }
   }, [searchTerm, opportunities]);
+
+  const loadMyApplications = async () => {
+    try {
+      const res = await api.getMyApplications();
+      const ids = new Set((res.data || []).map(a => a.opportunity_id));
+      setAppliedIds(ids);
+    } catch (e) {}
+  };
 
   const loadOpportunities = async () => {
     try {
@@ -130,7 +140,8 @@ const PlayerOpportunities = () => {
                 opp={opp}
                 score={score}
                 testId={`opportunity-card-${opp.id}`}
-                onApply={handleApply}
+                onApply={(id) => { handleApply(id); setAppliedIds(prev => new Set([...prev, id])); }}
+                hasApplied={appliedIds.has(opp.id)}
               />
             );
           })}

@@ -28,6 +28,7 @@ export const api = {
   createOpportunity: (data) => axios.post(`${API}/opportunities`, data, { headers: getAuthHeaders() }),
   getClubOpportunities: () => axios.get(`${API}/club/opportunities`, { headers: getAuthHeaders() }),
   deleteOpportunity: (id) => axios.delete(`${API}/opportunities/${id}`, { headers: getAuthHeaders() }),
+  updateOpportunity: (id, data) => axios.put(`${API}/opportunities/${id}`, data, { headers: getAuthHeaders() }),
   updateOpportunityStatus: (id, status) => axios.put(`${API}/opportunities/${id}/status`, { status }, { headers: getAuthHeaders() }),
   getClubApplications: () => axios.get(`${API}/club/applications`, { headers: getAuthHeaders() }),
   updateApplicationStatus: (id, status) => axios.put(`${API}/applications/${id}/status`, { status }, { headers: getAuthHeaders() }),

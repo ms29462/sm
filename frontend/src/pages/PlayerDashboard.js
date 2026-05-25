@@ -1,4 +1,5 @@
 ﻿import { Routes, Route } from 'react-router-dom';
+import OpportunityDetail from '@/pages/OpportunityDetail';
 import PlayerLayout from '@/components/player/PlayerLayout';
 import PlayerHome from '@/components/player/PlayerHome';
 import PlayerProfile from '@/components/player/PlayerProfile';
@@ -31,6 +32,7 @@ const PlayerDashboard = () => {
         <Route path="chat-requests" element={<ChatRequests />} />
         <Route path="chats" element={<ChatList />} />
         <Route path="videos" element={<VideoList />} />
+        <Route path="opportunity/:opportunityId" element={<OpportunityDetail />} />
         <Route path="*" element={<PlayerHome />} />
       </Routes>
     </PlayerLayout>

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Briefcase, Plus, Trash2, Lock, CheckCircle, Circle } from "lucide-react";
+import { Briefcase, Plus, Trash2, Pencil } from "lucide-react";
 import { POSITIONS } from "@/lib/constants";
 
 const LEAGUES = [
@@ -34,6 +34,8 @@ const ClubOpportunities = () => {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [editingOpp, setEditingOpp] = useState(null);
+  const [editForm, setEditForm] = useState({});
   const [formData, setFormData] = useState({
     position: "", league_level: "", salary_range: "",
     contract_duration: "", description: "",
@@ -89,6 +91,39 @@ const ClubOpportunities = () => {
     }
   };
 
+  const openEdit = (opp) => {
+    setEditingOpp(opp);
+    setEditForm({
+      positions: opp.position ? opp.position.split(", ") : [],
+      country: opp.country || "",
+      league_level: opp.league_level || "",
+      custom_league: "",
+      salary_range: opp.salary_range || "",
+      contract_duration: opp.contract_duration || "",
+      description: opp.description || "",
+      age_min: opp.age_min || "",
+      age_max: opp.age_max || "",
+      deadline: opp.deadline || "",
+      max_applicants: opp.max_applicants || "",
+    });
+  };
+
+  const handleEditSave = async () => {
+    try {
+      const data = {
+        ...editForm,
+        position: editForm.positions?.length ? editForm.positions.join(", ") : "",
+        league_level: editForm.league_level === "Other" ? editForm.custom_league : editForm.league_level,
+      };
+      await api.updateOpportunity(editingOpp.id, data);
+      toast.success("Opportunity updated!");
+      setEditingOpp(null);
+      loadOpportunities();
+    } catch (e) {
+      toast.error("Failed to update opportunity");
+    }
+  };
+
   const handleDeleteConfirmed = async () => {
     if (!deleteId) return;
     try {
@@ -112,6 +147,77 @@ const ClubOpportunities = () => {
 
   return (
     <div className="p-8">
+      {editingOpp && (
+        <Dialog open={!!editingOpp} onOpenChange={(open) => !open && setEditingOpp(null)}>
+          <DialogContent className="bg-card border border-border/50 max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="font-heading uppercase">Edit Opportunity</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-2">
+              <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Position(s)</Label>
+                <div className="mt-2 grid grid-cols-3 gap-2 bg-black/20 border border-white/10 rounded-sm p-3">
+                  {POSITIONS.map((pos) => (
+                    <label key={pos} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input type="checkbox" checked={editForm.positions?.includes(pos) || false}
+                        onChange={(e) => {
+                          const curr = editForm.positions || [];
+                          setEditForm(f => ({...f, positions: e.target.checked ? [...curr, pos] : curr.filter(p => p !== pos)}));
+                        }} className="accent-primary" />
+                      {pos}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">League Level</Label>
+                  <Input value={editForm.league_level} onChange={(e) => setEditForm(f => ({...f, league_level: e.target.value}))}
+                    className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. USL Championship" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Salary Range</Label>
+                  <Input value={editForm.salary_range} onChange={(e) => setEditForm(f => ({...f, salary_range: e.target.value}))}
+                    className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. $50k-$100k" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Contract Duration</Label>
+                  <Input value={editForm.contract_duration} onChange={(e) => setEditForm(f => ({...f, contract_duration: e.target.value}))}
+                    className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. 2 years" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Deadline</Label>
+                  <Input type="date" value={editForm.deadline} onChange={(e) => setEditForm(f => ({...f, deadline: e.target.value}))}
+                    style={{colorScheme: "dark"}} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Age Min</Label>
+                  <Input type="number" value={editForm.age_min} onChange={(e) => setEditForm(f => ({...f, age_min: e.target.value}))}
+                    className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. 18" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Age Max</Label>
+                  <Input type="number" value={editForm.age_max} onChange={(e) => setEditForm(f => ({...f, age_max: e.target.value}))}
+                    className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. 30" />
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Description</Label>
+                <Textarea value={editForm.description} onChange={(e) => setEditForm(f => ({...f, description: e.target.value}))}
+                  className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" />
+              </div>
+              <Button onClick={handleEditSave} className="w-full bg-primary text-black font-bold uppercase rounded-sm h-12">
+                Save Changes
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent className="bg-card border border-border/50">
           <AlertDialogHeader>
@@ -244,21 +350,9 @@ const ClubOpportunities = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 ml-4">
-                  {(!opp.status || opp.status === "open") && (
-                    <>
-                      <Button size="sm" variant="outline" onClick={() => handleStatusChange(opp.id, "closed")} className="border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-sm text-xs">
-                        <Lock className="w-3 h-3 mr-1" /> Close
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleStatusChange(opp.id, "filled")} className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10 rounded-sm text-xs">
-                        <CheckCircle className="w-3 h-3 mr-1" /> Filled
-                      </Button>
-                    </>
-                  )}
-                  {opp.status === "closed" && (
-                    <Button size="sm" variant="outline" onClick={() => handleStatusChange(opp.id, "open")} className="border-green-500/50 text-green-400 hover:bg-green-500/10 rounded-sm text-xs">
-                      <Circle className="w-3 h-3 mr-1" /> Reopen
-                    </Button>
-                  )}
+                  <Button variant="ghost" size="icon" onClick={() => openEdit(opp)} className="text-muted-foreground hover:text-primary hover:bg-primary/10">
+                    <Pencil className="w-4 h-4" />
+                  </Button>
                   <Button data-testid={`delete-btn-${opp.id}`} variant="ghost" size="icon" onClick={() => setDeleteId(opp.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                     <Trash2 className="w-4 h-4" />
                   </Button>

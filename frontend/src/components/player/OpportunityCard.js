@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { toast } from "sonner";
@@ -19,7 +20,8 @@ const getFitScoreBg = (score) => {
   return "bg-red-500/10";
 };
 
-const OpportunityCard = ({ opp, matchScore, score, onApply, testId }) => {
+const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }) => {
+  const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
   const [applying, setApplying] = useState(false);
   const handleApply = async () => {
@@ -52,9 +54,18 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId }) => {
           <h3 className="text-xl font-heading font-bold uppercase mb-1">{opp.club_name}</h3>
           <p className="text-sm text-muted-foreground">{opp.club_country || "International"}</p>
         </div>
-        <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">
-          {opp.position}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">
+            {opp.position}
+          </span>
+          {opp.status && opp.status !== "open" && (
+            <span className={`uppercase text-[10px] tracking-wider px-2 py-1 border rounded-sm font-bold ${
+              opp.status === "filled" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"
+            }`}>
+              {opp.status === "filled" ? "Position Filled" : "Opportunity Closed"}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Match Score */}
@@ -113,13 +124,32 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId }) => {
       </div>
 
       {/* Apply Button */}
-      <Button
-        data-testid={`apply-btn-${opp.id}`}
-        onClick={() => setShowConfirm(true)}
-        className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12 mt-auto"
-      >
-        APPLY NOW
-      </Button>
+      <div className="flex gap-2 mt-auto">
+        <Button
+          onClick={() => navigate(`/player/opportunity/${opp.id}`)}
+          variant="outline"
+          className="flex-1 border-white/20 text-white hover:bg-white/10 rounded-sm h-12 font-bold uppercase tracking-wide"
+        >
+          View Details
+        </Button>
+        {hasApplied ? (
+          <Button disabled className="flex-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-sm h-12 font-bold uppercase tracking-wide cursor-not-allowed">
+            ✓ Applied
+          </Button>
+        ) : (!opp.status || opp.status === "open") ? (
+          <Button
+            data-testid={`apply-btn-${opp.id}`}
+            onClick={() => setShowConfirm(true)}
+            className="flex-1 bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
+          >
+            Apply Now
+          </Button>
+        ) : (
+          <Button disabled className="flex-1 bg-muted text-muted-foreground rounded-sm h-12 font-bold uppercase tracking-wide cursor-not-allowed">
+            {opp.status === "filled" ? "Position Filled" : "Closed"}
+          </Button>
+        )}
+      </div>
       <ConfirmDialog
         open={showConfirm}
         onOpenChange={setShowConfirm}

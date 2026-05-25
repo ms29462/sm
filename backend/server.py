@@ -550,11 +550,18 @@ class SpecialistUpdate(BaseModel):
 
 # ============ OPPORTUNITY MODELS ============
 class OpportunityCreate(BaseModel):
-    position: str
+    position: Optional[str] = None
+    positions: Optional[List[str]] = None
+    country: Optional[str] = None
     league_level: str
+    custom_league: Optional[str] = None
     salary_range: Optional[str] = None
     contract_duration: Optional[str] = None
     description: str
+    age_min: Optional[int] = None
+    age_max: Optional[int] = None
+    deadline: Optional[str] = None
+    max_applicants: Optional[int] = None
 
 class Opportunity(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -562,12 +569,19 @@ class Opportunity(BaseModel):
     club_id: str
     club_name: str
     club_country: Optional[str] = None
-    position: str
+    position: Optional[str] = None
+    positions: Optional[List[str]] = None
+    country: Optional[str] = None
     league_level: str
     salary_range: Optional[str] = None
     contract_duration: Optional[str] = None
     description: str
+    age_min: Optional[int] = None
+    age_max: Optional[int] = None
+    deadline: Optional[str] = None
+    max_applicants: Optional[int] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: Optional[str] = None
 
 # ============ APPLICATION MODELS ============
 class ApplicationCreate(BaseModel):
@@ -1461,8 +1475,16 @@ async def delete_comment(masterclass_id: str, comment_id: str, current_user: dic
     return {"message": "Comment deleted"}
 
 
+async def auto_close_expired_opportunities(db):
+    now = datetime.now(timezone.utc).isoformat()[:10]  # YYYY-MM-DD
+    await db.opportunities.update_many(
+        {"deadline": {"$lt": now, "$ne": None}, "status": "open"},
+        {"$set": {"status": "closed"}}
+    )
+
 @api_router.get("/opportunities", response_model=List[Opportunity])
 async def get_opportunities(current_user: dict = Depends(get_current_user)):
+    await auto_close_expired_opportunities(db)
     opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
     return [Opportunity(**opp) for opp in opportunities]
 
@@ -1574,9 +1596,52 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
 async def get_club_opportunities(current_user: dict = Depends(get_current_user)):
     if current_user['role'] not in ['club', 'college']:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+    await auto_close_expired_opportunities(db)
     opportunities = await db.opportunities.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
     return [Opportunity(**opp) for opp in opportunities]
+
+@api_router.put("/opportunities/{opportunity_id}/status")
+async def update_opportunity_status(opportunity_id: str, status_update: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["club", "federation", "college"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    status = status_update.get("status")
+    if status not in ["open", "closed", "filled"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    await db.opportunities.update_one(
+        {"id": opportunity_id, "club_id": current_user["user_id"]},
+        {"$set": {"status": status}}
+    )
+    return {"message": "Status updated"}
+
+@api_router.put("/opportunities/{opportunity_id}")
+async def update_opportunity(opportunity_id: str, update: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["club", "federation", "college"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    opp = await db.opportunities.find_one({"id": opportunity_id, "club_id": current_user["user_id"]})
+    if not opp:
+        raise HTTPException(status_code=404, detail="Opportunity not found")
+    update.pop("id", None)
+    update.pop("club_id", None)
+    update.pop("created_at", None)
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update["updated_by"] = current_user["user_id"]
+    await db.opportunities.update_one({"id": opportunity_id}, {"$set": update})
+    # Log change for admin monitoring
+    await db.opportunity_changes.insert_one({
+        "id": str(__import__("uuid").uuid4()),
+        "opportunity_id": opportunity_id,
+        "club_id": current_user["user_id"],
+        "changes": update,
+        "changed_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"message": "Opportunity updated"}
+
+@api_router.get("/admin/opportunity-changes")
+async def get_opportunity_changes(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    changes = await db.opportunity_changes.find({}, {"_id": 0}).sort("changed_at", -1).to_list(200)
+    return changes
 
 @api_router.delete("/opportunities/{opportunity_id}")
 async def delete_opportunity(opportunity_id: str, current_user: dict = Depends(get_current_user)):
