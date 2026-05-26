@@ -10,6 +10,7 @@ const PlayerHome = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [recommended, setRecommended] = useState([]);
+  const [appliedIds, setAppliedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

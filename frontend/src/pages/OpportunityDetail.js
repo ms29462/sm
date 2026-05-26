@@ -14,12 +14,18 @@ const OpportunityDetail = () => {
   const [loading, setLoading] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
 
   useEffect(() => {
     loadOpportunity();
   }, [opportunityId]);
 
   const loadOpportunity = async () => {
+    try {
+      const appsRes = await api.getMyApplications();
+      const ids = new Set((appsRes.data || []).map(a => a.opportunity_id));
+      setHasApplied(ids.has(opportunityId));
+    } catch (e) {}
     setLoading(true);
     try {
       const res = await api.getOpportunities();
@@ -44,6 +50,7 @@ const OpportunityDetail = () => {
       await api.createApplication({ opportunity_id: opportunityId });
       toast.success("Application submitted successfully!");
       setShowConfirm(false);
+      setHasApplied(true);
     } catch (e) {
       toast.error(e.response?.data?.detail || "Failed to apply");
     }
@@ -102,12 +109,18 @@ const OpportunityDetail = () => {
           </div>
         )}
 
-        <Button
-          onClick={() => setShowConfirm(true)}
-          className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
-        >
-          APPLY NOW
-        </Button>
+        {hasApplied ? (
+          <Button disabled className="w-full bg-green-500/10 text-green-500 border border-green-500/20 rounded-sm h-12 font-bold uppercase tracking-wide cursor-not-allowed">
+            ✓ Already Applied
+          </Button>
+        ) : (
+          <Button
+            onClick={() => setShowConfirm(true)}
+            className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
+          >
+            APPLY NOW
+          </Button>
+        )}
       </div>
 
       {/* Details */}
