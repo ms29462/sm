@@ -16,7 +16,6 @@ const NAV_LINKS = {
     { to: '/player/masterclass', label: 'Masterclass' },
     { to: '/player/chat-requests', label: 'Chat Requests' },
     { to: '/player/chats', label: 'My Chats' },
-    { to: '/player/videos', label: 'Videos' },
   ],
   club: [
     { to: '/club/dashboard', label: 'Dashboard' },
@@ -27,7 +26,6 @@ const NAV_LINKS = {
     { to: '/club/favorites', label: 'Favorites' },
     { to: '/club/scouting', label: 'Scouting Hub' },
     { to: '/club/chats', label: 'My Chats' },
-    { to: '/club/videos', label: 'Videos' },
   ],
   college: [
     { to: '/college/dashboard', label: 'Dashboard' },

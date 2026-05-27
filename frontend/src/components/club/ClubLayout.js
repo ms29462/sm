@@ -127,17 +127,6 @@ const ClubLayout = ({ children, isCollege = false }) => {
               <Badge count={totalUnread} />
             </Button>
           </Link>
-          <Link to={isCollege ? "/college/videos" : "/club/videos"}>
-            <Button
-              data-testid="nav-videos-btn"
-              variant={isActive('/club/videos') ? 'secondary' : 'ghost'}
-              className="w-full justify-start relative"
-            >
-              <Video className="w-4 h-4 mr-3" />
-              Video Calls
-              <Badge count={totalPending} />
-            </Button>
-          </Link>
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
