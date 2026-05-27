@@ -205,6 +205,61 @@ async def notify_orgs_of_new_player(player: dict):
     except Exception as e:
         print(f"Error notifying orgs: {e}")
 
+
+async def notify_federations_of_player(player: dict):
+    """Notify federations about dual-national or diaspora players"""
+    try:
+        nationality_1 = player.get("nationality_1") or player.get("nationality", "")
+        nationality_2 = player.get("nationality_2", "")
+        nationality_3 = player.get("nationality_3", "")
+        player_name = player.get("name", "A player")
+        player_id = player.get("user_id", "")
+        position = player.get("position", "")
+
+        nationalities = [n for n in [nationality_1, nationality_2, nationality_3] if n]
+        
+        if len(nationalities) < 2:
+            return  # Not a dual-national player
+
+        # Find all federations
+        federations = await db.federations.find({}, {"_id": 0}).to_list(1000)
+        
+        for fed in federations:
+            fed_country = fed.get("country", "")
+            fed_user_id = fed.get("user_id", "")
+            if not fed_country or not fed_user_id:
+                continue
+            
+            # Check if any nationality matches federation country
+            matching_nats = [n for n in nationalities if fed_country.lower() in n.lower() or n.lower() in fed_country.lower()]
+            
+            if matching_nats:
+                other_nats = [n for n in nationalities if n not in matching_nats]
+                other_nats_str = ", ".join(other_nats)
+                
+                # Is diaspora (primary nationality different from federation country)
+                is_diaspora = nationality_1 and fed_country.lower() not in nationality_1.lower()
+                
+                if is_diaspora:
+                    message = f"🌍 Diaspora alert: {player_name} ({position}) holds {fed_country} nationality and plays at {player.get('playing_level', 'unknown level')}"
+                else:
+                    message = f"⚡ Dual-national detected: {player_name} ({position}) holds {', '.join(nationalities)} nationalities"
+                
+                await create_notification(
+                    fed_user_id,
+                    "dual_national_detected" if not is_diaspora else "diaspora_detected",
+                    message,
+                    {
+                        "player_id": player_id,
+                        "player_name": player_name,
+                        "nationalities": nationalities,
+                        "position": position,
+                        "is_diaspora": is_diaspora
+                    }
+                )
+    except Exception as e:
+        print(f"Error notifying federations: {e}")
+
 # ============ NOTIFICATION HELPER ============
 async def create_notification(user_id: str, type: str, message: str, data: dict = {}):
     await db.notifications.insert_one({
@@ -1958,11 +2013,12 @@ async def approve_player(user_id: str, approval: UserApproval, current_user: dic
     result = await db.players.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Player not found")
-    # Notify matching organizations when player is approved
+    # Notify matching organizations and federations when player is approved
     if approval.approved:
         player = await db.players.find_one({"user_id": user_id}, {"_id": 0})
         if player:
             await notify_orgs_of_new_player(player)
+            await notify_federations_of_player(player)
     return {"message": "Updated"}
 
 @api_router.put("/admin/players/{user_id}/verify")
