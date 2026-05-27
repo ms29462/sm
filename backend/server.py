@@ -159,6 +159,52 @@ class PlayerUpdate(BaseModel):
 
 
 
+
+# ============ MATCHING PLAYER NOTIFICATIONS ============
+async def notify_orgs_of_new_player(player: dict):
+    """Notify organizations when a new player matches their posted opportunities"""
+    try:
+        position = player.get("position", "")
+        playing_level = player.get("playing_level", "")
+        nationality = player.get("nationality", "")
+
+        # Find opportunities that match this player
+        opportunities = await db.opportunities.find({
+            "status": {"$ne": "closed"}
+        }, {"_id": 0}).to_list(1000)
+
+        notified_orgs = set()
+        for opp in opportunities:
+            opp_position = opp.get("position", "")
+            opp_level = opp.get("league_level", "")
+            club_id = opp.get("club_id", "")
+
+            if club_id in notified_orgs:
+                continue
+
+            # Check position match
+            position_match = any(
+                pos.strip().lower() in opp_position.lower()
+                for pos in position.split(",")
+            ) if position and opp_position else False
+
+            if position_match:
+                await create_notification(
+                    club_id,
+                    "new_matching_player",
+                    f"New player matching your opportunity: {player.get('name', 'A player')} ({position}) just joined!",
+                    {
+                        "player_id": player.get("user_id"),
+                        "player_name": player.get("name"),
+                        "position": position,
+                        "playing_level": playing_level,
+                        "opportunity_id": opp.get("id")
+                    }
+                )
+                notified_orgs.add(club_id)
+    except Exception as e:
+        print(f"Error notifying orgs: {e}")
+
 # ============ NOTIFICATION HELPER ============
 async def create_notification(user_id: str, type: str, message: str, data: dict = {}):
     await db.notifications.insert_one({
@@ -1912,6 +1958,11 @@ async def approve_player(user_id: str, approval: UserApproval, current_user: dic
     result = await db.players.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Player not found")
+    # Notify matching organizations when player is approved
+    if approval.approved:
+        player = await db.players.find_one({"user_id": user_id}, {"_id": 0})
+        if player:
+            await notify_orgs_of_new_player(player)
     return {"message": "Updated"}
 
 @api_router.put("/admin/players/{user_id}/verify")
