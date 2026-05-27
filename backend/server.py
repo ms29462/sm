@@ -1741,6 +1741,19 @@ async def get_player_detail(player_id: str, current_user: dict = Depends(get_cur
     if current_user['role'] not in ['club', 'admin', 'federation', 'college', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    # Send profile viewed notification
+    if current_user["role"] in ["club", "federation", "college", "agent"] and current_user["user_id"] != player_id:
+        try:
+            org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or                   await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or                   await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+            org_name = org.get("name", "An organization") if org else "An organization"
+            await create_notification(
+                player_id, "profile_viewed",
+                f"{org_name} viewed your profile",
+                {"viewer_id": current_user["user_id"], "viewer_role": current_user["role"]}
+            )
+        except Exception:
+            pass
+
     player = await db.players.find_one({"user_id": player_id, "approved": True}, {"_id": 0})
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
