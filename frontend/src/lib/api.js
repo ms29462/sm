@@ -198,4 +198,12 @@ export const api = {
   groupTrackPlayer: (groupId, playerId) => axios.post(`${API}/scouting/groups/${groupId}/track/${playerId}`, {}, { headers: getAuthHeaders() }),
   getGroupMessages: (groupId) => axios.get(`${API}/scouting/groups/${groupId}/messages`, { headers: getAuthHeaders() }),
   sendGroupMessage: (groupId, data) => axios.post(`${API}/scouting/groups/${groupId}/messages`, data, { headers: getAuthHeaders() }),
+
+  // Recruitment Pipeline
+  getPipeline: () => axios.get(`${API}/pipeline`, { headers: getAuthHeaders() }),
+  addToPipeline: (data) => axios.post(`${API}/pipeline`, data, { headers: getAuthHeaders() }),
+  updatePipelinePlayer: (id, data) => axios.put(`${API}/pipeline/${id}`, data, { headers: getAuthHeaders() }),
+  removeFromPipeline: (id) => axios.delete(`${API}/pipeline/${id}`, { headers: getAuthHeaders() }),
+  addPipelineNote: (id, data) => axios.post(`${API}/pipeline/${id}/notes`, data, { headers: getAuthHeaders() }),
+  getPipelineStages: () => axios.get(`${API}/pipeline/stages`, { headers: getAuthHeaders() }),
 };

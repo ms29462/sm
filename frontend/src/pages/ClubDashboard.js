@@ -12,6 +12,7 @@ import PlayerDetailView from "@/components/club/PlayerDetailView";
 import ChatList from "@/components/chat/ChatList";
 import VideoList from "@/components/video/VideoList";
 import ScoutingHub from "@/components/club/ScoutingHub";
+import RecruitmentPipeline from "@/components/club/RecruitmentPipeline";
 import TrackingOverview from "@/components/club/TrackingOverview";
 
 const ClubDashboard = () => {
@@ -31,6 +32,7 @@ const ClubDashboard = () => {
         <Route path="chats" element={<ChatList />} />
         <Route path="videos" element={<VideoList />} />
         <Route path="scouting" element={<ScoutingHub />} />
+        <Route path="pipeline" element={<RecruitmentPipeline />} />
         <Route path="scouting/:playerId" element={<TrackingOverview />} />
         <Route path="scouting/:playerId" element={<TrackingOverview />} />
         <Route path="*" element={<ClubHome />} />

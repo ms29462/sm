@@ -157,6 +157,37 @@ class PlayerUpdate(BaseModel):
 
 
 
+
+# ============ RECRUITMENT PIPELINE MODELS ============
+class PipelinePlayer(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    org_id: str
+    player_id: str
+    stage: str = "New Application"
+    priority: Literal["low", "medium", "high", "urgent"] = "medium"
+    scout_assigned: Optional[str] = None
+    internal_rating: Optional[int] = None
+    notes: List[dict] = []
+    tags: List[str] = []
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class PipelinePlayerAdd(BaseModel):
+    player_id: str
+    stage: str = "New Application"
+    priority: Literal["low", "medium", "high", "urgent"] = "medium"
+
+class PipelinePlayerUpdate(BaseModel):
+    stage: Optional[str] = None
+    priority: Optional[Literal["low", "medium", "high", "urgent"]] = None
+    scout_assigned: Optional[str] = None
+    internal_rating: Optional[int] = None
+    tags: Optional[List[str]] = None
+
+class PipelineNote(BaseModel):
+    content: str
+    type: Literal["note", "scouting", "evaluation"] = "note"
+
 # ============ SCOUTING MODELS ============
 class ScoutingNote(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -3701,6 +3732,90 @@ async def get_group_messages(group_id: str, current_user: dict = Depends(get_cur
     messages = await db.group_messages.find({"group_id": group_id}, {"_id": 0}).sort("created_at", 1).to_list(500)
     return messages
 
+
+
+# ============ RECRUITMENT PIPELINE ENDPOINTS ============
+
+PIPELINE_STAGES = [
+    "New Application", "Under Review", "Video Reviewed", "Live Scouting",
+    "Shortlisted", "Contacted", "Trial Planned", "Negotiation", "Signed", "Rejected"
+]
+
+@api_router.get("/pipeline")
+async def get_pipeline(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["club", "federation", "college"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    pipeline_players = await db.pipeline.find({"org_id": current_user["user_id"]}, {"_id": 0}).to_list(1000)
+    # Enrich with player data
+    result = []
+    for pp in pipeline_players:
+        player = await db.players.find_one({"user_id": pp["player_id"]}, {"_id": 0})
+        if player:
+            pp["player"] = strip_player_private_info(player)
+        result.append(pp)
+    return result
+
+@api_router.post("/pipeline")
+async def add_to_pipeline(data: PipelinePlayerAdd, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["club", "federation", "college"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    existing = await db.pipeline.find_one({"org_id": current_user["user_id"], "player_id": data.player_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Player already in pipeline")
+    pp = {
+        "id": str(uuid.uuid4()),
+        "org_id": current_user["user_id"],
+        "player_id": data.player_id,
+        "stage": data.stage,
+        "priority": data.priority,
+        "scout_assigned": None,
+        "internal_rating": None,
+        "notes": [],
+        "tags": [],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.pipeline.insert_one(pp)
+    return pp
+
+@api_router.put("/pipeline/{pipeline_id}")
+async def update_pipeline_player(pipeline_id: str, update: PipelinePlayerUpdate, current_user: dict = Depends(get_current_user)):
+    pp = await db.pipeline.find_one({"id": pipeline_id, "org_id": current_user["user_id"]})
+    if not pp:
+        raise HTTPException(status_code=404, detail="Not found")
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.pipeline.update_one({"id": pipeline_id}, {"$set": update_data})
+    return {"message": "Updated"}
+
+@api_router.delete("/pipeline/{pipeline_id}")
+async def remove_from_pipeline(pipeline_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.pipeline.delete_one({"id": pipeline_id, "org_id": current_user["user_id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"message": "Removed"}
+
+@api_router.post("/pipeline/{pipeline_id}/notes")
+async def add_pipeline_note(pipeline_id: str, note: PipelineNote, current_user: dict = Depends(get_current_user)):
+    pp = await db.pipeline.find_one({"id": pipeline_id, "org_id": current_user["user_id"]})
+    if not pp:
+        raise HTTPException(status_code=404, detail="Not found")
+    note_doc = {
+        "id": str(uuid.uuid4()),
+        "content": note.content,
+        "type": note.type,
+        "author_id": current_user["user_id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.pipeline.update_one(
+        {"id": pipeline_id},
+        {"$push": {"notes": note_doc}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return note_doc
+
+@api_router.get("/pipeline/stages")
+async def get_pipeline_stages():
+    return PIPELINE_STAGES
 
 fastapi_app.include_router(api_router)
 

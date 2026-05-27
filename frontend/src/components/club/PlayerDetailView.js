@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play, Target } from 'lucide-react';
+import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play, Target, Kanban } from 'lucide-react';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import RequestChatDialog from './RequestChatDialog';
 
@@ -14,12 +14,31 @@ const PlayerDetailView = () => {
   const [loading, setLoading] = useState(true);
   const [matchArchive, setMatchArchive] = useState([]);
   const [isTracked, setIsTracked] = useState(false);
+  const [inPipeline, setInPipeline] = useState(false);
   const [showTrackConfirm, setShowTrackConfirm] = useState(false);
   const [showFavConfirm, setShowFavConfirm] = useState(false);
 
   useEffect(() => {
     loadPlayerProfile();
+    checkPipelineStatus();
+    checkTrackStatus();
   }, [playerId]);
+
+  const checkTrackStatus = async () => {
+    try {
+      const res = await api.getTrackedPlayers();
+      const tracked = (res.data || []).some(p => p.user_id === playerId);
+      setIsTracked(tracked);
+    } catch (e) {}
+  };
+
+  const checkPipelineStatus = async () => {
+    try {
+      const res = await api.getPipeline();
+      const inPipe = (res.data || []).some(p => p.player_id === playerId);
+      setInPipeline(inPipe);
+    } catch (e) {}
+  };
 
   const loadPlayerProfile = async () => {
     try {
@@ -33,6 +52,21 @@ const PlayerDetailView = () => {
       toast.error('Failed to load player profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddToPipeline = async () => {
+    try {
+      await api.addToPipeline({ player_id: playerId, stage: "New Application" });
+      setInPipeline(true);
+      toast.success("Added to recruitment pipeline!");
+    } catch (e) {
+      if (e.response?.data?.detail === "Player already in pipeline") {
+        setInPipeline(true);
+        toast.info("Player is already in your pipeline");
+      } else {
+        toast.error(e.response?.data?.detail || "Failed to add to pipeline");
+      }
     }
   };
 
@@ -132,6 +166,15 @@ const PlayerDetailView = () => {
             >
               <Target className="w-4 h-4 mr-2" />
               {isTracked ? "Tracked ✓" : "Track Player"}
+            </Button>
+            <Button
+              onClick={handleAddToPipeline}
+              disabled={inPipeline}
+              variant="outline"
+              className={`rounded-sm h-12 px-6 font-bold uppercase tracking-wide ${inPipeline ? "border-purple-500 text-purple-400 cursor-not-allowed opacity-70" : "border-white/20 text-white hover:bg-white/10"}`}
+            >
+              <Kanban className="w-4 h-4 mr-2" />
+              {inPipeline ? "In Pipeline ✓" : "Add to Pipeline"}
             </Button>
             <Button
               data-testid="add-favorite-btn"
