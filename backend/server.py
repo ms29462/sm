@@ -3862,6 +3862,69 @@ async def add_pipeline_note(pipeline_id: str, note: PipelineNote, current_user: 
 async def get_pipeline_stages():
     return PIPELINE_STAGES
 
+
+# ============ TRIAL INVITATION ============
+class TrialInvitation(BaseModel):
+    player_id: str
+    trial_date: str
+    location: str
+    message: Optional[str] = None
+
+@api_router.post("/trial-invitation")
+async def send_trial_invitation(invite: TrialInvitation, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["club", "federation", "college"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    org_name = org.get("name", "An organization") if org else "An organization"
+    
+    invitation = {
+        "id": str(uuid.uuid4()),
+        "org_id": current_user["user_id"],
+        "org_name": org_name,
+        "player_id": invite.player_id,
+        "trial_date": invite.trial_date,
+        "location": invite.location,
+        "message": invite.message,
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.trial_invitations.insert_one(invitation)
+    
+    # Notify player
+    await create_notification(
+        invite.player_id,
+        "trial_invitation",
+        f"🏆 Trial invitation from {org_name} on {invite.trial_date} at {invite.location}!",
+        {"invitation_id": invitation["id"], "org_name": org_name, "trial_date": invite.trial_date, "location": invite.location}
+    )
+    return {"message": "Trial invitation sent!", "id": invitation["id"]}
+
+@api_router.get("/trial-invitations/my")
+async def get_my_trial_invitations(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] == "player":
+        invites = await db.trial_invitations.find({"player_id": current_user["user_id"]}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    else:
+        invites = await db.trial_invitations.find({"org_id": current_user["user_id"]}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return invites
+
+@api_router.put("/trial-invitations/{invite_id}/respond")
+async def respond_to_trial(invite_id: str, response: dict, current_user: dict = Depends(get_current_user)):
+    invite = await db.trial_invitations.find_one({"id": invite_id, "player_id": current_user["user_id"]})
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    status = response.get("status")
+    await db.trial_invitations.update_one({"id": invite_id}, {"$set": {"status": status}})
+    # Notify org
+    player = await db.players.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    player_name = player.get("name", "A player") if player else "A player"
+    await create_notification(
+        invite["org_id"],
+        "trial_response",
+        f"{player_name} {'accepted' if status == 'accepted' else 'declined'} your trial invitation",
+        {"invite_id": invite_id, "player_id": current_user["user_id"], "status": status}
+    )
+    return {"message": "Response sent"}
+
 fastapi_app.include_router(api_router)
 
 fastapi_app.add_middleware(

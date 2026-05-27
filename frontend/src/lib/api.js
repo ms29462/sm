@@ -206,4 +206,9 @@ export const api = {
   removeFromPipeline: (id) => axios.delete(`${API}/pipeline/${id}`, { headers: getAuthHeaders() }),
   addPipelineNote: (id, data) => axios.post(`${API}/pipeline/${id}/notes`, data, { headers: getAuthHeaders() }),
   getPipelineStages: () => axios.get(`${API}/pipeline/stages`, { headers: getAuthHeaders() }),
+
+  // Trial Invitations
+  sendTrialInvitation: (data) => axios.post(`${API}/trial-invitation`, data, { headers: getAuthHeaders() }),
+  getMyTrialInvitations: () => axios.get(`${API}/trial-invitations/my`, { headers: getAuthHeaders() }),
+  respondToTrial: (id, data) => axios.put(`${API}/trial-invitations/${id}/respond`, data, { headers: getAuthHeaders() }),
 };

@@ -8,7 +8,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap } from 'lucide-react';
+import { Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap, CalendarCheck } from 'lucide-react';
 
 const PlayerLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -107,6 +107,12 @@ const PlayerLayout = ({ children }) => {
             >
               <GraduationCap className="w-4 h-4 mr-3" />
               Masterclass
+            </Button>
+          </Link>
+          <Link to="/player/trials">
+            <Button variant={isActive('/player/trials') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <CalendarCheck className="w-4 h-4 mr-3" />
+              Trial Invitations
             </Button>
           </Link>
           <Link to="/player/applications">

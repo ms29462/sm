@@ -8,7 +8,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video, Sparkles , Target , Kanban } from 'lucide-react';
+import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video, Sparkles , Target , Kanban, CalendarCheck } from 'lucide-react';
 
 const ClubLayout = ({ children, isCollege = false }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -107,6 +107,12 @@ const ClubLayout = ({ children, isCollege = false }) => {
             >
               <Heart className="w-4 h-4 mr-3" />
               Favorites
+            </Button>
+          </Link>
+          <Link to={isCollege ? "/college/trials" : "/club/trials"}>
+            <Button variant={isActive("/club/trials") || isActive("/college/trials") ? "secondary" : "ghost"} className="w-full justify-start">
+              <CalendarCheck className="w-4 h-4 mr-3" />
+              Trial Invitations
             </Button>
           </Link>
           <Link to={isCollege ? "/college/pipeline" : "/club/pipeline"}>
