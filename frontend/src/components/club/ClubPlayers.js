@@ -142,7 +142,7 @@ const ClubPlayers = () => {
               key={player.user_id}
               data-testid={`player-card-${player.user_id}`}
               onClick={() => navigate(`/club/player/${player.user_id}`)}
-              className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer"
+              className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer flex flex-col"
             >
               <div className="flex items-start space-x-4 mb-4">
                 {player.profile_picture ? (
@@ -175,7 +175,7 @@ const ClubPlayers = () => {
                   </div>
                 </div>
               </div>
-              <div className="space-y-2 text-sm mb-4">
+              <div className="space-y-2 text-sm mb-4 flex-1">
                 {player.nationality && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Nationality:</span>
