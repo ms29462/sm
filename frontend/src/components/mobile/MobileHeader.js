@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import NotificationBell from '@/components/ui/NotificationBell';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -103,6 +104,7 @@ const MobileHeader = ({ title, showMenu = true, children }) => {
                 <Menu className="w-6 h-6" />
               </button>
             )}
+            <NotificationBell />
             <button onClick={confirmLogout} className="p-2 -mr-2 text-muted-foreground hover:text-destructive transition-colors">
               <LogOut className="w-5 h-5" />
             </button>

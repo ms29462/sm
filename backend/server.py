@@ -158,6 +158,19 @@ class PlayerUpdate(BaseModel):
 
 
 
+
+# ============ NOTIFICATION HELPER ============
+async def create_notification(user_id: str, type: str, message: str, data: dict = {}):
+    await db.notifications.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "type": type,
+        "message": message,
+        "data": data,
+        "read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
 # ============ RECRUITMENT PIPELINE MODELS ============
 class PipelinePlayer(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -3786,6 +3799,25 @@ async def update_pipeline_player(pipeline_id: str, update: PipelinePlayerUpdate,
     update_data = {k: v for k, v in update.model_dump().items() if v is not None}
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     await db.pipeline.update_one({"id": pipeline_id}, {"$set": update_data})
+    # Notify player of stage change
+    if update.stage and update.stage != pp.get("stage"):
+        org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or               await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or               await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+        org_name = org.get("name", "An organization") if org else "An organization"
+        stage_messages = {
+            "Shortlisted": f"{org_name} has shortlisted you!",
+            "Contacted": f"{org_name} wants to contact you",
+            "Trial Planned": f"{org_name} is planning a trial for you!",
+            "Negotiation": f"{org_name} has moved you to negotiation stage!",
+            "Signed": f"Congratulations! {org_name} has signed you!",
+            "Rejected": f"{org_name} has updated your application status"
+        }
+        if update.stage in stage_messages:
+            await create_notification(
+                pp["player_id"],
+                "pipeline_update",
+                stage_messages[update.stage],
+                {"stage": update.stage, "org_id": current_user["user_id"]}
+            )
     return {"message": "Updated"}
 
 @api_router.delete("/pipeline/{pipeline_id}")

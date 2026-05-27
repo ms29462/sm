@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import NotificationBell from '@/components/ui/NotificationBell';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -33,7 +34,7 @@ const SpecialistLayout = ({ children }) => {
 
       {/* Desktop Sidebar */}
       <aside className="w-64 border-r border-border bg-background fixed h-full hidden md:block">
-        <div className="p-6 border-b border-border">
+        <div className="p-6 border-b border-border flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Trophy className="w-8 h-8 text-primary" />
             <div>
@@ -44,6 +45,7 @@ const SpecialistLayout = ({ children }) => {
               </p>
             </div>
           </div>
+          <NotificationBell />
         </div>
 
         <nav className="p-4 space-y-2">
