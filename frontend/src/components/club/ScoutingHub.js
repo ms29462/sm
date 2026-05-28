@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Users, FileText, Target, MessageSquare, Plus, Trash2, Copy, ChevronDown, ChevronUp } from "lucide-react";
@@ -43,8 +42,6 @@ const labelClass = "text-xs text-muted-foreground uppercase tracking-wide";
 
 const ScoutingHub = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const scoutingBase = user?.role === "college" ? "/college/scouting" : user?.role === "federation" ? "/federation/scouting" : "/club/scouting";
   const [activeTab, setActiveTab] = useState("Tracked Players");
   const [trackedPlayers, setTrackedPlayers] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -410,7 +407,7 @@ const ScoutingHub = () => {
                     className="flex items-center justify-center gap-1.5 text-xs border border-white/10 hover:border-primary text-muted-foreground hover:text-primary rounded-sm py-2 transition-colors">
                     <Target className="w-3 h-3" /> Create Game Report
                   </button>
-                  <button onClick={() => navigate(`${scoutingBase}/${player.user_id}`)}
+                  <button onClick={() => navigate(`/club/scouting/${player.user_id}`)}
                     className="col-span-2 flex items-center justify-center gap-1.5 text-xs border border-primary/50 hover:border-primary text-primary rounded-sm py-2 transition-colors">
                     More Scouting Info →
                   </button>
@@ -424,7 +421,7 @@ const ScoutingHub = () => {
                     {expandedReports[player.user_id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                     Game Reports History
                   </button>
-                  <button onClick={() => navigate(`${scoutingBase}/${player.user_id}`)}
+                  <button onClick={() => navigate(`/club/scouting/${player.user_id}`)}
                     className="col-span-2 flex items-center justify-center gap-1.5 text-xs border border-primary/50 hover:border-primary text-primary rounded-sm py-2 transition-colors font-medium">
                     More Scouting Info
                   </button>
