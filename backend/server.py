@@ -4032,6 +4032,38 @@ async def respond_to_trial(invite_id: str, response: dict, current_user: dict = 
     )
     return {"message": "Response sent"}
 
+
+@api_router.get("/admin/colleges")
+async def get_all_colleges(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    # Colleges are stored in clubs collection with role=college in users
+    college_users = await db.users.find({"role": "college"}, {"_id": 0}).to_list(1000)
+    college_ids = [u["user_id"] for u in college_users]
+    colleges = await db.clubs.find({"user_id": {"$in": college_ids}}, {"_id": 0}).to_list(1000)
+    # Add email from users
+    for college in colleges:
+        user = next((u for u in college_users if u["user_id"] == college["user_id"]), None)
+        if user:
+            college["email"] = user.get("email", "")
+    return colleges
+
+@api_router.put("/admin/colleges/{user_id}/approve")
+async def approve_college(user_id: str, approval: UserApproval, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    result = await db.clubs.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved}})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="College not found")
+    # Notify college account
+    await create_notification(
+        user_id,
+        "account_approved",
+        "Your college account has been approved! You can now access all features." if approval.approved else "Your college account has been reviewed.",
+        {"approved": approval.approved}
+    )
+    return {"message": "Updated"}
+
 fastapi_app.include_router(api_router)
 
 fastapi_app.add_middleware(
