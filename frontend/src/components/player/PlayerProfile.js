@@ -759,7 +759,7 @@ const PlayerProfile = () => {
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-background rounded-sm border border-border gap-3"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
                       <h4 className="font-heading font-bold">vs {match.opponent}</h4>
                       <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-sm">
                         {match.competition_level}
@@ -919,7 +919,7 @@ const PlayerProfile = () => {
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-background rounded-sm border border-border gap-3"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
                       <h4 className="font-heading font-bold">vs {match.opponent}</h4>
                       {match.competition && (
                         <span className="text-xs bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-sm">
