@@ -756,7 +756,7 @@ const PlayerProfile = () => {
                 <div
                   key={match.id}
                   data-testid={`match-item-${match.id}`}
-                  className="flex items-center justify-between p-4 bg-background rounded-sm border border-border"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-background rounded-sm border border-border gap-3"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
@@ -773,7 +773,7 @@ const PlayerProfile = () => {
                       <p className="text-sm text-muted-foreground mt-1">{match.description}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex items-center gap-2 sm:ml-4 flex-shrink-0">
                     <Button
                       variant="outline"
                       size="sm"
@@ -916,7 +916,7 @@ const PlayerProfile = () => {
                 <div
                   key={match.id}
                   data-testid={`calendar-item-${match.id}`}
-                  className="flex items-center justify-between p-4 bg-background rounded-sm border border-border"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-background rounded-sm border border-border gap-3"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
@@ -938,7 +938,7 @@ const PlayerProfile = () => {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex items-center gap-2 sm:ml-4 flex-shrink-0">
                     <Button
                       variant="outline"
                       size="sm"
