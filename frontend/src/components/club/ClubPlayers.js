@@ -30,6 +30,8 @@ const ClubPlayers = () => {
       if (filters.level !== 'All') queryFilters.level = filters.level;
       if (filters.nationality !== 'All' && filters.nationality) queryFilters.nationality = filters.nationality;
       if (filters.name) queryFilters.name = filters.name;
+      if (filters.has_highlights) queryFilters.has_highlights = true;
+      if (filters.has_full_game) queryFilters.has_full_game = true;
 
       const response = await api.getPlayers(queryFilters);
       setPlayers(response.data);
@@ -126,6 +128,21 @@ const ClubPlayers = () => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="col-span-1 md:col-span-2 lg:col-span-4 flex items-center gap-6 pt-3 border-t border-border/30 mt-2">
+            <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Video:</label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={filters.has_highlights}
+                onChange={e => setFilters(prev => ({...prev, has_highlights: e.target.checked}))}
+                className="accent-primary w-4 h-4" />
+              <span className="text-sm">Has Highlights</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={filters.has_full_game}
+                onChange={e => setFilters(prev => ({...prev, has_full_game: e.target.checked}))}
+                className="accent-primary w-4 h-4" />
+              <span className="text-sm">Has Full Game</span>
+            </label>
           </div>
         </div>
       </div>

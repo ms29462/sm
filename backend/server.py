@@ -1871,6 +1871,8 @@ async def get_players(
     nationality: Optional[str] = None,
     level: Optional[str] = None,
     name: Optional[str] = None,
+    has_highlights: Optional[bool] = None,
+    has_full_game: Optional[bool] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college']:
@@ -1885,6 +1887,11 @@ async def get_players(
         query['playing_level'] = level
     if name:
         query['name'] = {"$regex": name, "$options": "i"}  # Case-insensitive search
+    if has_highlights:
+        query['highlight_video'] = {"$exists": True, "$not": {"$in": [None, "", "null", "undefined"]}}
+    if has_full_game:
+        archive_entries = await db.match_archive.distinct("player_id")
+        query['user_id'] = {"$in": archive_entries}
     
     players = await db.players.find(query, {"_id": 0}).to_list(1000)
     # Strip private info for club users
