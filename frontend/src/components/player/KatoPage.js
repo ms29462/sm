@@ -8,12 +8,12 @@ const DIVISIONS = [
   { id: "NJCAA", label: "NJCAA", description: "2-year pathway to NCAA/NAIA", cost: "$5k-$20k/yr" },
 ];
 
-const inputClass = "mt-2 w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white outline-none";
-const selectClass = "mt-2 w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white appearance-none cursor-pointer outline-none";
-const labelClass = "text-xs font-medium uppercase tracking-wide text-muted-foreground";
+const inputClass = "w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white outline-none";
+const selectClass = "w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white appearance-none cursor-pointer outline-none";
+const labelClass = "text-xs font-medium uppercase tracking-wide text-muted-foreground block mb-1";
 
 const SectionTitle = ({ children }) => (
-  <div className="col-span-2 border-t border-border pt-4 mt-2 mb-1">
+  <div className="col-span-1 md:col-span-2 border-t border-border pt-4 mt-2 mb-1">
     <p className="text-xs font-bold uppercase tracking-widest text-primary">{children}</p>
   </div>
 );
@@ -255,7 +255,7 @@ const KatoPage = () => {
 
       {/* Form */}
       <div className="bg-card border border-border/50 rounded-sm p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <SectionTitle>Personal Info</SectionTitle>
           <div>
