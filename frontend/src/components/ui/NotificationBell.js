@@ -92,7 +92,7 @@ const NotificationBell = () => {
       </button>
 
       {open && (
-        <div className="fixed left-64 top-4 w-80 bg-card border border-border/50 rounded-sm shadow-xl z-[100]">
+        <div className="fixed right-2 left-2 sm:left-auto sm:right-4 sm:w-80 top-16 bg-card border border-border/50 rounded-sm shadow-xl z-[100]">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border/50">
             <h3 className="font-heading font-bold uppercase text-sm">Notifications</h3>
