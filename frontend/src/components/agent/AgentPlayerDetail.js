@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
+import RequestChatDialog from '@/components/club/RequestChatDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
