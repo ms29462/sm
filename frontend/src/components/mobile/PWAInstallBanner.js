@@ -7,9 +7,12 @@ const PWAInstallBanner = () => {
   const { isInstallable, isInstalled, isOnline, installApp } = usePWA() || {};
   const [showModal, setShowModal] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
 
   useEffect(() => {
-    if (isInstallable && !dismissed && !isInstalled) {
+    const shouldShow = (isInstallable || isIOS) && !dismissed && !isInstalled && !isInStandaloneMode;
+    if (shouldShow) {
       const timer = setTimeout(() => setShowModal(true), 5000);
       return () => clearTimeout(timer);
     }
@@ -61,16 +64,36 @@ const PWAInstallBanner = () => {
           </div>
         </div>
 
+        {/* iOS Instructions */}
+        {isIOS && (
+          <div className="px-6 pb-2">
+            <div className="bg-background border border-border/50 rounded-sm p-3 text-xs text-muted-foreground">
+              <p className="font-bold text-white mb-1">📱 How to install on iPhone:</p>
+              <p>1. Tap the <span className="text-primary font-bold">Share</span> button at the bottom of Safari</p>
+              <p>2. Scroll down and tap <span className="text-primary font-bold">Add to Home Screen</span></p>
+              <p>3. Tap <span className="text-primary font-bold">Add</span></p>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="px-6 pb-6 flex gap-3">
           <Button onClick={handleDismiss} variant="outline"
             className="flex-1 border-white/20 text-muted-foreground hover:text-white rounded-sm">
             Not now
           </Button>
-          <Button onClick={handleInstall}
-            className="flex-1 bg-primary text-black font-bold rounded-sm">
-            <Download className="w-4 h-4 mr-2" /> Install
-          </Button>
+          {!isIOS && (
+            <Button onClick={handleInstall}
+              className="flex-1 bg-primary text-black font-bold rounded-sm">
+              <Download className="w-4 h-4 mr-2" /> Install
+            </Button>
+          )}
+          {isIOS && (
+            <Button onClick={handleDismiss}
+              className="flex-1 bg-primary text-black font-bold rounded-sm">
+              Got it!
+            </Button>
+          )}
         </div>
       </div>
     </div>
