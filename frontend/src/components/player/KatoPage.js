@@ -204,7 +204,7 @@ const runAnalysis = (form, division) => {
   return { overall, verdict, scores: { academic: Math.min(100, academic), english, athletic, eligibility, budget }, insights, division };
 };
 
-const College FitPage = () => {
+const CollegeFitPage = () => {
   const [division, setDivision] = useState("");
   const [form, setForm] = useState({
     country: "", age: "", playing_level: "",
@@ -421,4 +421,4 @@ const College FitPage = () => {
   );
 };
 
-export default College FitPage;
+export default CollegeFitPage;
