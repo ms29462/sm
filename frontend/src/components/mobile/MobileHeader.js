@@ -15,7 +15,6 @@ const NAV_LINKS = {
     { to: '/player/match-scores', label: 'Match Scores' },
     { to: '/player/kato', label: 'College Fit' },
     { to: '/player/masterclass', label: 'Masterclass' },
-    { to: '/player/chat-requests', label: 'Chat Requests' },
     { to: '/player/chats', label: 'My Chats' },
   ],
   club: [

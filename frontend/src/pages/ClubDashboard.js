@@ -30,7 +30,7 @@ const ClubDashboard = () => {
         <Route path="player/:playerId" element={<PlayerDetailView />} />
         <Route path="applications" element={<ClubApplications />} />
         <Route path="favorites" element={<ClubFavorites />} />
-        <Route path="chats" element={<ChatList />} />
+        <Route path="chats" element={<UnifiedChats />} />
         <Route path="videos" element={<VideoList />} />
         <Route path="scouting" element={<ScoutingHub />} />
         <Route path="pipeline" element={<RecruitmentPipeline />} />

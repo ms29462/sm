@@ -125,16 +125,6 @@ const PlayerLayout = ({ children }) => {
               My Applications
             </Button>
           </Link>
-          <Link to="/player/chat-requests">
-            <Button
-              data-testid="nav-chat-requests-btn"
-              variant={isActive('/player/chat-requests') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <MessageSquare className="w-4 h-4 mr-3" />
-              Chat Requests
-            </Button>
-          </Link>
           <Link to="/player/chats">
             <Button
               data-testid="nav-chats-btn"
