@@ -92,7 +92,7 @@ const MatchScores = () => {
       <div className="p-8">
         <div className="mb-8">
           <h1 className="text-3xl font-heading font-bold uppercase mb-2">MY MATCH SCORES</h1>
-          <p className="text-muted-foreground">AI-powered opportunity matching based on your Transfermarkt profile</p>
+          <p className="text-muted-foreground">AI-powered opportunity matching based on your profile</p>
         </div>
         <div className="bg-card border border-border/50 p-8 rounded-sm text-center">
           <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
@@ -109,7 +109,7 @@ const MatchScores = () => {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-heading font-bold uppercase mb-2">MY MATCH SCORES</h1>
-        <p className="text-muted-foreground">AI-powered opportunity matching based on your Transfermarkt profile</p>
+        <p className="text-muted-foreground">AI-powered opportunity matching based on your profile</p>
       </div>
 
       {scores.length === 0 ? (

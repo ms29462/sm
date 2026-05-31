@@ -611,7 +611,7 @@ const PlayerProfile = () => {
                 placeholder="https://www.transfermarkt.us/player/profil/spieler/12345"
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Add your Transfermarkt profile to get AI-powered match scores for opportunities
+                Add your Transfermarkt profile link so organizations can verify your career history
               </p>
             </div>
           </div>
