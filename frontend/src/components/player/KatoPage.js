@@ -204,7 +204,7 @@ const runAnalysis = (form, division) => {
   return { overall, verdict, scores: { academic: Math.min(100, academic), english, athletic, eligibility, budget }, insights, division };
 };
 
-const KatoPage = () => {
+const College FitPage = () => {
   const [division, setDivision] = useState("");
   const [form, setForm] = useState({
     country: "", age: "", playing_level: "",
@@ -234,8 +234,8 @@ const KatoPage = () => {
   return (
     <div className="min-h-screen p-6 max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-heading font-bold uppercase tracking-tight mb-2">KATO</h1>
-        <p className="text-muted-foreground text-sm max-w-md mx-auto">Your personal college soccer eligibility advisor. Fill in your details and let Kato analyze your compatibility.</p>
+        <h1 className="text-4xl font-heading font-bold uppercase tracking-tight mb-2">COLLEGE FIT</h1>
+        <p className="text-muted-foreground text-sm max-w-md mx-auto">Your personal college soccer eligibility advisor. Fill in your details and let College Fit analyze your compatibility.</p>
       </div>
 
       {/* Division */}
@@ -354,15 +354,15 @@ const KatoPage = () => {
         </div>
       </div>
 
-      {/* Kato Button */}
+      {/* College Fit Button */}
       <div className="flex justify-center mb-10">
         <button onClick={analyze} disabled={loading || !division} className="relative group disabled:opacity-40 disabled:cursor-not-allowed">
           <div className={`w-28 h-28 rounded-full border-4 border-primary flex items-center justify-center transition-all
             ${loading ? "animate-spin border-t-transparent" : "hover:bg-primary/10 hover:scale-105"}`}>
-            <img src="/kato-logo.png" alt="Kato" className="w-20 h-20 object-contain" />
+            <img src="/college-fit-logo.png" alt="College Fit" className="w-20 h-20 object-contain" />
           </div>
           <p className="text-center text-xs uppercase tracking-widest text-primary mt-3 font-bold">
-            {loading ? "Analyzing..." : "Run Kato"}
+            {loading ? "Analyzing..." : "Run College Fit"}
           </p>
         </button>
       </div>
@@ -372,7 +372,7 @@ const KatoPage = () => {
         <Dialog open={!!result} onOpenChange={() => setResult(null)}>
           <DialogContent className="bg-card border border-border/50 max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="font-heading uppercase text-center">Kato Analysis — {result.division}</DialogTitle>
+              <DialogTitle className="font-heading uppercase text-center">College Fit Analysis — {result.division}</DialogTitle>
             </DialogHeader>
 
             {/* Overall Score */}
@@ -396,7 +396,7 @@ const KatoPage = () => {
 
             {/* Insights */}
             <div className="py-4">
-              <h3 className="font-heading font-bold uppercase mb-3 text-xs tracking-wide text-muted-foreground">Kato Insights</h3>
+              <h3 className="font-heading font-bold uppercase mb-3 text-xs tracking-wide text-muted-foreground">College Fit Insights</h3>
               <div className="space-y-2">
                 {result.insights.map((ins, i) => (
                   <div key={i} className="flex items-start gap-2 text-sm">
@@ -412,7 +412,7 @@ const KatoPage = () => {
             </div>
 
             <p className="text-xs text-muted-foreground italic text-center pb-2">
-              ⚠️ Kato provides guidance only — always verify with an NCAA/NAIA Eligibility Center advisor.
+              ⚠️ College Fit provides guidance only — always verify with an NCAA/NAIA Eligibility Center advisor.
             </p>
           </DialogContent>
         </Dialog>
@@ -421,4 +421,4 @@ const KatoPage = () => {
   );
 };
 
-export default KatoPage;
+export default College FitPage;

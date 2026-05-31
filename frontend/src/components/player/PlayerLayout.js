@@ -86,7 +86,7 @@ const PlayerLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <GraduationCap className="w-4 h-4 mr-3" />
-              Kato
+              College Fit
             </Button>
           </Link>
           <Link to="/player/match-scores">

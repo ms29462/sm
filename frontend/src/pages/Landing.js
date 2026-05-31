@@ -43,7 +43,7 @@ const Landing = () => {
             <span className="text-primary">STARTS HERE</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-            SoccerMatch connects players with clubs, universities, federations and agents worldwide. Build your profile, showcase your talent, get discovered — and use Kato to find your path to US college soccer.
+            SoccerMatch connects players with clubs, universities, federations and agents worldwide. Build your profile, showcase your talent, get discovered — and use College Fit to find your path to US college soccer.
           </p>
         </div>
 
