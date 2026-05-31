@@ -92,7 +92,7 @@ const MobileHeader = ({ title, showMenu = true, children }) => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b border-border md:hidden">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b border-border md:hidden" style={{paddingTop: "env(safe-area-inset-top)"}}>
         <div className="flex items-center justify-between h-14 px-4" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <div className="flex items-center gap-3">
             <Trophy className="w-6 h-6 text-primary" />
