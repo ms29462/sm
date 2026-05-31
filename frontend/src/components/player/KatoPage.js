@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const DIVISIONS = [
-  { id: "NCAA Division I", label: "NCAA D1", description: "Top tier — highest standards", cost: "$30k-$70k/yr" },
-  { id: "NCAA Division II", label: "NCAA D2", description: "Strong balance of athletics & academics", cost: "$15k-$40k/yr" },
-  { id: "NAIA", label: "NAIA", description: "More flexible — good scholarships", cost: "$10k-$30k/yr" },
-  { id: "NJCAA", label: "NJCAA", description: "2-year pathway to NCAA/NAIA", cost: "$5k-$20k/yr" },
+  { id: "NCAA Division I", label: "NCAA D1", description: "Top tier — highest standards", cost: "$30k-$70k USD/yr" },
+  { id: "NCAA Division II", label: "NCAA D2", description: "Strong balance of athletics & academics", cost: "$15k-$40k USD/yr" },
+  { id: "NAIA", label: "NAIA", description: "More flexible — good scholarships", cost: "$10k-$30k USD/yr" },
+  { id: "NJCAA", label: "NJCAA", description: "2-year pathway to NCAA/NAIA", cost: "$5k-$20k USD/yr" },
 ];
 
 const inputClass = "w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white outline-none";
