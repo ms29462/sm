@@ -2,7 +2,7 @@
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Users, TrendingUp, AlertCircle } from "lucide-react";
+import { Users, TrendingUp, AlertCircle, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useSocket from "@/hooks/useSocket";
 import { useAuth } from "@/context/AuthContext";
@@ -123,9 +123,15 @@ const ClubHome = () => {
         {recommended.length === 0 ? (
           <div data-testid="no-recommendations" className="bg-card border border-border/50 p-12 rounded-sm text-center">
             <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Post opportunities to get personalized player recommendations
             </p>
+            <Button
+              onClick={() => navigate(isCollege ? '/college/opportunities' : '/club/opportunities')}
+              className="bg-primary text-black font-bold uppercase rounded-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" /> Post an Opportunity
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
