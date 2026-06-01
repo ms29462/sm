@@ -213,4 +213,13 @@ export const api = {
   sendTrialInvitation: (data) => axios.post(`${API}/trial-invitation`, data, { headers: getAuthHeaders() }),
   getMyTrialInvitations: () => axios.get(`${API}/trial-invitations/my`, { headers: getAuthHeaders() }),
   respondToTrial: (id, data) => axios.put(`${API}/trial-invitations/${id}/respond`, data, { headers: getAuthHeaders() }),
+
+  // Badge & Verification
+  getPlayerVerificationAdmin: (userId) => axios.get(`${API}/admin/players/${userId}/verification`, { headers: getAuthHeaders() }),
+  toggleVerification: (userId, data) => axios.put(`${API}/admin/players/${userId}/verify`, data, { headers: getAuthHeaders() }),
+  updateBadge: (userId, data) => axios.put(`${API}/admin/players/${userId}/badges`, data, { headers: getAuthHeaders() }),
+  updateQuality: (userId, data) => axios.put(`${API}/admin/players/${userId}/quality`, data, { headers: getAuthHeaders() }),
+  addAdminNote: (userId, data) => axios.post(`${API}/admin/players/${userId}/notes`, data, { headers: getAuthHeaders() }),
+  getMyVerification: () => axios.get(`${API}/player/verification`, { headers: getAuthHeaders() }),
+  getPlayerVerification: (playerId) => axios.get(`${API}/players/${playerId}/verification`, { headers: getAuthHeaders() }),
 };

@@ -7,6 +7,25 @@ import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Pla
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import RequestChatDialog from './RequestChatDialog';
 
+const BADGE_LABELS = {
+  verified_profile: "Verified Profile", match_ready: "Match Ready", scout_approved: "Scout Approved",
+  professional_experience: "Professional Experience", international_player: "International Player",
+  university_eligible: "University Eligible", top_prospect: "Top Prospect",
+  diaspora_eligible: "Diaspora Eligible", video_verified: "Video Verified"
+};
+const BADGE_ICONS = {
+  verified_profile: "✓", match_ready: "⚡", scout_approved: "👁", professional_experience: "🏆",
+  international_player: "🌍", university_eligible: "🎓", top_prospect: "⭐",
+  diaspora_eligible: "🌐", video_verified: "🎥"
+};
+const QUALITY_COLORS = {
+  Bronze: "text-amber-600 border-amber-600/30 bg-amber-600/10",
+  Silver: "text-gray-300 border-gray-300/30 bg-gray-300/10",
+  Gold: "text-yellow-400 border-yellow-400/30 bg-yellow-400/10",
+  Elite: "text-purple-400 border-purple-400/30 bg-purple-400/10",
+};
+
+
 const PlayerDetailView = () => {
   const { playerId } = useParams();
   const navigate = useNavigate();
@@ -15,6 +34,7 @@ const PlayerDetailView = () => {
   const [matchArchive, setMatchArchive] = useState([]);
   const [isTracked, setIsTracked] = useState(false);
   const [inPipeline, setInPipeline] = useState(false);
+  const [verification, setVerification] = useState(null);
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [trialForm, setTrialForm] = useState({ trial_date: '', location: '', message: '' });
   const [trialSent, setTrialSent] = useState(false);
@@ -25,7 +45,16 @@ const PlayerDetailView = () => {
     loadPlayerProfile();
     checkPipelineStatus();
     checkTrackStatus();
+    loadVerification();
   }, [playerId]);
+
+  const loadVerification = async () => {
+    try {
+      const res = await api.getPlayerVerification(playerId);
+      console.log('Verification data:', JSON.stringify(res.data));
+      setVerification(res.data);
+    } catch (e) { console.error('Verification error:', e); }
+  };
 
   const checkTrackStatus = async () => {
     try {
@@ -161,6 +190,7 @@ const PlayerDetailView = () => {
                       <CheckCircle className="w-3 h-3 mr-1" /> Verified
                     </span>
                   )}
+
                   {player.approved && (
                     <span className="bg-primary/10 text-primary border border-primary/20 uppercase text-sm tracking-wider px-4 py-2 rounded-sm font-bold">
                       Approved
@@ -171,7 +201,8 @@ const PlayerDetailView = () => {
             </div>
           </div>
 
-          {/* Action Buttons */}
+          
+            {/* Action Buttons */}
           <div className="flex flex-col gap-3">
             <Button
               onClick={handleTrackPlayer}
@@ -214,6 +245,41 @@ const PlayerDetailView = () => {
 
       {/* Stats */}
       <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          {/* Badges & Quality */}
+          {(verification?.badges?.length > 0 || verification?.quality_level || verification?.quality_score > 0) && (
+            <div className="bg-card border border-border/50 rounded-sm p-4 mb-6">
+              <div className="flex flex-wrap items-center gap-4">
+                {verification?.quality_level && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Level:</span>
+                    <span className={`inline-flex items-center px-3 py-1 text-xs uppercase tracking-wider rounded-sm border font-bold ${QUALITY_COLORS[verification.quality_level]}`}>
+                      {verification.quality_level}
+                    </span>
+                  </div>
+                )}
+                {verification?.quality_score > 0 && (
+                  <div className="flex items-center gap-3 flex-1 min-w-[200px]">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wide whitespace-nowrap">Profile Score</span>
+                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full" style={{width: `${verification.quality_score}%`}} />
+                    </div>
+                    <span className="text-xs font-bold text-primary">{verification.quality_score}/100</span>
+                  </div>
+                )}
+              </div>
+              {verification?.badges?.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {verification.badges.map(badge => (
+                    <span key={badge} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-sm bg-white/5 border border-white/10 text-white">
+                      <span>{BADGE_ICONS[badge]}</span>
+                      <span>{BADGE_LABELS[badge]}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
         <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">Player Information</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[

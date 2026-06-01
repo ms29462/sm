@@ -272,6 +272,74 @@ async def create_notification(user_id: str, type: str, message: str, data: dict 
         "created_at": datetime.now(timezone.utc).isoformat()
     })
 
+
+# ============ BADGE & VERIFICATION MODELS ============
+AVAILABLE_BADGES = [
+    "verified_profile",
+    "match_ready",
+    "scout_approved",
+    "professional_experience",
+    "international_player",
+    "university_eligible",
+    "top_prospect",
+    "diaspora_eligible",
+    "video_verified"
+]
+
+BADGE_LABELS = {
+    "verified_profile": "Verified Profile",
+    "match_ready": "Match Ready",
+    "scout_approved": "Scout Approved",
+    "professional_experience": "Professional Experience",
+    "international_player": "International Player",
+    "university_eligible": "University Eligible",
+    "top_prospect": "Top Prospect",
+    "diaspora_eligible": "Diaspora Eligible",
+    "video_verified": "Video Verified"
+}
+
+QUALITY_LEVELS = ["Bronze", "Silver", "Gold", "Elite"]
+
+class PlayerVerification(BaseModel):
+    user_id: str
+    verified: bool = False
+    badges: List[str] = []
+    quality_level: Optional[str] = None
+    quality_score: Optional[int] = None
+    admin_notes: List[dict] = []
+    activity_log: List[dict] = []
+    updated_at: Optional[str] = None
+
+class BadgeUpdate(BaseModel):
+    badge: str
+    action: Literal["add", "remove"]
+
+class QualityUpdate(BaseModel):
+    quality_level: Optional[str] = None
+    quality_score: Optional[int] = None
+
+class AdminNote(BaseModel):
+    content: str
+
+def calculate_quality_score(player: dict) -> int:
+    score = 0
+    if player.get("profile_picture"): score += 15
+    if player.get("highlight_video"): score += 15
+    if player.get("position"): score += 5
+    if player.get("nationality"): score += 5
+    if player.get("age"): score += 5
+    if player.get("current_club"): score += 5
+    if player.get("playing_level"): score += 5
+    if player.get("bio"): score += 5
+    if player.get("transfermarkt_url"): score += 5
+    if player.get("goals") is not None: score += 5
+    if player.get("assists") is not None: score += 5
+    if player.get("verified"): score += 10
+    if player.get("nationality_2"): score += 5
+    # Full game footage
+    score = min(score, 100)
+    return score
+
 # ============ RECRUITMENT PIPELINE MODELS ============
 class PipelinePlayer(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -1835,6 +1903,15 @@ async def update_application_status(
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Application not found")
     return {"message": "Status updated"}
+
+@api_router.get("/players/{player_id}/verification")
+async def get_player_verification_public(player_id: str, current_user: dict = Depends(get_current_user)):
+    verification = await db.verifications.find_one({"user_id": player_id}, {"_id": 0, "admin_notes": 0})
+    if not verification:
+        player = await db.players.find_one({"user_id": player_id}, {"_id": 0}) or {}
+        return {"user_id": player_id, "verified": player.get("verified", False), "badges": [], "quality_level": None, "quality_score": calculate_quality_score(player)}
+    verification.pop("admin_notes", None)
+    return verification
 
 @api_router.get("/players/{player_id}", response_model=PlayerProfile)
 async def get_player_detail(player_id: str, current_user: dict = Depends(get_current_user)):
@@ -4070,6 +4147,86 @@ async def approve_college(user_id: str, approval: UserApproval, current_user: di
         {"approved": approval.approved}
     )
     return {"message": "Updated"}
+
+
+# ============ BADGE & VERIFICATION ENDPOINTS ============
+
+@api_router.get("/admin/players/{user_id}/verification")
+async def get_player_verification(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    player = await db.players.find_one({"user_id": user_id}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    verification = await db.verifications.find_one({"user_id": user_id}, {"_id": 0})
+    if not verification:
+        verification = {"user_id": user_id, "verified": player.get("verified", False), "badges": [], "quality_level": None, "quality_score": calculate_quality_score(player), "admin_notes": [], "activity_log": []}
+    else:
+        if not verification.get("quality_score"):
+            verification["quality_score"] = calculate_quality_score(player)
+    return {**player, **verification}
+
+@api_router.put("/admin/players/{user_id}/verify")
+async def toggle_verification(user_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    verified = data.get("verified", False)
+    await db.players.update_one({"user_id": user_id}, {"$set": {"verified": verified}})
+    log_entry = {"action": "verification_granted" if verified else "verification_revoked", "admin": current_user["user_id"], "timestamp": datetime.now(timezone.utc).isoformat()}
+    await db.verifications.update_one({"user_id": user_id}, {"$set": {"verified": verified, "updated_at": datetime.now(timezone.utc).isoformat()}, "$push": {"activity_log": log_entry}}, upsert=True)
+    await create_notification(user_id, "verification_update", "Your profile has been verified by Soccer Match!" if verified else "Your verification status has been updated.", {"verified": verified})
+    return {"message": "Updated"}
+
+@api_router.put("/admin/players/{user_id}/badges")
+async def update_badge(user_id: str, data: BadgeUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    if data.badge not in AVAILABLE_BADGES:
+        raise HTTPException(status_code=400, detail="Invalid badge")
+    if data.action == "add":
+        op = {"$addToSet": {"badges": data.badge}}
+        action_label = f"badge_added:{data.badge}"
+    else:
+        op = {"$pull": {"badges": data.badge}}
+        action_label = f"badge_removed:{data.badge}"
+    log_entry = {"action": action_label, "admin": current_user["user_id"], "timestamp": datetime.now(timezone.utc).isoformat()}
+    op["$set"] = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    op["$push"] = {"activity_log": log_entry}
+    await db.verifications.update_one({"user_id": user_id}, op, upsert=True)
+    return {"message": "Badge updated"}
+
+@api_router.put("/admin/players/{user_id}/quality")
+async def update_quality(user_id: str, data: QualityUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    update = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    if data.quality_level is not None:
+        if data.quality_level not in QUALITY_LEVELS and data.quality_level != "":
+            raise HTTPException(status_code=400, detail="Invalid quality level")
+        update["quality_level"] = data.quality_level
+    if data.quality_score is not None:
+        update["quality_score"] = max(0, min(100, data.quality_score))
+    log_entry = {"action": f"quality_updated:{data.quality_level or ''}:{data.quality_score or ''}", "admin": current_user["user_id"], "timestamp": datetime.now(timezone.utc).isoformat()}
+    await db.verifications.update_one({"user_id": user_id}, {"$set": update, "$push": {"activity_log": log_entry}}, upsert=True)
+    return {"message": "Quality updated"}
+
+@api_router.post("/admin/players/{user_id}/notes")
+async def add_admin_note(user_id: str, note: AdminNote, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    note_doc = {"id": str(uuid.uuid4()), "content": note.content, "admin": current_user["user_id"], "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.verifications.update_one({"user_id": user_id}, {"$push": {"admin_notes": note_doc}}, upsert=True)
+    return note_doc
+
+@api_router.get("/player/verification")
+async def get_my_verification(current_user: dict = Depends(get_current_user)):
+    verification = await db.verifications.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not verification:
+        player = await db.players.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or {}
+        return {"user_id": current_user["user_id"], "verified": player.get("verified", False), "badges": [], "quality_level": None, "quality_score": calculate_quality_score(player)}
+    return verification
+
+
 
 fastapi_app.include_router(api_router)
 

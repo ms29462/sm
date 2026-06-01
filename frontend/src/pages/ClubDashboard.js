@@ -9,7 +9,7 @@ import ClubPlayers from "@/components/club/ClubPlayers";
 import ClubApplications from "@/components/club/ClubApplications";
 import ClubFavorites from "@/components/club/ClubFavorites";
 import PlayerDetailView from "@/components/club/PlayerDetailView";
-import ChatList from "@/components/chat/ChatList";
+import UnifiedChats from "@/components/chat/UnifiedChats";
 import VideoList from "@/components/video/VideoList";
 import ScoutingHub from "@/components/club/ScoutingHub";
 import RecruitmentPipeline from "@/components/club/RecruitmentPipeline";

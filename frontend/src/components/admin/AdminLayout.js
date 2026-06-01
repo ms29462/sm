@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Shield, Users, Building, Flag, Briefcase, LogOut, MessageCircle, Video, MessageSquare, Database, GraduationCap, Activity } from 'lucide-react';
+import { Trophy, Shield, Users, Building, Flag, Briefcase, LogOut, MessageCircle, Video, MessageSquare, Database, GraduationCap, Activity, ShieldCheck } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -136,6 +136,18 @@ const AdminLayout = ({ children }) => {
             >
               <Video className="w-4 h-4 mr-3" />
               Video Sessions
+            </Button>
+          </Link>
+          <Link to="/admin/colleges">
+            <Button variant={isActive('/admin/colleges') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <GraduationCap className="w-4 h-4 mr-3" />
+              Colleges
+            </Button>
+          </Link>
+          <Link to="/admin/verification">
+            <Button variant={isActive('/admin/verification') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <ShieldCheck className="w-4 h-4 mr-3" />
+              Verification
             </Button>
           </Link>
           <Link to="/admin/benchmark">
