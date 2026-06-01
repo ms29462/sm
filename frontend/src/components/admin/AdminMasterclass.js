@@ -376,19 +376,19 @@ const AdminMasterclass = () => {
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="capitalize">{mc.category?.replace('_', ' ')}</span>
-                  <span>â€¢</span>
+                  <span>·</span>
                   <span className="capitalize">{mc.difficulty}</span>
-                  <span>â€¢</span>
+                  <span>·</span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {mc.duration_minutes}m
                   </span>
-                  <span>â€¢</span>
+                  <span>·</span>
                   <span className="flex items-center gap-1">
                     <Eye className="w-3 h-3" />
                     {mc.views || 0}
                   </span>
-                  <span>â€¢</span>
+                  <span>·</span>
                   <span className="flex items-center gap-1">
                     <User className="w-3 h-3" />
                     {mc.author_name}
