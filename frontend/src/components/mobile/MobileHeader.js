@@ -66,8 +66,15 @@ const NAV_LINKS = {
     { to: '/admin/clubs', label: 'Clubs' },
     { to: '/admin/federations', label: 'Federations' },
     { to: '/admin/agents', label: 'Agents' },
+    { to: '/admin/specialists', label: 'Specialists' },
+    { to: '/admin/colleges', label: 'Colleges' },
+    { to: '/admin/verification', label: 'Verification' },
+    { to: '/admin/opportunities', label: 'Opportunities' },
     { to: '/admin/masterclass', label: 'Masterclass' },
+    { to: '/admin/videos', label: 'Videos' },
+    { to: '/admin/benchmark', label: 'Benchmark' },
     { to: '/admin/chat-requests', label: 'Chat Requests' },
+    { to: '/admin/chats', label: 'Chat Rooms' },
   ],
 };
 
