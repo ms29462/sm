@@ -8,10 +8,23 @@ import { toast } from 'sonner';
 import { Users, Search, Heart, CheckCircle } from 'lucide-react';
 import { POSITIONS, LEVELS, COUNTRIES } from '@/lib/constants';
 
+const BADGE_ICONS = {
+  verified_profile: "✓", match_ready: "⚡", scout_approved: "👁", professional_experience: "🏆",
+  international_player: "🌍", university_eligible: "🎓", top_prospect: "⭐",
+  diaspora_eligible: "🌐", video_verified: "🎥"
+};
+const QUALITY_COLORS = {
+  Bronze: "text-amber-600 border-amber-600/30 bg-amber-600/10",
+  Silver: "text-gray-300 border-gray-300/30 bg-gray-300/10",
+  Gold: "text-yellow-400 border-yellow-400/30 bg-yellow-400/10",
+  Elite: "text-purple-400 border-purple-400/30 bg-purple-400/10",
+};
+
 const ClubPlayers = () => {
   const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [verifications, setVerifications] = useState({});
   const [filters, setFilters] = useState({
     position: 'All',
     level: 'All',
@@ -35,6 +48,18 @@ const ClubPlayers = () => {
 
       const response = await api.getPlayers(queryFilters);
       setPlayers(response.data);
+      // Load verifications for all players
+      const verifResults = await Promise.allSettled((response.data || []).map(async (p) => {
+        const v = await api.getPlayerVerification(p.user_id);
+        return { userId: p.user_id, data: v.data };
+      }));
+      const verifs = {};
+      verifResults.forEach(r => {
+        if (r.status === 'fulfilled' && r.value?.data) {
+          verifs[r.value.userId] = r.value.data;
+        }
+      });
+      setVerifications({...verifs});
     } catch (error) {
       toast.error('Failed to load players');
     } finally {
@@ -179,6 +204,11 @@ const ClubPlayers = () => {
                     {player.verified && (
                       <CheckCircle className="w-4 h-4 text-blue-500" data-testid={`verified-icon-${player.user_id}`} />
                     )}
+                    {verifications[player.user_id]?.quality_level && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-sm border font-bold ${QUALITY_COLORS[verifications[player.user_id].quality_level]}`}>
+                        {verifications[player.user_id].quality_level}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center space-x-2">
                     {player.position && (
@@ -217,13 +247,25 @@ const ClubPlayers = () => {
                   <span className="text-muted-foreground">GP: {player.games || 0}</span>
                 </div>
               </div>
+              {verifications[player.user_id]?.badges?.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {verifications[player.user_id].badges.slice(0, 4).map(badge => (
+                    <span key={badge} title={badge.replace(/_/g,' ')} className="inline-flex items-center px-1.5 py-0.5 text-[10px] rounded-sm bg-white/5 border border-white/10 text-muted-foreground">
+                      {BADGE_ICONS[badge]}
+                    </span>
+                  ))}
+                  {verifications[player.user_id].badges.length > 4 && (
+                    <span className="text-[10px] text-muted-foreground ml-1">+{verifications[player.user_id].badges.length - 4}</span>
+                  )}
+                </div>
+              )}
               <Button
                 data-testid={`favorite-btn-${player.user_id}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleAddFavorite(player.user_id);
                 }}
-                className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10"
+                className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10 mt-auto"
               >
                 <Heart className="w-4 h-4 mr-2" />
                 ADD TO FAVORITES
