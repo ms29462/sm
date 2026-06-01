@@ -1950,6 +1950,8 @@ async def get_players(
     name: Optional[str] = None,
     has_highlights: Optional[bool] = None,
     has_full_game: Optional[bool] = None,
+    badge: Optional[str] = None,
+    quality_level: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college']:
@@ -1970,6 +1972,19 @@ async def get_players(
         archive_entries = await db.match_archive.distinct("player_id")
         query['user_id'] = {"$in": archive_entries}
     
+    # Badge and quality level filters - lookup from verifications collection
+    if badge or quality_level:
+        verif_query = {}
+        if badge:
+            verif_query["badges"] = badge
+        if quality_level:
+            verif_query["quality_level"] = quality_level
+        verif_user_ids = await db.verifications.distinct("user_id", verif_query)
+        if "user_id" in query and "$in" in query["user_id"]:
+            query["user_id"]["$in"] = list(set(query["user_id"]["$in"]) & set(verif_user_ids))
+        else:
+            query["user_id"] = {"$in": verif_user_ids}
+
     players = await db.players.find(query, {"_id": 0}).to_list(1000)
     # Strip private info for club users
     players = [strip_player_private_info(p) for p in players]

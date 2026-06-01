@@ -25,6 +25,8 @@ const ClubPlayers = () => {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [verifications, setVerifications] = useState({});
+  const [filterBadge, setFilterBadge] = useState('');
+  const [filterQuality, setFilterQuality] = useState('');
   const [filters, setFilters] = useState({
     position: 'All',
     level: 'All',
@@ -34,7 +36,7 @@ const ClubPlayers = () => {
 
   useEffect(() => {
     loadPlayers();
-  }, [filters]);
+  }, [filters, filterBadge, filterQuality]);
 
   const loadPlayers = async () => {
     try {
@@ -45,6 +47,8 @@ const ClubPlayers = () => {
       if (filters.name) queryFilters.name = filters.name;
       if (filters.has_highlights) queryFilters.has_highlights = true;
       if (filters.has_full_game) queryFilters.has_full_game = true;
+      if (filterBadge) queryFilters.badge = filterBadge;
+      if (filterQuality) queryFilters.quality_level = filterQuality;
 
       const response = await api.getPlayers(queryFilters);
       setPlayers(response.data);
@@ -168,6 +172,42 @@ const ClubPlayers = () => {
                 className="accent-primary w-4 h-4" />
               <span className="text-sm">Has Full Game</span>
             </label>
+          </div>
+          {/* Badge & Quality Filters */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-4 flex flex-wrap items-center gap-4 pt-3 border-t border-border/30 mt-2">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Badge:</label>
+              <select value={filterBadge} onChange={e => setFilterBadge(e.target.value)}
+                className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                <option value="">All Badges</option>
+                <option value="verified_profile">✓ Verified Profile</option>
+                <option value="match_ready">⚡ Match Ready</option>
+                <option value="scout_approved">👁 Scout Approved</option>
+                <option value="professional_experience">🏆 Professional Experience</option>
+                <option value="international_player">🌍 International Player</option>
+                <option value="university_eligible">🎓 University Eligible</option>
+                <option value="top_prospect">⭐ Top Prospect</option>
+                <option value="diaspora_eligible">🌐 Diaspora Eligible</option>
+                <option value="video_verified">🎥 Video Verified</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Quality:</label>
+              <select value={filterQuality} onChange={e => setFilterQuality(e.target.value)}
+                className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                <option value="">All Levels</option>
+                <option value="Bronze">Bronze</option>
+                <option value="Silver">Silver</option>
+                <option value="Gold">Gold</option>
+                <option value="Elite">Elite</option>
+              </select>
+            </div>
+            {(filterBadge || filterQuality) && (
+              <button onClick={() => { setFilterBadge(''); setFilterQuality(''); }}
+                className="text-xs text-muted-foreground hover:text-white border border-white/10 rounded-sm px-3 py-1.5 transition-colors">
+                Clear
+              </button>
+            )}
           </div>
         </div>
       </div>
