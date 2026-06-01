@@ -20,10 +20,29 @@ const COMPETITION_LEVELS = [
   'Friendly/Exhibition'
 ];
 
+const BADGE_LABELS = {
+  verified_profile: "Verified Profile", match_ready: "Match Ready", scout_approved: "Scout Approved",
+  professional_experience: "Professional Experience", international_player: "International Player",
+  university_eligible: "University Eligible", top_prospect: "Top Prospect",
+  diaspora_eligible: "Diaspora Eligible", video_verified: "Video Verified"
+};
+const BADGE_ICONS = {
+  verified_profile: "✓", match_ready: "⚡", scout_approved: "👁", professional_experience: "🏆",
+  international_player: "🌍", university_eligible: "🎓", top_prospect: "⭐",
+  diaspora_eligible: "🌐", video_verified: "🎥"
+};
+const QUALITY_COLORS = {
+  Bronze: "text-amber-600 border-amber-600/30 bg-amber-600/10",
+  Silver: "text-gray-300 border-gray-300/30 bg-gray-300/10",
+  Gold: "text-yellow-400 border-yellow-400/30 bg-yellow-400/10",
+  Elite: "text-purple-400 border-purple-400/30 bg-purple-400/10",
+};
+
 const PlayerProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [verification, setVerification] = useState(null);
   const [formData, setFormData] = useState({});
   
   // Match Archive state
@@ -55,6 +74,7 @@ const PlayerProfile = () => {
   useEffect(() => {
     loadProfile();
     loadMatchArchive();
+    api.getMyVerification().then(r => setVerification(r.data)).catch(() => {});
     loadMatchCalendar();
   }, []);
 
@@ -283,6 +303,32 @@ const PlayerProfile = () => {
               </div>
             </div>
           </div>
+
+
+          {/* Badges & Score */}
+          {(verification?.badges?.length > 0 || verification?.quality_score > 0) && (
+            <div className="bg-black/20 border border-white/10 rounded-sm p-4 mb-6">
+              {verification?.quality_score > 0 && (
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide whitespace-nowrap">Profile Score</span>
+                  <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full" style={{width: `${verification.quality_score}%`}} />
+                  </div>
+                  <span className="text-xs font-bold text-primary">{verification.quality_score}/100</span>
+                </div>
+              )}
+              {verification?.badges?.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {verification.badges.map(badge => (
+                    <span key={badge} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-sm bg-white/5 border border-white/10 text-white">
+                      <span>{BADGE_ICONS[badge]}</span>
+                      <span>{BADGE_LABELS[badge]}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
