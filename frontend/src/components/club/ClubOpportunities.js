@@ -169,7 +169,7 @@ const ClubOpportunities = () => {
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">League Level</Label>
                   <Input value={editForm.league_level} onChange={(e) => setEditForm(f => ({...f, league_level: e.target.value}))}
@@ -181,7 +181,7 @@ const ClubOpportunities = () => {
                     className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. $50k-$100k" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Contract Duration</Label>
                   <Input value={editForm.contract_duration} onChange={(e) => setEditForm(f => ({...f, contract_duration: e.target.value}))}
@@ -193,7 +193,7 @@ const ClubOpportunities = () => {
                     style={{colorScheme: "dark"}} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Age Min</Label>
                   <Input type="number" value={editForm.age_min} onChange={(e) => setEditForm(f => ({...f, age_min: e.target.value}))}
@@ -280,7 +280,7 @@ const ClubOpportunities = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Salary Range</Label>
                   <Input data-testid="salary-range-input" value={formData.salary_range} onChange={(e) => handleChange("salary_range", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., $50k - $100k" />
@@ -290,7 +290,7 @@ const ClubOpportunities = () => {
                   <Input data-testid="contract-duration-input" value={formData.contract_duration} onChange={(e) => handleChange("contract_duration", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 2 years" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Age Min</Label>
                   <Input type="number" value={formData.age_min} onChange={(e) => handleChange("age_min", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 18" />
@@ -300,7 +300,7 @@ const ClubOpportunities = () => {
                   <Input type="number" value={formData.age_max} onChange={(e) => handleChange("age_max", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 28" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Deadline</Label>
                   <Input type="date" value={formData.deadline} onChange={(e) => handleChange("deadline", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
@@ -349,7 +349,7 @@ const ClubOpportunities = () => {
                     {opp.max_applicants && <div><span className="text-muted-foreground">Max applicants: </span><span className="font-medium">{opp.max_applicants}</span></div>}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 ml-4">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button variant="ghost" size="icon" onClick={() => openEdit(opp)} className="text-muted-foreground hover:text-primary hover:bg-primary/10">
                     <Pencil className="w-4 h-4" />
                   </Button>

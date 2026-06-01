@@ -295,7 +295,7 @@ const FederationPlayerDetailView = () => {
           <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">
             CAREER STATISTICS
           </h3>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="text-center p-6 bg-background rounded-sm border border-border">
               <p className="text-4xl font-heading font-bold text-primary mb-2">{player.games || 0}</p>
               <p className="text-sm text-muted-foreground uppercase tracking-wide">Games Played</p>

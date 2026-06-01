@@ -89,7 +89,7 @@ const PlayerProfilePopup = ({ player, onClose }) => {
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-widest text-primary mb-3">Season Statistics</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="bg-background border border-border/50 rounded-sm p-4 text-center">
                 <div className="text-3xl font-heading font-bold text-primary mb-1">{player.games || 0}</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wide">Games</div>

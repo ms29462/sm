@@ -253,7 +253,7 @@ const TrackingOverview = () => {
                 </div>
 
                 {/* Ratings Grid */}
-                <div className="grid grid-cols-2 gap-6 mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-5">
                   <div>
                     <RatingBar value={pm.physical} label="Physical" />
                     <RatingBar value={pm.technical} label="Technical" />
@@ -265,7 +265,7 @@ const TrackingOverview = () => {
                 </div>
 
                 {/* Strengths & Weaknesses */}
-                <div className="grid grid-cols-2 gap-4 p-4 bg-background/50 rounded-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-background/50 rounded-sm">
                   <div>
                     <p className="text-xs text-green-400 font-bold uppercase mb-2">✅ Strengths</p>
                     <p className="text-sm text-muted-foreground leading-relaxed">{pm.strengths}</p>
@@ -317,7 +317,7 @@ const TrackingOverview = () => {
               <DialogTitle className="font-heading uppercase">Edit Game Report</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-2">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Match Date</label>
                   <input type="date" value={editingReport.match_date} onChange={e => setEditingReport(r => ({...r, match_date: e.target.value}))}
@@ -356,7 +356,7 @@ const TrackingOverview = () => {
                 <textarea value={editingReport.weaknesses} onChange={e => setEditingReport(r => ({...r, weaknesses: e.target.value}))}
                   rows={2} className={textareaClass + " mt-1"} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Recommendation</label>
                   <select value={editingReport.recommendation} onChange={e => setEditingReport(r => ({...r, recommendation: e.target.value}))}

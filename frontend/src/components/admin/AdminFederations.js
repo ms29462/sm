@@ -111,7 +111,7 @@ const AdminFederations = () => {
               data-testid={`federation-card-${federation.user_id}`}
               className="bg-card border border-border/50 p-6 rounded-sm"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="flex items-start space-x-4">
                   {federation.logo ? (
                     <img src={federation.logo} alt={federation.name} className="w-16 h-16 rounded-sm object-cover" />

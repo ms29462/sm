@@ -113,7 +113,7 @@ const AdminChatManagement = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-3">
         <div>
           <h1 className="text-3xl font-heading font-bold uppercase mb-2">CHAT MANAGEMENT</h1>
           <p className="text-muted-foreground">Create and monitor chat rooms</p>
@@ -201,7 +201,7 @@ const AdminChatManagement = () => {
               data-testid={`chat-room-${room.id}`}
               className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="flex-1">
                   <h3 className="text-xl font-heading font-bold uppercase mb-2">
                     {room.player_name} - {room.club_name}
