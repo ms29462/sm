@@ -154,7 +154,7 @@ const AdminMasterclass = () => {
 
   return (
     <div className="p-8">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <GraduationCap className="w-8 h-8 text-primary" />
@@ -327,7 +327,7 @@ const AdminMasterclass = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <input
                   type="checkbox"
                   id="featured"
@@ -357,7 +357,7 @@ const AdminMasterclass = () => {
           {masterclasses.map((mc) => (
             <div
               key={mc.id}
-              className="bg-card border border-border/50 p-4 rounded-sm flex items-center gap-4"
+              className="bg-card border border-border/50 p-4 rounded-sm flex flex-col sm:flex-row sm:items-center gap-4"
             >
               <div className="w-32 h-20 bg-muted rounded-sm overflow-hidden flex-shrink-0">
                 {mc.thumbnail ? (
