@@ -84,7 +84,7 @@ const AdminPlayers = () => {
               data-testid={`player-card-${player.user_id}`}
               className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="flex items-start space-x-4 flex-1">
                   {player.profile_picture ? (
                     <img
@@ -149,7 +149,7 @@ const AdminPlayers = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 ml-4">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button
                     data-testid={`approve-btn-${player.user_id}`}
                     size="icon"
