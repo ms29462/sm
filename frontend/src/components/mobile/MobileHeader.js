@@ -57,6 +57,15 @@ const NAV_LINKS = {
     { to: '/agent/favorites', label: 'Favorites' },
     { to: '/agent/opportunities', label: 'Opportunities' },
   ],
+  analyst: [
+    { to: '/analyst/news', label: 'News Feed' },
+    { to: '/analyst/home', label: 'Dashboard' },
+    { to: '/analyst/profile', label: 'My Profile' },
+    { to: '/analyst/players', label: 'Players' },
+    { to: '/analyst/scouting', label: 'Scouting Hub' },
+    { to: '/analyst/pipeline', label: 'Pipeline' },
+    { to: '/analyst/trials', label: 'Trial Invitations' },
+  ],
   specialist: [
     { to: '/specialist/news', label: 'News Feed' },
     { to: '/specialist/dashboard', label: 'Dashboard' },
@@ -72,6 +81,7 @@ const NAV_LINKS = {
     { to: '/admin/federations', label: 'Federations' },
     { to: '/admin/agents', label: 'Agents' },
     { to: '/admin/specialists', label: 'Specialists' },
+    { to: '/admin/analysts', label: 'Analysts' },
     { to: '/admin/colleges', label: 'Colleges' },
     { to: '/admin/verification', label: 'Verification' },
     { to: '/admin/opportunities', label: 'Opportunities' },
@@ -84,7 +94,7 @@ const NAV_LINKS = {
 };
 
 const getRoleLabel = (role) => {
-  const labels = { player: 'Player', club: 'Club', federation: 'Federation', agent: 'Agent', specialist: 'Specialist', admin: 'Admin', college: 'College' };
+  const labels = { player: 'Player', club: 'Club', federation: 'Federation', agent: 'Agent', specialist: 'Specialist', admin: 'Admin', college: 'College', analyst: 'Analyst' };
   return labels[role] || '';
 };
 

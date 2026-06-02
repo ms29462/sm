@@ -78,6 +78,12 @@ const AdminLayout = ({ children }) => {
               Federations
             </Button>
           </Link>
+          <Link to="/admin/analysts">
+            <Button variant={isActive('/admin/analysts') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Activity className="w-4 h-4 mr-3" />
+              Analysts
+            </Button>
+          </Link>
           <Link to="/admin/agents">
             <Button
               data-testid="nav-agents-btn"

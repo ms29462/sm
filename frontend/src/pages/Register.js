@@ -40,6 +40,8 @@ const Register = () => {
         navigate('/agent/dashboard');
       } else if (userRole === 'specialist') {
         navigate('/specialist/dashboard');
+      } else if (userRole === 'analyst') {
+        navigate('/analyst/dashboard');
       }
     } catch (error) {
       const detail = error.response?.data?.detail;
@@ -89,6 +91,10 @@ const Register = () => {
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="specialist" id="specialist" data-testid="role-specialist-radio" />
                   <Label htmlFor="specialist" className="cursor-pointer">Specialist</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="analyst" id="analyst" data-testid="role-analyst-radio" />
+                  <Label htmlFor="analyst" className="cursor-pointer">Analyst</Label>
                 </div>
                 <div className="flex items-center space-x-2">
   <RadioGroupItem value="college" id="college" data-testid="role-college-radio" />
