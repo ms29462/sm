@@ -105,31 +105,31 @@ const PlayerSilhouette = ({ evaluation }) => {
       <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-8 h-3 rounded" style={{ backgroundColor: getColor(headScore), opacity: getOpacity(headScore) }} />
-          <span className="text-muted-foreground">Tête: {headScore.toFixed(1)}</span>
+          <span className="text-muted-foreground">Head: {headScore.toFixed(1)}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-8 h-3 rounded" style={{ backgroundColor: getColor(torsoScore), opacity: getOpacity(torsoScore) }} />
-          <span className="text-muted-foreground">Torse: {torsoScore.toFixed(1)}</span>
+          <span className="text-muted-foreground">Torso: {torsoScore.toFixed(1)}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-8 h-3 rounded" style={{ backgroundColor: getColor(armsScore), opacity: getOpacity(armsScore) }} />
-          <span className="text-muted-foreground">Bras: {armsScore.toFixed(1)}</span>
+          <span className="text-muted-foreground">Arms: {armsScore.toFixed(1)}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-8 h-3 rounded" style={{ backgroundColor: getColor(legsScore), opacity: getOpacity(legsScore) }} />
-          <span className="text-muted-foreground">Jambes: {legsScore.toFixed(1)}</span>
+          <span className="text-muted-foreground">Legs: {legsScore.toFixed(1)}</span>
         </div>
       </div>
 
       {/* Color Scale */}
       <div className="flex items-center gap-1 mt-2">
-        <span className="text-xs text-muted-foreground mr-2">Faible</span>
+        <span className="text-xs text-muted-foreground mr-2">Low</span>
         <div className="w-4 h-3 rounded" style={{ backgroundColor: '#ef4444' }} />
         <div className="w-4 h-3 rounded" style={{ backgroundColor: '#f97316' }} />
         <div className="w-4 h-3 rounded" style={{ backgroundColor: '#eab308' }} />
         <div className="w-4 h-3 rounded" style={{ backgroundColor: '#22c55e' }} />
         <div className="w-4 h-3 rounded" style={{ backgroundColor: '#10b981' }} />
-        <span className="text-xs text-muted-foreground ml-2">Fort</span>
+        <span className="text-xs text-muted-foreground ml-2">High</span>
       </div>
     </div>
   );

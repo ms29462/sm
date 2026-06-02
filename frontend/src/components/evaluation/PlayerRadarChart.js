@@ -2,12 +2,12 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadius
 
 const PlayerRadarChart = ({ evaluation }) => {
   const data = [
-    { subject: 'Technique', value: evaluation.technical_score, fullMark: 10 },
-    { subject: 'Tactique', value: evaluation.tactical_score, fullMark: 10 },
-    { subject: 'Physique', value: evaluation.physical_score, fullMark: 10 },
+    { subject: 'Technical', value: evaluation.technical_score, fullMark: 10 },
+    { subject: 'Tactical', value: evaluation.tactical_score, fullMark: 10 },
+    { subject: 'Physical', value: evaluation.physical_score, fullMark: 10 },
     { subject: 'Mental', value: evaluation.mental_score, fullMark: 10 },
-    { subject: 'Attaque', value: evaluation.attacking_score, fullMark: 10 },
-    { subject: 'Défense', value: evaluation.defending_score, fullMark: 10 },
+    { subject: 'Attacking', value: evaluation.attacking_score, fullMark: 10 },
+    { subject: 'Defending', value: evaluation.defending_score, fullMark: 10 },
   ];
 
   return (
