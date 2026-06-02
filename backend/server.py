@@ -33,7 +33,7 @@ from player_evaluation import (
     PLAYER_ARCHETYPES, TECHNICAL_METRICS, TACTICAL_METRICS, PHYSICAL_METRICS, MENTAL_METRICS,
     RECOMMENDATION_LEVELS, PlayerEvaluationCreate, PlayerEvaluation, AnalystProfile, AnalystUpdate,
     MetricScore, TechnicalEvaluation, TacticalEvaluation, PhysicalEvaluation, MentalEvaluation,
-    VideoReference, process_evaluation_data, generate_ai_report, get_player_evolution
+    VideoReference, process_evaluation_data, get_player_evolution, generate_evaluation_pdf
 )
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -3181,24 +3181,6 @@ async def create_evaluation(
         analyst.get("name", "Unknown Analyst")
     )
     
-    # Generate AI report if requested
-    if evaluation_data.generate_ai_report:
-        player_name = f"{player.get('first_name', '')} {player.get('last_name', '')}".strip() or player.get('name', 'Unknown')
-        ai_result = await generate_ai_report(evaluation, player_name)
-        
-        if ai_result.get("success"):
-            report = ai_result.get("report", {})
-            evaluation.executive_summary = report.get("executive_summary", evaluation.executive_summary)
-            evaluation.strengths_notes = report.get("strengths_analysis", evaluation.strengths_notes)
-            evaluation.weaknesses_notes = report.get("weaknesses_analysis", evaluation.weaknesses_notes)
-            evaluation.tactical_analysis = report.get("tactical_analysis")
-            evaluation.physical_analysis = report.get("physical_analysis")
-            evaluation.mental_analysis = report.get("mental_analysis")
-            evaluation.development_potential = report.get("development_potential", evaluation.development_potential)
-            evaluation.key_match_actions = report.get("key_match_actions")
-            evaluation.recruitment_recommendation = report.get("recruitment_recommendation")
-            evaluation.ai_report_generated = True
-    
     # Store in database
     eval_doc = evaluation.model_dump()
     await db.player_evaluations.insert_one(eval_doc)
@@ -3275,56 +3257,38 @@ async def delete_evaluation(
     return {"success": True, "message": "Evaluation deleted"}
 
 
-@api_router.post("/evaluation/{evaluation_id}/regenerate-report")
-async def regenerate_evaluation_report(
+@api_router.get("/evaluation/{evaluation_id}/export-pdf")
+async def export_evaluation_pdf(
     evaluation_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    """Regenerate AI report for an existing evaluation"""
+    """Export evaluation as PDF"""
+    from fastapi.responses import Response
+    
     evaluation = await db.player_evaluations.find_one({"id": evaluation_id})
     if not evaluation:
         raise HTTPException(status_code=404, detail="Evaluation not found")
     
-    if evaluation.get("analyst_id") != current_user["user_id"] and current_user["role"] != "admin":
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
     # Get player info
     player = await db.players.find_one({"user_id": evaluation.get("player_id")})
-    player_name = "Unknown"
-    if player:
-        player_name = f"{player.get('first_name', '')} {player.get('last_name', '')}".strip() or player.get('name', 'Unknown')
+    if not player:
+        player = {"name": "Unknown Player"}
     
-    # Create PlayerEvaluation object from stored data
-    eval_obj = PlayerEvaluation(**evaluation)
-    
-    # Generate new report
-    ai_result = await generate_ai_report(eval_obj, player_name)
-    
-    if ai_result.get("success"):
-        report = ai_result.get("report", {})
-        update_fields = {
-            "executive_summary": report.get("executive_summary"),
-            "strengths_notes": report.get("strengths_analysis"),
-            "weaknesses_notes": report.get("weaknesses_analysis"),
-            "tactical_analysis": report.get("tactical_analysis"),
-            "physical_analysis": report.get("physical_analysis"),
-            "mental_analysis": report.get("mental_analysis"),
-            "development_potential": report.get("development_potential"),
-            "key_match_actions": report.get("key_match_actions"),
-            "recruitment_recommendation": report.get("recruitment_recommendation"),
-            "ai_report_generated": True,
-            "updated_at": datetime.now(timezone.utc).isoformat()
-        }
+    try:
+        pdf_bytes = generate_evaluation_pdf(evaluation, player)
         
-        await db.player_evaluations.update_one(
-            {"id": evaluation_id},
-            {"$set": update_fields}
+        player_name = f"{player.get('first_name', '')}_{player.get('last_name', '')}".strip() or player.get('name', 'player')
+        player_name = player_name.replace(' ', '_')
+        filename = f"evaluation_{player_name}_{evaluation.get('match_date', 'report')}.pdf"
+        
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
-        
-        updated = await db.player_evaluations.find_one({"id": evaluation_id}, {"_id": 0})
-        return updated
-    else:
-        raise HTTPException(status_code=500, detail=f"Failed to generate report: {ai_result.get('error')}")
+    except Exception as e:
+        logger.error(f"PDF generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
 
 
 # --- Player Evaluations Access (for other roles) ---

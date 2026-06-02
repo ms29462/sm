@@ -1,16 +1,22 @@
 """
 Professional Player Evaluation System
-Football scouting and analysis models
+Football scouting and analysis models - No AI dependencies
 """
 import os
-import json
+import io
 import uuid
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field, ConfigDict
-from emergentintegrations.llm.chat import LlmChat, UserMessage
-
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch, cm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.graphics.shapes import Drawing, Circle, Polygon, String, Line
+from reportlab.graphics.charts.piecharts import Pie
+from reportlab.graphics import renderPDF
+import math
 
 # ============ PLAYER ARCHETYPES ============
 PLAYER_ARCHETYPES = {
@@ -88,6 +94,14 @@ RECOMMENDATION_LEVELS = [
     "further_evaluation",
     "not_recommended"
 ]
+
+RECOMMENDATION_LABELS = {
+    "strongly_recommend": "Strongly Recommend",
+    "recommend": "Recommend",
+    "monitor": "Monitor",
+    "further_evaluation": "Further Evaluation Needed",
+    "not_recommended": "Not Recommended"
+}
 
 
 # ============ PYDANTIC MODELS ============
@@ -172,9 +186,6 @@ class PlayerEvaluationCreate(BaseModel):
     strengths_notes: Optional[str] = None
     weaknesses_notes: Optional[str] = None
     development_potential: Optional[str] = None
-    
-    # Generate AI report
-    generate_ai_report: bool = True
 
 
 class PlayerEvaluation(BaseModel):
@@ -221,7 +232,7 @@ class PlayerEvaluation(BaseModel):
     # Video references
     video_references: List[VideoReference] = []
     
-    # Report content
+    # Report content (manual)
     executive_summary: Optional[str] = None
     strengths_notes: Optional[str] = None
     weaknesses_notes: Optional[str] = None
@@ -231,9 +242,6 @@ class PlayerEvaluation(BaseModel):
     development_potential: Optional[str] = None
     key_match_actions: Optional[str] = None
     recruitment_recommendation: Optional[str] = None
-    
-    # AI generated flag
-    ai_report_generated: bool = False
     
     # Timestamps
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -309,6 +317,19 @@ def extract_strengths_weaknesses(evaluation_data: dict) -> tuple:
     """Extract top strengths and development areas from all metrics"""
     all_scores = []
     
+    # Metric name mapping for display
+    metric_names = {
+        'passing': 'Passing', 'first_touch': 'First Touch', 'ball_control': 'Ball Control',
+        'dribbling': 'Dribbling', 'finishing': 'Finishing', 'crossing': 'Crossing',
+        'tackling': 'Tackling', 'heading': 'Heading', 'positioning': 'Positioning',
+        'decision_making': 'Decision Making', 'game_intelligence': 'Game Intelligence',
+        'defensive_awareness': 'Defensive Awareness', 'movement_off_ball': 'Movement Off Ball',
+        'transition_play': 'Transition Play', 'speed': 'Speed', 'acceleration': 'Acceleration',
+        'agility': 'Agility', 'strength': 'Strength', 'endurance': 'Endurance',
+        'leadership': 'Leadership', 'communication': 'Communication', 'confidence': 'Confidence',
+        'discipline': 'Discipline', 'work_rate': 'Work Rate', 'competitive_mentality': 'Competitive Mentality'
+    }
+    
     # Collect all metric scores
     for category in ['technical', 'tactical', 'physical', 'mental']:
         cat_data = evaluation_data.get(category, {})
@@ -318,7 +339,8 @@ def extract_strengths_weaknesses(evaluation_data: dict) -> tuple:
                     score = data.get('score', 5)
                 else:
                     score = data.score if hasattr(data, 'score') else 5
-                all_scores.append((metric.replace('_', ' ').title(), score))
+                name = metric_names.get(metric, metric.replace('_', ' ').title())
+                all_scores.append((name, score))
     
     # Sort by score
     sorted_scores = sorted(all_scores, key=lambda x: x[1], reverse=True)
@@ -390,144 +412,6 @@ def process_evaluation_data(create_data: PlayerEvaluationCreate, analyst_id: str
     )
 
 
-# ============ AI REPORT GENERATION ============
-
-REPORT_GENERATION_PROMPT = """Tu es un analyste de football professionnel travaillant pour un club de haut niveau.
-
-Génère un rapport de scouting professionnel basé sur cette évaluation de joueur.
-
-DONNÉES DU JOUEUR:
-Nom: {player_name}
-Position: {position}
-Match: {match_description}
-Date: {match_date}
-Minutes jouées: {minutes}
-
-SCORES PAR CATÉGORIE:
-- Technique: {technical_score}/10
-- Tactique: {tactical_score}/10
-- Physique: {physical_score}/10
-- Mental: {mental_score}/10
-- Attaque: {attacking_score}/10
-- Défense: {defending_score}/10
-
-ARCHÉTYPES: {archetypes}
-
-FORCES PRINCIPALES: {strengths}
-AXES D'AMÉLIORATION: {weaknesses}
-
-DÉTAILS DES MÉTRIQUES:
-{metrics_detail}
-
-RECOMMANDATION DE L'ANALYSTE: {recommendation}
-
-NOTES DE L'ANALYSTE:
-{analyst_notes}
-
----
-
-Génère un rapport professionnel en JSON avec cette structure exacte:
-{{
-  "executive_summary": "Résumé exécutif de 2-3 phrases sur le joueur",
-  "strengths_analysis": "Analyse détaillée des forces du joueur (2-3 paragraphes)",
-  "weaknesses_analysis": "Analyse des axes d'amélioration (1-2 paragraphes)",
-  "tactical_analysis": "Analyse tactique approfondie (2 paragraphes)",
-  "physical_analysis": "Analyse des attributs physiques (1 paragraphe)",
-  "mental_analysis": "Analyse du profil mental (1-2 paragraphes)",
-  "development_potential": "Potentiel de développement et projection (1-2 paragraphes)",
-  "key_match_actions": "Actions clés observées pendant le match (liste à puces)",
-  "recruitment_recommendation": "Recommandation finale détaillée pour le recrutement (1 paragraphe)"
-}}
-
-Écris en français professionnel, comme un vrai rapport de scouting utilisé par les clubs.
-"""
-
-
-async def generate_ai_report(evaluation: PlayerEvaluation, player_name: str) -> dict:
-    """Generate AI-powered professional scouting report"""
-    try:
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"report-{evaluation.id}",
-            system_message="Tu es un analyste de football professionnel. Réponds uniquement en JSON valide."
-        ).with_model("gemini", "gemini-2.5-flash")
-        
-        # Build metrics detail
-        metrics_detail = []
-        for category, cat_name in [
-            (evaluation.technical.model_dump(), "Technique"),
-            (evaluation.tactical.model_dump(), "Tactique"),
-            (evaluation.physical.model_dump(), "Physique"),
-            (evaluation.mental.model_dump(), "Mental")
-        ]:
-            for metric, data in category.items():
-                score = data.get('score', 5)
-                comment = data.get('comment', '')
-                metric_name = metric.replace('_', ' ').title()
-                line = f"- {metric_name}: {score}/10"
-                if comment:
-                    line += f" ({comment})"
-                metrics_detail.append(line)
-        
-        # Build analyst notes
-        analyst_notes = []
-        if evaluation.executive_summary:
-            analyst_notes.append(f"Résumé: {evaluation.executive_summary}")
-        if evaluation.strengths_notes:
-            analyst_notes.append(f"Forces: {evaluation.strengths_notes}")
-        if evaluation.weaknesses_notes:
-            analyst_notes.append(f"Faiblesses: {evaluation.weaknesses_notes}")
-        if evaluation.development_potential:
-            analyst_notes.append(f"Potentiel: {evaluation.development_potential}")
-        
-        recommendation_labels = {
-            "strongly_recommend": "Fortement recommandé",
-            "recommend": "Recommandé",
-            "monitor": "À surveiller",
-            "further_evaluation": "Évaluation supplémentaire nécessaire",
-            "not_recommended": "Non recommandé"
-        }
-        
-        prompt = REPORT_GENERATION_PROMPT.format(
-            player_name=player_name,
-            position=evaluation.position_played,
-            match_description=evaluation.match_description,
-            match_date=evaluation.match_date,
-            minutes=evaluation.minutes_played,
-            technical_score=evaluation.technical_score,
-            tactical_score=evaluation.tactical_score,
-            physical_score=evaluation.physical_score,
-            mental_score=evaluation.mental_score,
-            attacking_score=evaluation.attacking_score,
-            defending_score=evaluation.defending_score,
-            archetypes=", ".join(evaluation.archetypes) or "Non spécifié",
-            strengths=", ".join(evaluation.top_strengths) or "À déterminer",
-            weaknesses=", ".join(evaluation.development_areas) or "À déterminer",
-            metrics_detail="\n".join(metrics_detail),
-            recommendation=recommendation_labels.get(evaluation.recommendation, evaluation.recommendation),
-            analyst_notes="\n".join(analyst_notes) if analyst_notes else "Aucune note supplémentaire"
-        )
-        
-        message = UserMessage(text=prompt)
-        response = await chat.send_message(message)
-        
-        # Parse JSON response
-        response_text = response.strip()
-        if response_text.startswith('```json'):
-            response_text = response_text[7:]
-        if response_text.startswith('```'):
-            response_text = response_text[3:]
-        if response_text.endswith('```'):
-            response_text = response_text[:-3]
-        
-        report_data = json.loads(response_text.strip())
-        return {"success": True, "report": report_data}
-        
-    except Exception as e:
-        print(f"AI Report generation error: {e}")
-        return {"success": False, "error": str(e)}
-
-
 def get_player_evolution(evaluations: List[dict]) -> dict:
     """Calculate player evolution over time"""
     if len(evaluations) < 2:
@@ -580,3 +464,201 @@ def get_player_evolution(evaluations: List[dict]) -> dict:
     }
     
     return evolution
+
+
+# ============ PDF REPORT GENERATION ============
+
+def draw_radar_chart(drawing: Drawing, scores: dict, cx: float, cy: float, radius: float):
+    """Draw a hexagonal radar chart"""
+    labels = ['Technical', 'Tactical', 'Physical', 'Mental', 'Attacking', 'Defending']
+    values = [
+        scores.get('technical', 5),
+        scores.get('tactical', 5),
+        scores.get('physical', 5),
+        scores.get('mental', 5),
+        scores.get('attacking', 5),
+        scores.get('defending', 5)
+    ]
+    
+    n = len(labels)
+    angle_step = 2 * math.pi / n
+    
+    # Draw grid circles
+    for r in [0.2, 0.4, 0.6, 0.8, 1.0]:
+        points = []
+        for i in range(n):
+            angle = -math.pi/2 + i * angle_step
+            x = cx + radius * r * math.cos(angle)
+            y = cy + radius * r * math.sin(angle)
+            points.append((x, y))
+        
+        for i in range(n):
+            x1, y1 = points[i]
+            x2, y2 = points[(i + 1) % n]
+            drawing.add(Line(x1, y1, x2, y2, strokeColor=colors.lightgrey, strokeWidth=0.5))
+    
+    # Draw axes
+    for i in range(n):
+        angle = -math.pi/2 + i * angle_step
+        x = cx + radius * math.cos(angle)
+        y = cy + radius * math.sin(angle)
+        drawing.add(Line(cx, cy, x, y, strokeColor=colors.lightgrey, strokeWidth=0.5))
+        
+        # Add labels
+        label_x = cx + (radius + 15) * math.cos(angle)
+        label_y = cy + (radius + 15) * math.sin(angle)
+        drawing.add(String(label_x, label_y, labels[i], fontSize=8, textAnchor='middle'))
+    
+    # Draw data polygon
+    data_points = []
+    for i in range(n):
+        angle = -math.pi/2 + i * angle_step
+        r = (values[i] / 10) * radius
+        x = cx + r * math.cos(angle)
+        y = cy + r * math.sin(angle)
+        data_points.extend([x, y])
+    
+    polygon = Polygon(data_points, fillColor=colors.Color(0.06, 0.73, 0.51, 0.3), 
+                      strokeColor=colors.Color(0.06, 0.73, 0.51), strokeWidth=2)
+    drawing.add(polygon)
+    
+    # Draw data points
+    for i in range(n):
+        angle = -math.pi/2 + i * angle_step
+        r = (values[i] / 10) * radius
+        x = cx + r * math.cos(angle)
+        y = cy + r * math.sin(angle)
+        drawing.add(Circle(x, y, 3, fillColor=colors.Color(0.06, 0.73, 0.51), strokeColor=colors.white, strokeWidth=1))
+
+
+def generate_evaluation_pdf(evaluation: dict, player: dict) -> bytes:
+    """Generate a professional PDF report for a player evaluation"""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1*cm, bottomMargin=1*cm, 
+                            leftMargin=1.5*cm, rightMargin=1.5*cm)
+    
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=24, 
+                                  spaceAfter=20, textColor=colors.Color(0.06, 0.73, 0.51))
+    heading_style = ParagraphStyle('Heading', parent=styles['Heading2'], fontSize=14, 
+                                    spaceBefore=15, spaceAfter=10, textColor=colors.Color(0.2, 0.2, 0.2))
+    subheading_style = ParagraphStyle('Subheading', parent=styles['Heading3'], fontSize=11, 
+                                       spaceBefore=10, spaceAfter=5)
+    body_style = ParagraphStyle('Body', parent=styles['Normal'], fontSize=10, spaceAfter=8)
+    
+    elements = []
+    
+    # Header
+    player_name = f"{player.get('first_name', '')} {player.get('last_name', '')}".strip() or player.get('name', 'Unknown Player')
+    elements.append(Paragraph("SOCCERMATCH", title_style))
+    elements.append(Paragraph("Professional Player Evaluation Report", styles['Heading2']))
+    elements.append(Spacer(1, 20))
+    
+    # Player Info
+    elements.append(Paragraph(f"<b>Player:</b> {player_name}", body_style))
+    elements.append(Paragraph(f"<b>Position:</b> {evaluation.get('position_played', 'N/A')}", body_style))
+    elements.append(Paragraph(f"<b>Match:</b> {evaluation.get('match_description', 'N/A')}", body_style))
+    elements.append(Paragraph(f"<b>Date:</b> {evaluation.get('match_date', 'N/A')}", body_style))
+    elements.append(Paragraph(f"<b>Minutes Played:</b> {evaluation.get('minutes_played', 'N/A')}", body_style))
+    elements.append(Paragraph(f"<b>Analyst:</b> {evaluation.get('analyst_name', 'N/A')}", body_style))
+    elements.append(Spacer(1, 15))
+    
+    # Recommendation
+    rec_label = RECOMMENDATION_LABELS.get(evaluation.get('recommendation', ''), evaluation.get('recommendation', 'N/A'))
+    elements.append(Paragraph(f"<b>Recommendation:</b> {rec_label}", heading_style))
+    elements.append(Spacer(1, 10))
+    
+    # Category Scores Table
+    elements.append(Paragraph("Category Scores", heading_style))
+    scores_data = [
+        ['Category', 'Score'],
+        ['Technical', f"{evaluation.get('technical_score', 0)}/10"],
+        ['Tactical', f"{evaluation.get('tactical_score', 0)}/10"],
+        ['Physical', f"{evaluation.get('physical_score', 0)}/10"],
+        ['Mental', f"{evaluation.get('mental_score', 0)}/10"],
+        ['Attacking', f"{evaluation.get('attacking_score', 0)}/10"],
+        ['Defending', f"{evaluation.get('defending_score', 0)}/10"],
+    ]
+    scores_table = Table(scores_data, colWidths=[3*inch, 1.5*inch])
+    scores_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.Color(0.06, 0.73, 0.51)),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.Color(0.95, 0.95, 0.95)),
+        ('GRID', (0, 0), (-1, -1), 1, colors.white),
+    ]))
+    elements.append(scores_table)
+    elements.append(Spacer(1, 15))
+    
+    # Archetypes
+    if evaluation.get('archetypes'):
+        elements.append(Paragraph("Player Archetypes", heading_style))
+        archetypes_text = ", ".join(evaluation.get('archetypes', []))
+        elements.append(Paragraph(archetypes_text, body_style))
+        elements.append(Spacer(1, 10))
+    
+    # Strengths & Weaknesses
+    elements.append(Paragraph("Top Strengths", heading_style))
+    strengths = evaluation.get('top_strengths', [])
+    if strengths:
+        for i, s in enumerate(strengths, 1):
+            elements.append(Paragraph(f"{i}. {s}", body_style))
+    else:
+        elements.append(Paragraph("No significant strengths identified", body_style))
+    
+    elements.append(Paragraph("Development Areas", heading_style))
+    weaknesses = evaluation.get('development_areas', [])
+    if weaknesses:
+        for i, w in enumerate(weaknesses, 1):
+            elements.append(Paragraph(f"{i}. {w}", body_style))
+    else:
+        elements.append(Paragraph("No significant areas for improvement identified", body_style))
+    
+    # Notes sections
+    if evaluation.get('executive_summary'):
+        elements.append(Paragraph("Executive Summary", heading_style))
+        elements.append(Paragraph(evaluation['executive_summary'], body_style))
+    
+    if evaluation.get('strengths_notes'):
+        elements.append(Paragraph("Strengths Analysis", heading_style))
+        elements.append(Paragraph(evaluation['strengths_notes'], body_style))
+    
+    if evaluation.get('weaknesses_notes'):
+        elements.append(Paragraph("Weaknesses Analysis", heading_style))
+        elements.append(Paragraph(evaluation['weaknesses_notes'], body_style))
+    
+    if evaluation.get('tactical_analysis'):
+        elements.append(Paragraph("Tactical Analysis", heading_style))
+        elements.append(Paragraph(evaluation['tactical_analysis'], body_style))
+    
+    if evaluation.get('physical_analysis'):
+        elements.append(Paragraph("Physical Analysis", heading_style))
+        elements.append(Paragraph(evaluation['physical_analysis'], body_style))
+    
+    if evaluation.get('mental_analysis'):
+        elements.append(Paragraph("Mental Analysis", heading_style))
+        elements.append(Paragraph(evaluation['mental_analysis'], body_style))
+    
+    if evaluation.get('development_potential'):
+        elements.append(Paragraph("Development Potential", heading_style))
+        elements.append(Paragraph(evaluation['development_potential'], body_style))
+    
+    if evaluation.get('recruitment_recommendation'):
+        elements.append(Paragraph("Recruitment Recommendation", heading_style))
+        elements.append(Paragraph(evaluation['recruitment_recommendation'], body_style))
+    
+    # Footer
+    elements.append(Spacer(1, 30))
+    elements.append(Paragraph(f"Report generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}", 
+                              ParagraphStyle('Footer', fontSize=8, textColor=colors.grey)))
+    elements.append(Paragraph("© SoccerMatch - Professional Football Scouting Platform", 
+                              ParagraphStyle('Footer', fontSize=8, textColor=colors.grey)))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer.getvalue()

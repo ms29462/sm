@@ -200,7 +200,7 @@ export const api = {
   getEvaluation: (id) => axios.get(`${API}/evaluation/${id}`, { headers: getAuthHeaders() }),
   updateEvaluation: (id, data) => axios.put(`${API}/evaluation/${id}`, data, { headers: getAuthHeaders() }),
   deleteEvaluation: (id) => axios.delete(`${API}/evaluation/${id}`, { headers: getAuthHeaders() }),
-  regenerateReport: (id) => axios.post(`${API}/evaluation/${id}/regenerate-report`, {}, { headers: getAuthHeaders() }),
+  exportEvaluationPDF: (id) => axios.get(`${API}/evaluation/${id}/export-pdf`, { headers: getAuthHeaders(), responseType: 'blob' }),
   
   // Player Evaluations (for all roles)
   getPlayerEvaluations: (playerId) => axios.get(`${API}/player/${playerId}/evaluations`, { headers: getAuthHeaders() }),
