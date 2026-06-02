@@ -229,4 +229,6 @@ export const api = {
   createNewsPost: (data) => axios.post(`${API}/admin/news`, data, { headers: getAuthHeaders() }),
   deleteNewsPost: (id) => axios.delete(`${API}/admin/news/${id}`, { headers: getAuthHeaders() }),
   togglePinNews: (id) => axios.put(`${API}/admin/news/${id}/pin`, {}, { headers: getAuthHeaders() }),
+  updateNewsPost: (id, data) => axios.put(`${API}/admin/news/${id}`, data, { headers: getAuthHeaders() }),
+  uploadNewsImage: (formData) => axios.post(`${API}/admin/news/upload-image`, formData, { headers: { ...getAuthHeaders(), 'Content-Type': 'multipart/form-data' } }),
 };

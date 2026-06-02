@@ -50,6 +50,7 @@ api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
 
 # Mount static files for uploaded videos
+# Mount static files for news images
 fastapi_app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR.parent)), name="uploads")
 
 # Initialize managers
@@ -289,6 +290,16 @@ class NewsPostCreate(BaseModel):
     content: str
     target_roles: List[str] = ["player", "club", "federation", "college", "agent", "specialist"]
     pinned: bool = False
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None  # "image" or "youtube"
+
+class NewsPostUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    target_roles: Optional[List[str]] = None
+    pinned: Optional[bool] = None
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None
 
 # ============ BADGE & VERIFICATION MODELS ============
 AVAILABLE_BADGES = [
@@ -4274,18 +4285,23 @@ async def create_news_post(post: NewsPostCreate, current_user: dict = Depends(ge
         "author": "Soccer Match",
         "target_roles": post.target_roles,
         "pinned": post.pinned,
+        "media_url": post.media_url,
+        "media_type": post.media_type,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.news.insert_one(news_doc)
-    # Notify all target users
-    users = await db.users.find({"role": {"$in": post.target_roles}}, {"_id": 0}).to_list(10000)
-    for user in users:
-        await create_notification(
-            user["user_id"],
-            "news",
-            f"📰 {post.title}",
-            {"news_id": news_doc["id"]}
-        )
+    # Notify users in background (don't await to avoid timeout)
+    try:
+        users = await db.users.find({"role": {"$in": post.target_roles}}, {"_id": 0}).to_list(1000)
+        for user in users[:100]:  # Limit to 100 notifications at a time
+            await create_notification(
+                user["user_id"],
+                "news",
+                f"📰 {post.title}",
+                {"news_id": news_doc["id"]}
+            )
+    except Exception as e:
+        print(f"Notification error: {e}")
     return news_doc
 
 @api_router.get("/admin/news")
@@ -4294,6 +4310,41 @@ async def get_all_news(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Not authorized")
     posts = await db.news.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
     return posts
+
+
+@api_router.post("/admin/news/upload-image")
+async def upload_news_image(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Validate file type
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    # Save file
+    import uuid as uuid_module
+    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    filename = f"news_{uuid_module.uuid4()}.{ext}"
+    
+    news_img_dir = ROOT_DIR / "uploads" / "news"
+    news_img_dir.mkdir(parents=True, exist_ok=True)
+    
+    file_path = news_img_dir / filename
+    contents = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(contents)
+    
+    # Return URL
+    base_url = os.environ.get("BASE_URL", "http://localhost:8000")
+    return {"url": f"{base_url}/uploads/news/{filename}"}
+
+@api_router.put("/admin/news/{news_id}")
+async def update_news_post(news_id: str, update: NewsPostUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    await db.news.update_one({"id": news_id}, {"$set": update_data})
+    return {"message": "Updated"}
 
 @api_router.delete("/admin/news/{news_id}")
 async def delete_news_post(news_id: str, current_user: dict = Depends(get_current_user)):

@@ -144,6 +144,12 @@ const AdminLayout = ({ children }) => {
               Colleges
             </Button>
           </Link>
+          <Link to="/admin/news">
+            <Button variant={isActive('/admin/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Newspaper className="w-4 h-4 mr-3" />
+              News Feed
+            </Button>
+          </Link>
           <Link to="/admin/verification">
             <Button variant={isActive('/admin/verification') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <ShieldCheck className="w-4 h-4 mr-3" />
