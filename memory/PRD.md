@@ -375,16 +375,26 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
   - Winger: Traditional, Inverted, Inside Forward, Wide Playmaker, Raumdeuter
 - [x] **Recommendation Levels**:
   - Strongly Recommend, Recommend, Monitor, Further Evaluation Needed, Not Recommended
-- [x] **AI Report Generation** (Gemini via emergentintegrations):
-  - Executive Summary
-  - Strengths Analysis
-  - Weaknesses Analysis
-  - Tactical Analysis
-  - Physical Analysis
-  - Mental Analysis
-  - Development Potential
-  - Key Match Actions
-  - Recruitment Recommendation
+- [x] **Manual Report Notes** (AI Report Generation REMOVED per user request):
+  - Executive Summary (manual input)
+  - Strengths Notes (manual input)
+  - Weaknesses Notes (manual input)
+  - Development Potential (manual input)
+- [x] **Server-Side PDF Export** (ReportLab library):
+  - GET /api/evaluation/{id}/export-pdf returns valid PDF file
+  - Professional layout with SoccerMatch branding
+  - Category scores table, strengths/weaknesses, all notes sections
+  - Automatic filename generation based on player name and match date
+- [x] **100% English Interface** (for Analyst/Evaluation pages):
+  - Dashboard: EVALUATIONS, PLAYERS EVALUATED, RECOMMENDED
+  - Evaluation View: Evaluation Report, Export PDF, Category Scores, Radar Profile, Strength Zones
+  - Radar Chart labels: Technical, Tactical, Physical, Mental, Attacking, Defending
+  - Silhouette labels: Head, Torso, Arms, Legs, Low, High scale
+  - Form tabs: Match, Technical, Tactical, Physical, Mental, Profile, Videos, Summary
+- [x] **Mobile Responsive Design**:
+  - Dashboard adapts to mobile viewport (stacked cards)
+  - Evaluation view with compact scores grid
+  - Touch-friendly PDF/Profile buttons
 - [x] **Visual Player Dashboard**:
   - Hexagonal Radar Chart (Technical/Tactical/Physical/Mental/Attacking/Defending)
   - Player Silhouette with color-coded strength zones (head=mental/tactical, torso=physical, arms=technical, legs=physical)
@@ -405,7 +415,7 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
   5. Mental (6 metrics)
   6. Profile (archetypes + recommendation)
   7. Video References (with timestamps)
-  8. Summary (notes + AI report toggle)
+  8. Summary (notes - manual entry)
 - [x] **API Endpoints**:
   - GET /api/analyst/profile - Get analyst profile
   - PUT /api/analyst/profile - Update profile
@@ -418,19 +428,20 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
   - GET /api/evaluation/{id} - Get specific evaluation
   - PUT /api/evaluation/{id} - Update evaluation
   - DELETE /api/evaluation/{id} - Delete evaluation
-  - POST /api/evaluation/{id}/regenerate-report - Regenerate AI report
+  - **GET /api/evaluation/{id}/export-pdf** - Export evaluation as PDF
   - GET /api/player/{id}/evaluations - Get player's evaluations
   - GET /api/player/{id}/evolution - Get player's progression
   - GET /api/player/{id}/dashboard - Get complete scouting dashboard
   - GET /api/admin/analysts - List all analysts
   - PUT /api/admin/analysts/{id}/approve - Approve analyst
   - PUT /api/admin/analysts/{id}/verify - Verify analyst
-- [x] **Files Added**:
-  - Backend: /app/backend/player_evaluation.py
+- [x] **Files Added/Modified**:
+  - Backend: /app/backend/player_evaluation.py (includes PDF generation with ReportLab)
   - Frontend: /app/frontend/src/pages/AnalystDashboard.js
   - Frontend: /app/frontend/src/components/analyst/* (4 components)
-  - Frontend: /app/frontend/src/components/evaluation/* (4 components)
+  - Frontend: /app/frontend/src/components/evaluation/* (5 components - EvaluationForm.js, EvaluationView.js, PlayerRadarChart.js, PlayerScoutDashboard.js, PlayerSilhouette.js)
   - Frontend: /app/frontend/src/components/admin/AdminAnalysts.js
+  - Backend tests: /app/backend/tests/test_evaluation_pdf.py
 
 ## Credentials
 - Admin: admin@soccermatch.com / admin123
