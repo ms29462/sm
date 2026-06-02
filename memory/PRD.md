@@ -354,3 +354,88 @@ Build a web platform called "SoccerMatch" that connects football (soccer) player
   - "search_opportunities" - Opportunity database search
   - "error" - Error handling with French messages
 
+### Phase 13 - Professional Football Video Analysis (Completed - June 2026)
+- [x] **New User Role: Analyst**
+  - Registration with role="analyst"
+  - Admin approval workflow (same as clubs/federations)
+  - Admin verification badges
+  - Dedicated dashboard at /analyst/*
+- [x] **Player Evaluation System (26 Metrics)**:
+  - **Technical (8)**: Passing, First Touch, Ball Control, Dribbling, Finishing, Crossing, Tackling, Heading
+  - **Tactical (6)**: Positioning, Decision Making, Game Intelligence, Defensive Awareness, Movement Off Ball, Transition Play
+  - **Physical (5)**: Speed, Acceleration, Agility, Strength, Endurance
+  - **Mental (6)**: Leadership, Communication, Confidence, Discipline, Work Rate, Competitive Mentality
+  - Each metric rated 1-10 with optional comment
+- [x] **Player Archetypes**:
+  - Goalkeeper: Sweeper Keeper, Traditional, Shot Stopper, Distributor
+  - Defender: Ball Playing, Defensive, Stopper, Cover, Wide Center Back
+  - Fullback: Attacking, Inverted, Defensive, Wing Back
+  - Midfielder: Deep Lying Playmaker, Box-to-Box, Ball Winning, Advanced Playmaker, Regista, Mezzala, Carrilero
+  - Attacker: Target Forward, Poacher, Pressing Forward, False 9, Complete Forward
+  - Winger: Traditional, Inverted, Inside Forward, Wide Playmaker, Raumdeuter
+- [x] **Recommendation Levels**:
+  - Strongly Recommend, Recommend, Monitor, Further Evaluation Needed, Not Recommended
+- [x] **AI Report Generation** (Gemini via emergentintegrations):
+  - Executive Summary
+  - Strengths Analysis
+  - Weaknesses Analysis
+  - Tactical Analysis
+  - Physical Analysis
+  - Mental Analysis
+  - Development Potential
+  - Key Match Actions
+  - Recruitment Recommendation
+- [x] **Visual Player Dashboard**:
+  - Hexagonal Radar Chart (Technical/Tactical/Physical/Mental/Attacking/Defending)
+  - Player Silhouette with color-coded strength zones (head=mental/tactical, torso=physical, arms=technical, legs=physical)
+  - Top 5 Strengths badges
+  - Development Areas badges
+- [x] **Historical Evolution Tracking**:
+  - Multiple evaluations per player over time
+  - Line chart showing score progression
+  - Change indicators (+/- values)
+- [x] **Video References**:
+  - Full match, Highlights, External links
+  - Timestamps with action descriptions
+- [x] **8-Step Evaluation Form**:
+  1. Match Info (date, description, position, minutes)
+  2. Technical (8 metrics)
+  3. Tactical (6 metrics)
+  4. Physical (5 metrics)
+  5. Mental (6 metrics)
+  6. Profile (archetypes + recommendation)
+  7. Video References (with timestamps)
+  8. Summary (notes + AI report toggle)
+- [x] **API Endpoints**:
+  - GET /api/analyst/profile - Get analyst profile
+  - PUT /api/analyst/profile - Update profile
+  - GET /api/analyst/stats - Get evaluation statistics
+  - GET /api/analyst/evaluations - List analyst's evaluations
+  - GET /api/evaluation/archetypes - Get all archetypes
+  - GET /api/evaluation/metrics - Get all metrics
+  - GET /api/evaluation/players - List players for evaluation
+  - POST /api/evaluation/create - Create evaluation
+  - GET /api/evaluation/{id} - Get specific evaluation
+  - PUT /api/evaluation/{id} - Update evaluation
+  - DELETE /api/evaluation/{id} - Delete evaluation
+  - POST /api/evaluation/{id}/regenerate-report - Regenerate AI report
+  - GET /api/player/{id}/evaluations - Get player's evaluations
+  - GET /api/player/{id}/evolution - Get player's progression
+  - GET /api/player/{id}/dashboard - Get complete scouting dashboard
+  - GET /api/admin/analysts - List all analysts
+  - PUT /api/admin/analysts/{id}/approve - Approve analyst
+  - PUT /api/admin/analysts/{id}/verify - Verify analyst
+- [x] **Files Added**:
+  - Backend: /app/backend/player_evaluation.py
+  - Frontend: /app/frontend/src/pages/AnalystDashboard.js
+  - Frontend: /app/frontend/src/components/analyst/* (4 components)
+  - Frontend: /app/frontend/src/components/evaluation/* (4 components)
+  - Frontend: /app/frontend/src/components/admin/AdminAnalysts.js
+
+## Credentials
+- Admin: admin@soccermatch.com / admin123
+- Test Analyst: test.analyst@soccermatch.com / test123 (approved & verified)
+- Demo Player: demo.player@soccermatch.com / demo123
+- Test Club: test.club@soccermatch.com / test123
+
+
