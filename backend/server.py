@@ -273,6 +273,23 @@ async def create_notification(user_id: str, type: str, message: str, data: dict 
     })
 
 
+
+# ============ NEWS FEED MODELS ============
+class NewsPost(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    content: str
+    author: str = "Soccer Match"
+    target_roles: List[str] = ["player", "club", "federation", "college", "agent", "specialist"]
+    pinned: bool = False
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class NewsPostCreate(BaseModel):
+    title: str
+    content: str
+    target_roles: List[str] = ["player", "club", "federation", "college", "agent", "specialist"]
+    pinned: bool = False
+
 # ============ BADGE & VERIFICATION MODELS ============
 AVAILABLE_BADGES = [
     "verified_profile",
@@ -4242,6 +4259,67 @@ async def get_my_verification(current_user: dict = Depends(get_current_user)):
     return verification
 
 
+
+
+# ============ NEWS FEED ENDPOINTS ============
+
+@api_router.post("/admin/news")
+async def create_news_post(post: NewsPostCreate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    news_doc = {
+        "id": str(uuid.uuid4()),
+        "title": post.title,
+        "content": post.content,
+        "author": "Soccer Match",
+        "target_roles": post.target_roles,
+        "pinned": post.pinned,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.news.insert_one(news_doc)
+    # Notify all target users
+    users = await db.users.find({"role": {"$in": post.target_roles}}, {"_id": 0}).to_list(10000)
+    for user in users:
+        await create_notification(
+            user["user_id"],
+            "news",
+            f"📰 {post.title}",
+            {"news_id": news_doc["id"]}
+        )
+    return news_doc
+
+@api_router.get("/admin/news")
+async def get_all_news(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    posts = await db.news.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return posts
+
+@api_router.delete("/admin/news/{news_id}")
+async def delete_news_post(news_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    await db.news.delete_one({"id": news_id})
+    return {"message": "Deleted"}
+
+@api_router.put("/admin/news/{news_id}/pin")
+async def toggle_pin_news(news_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    post = await db.news.find_one({"id": news_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Not found")
+    await db.news.update_one({"id": news_id}, {"$set": {"pinned": not post.get("pinned", False)}})
+    return {"message": "Updated"}
+
+@api_router.get("/news")
+async def get_news_feed(current_user: dict = Depends(get_current_user)):
+    role = current_user["role"]
+    posts = await db.news.find(
+        {"target_roles": role},
+        {"_id": 0}
+    ).sort([("pinned", -1), ("created_at", -1)]).to_list(50)
+    return posts
 
 fastapi_app.include_router(api_router)
 

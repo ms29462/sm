@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Briefcase, Users, Heart, LogOut, Home, UserCircle, FileText } from 'lucide-react';
+import { Trophy, Briefcase, Users, Heart, LogOut, Home, UserCircle, FileText , Newspaper } from 'lucide-react';
 
 const AgentLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -49,6 +49,12 @@ const AgentLayout = ({ children }) => {
         </div>
 
         <nav className="p-4 space-y-2">
+          <Link to="/agent/news">
+            <Button variant={isActive('/agent/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Newspaper className="w-4 h-4 mr-3" />
+              News Feed
+            </Button>
+          </Link>
           <Link to="/agent/dashboard">
             <Button
               data-testid="nav-dashboard-btn"

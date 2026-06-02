@@ -40,6 +40,12 @@ const CollegeLayout = ({ children }) => {
           <NotificationBell />
         </div>
         <nav className="p-4 space-y-2">
+          <Link to="/college/news">
+            <Button variant={isActive('/college/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Newspaper className="w-4 h-4 mr-3" />
+              News Feed
+            </Button>
+          </Link>
           <Link to="/college/dashboard">
             <Button variant={isActive("/college/dashboard") ? "secondary" : "ghost"} className="w-full justify-start">
               <Home className="w-4 h-4 mr-3" />Dashboard

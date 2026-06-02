@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import NewsFeed from '@/components/shared/NewsFeed';
 import { useAuth } from "@/context/AuthContext";
 import ClubLayout from "@/components/club/ClubLayout";
 import ClubHome from "@/components/club/ClubHome";
@@ -37,7 +38,9 @@ const ClubDashboard = () => {
         <Route path="trials" element={<TrialInvitations />} />
         <Route path="scouting/:playerId" element={<TrackingOverview />} />
         <Route path="scouting/:playerId" element={<TrackingOverview />} />
-        <Route path="*" element={<ClubHome />} />
+        <Route path="*" element={<ClubHome />
+        } />
+        <Route path="news" element={<NewsFeed />} />
       </Routes>
     </ClubLayout>
   );

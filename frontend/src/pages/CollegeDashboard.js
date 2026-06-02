@@ -1,4 +1,5 @@
 ﻿import { Routes, Route, Navigate } from "react-router-dom";
+import NewsFeed from '@/components/shared/NewsFeed';
 import CollegeLayout from "@/components/college/CollegeLayout";
 import CollegeHome from "@/components/college/CollegeHome";
 import CollegeProfile from "@/components/college/CollegeProfile";
@@ -14,6 +15,7 @@ const CollegeDashboard = () => {
         <Route path="profile" element={<CollegeProfile />} />
         <Route path="players" element={<CollegePlayers />} />
         <Route path="player/:playerId" element={<PlayerDetailView />} />
+        <Route path="news" element={<NewsFeed />} />
       </Routes>
     </CollegeLayout>
   );

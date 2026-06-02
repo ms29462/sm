@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Flag, Users, Heart, Briefcase, LogOut, Home, UserCircle, FolderOpen, Sparkles } from 'lucide-react';
+import { Trophy, Flag, Users, Heart, Briefcase, LogOut, Home, UserCircle, FolderOpen, Sparkles , Newspaper } from 'lucide-react';
 
 const FederationLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -49,6 +49,12 @@ const FederationLayout = ({ children }) => {
         </div>
 
         <nav className="p-4 space-y-2">
+          <Link to="/federation/news">
+            <Button variant={isActive('/federation/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Newspaper className="w-4 h-4 mr-3" />
+              News Feed
+            </Button>
+          </Link>
           <Link to="/federation/dashboard">
             <Button
               data-testid="nav-dashboard-btn"

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Activity, Users, Heart, LogOut, Home, UserCircle } from 'lucide-react';
+import { Trophy, Activity, Users, Heart, LogOut, Home, UserCircle , Newspaper } from 'lucide-react';
 
 const SpecialistLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -49,6 +49,12 @@ const SpecialistLayout = ({ children }) => {
         </div>
 
         <nav className="p-4 space-y-2">
+          <Link to="/specialist/news">
+            <Button variant={isActive('/specialist/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Newspaper className="w-4 h-4 mr-3" />
+              News Feed
+            </Button>
+          </Link>
           <Link to="/specialist/dashboard">
             <Button
               data-testid="nav-dashboard-btn"

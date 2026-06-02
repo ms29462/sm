@@ -6,6 +6,7 @@ import AdminClubs from '@/components/admin/AdminClubs';
 import AdminFederations from '@/components/admin/AdminFederations';
 import AdminColleges from '@/components/admin/AdminColleges';
 import AdminVerification from '@/components/admin/AdminVerification';
+import AdminNews from '@/components/admin/AdminNews';
 import AdminAgents from '@/components/admin/AdminAgents';
 import AdminSpecialists from '@/components/admin/AdminSpecialists';
 import AdminOpportunities from '@/components/admin/AdminOpportunities';
@@ -27,6 +28,7 @@ const AdminDashboard = () => {
         <Route path="agents" element={<AdminAgents />} />
                 <Route path="colleges" element={<AdminColleges />} />
                 <Route path="verification" element={<AdminVerification />} />
+                <Route path="news" element={<AdminNews />} />
         <Route path="specialists" element={<AdminSpecialists />} />
         <Route path="opportunities" element={<AdminOpportunities />} />
         <Route path="masterclass" element={<AdminMasterclass />} />

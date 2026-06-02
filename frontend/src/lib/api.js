@@ -222,4 +222,11 @@ export const api = {
   addAdminNote: (userId, data) => axios.post(`${API}/admin/players/${userId}/notes`, data, { headers: getAuthHeaders() }),
   getMyVerification: () => axios.get(`${API}/player/verification`, { headers: getAuthHeaders() }),
   getPlayerVerification: (playerId) => axios.get(`${API}/players/${playerId}/verification`, { headers: getAuthHeaders() }),
+
+  // News Feed
+  getNewsFeed: () => axios.get(`${API}/news`, { headers: getAuthHeaders() }),
+  getAdminNews: () => axios.get(`${API}/admin/news`, { headers: getAuthHeaders() }),
+  createNewsPost: (data) => axios.post(`${API}/admin/news`, data, { headers: getAuthHeaders() }),
+  deleteNewsPost: (id) => axios.delete(`${API}/admin/news/${id}`, { headers: getAuthHeaders() }),
+  togglePinNews: (id) => axios.put(`${API}/admin/news/${id}/pin`, {}, { headers: getAuthHeaders() }),
 };

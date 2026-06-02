@@ -1,4 +1,5 @@
 ﻿import { Routes, Route } from 'react-router-dom';
+import NewsFeed from '@/components/shared/NewsFeed';
 import FederationLayout from '@/components/federation/FederationLayout';
 import FederationHome from '@/components/federation/FederationHome';
 import FederationProfile from '@/components/federation/FederationProfile';
@@ -25,6 +26,7 @@ const FederationDashboard = () => {
         <Route path="scouting-old" element={<FederationScouting />} />
         <Route path="teams" element={<FederationTeams />} />
         <Route path="*" element={<FederationHome />} />
+        <Route path="news" element={<NewsFeed />} />
       </Routes>
     </FederationLayout>
   );

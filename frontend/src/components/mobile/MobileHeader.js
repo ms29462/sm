@@ -32,12 +32,14 @@ const NAV_LINKS = {
     { to: '/college/profile', label: 'My Profile' },
     { to: '/college/players', label: 'Browse Players' },
     { to: '/college/opportunities', label: 'Opportunities' },
+    { to: '/college/news', label: 'News Feed' },
     { to: '/college/pipeline', label: 'Pipeline' },
     { to: '/college/trials', label: 'Trial Invitations' },
     { to: '/college/scouting', label: 'Scouting Hub' },
     { to: '/college/chats', label: 'My Chats' },
   ],
   federation: [
+    { to: '/federation/news', label: 'News Feed' },
     { to: '/federation/dashboard', label: 'Dashboard' },
     { to: '/federation/profile', label: 'My Profile' },
     { to: '/federation/players', label: 'Players' },
@@ -48,6 +50,7 @@ const NAV_LINKS = {
     { to: '/federation/chats', label: 'My Chats' },
   ],
   agent: [
+    { to: '/agent/news', label: 'News Feed' },
     { to: '/agent/dashboard', label: 'Dashboard' },
     { to: '/agent/profile', label: 'My Profile' },
     { to: '/agent/players', label: 'Players' },
@@ -55,6 +58,7 @@ const NAV_LINKS = {
     { to: '/agent/opportunities', label: 'Opportunities' },
   ],
   specialist: [
+    { to: '/specialist/news', label: 'News Feed' },
     { to: '/specialist/dashboard', label: 'Dashboard' },
     { to: '/specialist/profile', label: 'My Profile' },
     { to: '/specialist/players', label: 'Players' },
@@ -62,6 +66,7 @@ const NAV_LINKS = {
   ],
   admin: [
     { to: '/admin/dashboard', label: 'Dashboard' },
+    { to: '/admin/news', label: 'News Feed' },
     { to: '/admin/players', label: 'Players' },
     { to: '/admin/clubs', label: 'Clubs' },
     { to: '/admin/federations', label: 'Federations' },

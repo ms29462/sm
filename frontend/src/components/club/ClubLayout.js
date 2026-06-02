@@ -8,7 +8,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video, Sparkles , Target , Kanban, CalendarCheck } from 'lucide-react';
+import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video, Sparkles , Target , Kanban, CalendarCheck , Newspaper } from 'lucide-react';
 
 const ClubLayout = ({ children, isCollege = false }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -49,6 +49,12 @@ const ClubLayout = ({ children, isCollege = false }) => {
         </div>
 
         <nav className="p-4 space-y-2">
+          <Link to={isCollege ? "/college/news" : "/club/news"}>
+            <Button variant={isActive("/club/news") || isActive("/college/news") ? "secondary" : "ghost"} className="w-full justify-start">
+              <Newspaper className="w-4 h-4 mr-3" />
+              News Feed
+            </Button>
+          </Link>
           <Link to={isCollege ? "/college/dashboard" : "/club/dashboard"}>
             <Button
               data-testid="nav-dashboard-btn"

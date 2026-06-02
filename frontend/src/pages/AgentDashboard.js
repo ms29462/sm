@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import NewsFeed from '@/components/shared/NewsFeed';
 import AgentLayout from '@/components/agent/AgentLayout';
 import AgentHome from '@/components/agent/AgentHome';
 import AgentProfile from '@/components/agent/AgentProfile';
@@ -18,6 +19,7 @@ const AgentDashboard = () => {
         <Route path="watchlist" element={<AgentWatchlist />} />
         <Route path="opportunities" element={<AgentOpportunities />} />
         <Route path="*" element={<Navigate to="/agent/dashboard" replace />} />
+        <Route path="news" element={<NewsFeed />} />
       </Routes>
     </AgentLayout>
   );
