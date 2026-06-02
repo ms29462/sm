@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Shield, Users, Building, Flag, Briefcase, LogOut, MessageCircle, Video, MessageSquare, Database, GraduationCap, Activity } from 'lucide-react';
+import { Trophy, Shield, Users, Building, Flag, Briefcase, LogOut, MessageCircle, Video, MessageSquare, Database, GraduationCap, Activity, FileText } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -96,6 +96,16 @@ const AdminLayout = ({ children }) => {
             >
               <Activity className="w-4 h-4 mr-3" />
               Specialists
+            </Button>
+          </Link>
+          <Link to="/admin/analysts">
+            <Button
+              data-testid="nav-analysts-btn"
+              variant={isActive('/admin/analysts') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <FileText className="w-4 h-4 mr-3" />
+              Analysts
             </Button>
           </Link>
           <Link to="/admin/opportunities">

@@ -41,6 +41,8 @@ const Login = ({ admin = false }) => {
         navigate('/agent/dashboard');
       } else if (role === 'specialist') {
         navigate('/specialist/dashboard');
+      } else if (role === 'analyst') {
+        navigate('/analyst/dashboard');
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Login failed');

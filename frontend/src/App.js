@@ -9,6 +9,7 @@ import ClubDashboard from '@/pages/ClubDashboard';
 import FederationDashboard from '@/pages/FederationDashboard';
 import AgentDashboard from '@/pages/AgentDashboard';
 import SpecialistDashboard from '@/pages/SpecialistDashboard';
+import AnalystDashboard from '@/pages/AnalystDashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
 import ChatRoom from '@/components/chat/ChatRoom';
 import VideoCall from '@/components/video/VideoCall';
@@ -77,6 +78,14 @@ function App() {
                   element={
                     <ProtectedRoute role="specialist">
                       <SpecialistDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analyst/*"
+                  element={
+                    <ProtectedRoute role="analyst">
+                      <AnalystDashboard />
                     </ProtectedRoute>
                   }
                 />

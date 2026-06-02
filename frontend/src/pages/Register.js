@@ -39,6 +39,8 @@ const Register = () => {
         navigate('/agent/dashboard');
       } else if (userRole === 'specialist') {
         navigate('/specialist/dashboard');
+      } else if (userRole === 'analyst') {
+        navigate('/analyst/dashboard');
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registration failed');
@@ -83,12 +85,16 @@ const Register = () => {
                   <RadioGroupItem value="specialist" id="specialist" data-testid="role-specialist-radio" />
                   <Label htmlFor="specialist" className="cursor-pointer">Specialist</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="analyst" id="analyst" data-testid="role-analyst-radio" />
+                  <Label htmlFor="analyst" className="cursor-pointer">Analyst</Label>
+                </div>
               </RadioGroup>
             </div>
 
             <div>
               <Label htmlFor="name" className="text-sm font-medium uppercase tracking-wide">
-                {role === 'player' ? 'Full Name' : role === 'club' ? 'Club Name' : role === 'federation' ? 'Federation Name' : role === 'agent' ? 'Agent/Agency Name' : 'Full Name'}
+                {role === 'player' ? 'Full Name' : role === 'club' ? 'Club Name' : role === 'federation' ? 'Federation Name' : role === 'agent' ? 'Agent/Agency Name' : role === 'analyst' ? 'Analyst Name' : 'Full Name'}
               </Label>
               <Input
                 id="name"
