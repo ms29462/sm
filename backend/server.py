@@ -3071,9 +3071,17 @@ async def create_chat_room_admin(
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
     
-    # Get player and club info
+    # Get player and org info (club, specialist, agent, federation, college, analyst)
     player = await db.players.find_one({"user_id": player_id}, {"_id": 0})
-    club = await db.clubs.find_one({"user_id": club_id}, {"_id": 0})
+    club = (
+        await db.clubs.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.specialists.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.agents.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.federations.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.colleges.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.analysts.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.users.find_one({"user_id": club_id}, {"_id": 0})
+    )
     
     if not player or not club:
         raise HTTPException(status_code=404, detail="Player or club not found")
@@ -3150,9 +3158,17 @@ async def create_video_session_admin(
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
     
-    # Get player and club info
+    # Get player and org info (club, specialist, agent, federation, college, analyst)
     player = await db.players.find_one({"user_id": player_id}, {"_id": 0})
-    club = await db.clubs.find_one({"user_id": club_id}, {"_id": 0})
+    club = (
+        await db.clubs.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.specialists.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.agents.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.federations.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.colleges.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.analysts.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.users.find_one({"user_id": club_id}, {"_id": 0})
+    )
     
     if not player or not club:
         raise HTTPException(status_code=404, detail="Player or club not found")
