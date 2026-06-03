@@ -20,6 +20,7 @@ import TrackingOverview from "@/components/club/TrackingOverview";
 const ClubDashboard = () => {
   const { user } = useAuth();
   const isCollege = user?.role === "college";
+  const isAnalyst = user?.role === "analyst";
 
   return (
     <ClubLayout isCollege={isCollege}>

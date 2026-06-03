@@ -20,6 +20,12 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
+from player_evaluation import (
+    PLAYER_ARCHETYPES, TECHNICAL_METRICS, TACTICAL_METRICS, PHYSICAL_METRICS, MENTAL_METRICS,
+    RECOMMENDATION_LEVELS, PlayerEvaluationCreate, PlayerEvaluation, AnalystProfile, AnalystUpdate,
+    MetricScore, TechnicalEvaluation, TacticalEvaluation, PhysicalEvaluation, MentalEvaluation,
+    VideoReference, process_evaluation_data, get_player_evolution, generate_evaluation_pdf
+)
 from chat_video_manager import ChatRoomManager, VideoSessionManager, ChatMessage
 from chat_requests import ChatRequest, ChatRequestCreate, ChatRequestResponse
 from player_matching import (
@@ -1795,7 +1801,7 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
 # ============ CLUB ENDPOINTS ============
 @api_router.get("/club/profile", response_model=ClubProfile)
 async def get_club_profile(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
@@ -1805,7 +1811,7 @@ async def get_club_profile(current_user: dict = Depends(get_current_user)):
 
 @api_router.put("/club/profile", response_model=ClubProfile)
 async def update_club_profile(update: ClubUpdate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     update_data = {k: v for k, v in update.model_dump().items() if v is not None}
@@ -1817,7 +1823,7 @@ async def update_club_profile(update: ClubUpdate, current_user: dict = Depends(g
 
 @api_router.post("/opportunities", response_model=Opportunity)
 async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
@@ -1835,7 +1841,7 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
 
 @api_router.get("/club/opportunities", response_model=List[Opportunity])
 async def get_club_opportunities(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     await auto_close_expired_opportunities(db)
     opportunities = await db.opportunities.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
@@ -1886,7 +1892,7 @@ async def get_opportunity_changes(current_user: dict = Depends(get_current_user)
 
 @api_router.delete("/opportunities/{opportunity_id}")
 async def delete_opportunity(opportunity_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     result = await db.opportunities.delete_one({"id": opportunity_id, "club_id": current_user['user_id']})
@@ -1896,7 +1902,7 @@ async def delete_opportunity(opportunity_id: str, current_user: dict = Depends(g
 
 @api_router.get("/club/applications", response_model=List[dict])
 async def get_club_applications(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     applications = await db.applications.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
@@ -1921,7 +1927,7 @@ async def update_application_status(
     status_update: ApplicationStatusUpdate,
     current_user: dict = Depends(get_current_user)
 ):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     result = await db.applications.update_one(
@@ -1982,7 +1988,7 @@ async def get_players(
     quality_level: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     query = {"approved": True}
@@ -2020,7 +2026,7 @@ async def get_players(
 
 @api_router.get("/players/recommended-list", response_model=List[PlayerProfile])
 async def get_recommended_players(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
@@ -2046,7 +2052,7 @@ async def get_recommended_players(current_user: dict = Depends(get_current_user)
 
 @api_router.post("/favorites", response_model=Favorite)
 async def add_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     existing = await db.favorites.find_one({
@@ -2067,7 +2073,7 @@ async def add_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_cur
 
 @api_router.get("/favorites", response_model=List[PlayerProfile])
 async def get_favorites(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     favorites = await db.favorites.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
@@ -2080,7 +2086,7 @@ async def get_favorites(current_user: dict = Depends(get_current_user)):
 
 @api_router.delete("/favorites/{player_id}")
 async def remove_favorite(player_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college']:
+    if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     result = await db.favorites.delete_one({"club_id": current_user['user_id'], "player_id": player_id})
@@ -4371,6 +4377,563 @@ async def get_news_feed(current_user: dict = Depends(get_current_user)):
         {"_id": 0}
     ).sort([("pinned", -1), ("created_at", -1)]).to_list(50)
     return posts
+
+
+# ============ ANALYST ENDPOINTS ============
+@api_router.get("/analyst/profile")
+async def get_analyst_profile(current_user: dict = Depends(get_current_user)):
+    """Get current analyst's profile"""
+    if current_user["role"] != "analyst":
+        raise HTTPException(status_code=403, detail="Analyst access required")
+    
+    analyst = await db.analysts.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not analyst:
+        raise HTTPException(status_code=404, detail="Analyst profile not found")
+    return analyst
+
+
+@api_router.put("/analyst/profile")
+async def update_analyst_profile(
+    update: AnalystUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update analyst profile"""
+    if current_user["role"] != "analyst":
+        raise HTTPException(status_code=403, detail="Analyst access required")
+    
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if update_data:
+        await db.analysts.update_one(
+            {"user_id": current_user["user_id"]},
+            {"$set": update_data}
+        )
+    
+    analyst = await db.analysts.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    return analyst
+
+
+@api_router.get("/analyst/stats")
+async def get_analyst_stats(current_user: dict = Depends(get_current_user)):
+    """Get analyst's evaluation statistics"""
+    if current_user["role"] != "analyst":
+        raise HTTPException(status_code=403, detail="Analyst access required")
+    
+    evaluations = await db.player_evaluations.find(
+        {"analyst_id": current_user["user_id"]}
+    ).to_list(1000)
+    
+    total_evaluations = len(evaluations)
+    players_evaluated = len(set(e.get("player_id") for e in evaluations))
+    
+    # Recommendations breakdown
+    recommendations = {}
+    for e in evaluations:
+        rec = e.get("recommendation", "unknown")
+        recommendations[rec] = recommendations.get(rec, 0) + 1
+    
+    return {
+        "total_evaluations": total_evaluations,
+        "players_evaluated": players_evaluated,
+        "recommendations_breakdown": recommendations
+    }
+
+
+# --- Player Evaluation Endpoints ---
+
+@api_router.get("/evaluation/archetypes")
+async def get_archetypes():
+    """Get all available player archetypes"""
+    return PLAYER_ARCHETYPES
+
+
+@api_router.get("/evaluation/metrics")
+async def get_metrics():
+    """Get all evaluation metrics"""
+    return {
+        "technical": TECHNICAL_METRICS,
+        "tactical": TACTICAL_METRICS,
+        "physical": PHYSICAL_METRICS,
+        "mental": MENTAL_METRICS,
+        "recommendation_levels": RECOMMENDATION_LEVELS
+    }
+
+
+@api_router.get("/evaluation/players")
+async def get_players_for_evaluation(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get list of players available for evaluation"""
+    players = await db.players.find(
+        {},
+        {"_id": 0, "user_id": 1, "first_name": 1, "last_name": 1, "name": 1, 
+         "position": 1, "nationality": 1, "nationality_2": 1, "date_of_birth": 1,
+         "current_club": 1, "profile_picture": 1}
+    ).to_list(500)
+    
+    # Enrich with evaluation count
+    for player in players:
+        eval_count = await db.player_evaluations.count_documents({"player_id": player.get("user_id")})
+        player["evaluations_count"] = eval_count
+    
+    return players
+
+
+@api_router.post("/evaluation/create")
+async def create_evaluation(
+    evaluation_data: PlayerEvaluationCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new player evaluation"""
+    if current_user["role"] != "analyst":
+        raise HTTPException(status_code=403, detail="Only analysts can create evaluations")
+    
+    # Get analyst name
+    analyst = await db.analysts.find_one({"user_id": current_user["user_id"]})
+    if not analyst:
+        raise HTTPException(status_code=404, detail="Analyst profile not found")
+    
+    if not analyst.get("approved", False):
+        raise HTTPException(status_code=403, detail="Analyst account not yet approved")
+    
+    # Check if player exists
+    player = await db.players.find_one({"user_id": evaluation_data.player_id})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    # Process evaluation data
+    evaluation = process_evaluation_data(
+        evaluation_data, 
+        current_user["user_id"], 
+        analyst.get("name", "Unknown Analyst")
+    )
+    
+    # Store in database
+    eval_doc = evaluation.model_dump()
+    await db.player_evaluations.insert_one(eval_doc)
+    
+    # Update analyst evaluation count
+    await db.analysts.update_one(
+        {"user_id": current_user["user_id"]},
+        {"$inc": {"evaluations_count": 1}}
+    )
+    
+    # Remove MongoDB _id
+    eval_doc.pop("_id", None)
+    return eval_doc
+
+
+@api_router.get("/evaluation/{evaluation_id}")
+async def get_evaluation(
+    evaluation_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get a specific evaluation by ID"""
+    evaluation = await db.player_evaluations.find_one({"id": evaluation_id}, {"_id": 0})
+    if not evaluation:
+        raise HTTPException(status_code=404, detail="Evaluation not found")
+    return evaluation
+
+
+@api_router.put("/evaluation/{evaluation_id}")
+async def update_evaluation(
+    evaluation_id: str,
+    update_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update an existing evaluation (only by the creator)"""
+    evaluation = await db.player_evaluations.find_one({"id": evaluation_id})
+    if not evaluation:
+        raise HTTPException(status_code=404, detail="Evaluation not found")
+    
+    if evaluation.get("analyst_id") != current_user["user_id"] and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only the creator can modify this evaluation")
+    
+    # Update fields
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.player_evaluations.update_one(
+        {"id": evaluation_id},
+        {"$set": update_data}
+    )
+    
+    updated = await db.player_evaluations.find_one({"id": evaluation_id}, {"_id": 0})
+    return updated
+
+
+@api_router.delete("/evaluation/{evaluation_id}")
+async def delete_evaluation(
+    evaluation_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete an evaluation"""
+    evaluation = await db.player_evaluations.find_one({"id": evaluation_id})
+    if not evaluation:
+        raise HTTPException(status_code=404, detail="Evaluation not found")
+    
+    if evaluation.get("analyst_id") != current_user["user_id"] and current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to delete this evaluation")
+    
+    await db.player_evaluations.delete_one({"id": evaluation_id})
+    
+    # Decrement analyst count
+    await db.analysts.update_one(
+        {"user_id": evaluation.get("analyst_id")},
+        {"$inc": {"evaluations_count": -1}}
+    )
+    
+    return {"success": True, "message": "Evaluation deleted"}
+
+
+@api_router.get("/evaluation/{evaluation_id}/export-pdf")
+async def export_evaluation_pdf(
+    evaluation_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export evaluation as PDF"""
+    from fastapi.responses import Response
+    
+    evaluation = await db.player_evaluations.find_one({"id": evaluation_id})
+    if not evaluation:
+        raise HTTPException(status_code=404, detail="Evaluation not found")
+    
+    # Get player info
+    player = await db.players.find_one({"user_id": evaluation.get("player_id")})
+    if not player:
+        player = {"name": "Unknown Player"}
+    
+    try:
+        pdf_bytes = generate_evaluation_pdf(evaluation, player)
+        
+        player_name = f"{player.get('first_name', '')}_{player.get('last_name', '')}".strip() or player.get('name', 'player')
+        player_name = player_name.replace(' ', '_')
+        filename = f"evaluation_{player_name}_{evaluation.get('match_date', 'report')}.pdf"
+        
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except Exception as e:
+        logger.error(f"PDF generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
+
+
+# --- Player Evaluations Access (for other roles) ---
+
+@api_router.get("/player/{player_id}/evaluations")
+async def get_player_evaluations(
+    player_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all evaluations for a specific player"""
+    evaluations = await db.player_evaluations.find(
+        {"player_id": player_id},
+        {"_id": 0}
+    ).sort("match_date", -1).to_list(100)
+    
+    return evaluations
+
+
+@api_router.get("/player/{player_id}/evolution")
+async def get_player_evolution_data(
+    player_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get player's evolution/progression over time"""
+    evaluations = await db.player_evaluations.find(
+        {"player_id": player_id},
+        {"_id": 0}
+    ).to_list(100)
+    
+    evolution = get_player_evolution(evaluations)
+    return evolution
+
+
+@api_router.get("/player/{player_id}/dashboard")
+async def get_player_dashboard(
+    player_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get complete player dashboard data"""
+    # Get player info
+    player = await db.players.find_one({"user_id": player_id}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    # Get all evaluations
+    evaluations = await db.player_evaluations.find(
+        {"player_id": player_id},
+        {"_id": 0}
+    ).sort("match_date", -1).to_list(100)
+    
+    # Get most recent evaluation
+    latest_evaluation = evaluations[0] if evaluations else None
+    
+    # Get evolution data
+    evolution = get_player_evolution(evaluations)
+    
+    # Calculate aggregate scores if multiple evaluations
+    if len(evaluations) > 1:
+        avg_scores = {
+            "technical": round(sum(e.get("technical_score", 0) for e in evaluations) / len(evaluations), 1),
+            "tactical": round(sum(e.get("tactical_score", 0) for e in evaluations) / len(evaluations), 1),
+            "physical": round(sum(e.get("physical_score", 0) for e in evaluations) / len(evaluations), 1),
+            "mental": round(sum(e.get("mental_score", 0) for e in evaluations) / len(evaluations), 1),
+            "attacking": round(sum(e.get("attacking_score", 0) for e in evaluations) / len(evaluations), 1),
+            "defending": round(sum(e.get("defending_score", 0) for e in evaluations) / len(evaluations), 1),
+        }
+    elif latest_evaluation:
+        avg_scores = {
+            "technical": latest_evaluation.get("technical_score", 0),
+            "tactical": latest_evaluation.get("tactical_score", 0),
+            "physical": latest_evaluation.get("physical_score", 0),
+            "mental": latest_evaluation.get("mental_score", 0),
+            "attacking": latest_evaluation.get("attacking_score", 0),
+            "defending": latest_evaluation.get("defending_score", 0),
+        }
+    else:
+        avg_scores = None
+    
+    # Aggregate archetypes
+    all_archetypes = []
+    for e in evaluations:
+        all_archetypes.extend(e.get("archetypes", []))
+    unique_archetypes = list(set(all_archetypes))
+    
+    # Aggregate strengths/weaknesses
+    all_strengths = []
+    all_weaknesses = []
+    for e in evaluations:
+        all_strengths.extend(e.get("top_strengths", []))
+        all_weaknesses.extend(e.get("development_areas", []))
+    
+    # Count frequencies
+    from collections import Counter
+    top_strengths = [s for s, _ in Counter(all_strengths).most_common(5)]
+    top_weaknesses = [w for w, _ in Counter(all_weaknesses).most_common(3)]
+    
+    return {
+        "player": player,
+        "evaluations_count": len(evaluations),
+        "latest_evaluation": latest_evaluation,
+        "average_scores": avg_scores,
+        "archetypes": unique_archetypes,
+        "top_strengths": top_strengths,
+        "development_areas": top_weaknesses,
+        "evolution": evolution,
+        "all_evaluations": evaluations
+    }
+
+
+# --- Analyst's Evaluations ---
+
+@api_router.get("/analyst/evaluations")
+async def get_analyst_evaluations(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all evaluations created by the current analyst"""
+    if current_user["role"] != "analyst":
+        raise HTTPException(status_code=403, detail="Analyst access required")
+    
+    evaluations = await db.player_evaluations.find(
+        {"analyst_id": current_user["user_id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Enrich with player names
+    for eval in evaluations:
+        player = await db.players.find_one({"user_id": eval.get("player_id")}, {"_id": 0, "first_name": 1, "last_name": 1, "name": 1})
+        if player:
+            eval["player_name"] = f"{player.get('first_name', '')} {player.get('last_name', '')}".strip() or player.get('name', 'Unknown')
+        else:
+            eval["player_name"] = "Unknown Player"
+    
+    return evaluations
+
+
+# --- Admin Analyst Management ---
+
+@api_router.get("/admin/analysts")
+async def get_all_analysts(current_user: dict = Depends(get_current_user)):
+    """Get all analysts (admin only)"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    analysts = await db.analysts.find({}, {"_id": 0}).to_list(1000)
+    return analysts
+
+
+@api_router.put("/admin/analysts/{user_id}/approve")
+async def approve_analyst(
+    user_id: str,
+    approved: bool,
+    current_user: dict = Depends(get_current_user)
+):
+    """Approve or reject an analyst"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    await db.analysts.update_one(
+        {"user_id": user_id},
+        {"$set": {"approved": approved}}
+    )
+    return {"success": True, "approved": approved}
+
+
+@api_router.put("/admin/analysts/{user_id}/verify")
+async def verify_analyst(
+    user_id: str,
+    verified: bool,
+    current_user: dict = Depends(get_current_user)
+):
+    """Verify an analyst's credentials"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    await db.analysts.update_one(
+        {"user_id": user_id},
+        {"$set": {"verified": verified}}
+    )
+    return {"success": True, "verified": verified}
+
+
+# ============ CHATBOT ENDPOINTS ============
+
+class ChatbotQuery(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+
+class ChatbotResponse(BaseModel):
+    action: str
+    response: Optional[str] = None
+    results: Optional[List[dict]] = None
+    criteria: Optional[dict] = None
+
+# Store chatbot sessions per user
+chatbot_sessions: Dict[str, SoccerMatchChatbot] = {}
+
+@api_router.post("/chatbot/query", response_model=ChatbotResponse)
+async def chatbot_query(
+    query: ChatbotQuery,
+    current_user: dict = Depends(get_current_user)
+):
+    """Process a natural language query through the AI chatbot"""
+    user_id = current_user["user_id"]
+    user_role = current_user["role"]
+    
+    # Get or create chatbot session for this user
+    session_key = query.session_id or user_id
+    if session_key not in chatbot_sessions:
+        chatbot_sessions[session_key] = SoccerMatchChatbot(session_id=session_key)
+    
+    chatbot = chatbot_sessions[session_key]
+    
+    try:
+        # Process the query through the LLM
+        result = await chatbot.process_query(query.message, user_role)
+        
+        action = result.get("action", "conversation")
+        
+        if action == "search_players":
+            # Execute player search
+            criteria = result.get("criteria", {})
+            players = await search_players_from_criteria(db, criteria)
+            formatted = format_player_results(players)
+            return ChatbotResponse(
+                action="search_players",
+                response=formatted,
+                results=players[:10],
+                criteria=criteria
+            )
+        
+        elif action == "search_opportunities":
+            # Execute opportunity search
+            criteria = result.get("criteria", {})
+            opportunities = await search_opportunities_from_criteria(db, criteria)
+            formatted = format_opportunity_results(opportunities)
+            return ChatbotResponse(
+                action="search_opportunities",
+                response=formatted,
+                results=opportunities[:10],
+                criteria=criteria
+            )
+        
+        elif action == "error":
+            return ChatbotResponse(
+                action="error",
+                response=result.get("response", "Une erreur s'est produite")
+            )
+        
+        else:
+            # Regular conversation response
+            return ChatbotResponse(
+                action="conversation",
+                response=result.get("response", "")
+            )
+    
+    except Exception as e:
+        logger.error(f"Chatbot error: {e}")
+        return ChatbotResponse(
+            action="error",
+            response=f"DÃ©solÃ©, une erreur s'est produite: {str(e)}"
+        )
+
+
+@api_router.delete("/chatbot/session")
+async def clear_chatbot_session(
+    current_user: dict = Depends(get_current_user)
+):
+    """Clear the chatbot session for the current user"""
+    user_id = current_user["user_id"]
+    if user_id in chatbot_sessions:
+        del chatbot_sessions[user_id]
+    return {"success": True, "message": "Session cleared"}
+
+
+
+
+@api_router.get("/admin/fix-analyst-profiles")
+async def fix_analyst_profiles():
+    analysts = await db.users.find({"role": "analyst"}).to_list(100)
+    fixed = 0
+    for user in analysts:
+        uid = str(user.get("user_id") or user.get("_id", ""))
+        existing = await db.analysts.find_one({"user_id": uid})
+        if not existing:
+            await db.analysts.insert_one({
+                "user_id": uid,
+                "name": user.get("name", ""),
+                "email": user.get("email", ""),
+                "approved": True,
+                "verified": False,
+                "evaluations_count": 0,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            fixed += 1
+        else:
+            await db.analysts.update_one({"user_id": uid}, {"$set": {"approved": True}})
+    return {"fixed": fixed, "total": len(analysts)}
+
+
+@api_router.get("/admin/fix-analyst/{user_id}")
+async def fix_single_analyst(user_id: str):
+    existing = await db.analysts.find_one({"user_id": user_id})
+    if existing:
+        await db.analysts.update_one({"user_id": user_id}, {"$set": {"approved": True}})
+        return {"status": "updated", "user_id": user_id}
+    user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not user:
+        # Try with string _id
+        user = {"user_id": user_id, "name": "Analyst", "email": "analyst@analyst.com"}
+    await db.analysts.insert_one({
+        "user_id": user_id,
+        "name": user.get("name", "Analyst"),
+        "email": user.get("email", ""),
+        "approved": True,
+        "verified": False,
+        "evaluations_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"status": "created", "user_id": user_id}
 
 fastapi_app.include_router(api_router)
 

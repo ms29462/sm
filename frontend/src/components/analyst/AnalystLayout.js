@@ -1,18 +1,21 @@
 import { useState } from 'react';
-import ConfirmDialog from '@/components/ui/ConfirmDialog';
+﻿import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import NotificationBell from '@/components/ui/NotificationBell';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
+import Badge from '@/components/ui/badge';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Activity, Users, Heart, LogOut, Home, UserCircle , Newspaper } from 'lucide-react';
+import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video, Sparkles , Target , Kanban, CalendarCheck , Newspaper } from 'lucide-react';
 
-const AnalystLayout = ({ children }) => {
+const AnalystLayout = ({ children, isCollege = false }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { totalUnread, totalPending } = useNotifications();
 
   const handleLogout = () => {
     logout();
@@ -39,66 +42,112 @@ const AnalystLayout = ({ children }) => {
             <Trophy className="w-8 h-8 text-primary" />
             <div>
               <h1 className="text-xl font-heading font-bold tracking-tight">SOCCERMATCH</h1>
-              <p className="text-xs text-muted-foreground uppercase flex items-center">
-                <Activity className="w-3 h-3 mr-1" />
-                Analyst Portal
-              </p>
+              <p className="text-xs text-muted-foreground uppercase">{false ? "College Portal" : "Analyst Portal"}</p>
             </div>
           </div>
           <NotificationBell />
         </div>
 
         <nav className="p-4 space-y-2">
-          <Link to="/analyst/news">
-            <Button variant={isActive('/analyst/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
+          <Link to={false ? "/college/news" : "/club/news"}>
+            <Button variant={isActive("/club/news") || isActive("/college/news") ? "secondary" : "ghost"} className="w-full justify-start">
               <Newspaper className="w-4 h-4 mr-3" />
               News Feed
             </Button>
           </Link>
-          <Link to="/analyst/dashboard">
+          <Link to={false ? "/college/dashboard" : "/club/dashboard"}>
             <Button
               data-testid="nav-dashboard-btn"
-              variant={isActive('/analyst/dashboard') ? 'secondary' : 'ghost'}
+              variant={isActive('/club/dashboard') ? 'secondary' : 'ghost'}
               className="w-full justify-start"
             >
               <Home className="w-4 h-4 mr-3" />
               Dashboard
             </Button>
           </Link>
-          <Link to="/analyst/profile">
+          <Link to={false ? "/college/profile" : "/club/profile"}>
             <Button
               data-testid="nav-profile-btn"
-              variant={isActive('/analyst/profile') ? 'secondary' : 'ghost'}
+              variant={isActive('/club/profile') ? 'secondary' : 'ghost'}
               className="w-full justify-start"
             >
-              <UserCircle className="w-4 h-4 mr-3" />
-              My Profile
+              <Building className="w-4 h-4 mr-3" />
+              Club Profile
             </Button>
           </Link>
-          <Link to="/analyst/news">
-            <Button variant={isActive('/analyst/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              <Newspaper className="w-4 h-4 mr-3" />
-              News Feed
+          <Link to={false ? "/college/opportunities" : "/club/opportunities"}>
+            <Button
+              data-testid="nav-opportunities-btn"
+              variant={isActive('/club/opportunities') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <Briefcase className="w-4 h-4 mr-3" />
+              Opportunities
             </Button>
           </Link>
-          <Link to="/analyst/players">
+          <Link to={false ? "/college/players" : "/club/players"}>
             <Button
               data-testid="nav-players-btn"
-              variant={isActive('/analyst/players') ? 'secondary' : 'ghost'}
+              variant={isActive('/club/players') ? 'secondary' : 'ghost'}
               className="w-full justify-start"
             >
               <Users className="w-4 h-4 mr-3" />
-              Find Players
+              Browse Players
             </Button>
           </Link>
-          <Link to="/analyst/clients">
+          <Link to={false ? "/college/applications" : "/club/applications"}>
             <Button
-              data-testid="nav-clients-btn"
-              variant={isActive('/analyst/clients') ? 'secondary' : 'ghost'}
+              data-testid="nav-applications-btn"
+              variant={isActive('/club/applications') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <FileText className="w-4 h-4 mr-3" />
+              Applications
+            </Button>
+          </Link>
+          <Link to={false ? "/college/favorites" : "/club/favorites"}>
+            <Button
+              data-testid="nav-favorites-btn"
+              variant={isActive('/club/favorites') ? 'secondary' : 'ghost'}
               className="w-full justify-start"
             >
               <Heart className="w-4 h-4 mr-3" />
-              My Clients
+              Favorites
+            </Button>
+          </Link>
+          <Link to={false ? "/college/trials" : "/club/trials"}>
+            <Button variant={isActive("/club/trials") || isActive("/college/trials") ? "secondary" : "ghost"} className="w-full justify-start">
+              <CalendarCheck className="w-4 h-4 mr-3" />
+              Trial Invitations
+            </Button>
+          </Link>
+          <Link to={false ? "/college/pipeline" : "/club/pipeline"}>
+            <Button
+              variant={isActive("/club/pipeline") || isActive("/college/pipeline") ? "secondary" : "ghost"}
+              className="w-full justify-start"
+            >
+              <Kanban className="w-4 h-4 mr-3" />
+              Pipeline
+            </Button>
+          </Link>
+          <Link to={false ? "/college/scouting" : "/club/scouting"}>
+            <Button
+              variant={isActive("/club/scouting") || isActive("/college/scouting") ? "secondary" : "ghost"}
+              className="w-full justify-start"
+            >
+              <Target className="w-4 h-4 mr-3" />
+              Scouting Hub
+            </Button>
+          </Link>
+          <Link to={false ? "/college/chats" : "/club/chats"}>
+            <Button
+              data-testid="nav-chats-btn"
+              variant={isActive('/club/chats') ? 'secondary' : 'ghost'}
+              className="w-full justify-start relative"
+            >
+              <MessageCircle className="w-4 h-4 mr-3" />
+              Chats
+              <Badge count={totalUnread} />
             </Button>
           </Link>
         </nav>
@@ -122,7 +171,7 @@ const AnalystLayout = ({ children }) => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <MobileBottomNav role="analyst" />
+      <MobileBottomNav role="club" />
     </div>
   );
 };
@@ -141,3 +190,4 @@ const AnalystLayout = ({ children }) => {
 };
 
 export default AnalystLayout;
+

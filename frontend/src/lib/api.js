@@ -231,4 +231,28 @@ export const api = {
   togglePinNews: (id) => axios.put(`${API}/admin/news/${id}/pin`, {}, { headers: getAuthHeaders() }),
   updateNewsPost: (id, data) => axios.put(`${API}/admin/news/${id}`, data, { headers: getAuthHeaders() }),
   uploadNewsImage: (formData) => axios.post(`${API}/admin/news/upload-image`, formData, { headers: { ...getAuthHeaders(), 'Content-Type': 'multipart/form-data' } }),
+
+  // ============ PLAYER EVALUATION SYSTEM ============
+  // Analyst Profile
+  getAnalystProfile: () => axios.get(`${API}/analyst/profile`, { headers: getAuthHeaders() }),
+  updateAnalystProfile: (data) => axios.put(`${API}/analyst/profile`, data, { headers: getAuthHeaders() }),
+  getAnalystStats: () => axios.get(`${API}/analyst/stats`, { headers: getAuthHeaders() }),
+  getAnalystEvaluations: () => axios.get(`${API}/analyst/evaluations`, { headers: getAuthHeaders() }),
+  // Evaluation Metadata
+  getArchetypes: () => axios.get(`${API}/evaluation/archetypes`, { headers: getAuthHeaders() }),
+  getMetrics: () => axios.get(`${API}/evaluation/metrics`, { headers: getAuthHeaders() }),
+  getPlayersForEvaluation: () => axios.get(`${API}/evaluation/players`, { headers: getAuthHeaders() }),
+  // Evaluations CRUD
+  createEvaluation: (data) => axios.post(`${API}/evaluation/create`, data, { headers: getAuthHeaders() }),
+  getEvaluation: (id) => axios.get(`${API}/evaluation/${id}`, { headers: getAuthHeaders() }),
+  updateEvaluation: (id, data) => axios.put(`${API}/evaluation/${id}`, data, { headers: getAuthHeaders() }),
+  deleteEvaluation: (id) => axios.delete(`${API}/evaluation/${id}`, { headers: getAuthHeaders() }),
+  exportEvaluationPDF: (id) => axios.get(`${API}/evaluation/${id}/export-pdf`, { headers: getAuthHeaders(), responseType: 'blob' }),
+  // Player Evaluations (for all roles)
+  getPlayerEvaluations: (playerId) => axios.get(`${API}/player/${playerId}/evaluations`, { headers: getAuthHeaders() }),
+  getPlayerDashboard: (playerId) => axios.get(`${API}/player/${playerId}/dashboard`, { headers: getAuthHeaders() }),
+  // Admin Analysts
+  getAllAnalysts: () => axios.get(`${API}/admin/analysts`, { headers: getAuthHeaders() }),
+  approveAnalyst: (userId, approved) => axios.put(`${API}/admin/analysts/${userId}/approve?approved=${approved}`, {}, { headers: getAuthHeaders() }),
+  verifyAnalyst: (userId, verified) => axios.put(`${API}/admin/analysts/${userId}/verify?verified=${verified}`, {}, { headers: getAuthHeaders() }),
 };

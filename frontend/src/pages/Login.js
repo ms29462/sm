@@ -38,6 +38,8 @@ const Login = ({ admin = false }) => {
         navigate("/federation/dashboard");
       } else if (role === "agent") {
         navigate("/agent/dashboard");
+      } else if (role === "analyst") {
+        navigate("/analyst/dashboard");
       } else if (role === "specialist") {
         navigate("/specialist/dashboard");
       } else if (role === "college") {

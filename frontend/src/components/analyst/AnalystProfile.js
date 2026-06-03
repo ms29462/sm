@@ -1,101 +1,50 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { Save, Award } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { User, Save, CheckCircle, Activity, Plus, X } from 'lucide-react';
-
-const COUNTRIES = [
-  'England', 'Spain', 'Germany', 'France', 'Italy', 'Portugal', 'Netherlands', 'Belgium',
-  'Brazil', 'Argentina', 'USA', 'Canada', 'Mexico', 'Japan', 'South Korea', 'Australia',
-  'Nigeria', 'Cameroon', 'Ghana', 'Senegal', 'Egypt', 'South Africa', 'Morocco'
-];
-
-const SPECIALIST_TYPES = [
-  'Physical Trainer',
-  'Physiotherapist',
-  'Nutritionist',
-  'Sports Psychologist',
-  'Strength & Conditioning Coach',
-  'Recovery Analyst',
-  'Performance Analyst',
-  'Rehabilitation Analyst'
-];
-
-const CERTIFICATIONS = [
-  'FIFA Diploma',
-  'UEFA Pro License',
-  'NSCA-CSCS',
-  'NASM-CPT',
-  'Licensed Physiotherapist',
-  'Registered Dietitian',
-  'Sports Psychology Certification',
-  'First Aid/CPR',
-  'Other'
-];
-
-const AVAILABILITY_OPTIONS = ['Full-time', 'Part-time', 'Freelance', 'Contract'];
 
 const AnalystProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [newService, setNewService] = useState('');
-  const [newLanguage, setNewLanguage] = useState('');
   const [formData, setFormData] = useState({
     name: '',
-    analyst_type: '',
-    profile_picture: '',
+    organization: '',
     bio: '',
     country: '',
-    city: '',
-    phone: '',
-    certifications: [],
+    specialization: '',
     years_experience: '',
-    current_club: '',
-    hourly_rate: '',
-    availability: '',
-    services_offered: [],
-    languages: [],
-    website: '',
-    linkedin: ''
+    certifications: []
   });
+  const [newCertification, setNewCertification] = useState('');
 
   useEffect(() => {
-    loadProfile();
+    const fetchProfile = async () => {
+      try {
+        const response = await api.getAnalystProfile();
+        setProfile(response.data);
+        setFormData({
+          name: response.data.name || '',
+          organization: response.data.organization || '',
+          bio: response.data.bio || '',
+          country: response.data.country || '',
+          specialization: response.data.specialization || '',
+          years_experience: response.data.years_experience || '',
+          certifications: response.data.certifications || []
+        });
+      } catch (error) {
+        toast.error('Failed to load profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
   }, []);
-
-  const loadProfile = async () => {
-    try {
-      const response = await api.getAnalystProfile();
-      setProfile(response.data);
-      setFormData({
-        name: response.data.name || '',
-        analyst_type: response.data.analyst_type || '',
-        profile_picture: response.data.profile_picture || '',
-        bio: response.data.bio || '',
-        country: response.data.country || '',
-        city: response.data.city || '',
-        phone: response.data.phone || '',
-        certifications: response.data.certifications || [],
-        years_experience: response.data.years_experience || '',
-        current_club: response.data.current_club || '',
-        hourly_rate: response.data.hourly_rate || '',
-        availability: response.data.availability || '',
-        services_offered: response.data.services_offered || [],
-        languages: response.data.languages || [],
-        website: response.data.website || '',
-        linkedin: response.data.linkedin || ''
-      });
-    } catch (error) {
-      toast.error('Failed to load profile');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -105,9 +54,9 @@ const AnalystProfile = () => {
         ...formData,
         years_experience: formData.years_experience ? parseInt(formData.years_experience) : null
       };
-      await api.updateAnalystProfile(updateData);
+      const response = await api.updateAnalystProfile(updateData);
+      setProfile(response.data);
       toast.success('Profile updated successfully');
-      loadProfile();
     } catch (error) {
       toast.error('Failed to update profile');
     } finally {
@@ -115,325 +64,179 @@ const AnalystProfile = () => {
     }
   };
 
-  const toggleCertification = (cert) => {
-    setFormData(prev => ({
-      ...prev,
-      certifications: prev.certifications.includes(cert)
-        ? prev.certifications.filter(c => c !== cert)
-        : [...prev.certifications, cert]
-    }));
-  };
-
-  const addService = () => {
-    if (newService.trim() && !formData.services_offered.includes(newService.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        services_offered: [...prev.services_offered, newService.trim()]
-      }));
-      setNewService('');
+  const addCertification = () => {
+    if (newCertification.trim() && !formData.certifications.includes(newCertification.trim())) {
+      setFormData({
+        ...formData,
+        certifications: [...formData.certifications, newCertification.trim()]
+      });
+      setNewCertification('');
     }
   };
 
-  const removeService = (service) => {
-    setFormData(prev => ({
-      ...prev,
-      services_offered: prev.services_offered.filter(s => s !== service)
-    }));
-  };
-
-  const addLanguage = () => {
-    if (newLanguage.trim() && !formData.languages.includes(newLanguage.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        languages: [...prev.languages, newLanguage.trim()]
-      }));
-      setNewLanguage('');
-    }
-  };
-
-  const removeLanguage = (lang) => {
-    setFormData(prev => ({
-      ...prev,
-      languages: prev.languages.filter(l => l !== lang)
-    }));
+  const removeCertification = (cert) => {
+    setFormData({
+      ...formData,
+      certifications: formData.certifications.filter(c => c !== cert)
+    });
   };
 
   if (loading) {
     return (
-      <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-8" data-testid="analyst-profile">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <User className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-heading font-bold uppercase">SPECIALIST PROFILE</h1>
-        </div>
-        <p className="text-muted-foreground">Manage your professional profile and services</p>
+    <div className="space-y-6 max-w-3xl">
+      <div>
+        <h1 className="text-xl lg:text-2xl font-heading font-bold">My Profile</h1>
+        <p className="text-sm text-muted-foreground">Manage your professional information</p>
       </div>
 
-      {/* Verification Badge */}
-      {profile?.verified && (
-        <div className="bg-green-500/10 border border-green-500/20 rounded-sm p-4 mb-6 flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-green-500" />
-          <div>
-            <p className="font-medium text-green-500">Verified Analyst</p>
-            <p className="text-sm text-muted-foreground">Your credentials have been verified by our team.</p>
-          </div>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
-        {/* Basic Info */}
-        <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase flex items-center gap-2">
-            <Activity className="w-5 h-5 text-primary" />
-            PROFESSIONAL INFORMATION
-          </h2>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Full Name *</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Dr. Sarah Johnson"
-                className="mt-1 bg-black/20 border-white/10"
-              />
+      {/* Status Card */}
+      <Card className={profile?.approved ? 'border-emerald-500/30' : 'border-amber-500/30'}>
+        <CardContent className="py-4">
+          <div className="flex items-center gap-4">
+            <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${profile?.approved ? 'bg-emerald-500/20' : 'bg-amber-500/20'}`}>
+              <Award className={`w-5 h-5 lg:w-6 lg:h-6 ${profile?.approved ? 'text-emerald-400' : 'text-amber-400'}`} />
             </div>
             <div>
-              <Label>Analyst Type *</Label>
-              <Select value={formData.analyst_type} onValueChange={(v) => setFormData({ ...formData, analyst_type: v })}>
-                <SelectTrigger className="mt-1 bg-black/20 border-white/10">
-                  <SelectValue placeholder="Select your specialization" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SPECIALIST_TYPES.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+              <p className="font-medium text-sm lg:text-base">
+                {profile?.approved ? 'Account Approved' : 'Pending Approval'}
+              </p>
+              {profile?.verified && (
+                <p className="text-sm text-primary">Verified Analyst</p>
+              )}
+              <p className="text-xs lg:text-sm text-muted-foreground">
+                {profile?.evaluations_count || 0} evaluations completed
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Profile Form */}
+      <form onSubmit={handleSubmit}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base lg:text-lg">Personal Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 lg:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name" className="text-sm">Full Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="mt-1.5 bg-zinc-800/50 border-zinc-700"
+                  placeholder="Your name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="organization" className="text-sm">Organization / Club</Label>
+                <Input
+                  id="organization"
+                  value={formData.organization}
+                  onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                  className="mt-1.5 bg-zinc-800/50 border-zinc-700"
+                  placeholder="e.g., FC Barcelona, FA"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="country" className="text-sm">Country</Label>
+                <Input
+                  id="country"
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  className="mt-1.5 bg-zinc-800/50 border-zinc-700"
+                  placeholder="e.g., United Kingdom"
+                />
+              </div>
+              <div>
+                <Label htmlFor="years_experience" className="text-sm">Years of Experience</Label>
+                <Input
+                  id="years_experience"
+                  type="number"
+                  value={formData.years_experience}
+                  onChange={(e) => setFormData({ ...formData, years_experience: e.target.value })}
+                  className="mt-1.5 bg-zinc-800/50 border-zinc-700"
+                  placeholder="e.g., 5"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="specialization" className="text-sm">Specialization</Label>
+              <Input
+                id="specialization"
+                value={formData.specialization}
+                onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                className="mt-1.5 bg-zinc-800/50 border-zinc-700"
+                placeholder="e.g., Youth Scouting, Tactical Analysis, Performance"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="bio" className="text-sm">Biography</Label>
+              <Textarea
+                id="bio"
+                value={formData.bio}
+                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                className="mt-1.5 bg-zinc-800/50 border-zinc-700 min-h-[80px] lg:min-h-[100px]"
+                placeholder="Describe your experience and expertise..."
+              />
+            </div>
+
+            {/* Certifications */}
+            <div>
+              <Label className="text-sm">Certifications & Licenses</Label>
+              <div className="flex gap-2 mt-1.5">
+                <Input
+                  value={newCertification}
+                  onChange={(e) => setNewCertification(e.target.value)}
+                  className="bg-zinc-800/50 border-zinc-700"
+                  placeholder="e.g., UEFA Pro License"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCertification())}
+                />
+                <Button type="button" variant="outline" onClick={addCertification} className="shrink-0">
+                  Add
+                </Button>
+              </div>
+              {formData.certifications.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {formData.certifications.map((cert, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1 px-2 lg:px-3 py-1 rounded-full bg-primary/10 text-primary text-xs lg:text-sm"
+                    >
+                      <Award className="w-3 h-3" />
+                      {cert}
+                      <button
+                        type="button"
+                        onClick={() => removeCertification(cert)}
+                        className="ml-1 hover:text-red-400"
+                      >
+                        ×
+                      </button>
+                    </span>
                   ))}
-                </SelectContent>
-              </Select>
+                </div>
+              )}
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Country</Label>
-              <Select value={formData.country} onValueChange={(v) => setFormData({ ...formData, country: v })}>
-                <SelectTrigger className="mt-1 bg-black/20 border-white/10">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map(c => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>City</Label>
-              <Input
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="London"
-                className="mt-1 bg-black/20 border-white/10"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Years of Experience</Label>
-              <Input
-                type="number"
-                value={formData.years_experience}
-                onChange={(e) => setFormData({ ...formData, years_experience: e.target.value })}
-                placeholder="10"
-                className="mt-1 bg-black/20 border-white/10"
-              />
-            </div>
-            <div>
-              <Label>Current Club (if any)</Label>
-              <Input
-                value={formData.current_club}
-                onChange={(e) => setFormData({ ...formData, current_club: e.target.value })}
-                placeholder="Manchester United"
-                className="mt-1 bg-black/20 border-white/10"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label>Bio / Description</Label>
-            <Textarea
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              placeholder="Tell players about your experience and expertise..."
-              className="mt-1 bg-black/20 border-white/10 min-h-[100px]"
-            />
-          </div>
-        </div>
-
-        {/* Contact */}
-        <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">CONTACT & ONLINE</h2>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Phone</Label>
-              <Input
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+44 123 456 7890"
-                className="mt-1 bg-black/20 border-white/10"
-              />
-            </div>
-            <div>
-              <Label>Profile Picture URL</Label>
-              <Input
-                value={formData.profile_picture}
-                onChange={(e) => setFormData({ ...formData, profile_picture: e.target.value })}
-                placeholder="https://..."
-                className="mt-1 bg-black/20 border-white/10"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Website</Label>
-              <Input
-                value={formData.website}
-                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                placeholder="https://..."
-                className="mt-1 bg-black/20 border-white/10"
-              />
-            </div>
-            <div>
-              <Label>LinkedIn</Label>
-              <Input
-                value={formData.linkedin}
-                onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-                placeholder="https://linkedin.com/in/..."
-                className="mt-1 bg-black/20 border-white/10"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Availability & Rates */}
-        <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">AVAILABILITY & RATES</h2>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Availability</Label>
-              <Select value={formData.availability} onValueChange={(v) => setFormData({ ...formData, availability: v })}>
-                <SelectTrigger className="mt-1 bg-black/20 border-white/10">
-                  <SelectValue placeholder="Select availability" />
-                </SelectTrigger>
-                <SelectContent>
-                  {AVAILABILITY_OPTIONS.map(opt => (
-                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Hourly Rate</Label>
-              <Input
-                value={formData.hourly_rate}
-                onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
-                placeholder="$100-150/hour"
-                className="mt-1 bg-black/20 border-white/10"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Certifications */}
-        <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">CERTIFICATIONS</h2>
-          <div className="flex flex-wrap gap-2">
-            {CERTIFICATIONS.map(cert => (
-              <button
-                key={cert}
-                type="button"
-                onClick={() => toggleCertification(cert)}
-                className={`px-3 py-2 rounded-sm text-sm border transition-colors ${
-                  formData.certifications.includes(cert)
-                    ? 'bg-primary text-black border-primary'
-                    : 'bg-black/20 border-white/10 hover:border-primary/50'
-                }`}
-              >
-                {cert}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Services */}
-        <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">SERVICES OFFERED</h2>
-          <div className="flex gap-2">
-            <Input
-              value={newService}
-              onChange={(e) => setNewService(e.target.value)}
-              placeholder="Add a service (e.g., ACL Rehab Program)"
-              className="bg-black/20 border-white/10"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addService())}
-            />
-            <Button type="button" onClick={addService} className="bg-primary text-black">
-              <Plus className="w-4 h-4" />
+            <Button type="submit" disabled={saving} className="w-full bg-primary text-black hover:bg-primary/90">
+              <Save className="w-4 h-4 mr-2" />
+              {saving ? 'Saving...' : 'Save Changes'}
             </Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {formData.services_offered.map(service => (
-              <span key={service} className="px-3 py-1 bg-primary/10 text-primary rounded-sm text-sm flex items-center gap-2">
-                {service}
-                <button type="button" onClick={() => removeService(service)} className="hover:text-red-500">
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Languages */}
-        <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">LANGUAGES</h2>
-          <div className="flex gap-2">
-            <Input
-              value={newLanguage}
-              onChange={(e) => setNewLanguage(e.target.value)}
-              placeholder="Add a language (e.g., English)"
-              className="bg-black/20 border-white/10"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
-            />
-            <Button type="button" onClick={addLanguage} className="bg-primary text-black">
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {formData.languages.map(lang => (
-              <span key={lang} className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-sm text-sm flex items-center gap-2">
-                {lang}
-                <button type="button" onClick={() => removeLanguage(lang)} className="hover:text-red-500">
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <Button type="submit" disabled={saving} className="w-full bg-primary text-black font-bold h-12">
-          <Save className="w-4 h-4 mr-2" />
-          {saving ? 'SAVING...' : 'SAVE PROFILE'}
-        </Button>
+          </CardContent>
+        </Card>
       </form>
     </div>
   );

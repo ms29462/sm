@@ -11,6 +11,7 @@ import FederationDashboard from '@/pages/FederationDashboard';
 import AgentDashboard from '@/pages/AgentDashboard';
 import SpecialistDashboard from '@/pages/SpecialistDashboard';
 import CollegeDashboard from '@/pages/CollegeDashboard';
+import AnalystDashboard from '@/pages/AnalystDashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
 import CGU from '@/pages/CGU';
 import MentionsLegales from '@/pages/MentionsLegales';
@@ -77,6 +78,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/analyst/*" element={<ProtectedRoute role="analyst"><AnalystDashboard /></ProtectedRoute>} />
                 <Route
                   path="/college/*"
                   element={
