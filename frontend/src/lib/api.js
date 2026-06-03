@@ -255,4 +255,5 @@ export const api = {
   getAllAnalysts: () => axios.get(`${API}/admin/analysts`, { headers: getAuthHeaders() }),
   approveAnalyst: (userId, approved) => axios.put(`${API}/admin/analysts/${userId}/approve?approved=${approved}`, {}, { headers: getAuthHeaders() }),
   verifyAnalyst: (userId, verified) => axios.put(`${API}/admin/analysts/${userId}/verify?verified=${verified}`, {}, { headers: getAuthHeaders() }),
+  deleteAnalyst: (userId) => axios.delete(`${API}/admin/analysts/${userId}`, { headers: getAuthHeaders() }),
 };

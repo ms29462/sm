@@ -3,7 +3,6 @@ import { Search, Check, X, Award, Shield, User, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -41,20 +40,31 @@ const AdminAnalysts = () => {
   const handleApprove = async (userId, approved) => {
     try {
       await api.approveAnalyst(userId, approved);
-      toast.success(approved ? 'Analyste approuvé' : 'Analyste rejeté');
+      toast.success(approved ? 'Analyst approuve' : 'Analyst rejete');
       fetchAnalysts();
     } catch (error) {
-      toast.error('Erreur lors de l\'opération');
+      toast.error('Erreur lors de l\'operation');
+    }
+  };
+
+  const handleDelete = async (userId) => {
+    if (!window.confirm("Delete this analyst?")) return;
+    try {
+      await api.deleteAnalyst(userId);
+      setAnalysts(prev => prev.filter(a => a.user_id !== userId));
+      toast.success("Analyst deleted!");
+    } catch (e) {
+      toast.error("Failed to delete");
     }
   };
 
   const handleVerify = async (userId, verified) => {
     try {
       await api.verifyAnalyst(userId, verified);
-      toast.success(verified ? 'Analyste vérifié' : 'Vérification retirée');
+      toast.success(verified ? 'Analyst verifie' : 'Verification removed');
       fetchAnalysts();
     } catch (error) {
-      toast.error('Erreur lors de l\'opération');
+      toast.error('Erreur lors de l\'operation');
     }
   };
 
@@ -70,8 +80,8 @@ const AdminAnalysts = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-heading font-bold">Gestion des Analystes</h1>
-          <p className="text-muted-foreground">{analysts.length} analystes inscrits</p>
+          <h1 className="text-2xl font-heading font-bold">Analyst Management</h1>
+          <p className="text-muted-foreground">{analysts.length} analysts registered</p>
         </div>
       </div>
 
@@ -85,7 +95,7 @@ const AdminAnalysts = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{analysts.filter(a => !a.approved).length}</p>
-                <p className="text-xs text-muted-foreground">En attente</p>
+                <p className="text-xs text-muted-foreground">Pending</p>
               </div>
             </div>
           </CardContent>
@@ -98,7 +108,7 @@ const AdminAnalysts = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{analysts.filter(a => a.approved).length}</p>
-                <p className="text-xs text-muted-foreground">Approuvés</p>
+                <p className="text-xs text-muted-foreground">Approved</p>
               </div>
             </div>
           </CardContent>
@@ -111,7 +121,7 @@ const AdminAnalysts = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{analysts.filter(a => a.verified).length}</p>
-                <p className="text-xs text-muted-foreground">Vérifiés</p>
+                <p className="text-xs text-muted-foreground">Verified</p>
               </div>
             </div>
           </CardContent>
@@ -134,7 +144,7 @@ const AdminAnalysts = () => {
         <CardContent className="p-0">
           {filteredAnalysts.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              Aucun analyste trouvé
+              No analyst found
             </div>
           ) : (
             <div className="divide-y divide-zinc-800">
@@ -146,17 +156,17 @@ const AdminAnalysts = () => {
                       {analyst.verified && (
                         <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-sm border" variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
                           <Award className="w-3 h-3 mr-1" />
-                          Vérifié
+                          Verified
                         </span>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground truncate">{analyst.email}</p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                       {analyst.organization && <span>{analyst.organization}</span>}
-                      {analyst.specialization && <span>• {analyst.specialization}</span>}
+                      {analyst.specialization && <span>â€¢ {analyst.specialization}</span>}
                       <span className="flex items-center gap-1">
                         <FileText className="w-3 h-3" />
-                        {analyst.evaluations_count || 0} évaluations
+                        {analyst.evaluations_count || 0} evaluations
                       </span>
                     </div>
                   </div>
@@ -166,11 +176,11 @@ const AdminAnalysts = () => {
                     {analyst.approved ? (
                       <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-sm border" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
                         <Check className="w-3 h-3 mr-1" />
-                        Approuvé
+                        Approved
                       </span>
                     ) : (
                       <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-sm border" className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-                        En attente
+                        Pending
                       </span>
                     )}
 
@@ -201,7 +211,7 @@ const AdminAnalysts = () => {
                           onClick={() => handleApprove(analyst.user_id, false)}
                           className="text-muted-foreground"
                         >
-                          Révoquer
+                          Revoke
                         </Button>
                       )}
                       
@@ -213,9 +223,15 @@ const AdminAnalysts = () => {
                           className={analyst.verified ? "border-primary/50 text-primary" : "bg-primary text-black"}
                         >
                           <Shield className="w-4 h-4 mr-1" />
-                          {analyst.verified ? 'Vérifié' : 'Vérifier'}
+                          {analyst.verified ? 'Verified' : 'Verify'}
                         </Button>
                       )}
+                      <button
+                        onClick={() => handleDelete(analyst.user_id)}
+                        className="text-xs px-2 py-1 rounded-sm border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>

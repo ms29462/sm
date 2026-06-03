@@ -4779,6 +4779,14 @@ async def approve_analyst(
     return {"success": True, "approved": approved}
 
 
+@api_router.delete("/admin/analysts/{user_id}")
+async def delete_analyst(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    await db.analysts.delete_one({"user_id": user_id})
+    await db.users.delete_one({"user_id": user_id})
+    return {"success": True}
+
 @api_router.put("/admin/analysts/{user_id}/verify")
 async def verify_analyst(
     user_id: str,
