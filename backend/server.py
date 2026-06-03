@@ -1008,6 +1008,17 @@ async def register(user: UserRegister):
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.agents.insert_one(agent_doc)
+    elif user.role == 'analyst':
+        analyst_doc = {
+            "user_id": user_id,
+            "name": user.name,
+            "email": user.email,
+            "approved": True,
+            "verified": False,
+            "evaluations_count": 0,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.analysts.insert_one(analyst_doc)
     elif user.role == 'specialist':
         specialist_doc = {
             "user_id": user_id,
