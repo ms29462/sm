@@ -3,7 +3,7 @@ import { Search, Check, X, Award, Shield, User, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Badge from '@/components/ui/badge';
+
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -144,10 +144,10 @@ const AdminAnalysts = () => {
                     <div className="flex items-center gap-2">
                       <p className="font-medium truncate">{analyst.name}</p>
                       {analyst.verified && (
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
+                        <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-sm border" variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
                           <Award className="w-3 h-3 mr-1" />
                           Vérifié
-                        </Badge>
+                        </span>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground truncate">{analyst.email}</p>
@@ -164,14 +164,14 @@ const AdminAnalysts = () => {
                   <div className="flex items-center gap-2">
                     {/* Approval Status */}
                     {analyst.approved ? (
-                      <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                      <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-sm border" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
                         <Check className="w-3 h-3 mr-1" />
                         Approuvé
-                      </Badge>
+                      </span>
                     ) : (
-                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                      <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-sm border" className="bg-amber-500/20 text-amber-400 border-amber-500/30">
                         En attente
-                      </Badge>
+                      </span>
                     )}
 
                     {/* Actions */}
