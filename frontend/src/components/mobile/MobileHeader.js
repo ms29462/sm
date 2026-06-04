@@ -72,6 +72,7 @@ const NAV_LINKS = {
     { to: '/specialist/profile', label: 'My Profile' },
     { to: '/specialist/players', label: 'Players' },
     { to: '/specialist/favorites', label: 'Favorites' },
+    { to: '/specialist/chats', label: 'Chats' },
   ],
   admin: [
     { to: '/admin/dashboard', label: 'Dashboard' },

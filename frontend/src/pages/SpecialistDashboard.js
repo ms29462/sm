@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import NewsFeed from '@/components/shared/NewsFeed';
+import UnifiedChats from '@/components/chat/UnifiedChats';
 import SpecialistLayout from '@/components/specialist/SpecialistLayout';
 import SpecialistHome from '@/components/specialist/SpecialistHome';
 import SpecialistProfile from '@/components/specialist/SpecialistProfile';
@@ -18,6 +19,7 @@ const SpecialistDashboard = () => {
         <Route path="clients" element={<SpecialistClients />} />
         <Route path="*" element={<Navigate to="/specialist/dashboard" replace />} />
         <Route path="news" element={<NewsFeed />} />
+        <Route path="chats" element={<UnifiedChats />} />
       </Routes>
     </SpecialistLayout>
   );

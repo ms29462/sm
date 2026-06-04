@@ -8,6 +8,7 @@ const AdminChatRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creatingChat, setCreatingChat] = useState(null);
+  const [createdChats, setCreatedChats] = useState(new Set());
 
   useEffect(() => {
     loadRequests();
@@ -31,6 +32,7 @@ const AdminChatRequests = () => {
       const requesterId = request.requester_id || request.club_id;
       await api.createChatRoom(request.player_id, requesterId);
       toast.success('Chat room created successfully!');
+      setCreatedChats(prev => new Set([...prev, request.id]));
       loadRequests();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create chat room');
@@ -150,11 +152,11 @@ const AdminChatRequests = () => {
                   <Button
                     data-testid={`create-chat-${request.id}`}
                     onClick={() => handleCreateChat(request)}
-                    disabled={creatingChat === request.id}
+                    disabled={creatingChat === request.id || createdChats.has(request.id)}
                     className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    {creatingChat === request.id ? 'CREATING...' : 'CREATE CHAT ROOM'}
+                    {creatingChat === request.id ? 'CREATING...' : createdChats.has(request.id) ? 'CHAT CREATED ✓' : 'CREATE CHAT ROOM'}
                   </Button>
                 )}
               </div>
