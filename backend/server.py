@@ -4969,7 +4969,154 @@ async def fix_single_analyst(user_id: str):
     })
     return {"status": "created", "user_id": user_id}
 
-fastapi_app.include_router(api_router)
+
+# ============ DUPLICATE DETECTION ENDPOINTS ============
+
+def calculate_similarity(p1: dict, p2: dict) -> dict:
+    score = 0
+    reasons = []
+    risk_factors = []
+    
+    # High risk checks
+    if p1.get("phone") and p1.get("phone") == p2.get("phone"):
+        score += 40; reasons.append("Same phone number"); risk_factors.append("high")
+    if p1.get("email") and p1.get("email") == p2.get("email"):
+        score += 40; reasons.append("Same email address"); risk_factors.append("high")
+    if p1.get("date_of_birth") and p1.get("date_of_birth") == p2.get("date_of_birth"):
+        score += 20; reasons.append("Same date of birth"); risk_factors.append("high")
+    
+    # Medium risk checks
+    if p1.get("profile_picture") and p1.get("profile_picture") == p2.get("profile_picture"):
+        score += 25; reasons.append("Same profile photo"); risk_factors.append("medium")
+    if p1.get("nationality") and p1.get("nationality") == p2.get("nationality") and p1.get("position") == p2.get("position"):
+        score += 10; reasons.append("Same nationality and position"); risk_factors.append("medium")
+    if p1.get("height") and p1.get("height") == p2.get("height") and p1.get("weight") == p2.get("weight"):
+        score += 10; reasons.append("Same height and weight"); risk_factors.append("medium")
+    
+    # Name similarity
+    name1 = (p1.get("name") or "").lower().strip()
+    name2 = (p2.get("name") or "").lower().strip()
+    if name1 and name2:
+        if name1 == name2:
+            score += 30; reasons.append("Identical name"); risk_factors.append("high")
+        else:
+            # Check partial name match
+            parts1 = set(name1.split())
+            parts2 = set(name2.split())
+            common = parts1 & parts2
+            if len(common) >= 2:
+                score += 15; reasons.append("Similar name"); risk_factors.append("medium")
+            elif len(common) == 1 and len(parts1) > 1:
+                score += 5; reasons.append("Partial name match"); risk_factors.append("low")
+    
+    # Birth year match
+    dob1 = p1.get("date_of_birth", "")
+    dob2 = p2.get("date_of_birth", "")
+    if dob1 and dob2 and dob1 != dob2 and dob1[:4] == dob2[:4]:
+        score += 8; reasons.append("Same birth year"); risk_factors.append("medium")
+    
+    # Determine risk level
+    if "high" in risk_factors:
+        risk = "high"
+    elif "medium" in risk_factors:
+        risk = "medium"
+    else:
+        risk = "low"
+    
+    return {
+        "score": min(score, 100),
+        "reasons": reasons,
+        "risk": risk
+    }
+
+@api_router.get("/admin/duplicates")
+async def get_duplicate_profiles(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    players = await db.players.find({}, {"_id": 0}).to_list(1000)
+    duplicates = []
+    
+    for i in range(len(players)):
+        for j in range(i + 1, len(players)):
+            sim = calculate_similarity(players[i], players[j])
+            if sim["score"] >= 20:
+                duplicates.append({
+                    "id": f"{players[i]['user_id']}_{players[j]['user_id']}",
+                    "player1": {
+                        "user_id": players[i].get("user_id"),
+                        "name": players[i].get("name"),
+                        "nationality": players[i].get("nationality"),
+                        "position": players[i].get("position"),
+                        "date_of_birth": players[i].get("date_of_birth"),
+                        "profile_picture": players[i].get("profile_picture"),
+                        "created_at": players[i].get("created_at"),
+                        "verified": players[i].get("verified", False),
+                        "email": players[i].get("email"),
+                        "phone": players[i].get("phone"),
+                        "height": players[i].get("height"),
+                        "weight": players[i].get("weight"),
+                        "current_club": players[i].get("current_club"),
+                        "playing_level": players[i].get("playing_level"),
+                    },
+                    "player2": {
+                        "user_id": players[j].get("user_id"),
+                        "name": players[j].get("name"),
+                        "nationality": players[j].get("nationality"),
+                        "position": players[j].get("position"),
+                        "date_of_birth": players[j].get("date_of_birth"),
+                        "profile_picture": players[j].get("profile_picture"),
+                        "created_at": players[j].get("created_at"),
+                        "verified": players[j].get("verified", False),
+                        "email": players[j].get("email"),
+                        "phone": players[j].get("phone"),
+                        "height": players[j].get("height"),
+                        "weight": players[j].get("weight"),
+                        "current_club": players[j].get("current_club"),
+                        "playing_level": players[j].get("playing_level"),
+                    },
+                    "similarity_score": sim["score"],
+                    "risk": sim["risk"],
+                    "reasons": sim["reasons"],
+                })
+    
+    # Sort by score descending
+    duplicates.sort(key=lambda x: x["similarity_score"], reverse=True)
+    return duplicates[:100]  # Return top 100
+
+@api_router.post("/admin/duplicates/{duplicate_id}/action")
+async def handle_duplicate_action(
+    duplicate_id: str,
+    action: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    action_type = action.get("action")  # dismiss, mark_duplicate, mark_legitimate, add_note
+    note = action.get("note", "")
+    
+    await db.duplicate_actions.update_one(
+        {"duplicate_id": duplicate_id},
+        {"$set": {
+            "duplicate_id": duplicate_id,
+            "action": action_type,
+            "note": note,
+            "admin_id": current_user["user_id"],
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    return {"success": True}
+
+@api_router.get("/admin/duplicates/{duplicate_id}/action")
+async def get_duplicate_action(duplicate_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    action = await db.duplicate_actions.find_one({"duplicate_id": duplicate_id}, {"_id": 0})
+    return action or {}
+
+
 
 fastapi_app.add_middleware(
     CORSMiddleware,

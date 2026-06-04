@@ -8,6 +8,7 @@ import AdminColleges from '@/components/admin/AdminColleges';
 import AdminVerification from '@/components/admin/AdminVerification';
 import AdminAnalysts from '@/components/admin/AdminAnalysts';
 import AdminNews from '@/components/admin/AdminNews';
+import AdminDuplicates from '@/components/admin/AdminDuplicates';
 import AdminAgents from '@/components/admin/AdminAgents';
 import AdminSpecialists from '@/components/admin/AdminSpecialists';
 import AdminOpportunities from '@/components/admin/AdminOpportunities';
@@ -31,6 +32,8 @@ const AdminDashboard = () => {
                 <Route path="verification" element={<AdminVerification />} />
                 <Route path="analysts" element={<AdminAnalysts />} />
                 <Route path="news" element={<AdminNews />} />
+                <Route path="duplicates" element={<AdminDuplicates />} />
+                <Route path="duplicates" element={<AdminDuplicates />} />
         <Route path="specialists" element={<AdminSpecialists />} />
         <Route path="opportunities" element={<AdminOpportunities />} />
         <Route path="masterclass" element={<AdminMasterclass />} />

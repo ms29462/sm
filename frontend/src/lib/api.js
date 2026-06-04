@@ -251,6 +251,11 @@ export const api = {
   // Player Evaluations (for all roles)
   getPlayerEvaluations: (playerId) => axios.get(`${API}/player/${playerId}/evaluations`, { headers: getAuthHeaders() }),
   getPlayerDashboard: (playerId) => axios.get(`${API}/player/${playerId}/dashboard`, { headers: getAuthHeaders() }),
+  // Duplicate Detection
+  getDuplicateProfiles: () => axios.get(`${API}/admin/duplicates`, { headers: getAuthHeaders() }),
+  handleDuplicateAction: (id, data) => axios.post(`${API}/admin/duplicates/${id}/action`, data, { headers: getAuthHeaders() }),
+  getDuplicateAction: (id) => axios.get(`${API}/admin/duplicates/${id}/action`, { headers: getAuthHeaders() }),
+
   // Admin Analysts
   getAllAnalysts: () => axios.get(`${API}/admin/analysts`, { headers: getAuthHeaders() }),
   approveAnalyst: (userId, approved) => axios.put(`${API}/admin/analysts/${userId}/approve?approved=${approved}`, {}, { headers: getAuthHeaders() }),

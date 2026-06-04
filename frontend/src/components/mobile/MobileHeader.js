@@ -76,6 +76,8 @@ const NAV_LINKS = {
   ],
   admin: [
     { to: '/admin/dashboard', label: 'Dashboard' },
+    { to: '/admin/duplicates', label: 'Duplicates' },
+    { to: '/admin/duplicates', label: 'Duplicates' },
     { to: '/admin/news', label: 'News Feed' },
     { to: '/admin/players', label: 'Players' },
     { to: '/admin/clubs', label: 'Clubs' },
