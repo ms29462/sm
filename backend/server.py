@@ -3257,10 +3257,9 @@ async def get_my_chats(current_user: dict = Depends(get_current_user)):
     
     if role == 'player':
         my_rooms = [r for r in rooms if r.player_id == user_id]
-    elif role == 'club':
-        my_rooms = [r for r in rooms if r.club_id == user_id]
     else:
-        my_rooms = []
+        # club, specialist, agent, federation, college, analyst all use club_id
+        my_rooms = [r for r in rooms if r.club_id == user_id]
     
     return [
         {
