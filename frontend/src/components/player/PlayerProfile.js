@@ -38,6 +38,8 @@ const QUALITY_COLORS = {
   Elite: "text-purple-400 border-purple-400/30 bg-purple-400/10",
 };
 
+import AgentRepresentation from '@/components/player/AgentRepresentation';
+
 const PlayerProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -329,6 +331,11 @@ const PlayerProfile = () => {
               )}
             </div>
           )}
+
+          {/* Agent Representation */}
+          <div className="bg-black/20 border border-white/10 rounded-sm p-6 mb-6">
+            <AgentRepresentation />
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

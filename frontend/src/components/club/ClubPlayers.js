@@ -26,6 +26,8 @@ const ClubPlayers = () => {
   const [loading, setLoading] = useState(true);
   const [verifications, setVerifications] = useState({});
   const [filterBadge, setFilterBadge] = useState('');
+  const [filterRepresentation, setFilterRepresentation] = useState('');
+  const [filterMandate, setFilterMandate] = useState('');
   const [filterQuality, setFilterQuality] = useState('');
   const [filters, setFilters] = useState({
     position: 'All',
@@ -36,7 +38,7 @@ const ClubPlayers = () => {
 
   useEffect(() => {
     loadPlayers();
-  }, [filters, filterBadge, filterQuality]);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate]);
 
   const loadPlayers = async () => {
     try {
@@ -49,6 +51,8 @@ const ClubPlayers = () => {
       if (filters.has_full_game) queryFilters.has_full_game = true;
       if (filterBadge) queryFilters.badge = filterBadge;
       if (filterQuality) queryFilters.quality_level = filterQuality;
+      if (filterRepresentation) queryFilters.representation_status = filterRepresentation;
+      if (filterMandate) queryFilters.mandate_status = filterMandate;
 
       const response = await api.getPlayers(queryFilters);
       setPlayers(response.data);
@@ -250,7 +254,19 @@ const ClubPlayers = () => {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-wrap gap-1">
+                    {player.representation_status && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-sm border ${
+                        player.representation_status === "represented" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                        player.representation_status === "not_represented" ? "bg-green-500/10 text-green-400 border-green-500/20" :
+                        player.representation_status === "previously_represented" ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" :
+                        "bg-white/5 text-muted-foreground border-white/10"
+                      }`}>
+                        {player.representation_status === "represented" ? "Agent" :
+                         player.representation_status === "not_represented" ? "No Agent" :
+                         player.representation_status === "previously_represented" ? "Free" : "—"}
+                      </span>
+                    )}
                     {player.position && (
                       <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">
                         {player.position}

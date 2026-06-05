@@ -1997,6 +1997,8 @@ async def get_players(
     has_full_game: Optional[bool] = None,
     badge: Optional[str] = None,
     quality_level: Optional[str] = None,
+    representation_status: Optional[str] = None,
+    mandate_status: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college', 'analyst']:
@@ -2017,6 +2019,12 @@ async def get_players(
         archive_entries = await db.match_archive.distinct("player_id")
         query['user_id'] = {"$in": archive_entries}
     
+    # Representation status filters
+    if representation_status:
+        query["representation_status"] = representation_status
+    if mandate_status:
+        query["mandate_status"] = mandate_status
+
     # Badge and quality level filters - lookup from verifications collection
     if badge or quality_level:
         verif_query = {}
@@ -5259,6 +5267,66 @@ async def webrtc_ice_candidate(sid, data):
         'from_user': from_user,
         'candidate': candidate
     }, room=session_id, skip_sid=sid)
+
+
+# ============ AGENT REPRESENTATION ENDPOINTS ============
+
+@api_router.get("/player/agent-representation")
+async def get_agent_representation(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "player":
+        raise HTTPException(status_code=403, detail="Player only")
+    data = await db.agent_representation.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    return data or {"user_id": current_user["user_id"], "representation_status": None}
+
+@api_router.put("/player/agent-representation")
+async def update_agent_representation(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "player":
+        raise HTTPException(status_code=403, detail="Player only")
+    data["user_id"] = current_user["user_id"]
+    data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.agent_representation.update_one(
+        {"user_id": current_user["user_id"]},
+        {"$set": data},
+        upsert=True
+    )
+    # Also update player profile with representation_status
+    await db.players.update_one(
+        {"user_id": current_user["user_id"]},
+        {"$set": {"representation_status": data.get("representation_status"), "mandate_status": data.get("mandate_status")}}
+    )
+    return {"success": True}
+
+@api_router.get("/players/{player_id}/agent-representation")
+async def get_player_agent_representation(player_id: str, current_user: dict = Depends(get_current_user)):
+    data = await db.agent_representation.find_one({"user_id": player_id}, {"_id": 0})
+    if not data:
+        return {"user_id": player_id, "representation_status": None}
+    # Privacy: hide agent contact details unless admin or player allows
+    if current_user["role"] != "admin" and current_user["user_id"] != player_id:
+        if not data.get("allow_contact_sharing", False):
+            data.pop("agent_email", None)
+            data.pop("agent_phone", None)
+            data.pop("agent_name", None)
+            data.pop("agency_name", None)
+    return data
+
+@api_router.put("/admin/players/{user_id}/agent-representation")
+async def admin_update_agent_representation(user_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    data["user_id"] = user_id
+    data["admin_updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.agent_representation.update_one(
+        {"user_id": user_id},
+        {"$set": data},
+        upsert=True
+    )
+    if "representation_status" in data:
+        await db.players.update_one(
+            {"user_id": user_id},
+            {"$set": {"representation_status": data.get("representation_status"), "mandate_status": data.get("mandate_status")}}
+        )
+    return {"success": True}
 
 fastapi_app.include_router(api_router)
 

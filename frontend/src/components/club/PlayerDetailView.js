@@ -35,6 +35,7 @@ const PlayerDetailView = () => {
   const [isTracked, setIsTracked] = useState(false);
   const [inPipeline, setInPipeline] = useState(false);
   const [verification, setVerification] = useState(null);
+  const [agentRep, setAgentRep] = useState(null);
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [trialForm, setTrialForm] = useState({ trial_date: '', location: '', message: '' });
   const [trialSent, setTrialSent] = useState(false);
@@ -202,6 +203,33 @@ const PlayerDetailView = () => {
           </div>
 
           
+            {/* Agent Representation */}
+            {agentRep?.representation_status && (
+              <div className="mt-3 flex flex-wrap gap-2 items-center">
+                <span className={`text-xs px-2 py-1 rounded-sm border ${
+                  agentRep.representation_status === "represented" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                  agentRep.representation_status === "not_represented" ? "bg-green-500/10 text-green-400 border-green-500/20" :
+                  agentRep.representation_status === "previously_represented" ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" :
+                  "bg-white/5 text-muted-foreground border-white/10"
+                }`}>
+                  {agentRep.representation_status === "represented" ? "🤝 Agent Represented" :
+                   agentRep.representation_status === "not_represented" ? "✓ No Agent" :
+                   agentRep.representation_status === "previously_represented" ? "Free from Mandate" : "Agent Status Unknown"}
+                </span>
+                {agentRep.mandate_status && agentRep.mandate_status !== "unknown" && (
+                  <span className="text-xs px-2 py-1 rounded-sm border bg-white/5 text-muted-foreground border-white/10">
+                    {agentRep.mandate_status === "active" ? "Mandate Active" :
+                     agentRep.mandate_status === "exclusive" ? "Exclusive Mandate" :
+                     agentRep.mandate_status === "expiring_soon" ? "Mandate Expiring" :
+                     agentRep.mandate_status === "no_mandate" ? "No Mandate" : agentRep.mandate_status}
+                  </span>
+                )}
+                {agentRep.representation_status === "represented" && agentRep.allow_contact_sharing && agentRep.agent_name && (
+                  <span className="text-xs text-muted-foreground">Agent: {agentRep.agent_name}{agentRep.agency_name ? ` (${agentRep.agency_name})` : ""}</span>
+                )}
+              </div>
+            )}
+
             {/* Action Buttons */}
           <div className="flex flex-col gap-3">
             <Button
