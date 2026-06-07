@@ -270,14 +270,10 @@ const ClubOpportunities = () => {
               </div>
               <div>
                 <Label className="text-sm font-medium uppercase tracking-wide">League Level *</Label>
-                <Select value={formData.league_level} onValueChange={(v) => handleChange("league_level", v)}>
-                  <SelectTrigger data-testid="league-level-select" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12">
-                    <SelectValue placeholder="Select league level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LEAGUES.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <select value={formData.league_level} onChange={(e) => handleChange("league_level", e.target.value)} className="mt-2 w-full bg-black/20 border border-white/10 rounded-sm h-12 px-3 text-sm text-white outline-none cursor-pointer">
+                  <option value="">Select league level</option>
+                  {LEAGUES.map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
