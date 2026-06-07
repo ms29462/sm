@@ -4356,27 +4356,20 @@ async def get_all_news(current_user: dict = Depends(get_current_user)):
 async def upload_news_image(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
-    
-    # Validate file type
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
-    
-    # Save file
-    import uuid as uuid_module
-    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-    filename = f"news_{uuid_module.uuid4()}.{ext}"
-    
-    news_img_dir = ROOT_DIR / "uploads" / "news"
-    news_img_dir.mkdir(parents=True, exist_ok=True)
-    
-    file_path = news_img_dir / filename
+    import base64, uuid as uuid_module
     contents = await file.read()
-    with open(file_path, "wb") as f:
-        f.write(contents)
-    
-    # Return URL
-    base_url = os.environ.get("BASE_URL", "http://localhost:8000")
-    return {"url": f"{base_url}/uploads/news/{filename}"}
+    # Limit to 2MB
+    if len(contents) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image must be under 2MB")
+    b64 = base64.b64encode(contents).decode("utf-8")
+    media_type = file.content_type
+    data_url = f"data:{media_type};base64,{b64}"
+    # Store in db
+    img_doc = {"id": str(uuid_module.uuid4()), "data_url": data_url, "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.news_images.insert_one(img_doc)
+    return {"url": data_url}
 
 @api_router.put("/admin/news/{news_id}")
 async def update_news_post(news_id: str, update: NewsPostUpdate, current_user: dict = Depends(get_current_user)):
