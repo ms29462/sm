@@ -159,9 +159,8 @@ const ClubOpportunities = () => {
                 <div className="mt-2 grid grid-cols-3 gap-2 bg-black/20 border border-white/10 rounded-sm p-3">
                   {POSITIONS.map((pos) => (
                     <label key={pos} className="flex items-center gap-2 cursor-pointer text-sm">
-                      <input type="checkbox" checked={editForm.positions?.includes(pos) || false}
+                      <input type="radio" checked={editForm.positions?.includes(pos) || false}
                         onChange={(e) => {
-                          const curr = editForm.positions || [];
                           setEditForm(f => ({...f, positions: e.target.checked ? [...curr, pos] : curr.filter(p => p !== pos)}));
                         }} className="accent-primary" />
                       {pos}
