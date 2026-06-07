@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { GraduationCap } from "lucide-react";
 
 const DIVISIONS = [
   { id: "NCAA Division I", label: "NCAA D1", description: "Top tier — highest standards", cost: "$30k-$70k USD/yr" },
@@ -359,7 +360,7 @@ const CollegeFitPage = () => {
         <button onClick={analyze} disabled={loading || !division} className="relative group disabled:opacity-40 disabled:cursor-not-allowed">
           <div className={`w-28 h-28 rounded-full border-4 border-primary flex items-center justify-center transition-all
             ${loading ? "animate-spin border-t-transparent" : "hover:bg-primary/10 hover:scale-105"}`}>
-            <img src="/college-fit-logo.png" alt="College Fit" className="w-20 h-20 object-contain" />
+            <GraduationCap className="w-10 h-10 text-primary" />
           </div>
           <p className="text-center text-xs uppercase tracking-widest text-primary mt-3 font-bold">
             {loading ? "Analyzing..." : "Run College Fit"}
