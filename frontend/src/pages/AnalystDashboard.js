@@ -17,6 +17,7 @@ import EvaluationForm from '@/components/evaluation/EvaluationForm';
 import EvaluationView from '@/components/evaluation/EvaluationView';
 import PlayerScoutDashboard from '@/components/evaluation/PlayerScoutDashboard';
 import ClubPlayers from '@/components/club/ClubPlayers';
+import PlayerDetailView from '@/components/club/PlayerDetailView';
 
 const AnalystDashboard = () => {
   const { logout } = useAuth();
@@ -163,6 +164,7 @@ const AnalystDashboard = () => {
             <Route path="evaluation/:evaluationId" element={<EvaluationView />} />
             <Route path="player/:playerId/dashboard" element={<PlayerScoutDashboard />} />
             <Route path="browse" element={<ClubPlayers />} />
+            <Route path="player-profile/:playerId" element={<PlayerDetailView />} />
             <Route path="*" element={<AnalystDashboardHome />} />
           </Routes>
         </div>

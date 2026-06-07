@@ -148,11 +148,16 @@ const PlayersToEvaluate = () => {
                         {player.evaluations_count || 0} evaluation{player.evaluations_count !== 1 ? 's' : ''}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link to={`/analyst/player-profile/${player.user_id}`}>
+                        <Button variant="outline" size="sm" className="text-xs h-8 border-white/20">
+                          Profile
+                        </Button>
+                      </Link>
                       {player.evaluations_count > 0 && (
                         <Link to={`/analyst/player/${player.user_id}/dashboard`}>
                           <Button variant="ghost" size="sm" className="text-xs h-8">
-                            View
+                            Evaluations
                           </Button>
                         </Link>
                       )}
