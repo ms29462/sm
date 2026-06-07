@@ -151,13 +151,30 @@ const AnalystProfile = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="country" className="text-sm">Country</Label>
-                <Input
+                <select
                   id="country"
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                  className="mt-1.5 bg-zinc-800/50 border-zinc-700"
-                  placeholder="e.g., United Kingdom"
-                />
+                  className="mt-1.5 w-full bg-zinc-800/50 border border-zinc-700 rounded-md h-10 px-3 text-sm text-white outline-none cursor-pointer"
+                >
+                  <option value="">Select country...</option>
+                  <option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Angola</option><option>Argentina</option>
+                  <option>Australia</option><option>Austria</option><option>Belgium</option><option>Bolivia</option><option>Brazil</option>
+                  <option>Cameroon</option><option>Canada</option><option>Chile</option><option>China</option><option>Colombia</option>
+                  <option>Congo</option><option>Costa Rica</option><option>Croatia</option><option>Czech Republic</option><option>Denmark</option>
+                  <option>DR Congo</option><option>Ecuador</option><option>Egypt</option><option>England</option><option>Ethiopia</option>
+                  <option>Finland</option><option>France</option><option>Germany</option><option>Ghana</option><option>Greece</option>
+                  <option>Guinea</option><option>Honduras</option><option>Hungary</option><option>India</option><option>Indonesia</option>
+                  <option>Iran</option><option>Ireland</option><option>Israel</option><option>Italy</option><option>Ivory Coast</option>
+                  <option>Jamaica</option><option>Japan</option><option>Jordan</option><option>Kenya</option><option>Mali</option>
+                  <option>Mexico</option><option>Morocco</option><option>Netherlands</option><option>New Zealand</option><option>Nigeria</option>
+                  <option>Norway</option><option>Panama</option><option>Paraguay</option><option>Peru</option><option>Poland</option>
+                  <option>Portugal</option><option>Romania</option><option>Russia</option><option>Saudi Arabia</option><option>Scotland</option>
+                  <option>Senegal</option><option>Serbia</option><option>South Africa</option><option>South Korea</option><option>Spain</option>
+                  <option>Sweden</option><option>Switzerland</option><option>Tunisia</option><option>Turkey</option><option>Uganda</option>
+                  <option>Ukraine</option><option>United Kingdom</option><option>United States</option><option>Uruguay</option>
+                  <option>Venezuela</option><option>Wales</option><option>Zambia</option><option>Zimbabwe</option>
+                </select>
               </div>
               <div>
                 <Label htmlFor="years_experience" className="text-sm">Years of Experience</Label>
