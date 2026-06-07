@@ -16,6 +16,7 @@ import PlayersToEvaluate from '@/components/analyst/PlayersToEvaluate';
 import EvaluationForm from '@/components/evaluation/EvaluationForm';
 import EvaluationView from '@/components/evaluation/EvaluationView';
 import PlayerScoutDashboard from '@/components/evaluation/PlayerScoutDashboard';
+import ClubPlayers from '@/components/club/ClubPlayers';
 
 const AnalystDashboard = () => {
   const { logout } = useAuth();
@@ -44,7 +45,8 @@ const AnalystDashboard = () => {
   const navItems = [
     { path: '/analyst/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/analyst/evaluations', icon: FileText, label: 'My Evaluations' },
-    { path: '/analyst/players', icon: Users, label: 'Players' },
+    { path: '/analyst/players', icon: Users, label: 'Players to Evaluate' },
+    { path: '/analyst/browse', icon: Users, label: 'Browse Players' },
     { path: '/analyst/profile', icon: UserCircle, label: 'My Profile' },
   ];
 
@@ -160,6 +162,7 @@ const AnalystDashboard = () => {
             <Route path="evaluate/:playerId" element={<EvaluationForm />} />
             <Route path="evaluation/:evaluationId" element={<EvaluationView />} />
             <Route path="player/:playerId/dashboard" element={<PlayerScoutDashboard />} />
+            <Route path="browse" element={<ClubPlayers />} />
             <Route path="*" element={<AnalystDashboardHome />} />
           </Routes>
         </div>
