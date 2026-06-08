@@ -120,7 +120,7 @@ const ClubProfile = () => {
             </div>
             <div>
               <h3 className="text-xl font-heading font-bold">{profile?.name}</h3>
-              <p className="text-sm text-muted-foreground">{profile?.email}</p>
+              <p className="text-sm text-muted-foreground truncate max-w-[180px] sm:max-w-none">{profile?.email}</p>
               <span
                 data-testid="approval-status"
                 className={`inline-block mt-2 px-2 py-1 text-[10px] uppercase tracking-wider rounded-sm ${
@@ -157,14 +157,31 @@ const ClubProfile = () => {
               <Label htmlFor="country" className="text-sm font-medium uppercase tracking-wide">
                 Country
               </Label>
-              <Input
+              <select
                 id="country"
                 data-testid="country-input"
-                type="text"
                 value={formData.country || ''}
                 onChange={(e) => handleChange('country', e.target.value)}
-                className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-              />
+                className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none cursor-pointer mt-1"
+              >
+                <option value="">Select country...</option>
+                <option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Angola</option><option>Argentina</option>
+                <option>Australia</option><option>Austria</option><option>Belgium</option><option>Bolivia</option><option>Brazil</option>
+                <option>Cameroon</option><option>Canada</option><option>Chile</option><option>China</option><option>Colombia</option>
+                <option>Congo</option><option>Costa Rica</option><option>Croatia</option><option>Czech Republic</option><option>Denmark</option>
+                <option>DR Congo</option><option>Ecuador</option><option>Egypt</option><option>England</option><option>Ethiopia</option>
+                <option>Finland</option><option>France</option><option>Germany</option><option>Ghana</option><option>Greece</option>
+                <option>Guinea</option><option>Honduras</option><option>Hungary</option><option>India</option><option>Indonesia</option>
+                <option>Iran</option><option>Ireland</option><option>Israel</option><option>Italy</option><option>Ivory Coast</option>
+                <option>Jamaica</option><option>Japan</option><option>Jordan</option><option>Kenya</option><option>Mali</option>
+                <option>Mexico</option><option>Morocco</option><option>Netherlands</option><option>New Zealand</option><option>Nigeria</option>
+                <option>Norway</option><option>Panama</option><option>Paraguay</option><option>Peru</option><option>Poland</option>
+                <option>Portugal</option><option>Romania</option><option>Russia</option><option>Saudi Arabia</option><option>Scotland</option>
+                <option>Senegal</option><option>Serbia</option><option>South Africa</option><option>South Korea</option><option>Spain</option>
+                <option>Sweden</option><option>Switzerland</option><option>Tunisia</option><option>Turkey</option><option>Uganda</option>
+                <option>Ukraine</option><option>United Kingdom</option><option>United States</option><option>Uruguay</option>
+                <option>Venezuela</option><option>Wales</option><option>Zambia</option><option>Zimbabwe</option>
+              </select>
             </div>
 <div>
   <Label htmlFor="city" className="text-sm font-medium uppercase tracking-wide">
