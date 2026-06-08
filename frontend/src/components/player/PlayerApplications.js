@@ -14,6 +14,9 @@ const STATUS_COLORS = {
 const PlayerApplications = () => {
   const [applications, setApplications] = useState([]);
   const [matchScores, setMatchScores] = useState({});
+  const [filterPosition, setFilterPosition] = useState('');
+  const [filterLeague, setFilterLeague] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,6 +43,17 @@ const PlayerApplications = () => {
     }
   };
 
+  const filteredApplications = applications.filter(app => {
+    if (filterPosition && app.opportunity?.position !== filterPosition) return false;
+    if (filterLeague && app.opportunity?.league_level !== filterLeague) return false;
+    if (filterStatus && app.status !== filterStatus) return false;
+    return true;
+  });
+
+  // Get unique values for filters
+  const positions = [...new Set(applications.map(a => a.opportunity?.position).filter(Boolean))];
+  const leagues = [...new Set(applications.map(a => a.opportunity?.league_level).filter(Boolean))];
+
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
@@ -55,6 +69,38 @@ const PlayerApplications = () => {
         <p className="text-muted-foreground">Track your application status</p>
       </div>
 
+      {/* Filters */}
+      {applications.length > 0 && (
+        <div className="flex flex-wrap gap-3 mb-6">
+          <select value={filterPosition} onChange={e => setFilterPosition(e.target.value)}
+            className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+            <option value="">All Positions</option>
+            {positions.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          <select value={filterLeague} onChange={e => setFilterLeague(e.target.value)}
+            className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+            <option value="">All Leagues</option>
+            {leagues.map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+            className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+            <option value="">All Statuses</option>
+            <option value="submitted">Submitted</option>
+            <option value="viewed">Viewed</option>
+            <option value="shortlisted">Shortlisted</option>
+            <option value="interview_requested">Interview Requested</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          {(filterPosition || filterLeague || filterStatus) && (
+            <button onClick={() => { setFilterPosition(''); setFilterLeague(''); setFilterStatus(''); }}
+              className="text-xs text-muted-foreground hover:text-white border border-white/10 rounded-sm px-3 py-1.5">
+              Clear
+            </button>
+          )}
+        </div>
+      )}
+
       {applications.length === 0 ? (
         <div data-testid="no-applications" className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -62,7 +108,7 @@ const PlayerApplications = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {applications.map((app) => (
+          {filteredApplications.map((app) => (
             <div
               key={app.id}
               data-testid={`application-card-${app.id}`}
