@@ -335,19 +335,19 @@ const PlayerDetailView = () => {
           <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">Media & Links</h3>
           <div className="space-y-4">
             {player.highlight_video && (
-              <div className="flex items-center justify-between p-4 bg-background rounded-sm border border-border">
+              <div className="flex flex-wrap items-center justify-between gap-2 p-4 bg-background rounded-sm border border-border">
                 <div>
                   <p className="font-medium mb-1">Highlight Video</p>
                   <p className="text-sm text-muted-foreground">YouTube / Vimeo</p>
                 </div>
                 <Button variant="outline" onClick={() => window.open(player.highlight_video, '_blank')}
-                  className="border-primary text-primary hover:bg-primary hover:text-black">
-                  <ExternalLink className="w-4 h-4 mr-2" /> WATCH VIDEO
+                  className="border-primary text-primary hover:bg-primary hover:text-black text-xs px-3 py-1.5">
+                  <ExternalLink className="w-3 h-3 mr-1" /> Watch Video
                 </Button>
               </div>
             )}
             {player.cv && (
-              <div className="flex items-center justify-between p-4 bg-background rounded-sm border border-border">
+              <div className="flex flex-wrap items-center justify-between gap-2 p-4 bg-background rounded-sm border border-border">
                 <div>
                   <p className="font-medium mb-1">CV / Resume</p>
                   <p className="text-sm text-muted-foreground">Player curriculum vitae</p>
@@ -359,7 +359,7 @@ const PlayerDetailView = () => {
               </div>
             )}
             {player.transfermarkt_url && (
-              <div className="flex items-center justify-between p-4 bg-background rounded-sm border border-border">
+              <div className="flex flex-wrap items-center justify-between gap-2 p-4 bg-background rounded-sm border border-border">
                 <div>
                   <p className="font-medium mb-1">Transfermarkt Profile</p>
                   <p className="text-sm text-muted-foreground">Professional stats and market value</p>
@@ -382,12 +382,12 @@ const PlayerDetailView = () => {
           </h3>
           <div className="space-y-3">
             {matchArchive.map((match) => (
-              <div key={match.id} className="flex items-center justify-between p-4 bg-background rounded-sm border border-border hover:border-primary/50 transition-colors">
+              <div key={match.id} className="flex flex-wrap items-center justify-between gap-2 p-3 bg-background rounded-sm border border-border hover:border-primary/50 transition-colors">
                 <div className="flex-1">
                   <p className="font-medium">{match.opponent}</p>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                    <span>{match.match_date}</span>
-                    {match.competition_level && <span className="bg-white/10 px-2 py-0.5 rounded-sm text-xs uppercase">{match.competition_level}</span>}
+                    <span>{match.match_date ? new Date(match.match_date).toLocaleDateString("en-US", {year:"numeric", month:"short", day:"numeric"}) : ""}</span>
+                    {match.competition_level && <span className="bg-white/10 px-1.5 py-0.5 rounded-sm text-[10px]xs uppercase">{match.competition_level}</span>}
                     {match.position_played && <span>· {match.position_played}</span>}
                   </div>
                   {match.description && <p className="text-xs text-muted-foreground mt-1">{match.description}</p>}
