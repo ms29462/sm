@@ -181,11 +181,13 @@ const PlayerProfilePopup = ({ player, onClose, verifications = {} }) => {
 const ClubApplications = () => {
   const [applications, setApplications] = useState([]);
   const [verifications, setVerifications] = useState({});
+  const [matchScores, setMatchScores] = useState({});
   const [expandedOpps, setExpandedOpps] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPosition, setFilterPosition] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [candidateFilters, setCandidateFilters] = useState({});
+  const [candidateSort, setCandidateSort] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
@@ -267,7 +269,8 @@ const ClubApplications = () => {
 
   const getFilteredCandidates = (oppId, apps) => {
     const f = candidateFilters[oppId] || {};
-    return apps.filter(app => {
+    const sort = candidateSort[oppId] || 'none';
+    let filtered = apps.filter(app => {
       if (f.name && !app.player_name?.toLowerCase().includes(f.name.toLowerCase())) return false;
       if (f.minScore) {
         const score = verifications[app.player_id]?.quality_score || 0;
@@ -279,6 +282,12 @@ const ClubApplications = () => {
       }
       return true;
     });
+    if (sort === 'fit') {
+      filtered = [...filtered].sort((a, b) => (matchScores[b.opportunity_id] || 0) - (matchScores[a.opportunity_id] || 0));
+    } else if (sort === 'quality') {
+      filtered = [...filtered].sort((a, b) => (verifications[b.player_id]?.quality_score || 0) - (verifications[a.player_id]?.quality_score || 0));
+    }
+    return filtered;
   };
 
   const toggleOpp = (oppId) => {
@@ -398,6 +407,11 @@ const ClubApplications = () => {
                         Clear
                       </button>
                     )}
+                    <select value={candidateSort[oppId] || 'none'} onChange={e => setCandidateSort(prev => ({...prev, [oppId]: e.target.value}))}
+                      className="bg-black/20 border border-white/10 rounded-sm h-8 px-2 text-xs text-white outline-none cursor-pointer">
+                      <option value="none">Sort by...</option>
+                      <option value="quality">Quality Score</option>
+                    </select>
                     <span className="text-xs text-muted-foreground self-center">
                       {getFilteredCandidates(oppId, group.applications).length} / {group.applications.length} candidates
                     </span>
