@@ -183,6 +183,8 @@ const ClubApplications = () => {
   const [verifications, setVerifications] = useState({});
   const [expandedOpps, setExpandedOpps] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterPosition, setFilterPosition] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
@@ -233,16 +235,26 @@ const ClubApplications = () => {
     return acc;
   }, {});
 
-  // Filter by search
+  // Get unique positions and statuses
+  const allPositions = [...new Set(Object.values(grouped).map(g => g.opportunity?.position).filter(Boolean))];
+
+  // Filter by search, position and status
   const filteredGroups = Object.entries(grouped).filter(([_, group]) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      group.opportunity?.club_name?.toLowerCase().includes(q) ||
-      group.opportunity?.position?.toLowerCase().includes(q) ||
-      group.opportunity?.league_level?.toLowerCase().includes(q) ||
-      group.applications.some(a => a.player_name?.toLowerCase().includes(q))
-    );
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = (
+        group.opportunity?.position?.toLowerCase().includes(q) ||
+        group.opportunity?.league_level?.toLowerCase().includes(q) ||
+        group.applications.some(a => a.player_name?.toLowerCase().includes(q))
+      );
+      if (!matchesSearch) return false;
+    }
+    if (filterPosition && group.opportunity?.position !== filterPosition) return false;
+    if (filterStatus) {
+      const hasStatus = group.applications.some(a => a.status === filterStatus);
+      if (!hasStatus) return false;
+    }
+    return true;
   });
 
   const toggleOpp = (oppId) => {
@@ -279,6 +291,30 @@ const ClubApplications = () => {
               placeholder="Search by opportunity, position, player..."
               className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-4 text-sm text-white outline-none focus:border-primary"
             />
+          </div>
+          {/* Filters */}
+          <div className="flex flex-wrap gap-2 mb-2">
+            <select value={filterPosition} onChange={e => setFilterPosition(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+              <option value="">All Positions</option>
+              {allPositions.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+              <option value="">All Statuses</option>
+              <option value="submitted">Submitted</option>
+              <option value="viewed">Viewed</option>
+              <option value="shortlisted">Shortlisted</option>
+              <option value="interview_requested">Interview Requested</option>
+              <option value="accepted">Accepted</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            {(filterPosition || filterStatus || searchQuery) && (
+              <button onClick={() => { setFilterPosition(''); setFilterStatus(''); setSearchQuery(''); }}
+                className="text-xs text-muted-foreground hover:text-white border border-white/10 rounded-sm px-3 py-1.5">
+                Clear Filters
+              </button>
+            )}
           </div>
           <p className="text-sm text-muted-foreground">{filteredGroups.length} opportunities · {applications.length} total applications</p>
           {filteredGroups.map(([oppId, group]) => (
