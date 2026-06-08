@@ -185,6 +185,7 @@ const ClubApplications = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPosition, setFilterPosition] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [candidateFilters, setCandidateFilters] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
@@ -256,6 +257,29 @@ const ClubApplications = () => {
     }
     return true;
   });
+
+  const updateCandidateFilter = (oppId, field, value) => {
+    setCandidateFilters(prev => ({
+      ...prev,
+      [oppId]: { ...(prev[oppId] || {}), [field]: value }
+    }));
+  };
+
+  const getFilteredCandidates = (oppId, apps) => {
+    const f = candidateFilters[oppId] || {};
+    return apps.filter(app => {
+      if (f.name && !app.player_name?.toLowerCase().includes(f.name.toLowerCase())) return false;
+      if (f.minScore) {
+        const score = verifications[app.player_id]?.quality_score || 0;
+        if (score < parseInt(f.minScore)) return false;
+      }
+      if (f.badge) {
+        const badges = verifications[app.player_id]?.badges || [];
+        if (!badges.includes(f.badge)) return false;
+      }
+      return true;
+    });
+  };
 
   const toggleOpp = (oppId) => {
     setExpandedOpps(prev => ({ ...prev, [oppId]: !prev[oppId] }));
@@ -338,8 +362,48 @@ const ClubApplications = () => {
 
               {/* Applications List */}
               {expandedOpps[oppId] && (
-                <div className="border-t border-border/50 divide-y divide-border/30">
-                  {group.applications.map((app) => (
+                <div className="border-t border-border/50">
+                  {/* Candidate Filters */}
+                  <div className="flex flex-wrap gap-2 p-3 bg-black/10 border-b border-border/30">
+                    <input
+                      value={candidateFilters[oppId]?.name || ''}
+                      onChange={e => updateCandidateFilter(oppId, 'name', e.target.value)}
+                      placeholder="Filter by player name..."
+                      className="flex-1 min-w-[140px] bg-black/20 border border-white/10 rounded-sm h-8 px-3 text-xs text-white outline-none focus:border-primary"
+                    />
+                    <select value={candidateFilters[oppId]?.minScore || ''} onChange={e => updateCandidateFilter(oppId, 'minScore', e.target.value)}
+                      className="bg-black/20 border border-white/10 rounded-sm h-8 px-2 text-xs text-white outline-none cursor-pointer">
+                      <option value="">Any Score</option>
+                      <option value="25">25+</option>
+                      <option value="50">50+</option>
+                      <option value="60">60+</option>
+                      <option value="70">70+</option>
+                      <option value="80">80+</option>
+                    </select>
+                    <select value={candidateFilters[oppId]?.badge || ''} onChange={e => updateCandidateFilter(oppId, 'badge', e.target.value)}
+                      className="bg-black/20 border border-white/10 rounded-sm h-8 px-2 text-xs text-white outline-none cursor-pointer">
+                      <option value="">Any Badge</option>
+                      <option value="verified_profile">✓ Verified</option>
+                      <option value="match_ready">⚡ Match Ready</option>
+                      <option value="scout_approved">👁 Scout Approved</option>
+                      <option value="top_prospect">⭐ Top Prospect</option>
+                      <option value="professional_experience">🏆 Pro Experience</option>
+                      <option value="international_player">🌍 International</option>
+                      <option value="university_eligible">🎓 Uni Eligible</option>
+                      <option value="video_verified">🎥 Video Verified</option>
+                    </select>
+                    {(candidateFilters[oppId]?.name || candidateFilters[oppId]?.minScore || candidateFilters[oppId]?.badge) && (
+                      <button onClick={() => setCandidateFilters(prev => ({ ...prev, [oppId]: {} }))}
+                        className="text-[10px] text-muted-foreground hover:text-white border border-white/10 rounded-sm px-2 py-1">
+                        Clear
+                      </button>
+                    )}
+                    <span className="text-xs text-muted-foreground self-center">
+                      {getFilteredCandidates(oppId, group.applications).length} / {group.applications.length} candidates
+                    </span>
+                  </div>
+                  <div className="divide-y divide-border/30">
+                  {getFilteredCandidates(oppId, group.applications).map((app) => (
             <div key={app.id} data-testid={"application-card-" + app.id} onClick={() => setSelectedPlayer(app.player)} className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -379,6 +443,7 @@ const ClubApplications = () => {
               </div>
             </div>
           ))}
+                  </div>
                 </div>
               )}
             </div>
