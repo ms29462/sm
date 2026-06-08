@@ -2024,6 +2024,7 @@ async def get_players(
     quality_level: Optional[str] = None,
     representation_status: Optional[str] = None,
     mandate_status: Optional[str] = None,
+    min_quality_score: Optional[int] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college', 'analyst']:
@@ -2049,6 +2050,19 @@ async def get_players(
         query["representation_status"] = representation_status
     if mandate_status:
         query["mandate_status"] = mandate_status
+
+    # Min quality score filter
+    if min_quality_score:
+        verif_query_score = {"quality_score": {"$gte": min_quality_score}}
+        score_user_ids = await db.verifications.distinct("user_id", verif_query_score)
+        if "user_id" in query and "$in" in query.get("user_id", {}):
+            query["user_id"]["$in"] = list(set(query["user_id"]["$in"]) & set(score_user_ids))
+        else:
+            existing_ids = query.get("user_id", {}).get("$in", None)
+            if existing_ids:
+                query["user_id"] = {"$in": list(set(existing_ids) & set(score_user_ids))}
+            else:
+                query["user_id"] = {"$in": score_user_ids}
 
     # Badge and quality level filters - lookup from verifications collection
     if badge or quality_level:

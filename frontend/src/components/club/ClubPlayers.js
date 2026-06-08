@@ -29,6 +29,7 @@ const ClubPlayers = () => {
   const [verifications, setVerifications] = useState({});
   const [filterBadge, setFilterBadge] = useState('');
   const [filterRepresentation, setFilterRepresentation] = useState('');
+  const [filterMinScore, setFilterMinScore] = useState('');
   const [filterMandate, setFilterMandate] = useState('');
   const [filterQuality, setFilterQuality] = useState('');
   const [filters, setFilters] = useState({
@@ -40,7 +41,7 @@ const ClubPlayers = () => {
 
   useEffect(() => {
     loadPlayers();
-  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate]);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore]);
 
   const loadPlayers = async () => {
     try {
@@ -55,6 +56,7 @@ const ClubPlayers = () => {
       if (filterQuality) queryFilters.quality_level = filterQuality;
       if (filterRepresentation) queryFilters.representation_status = filterRepresentation;
       if (filterMandate) queryFilters.mandate_status = filterMandate;
+      if (filterMinScore) queryFilters.min_quality_score = parseInt(filterMinScore);
 
       const response = await api.getPlayers(queryFilters);
       setPlayers(response.data);
@@ -208,8 +210,21 @@ const ClubPlayers = () => {
                 <option value="Elite">Elite</option>
               </select>
             </div>
-            {(filterBadge || filterQuality) && (
-              <button onClick={() => { setFilterBadge(''); setFilterQuality(''); }}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Min Score:</label>
+              <select value={filterMinScore} onChange={e => setFilterMinScore(e.target.value)}
+                className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                <option value="">Any Score</option>
+                <option value="25">25+</option>
+                <option value="50">50+</option>
+                <option value="60">60+</option>
+                <option value="70">70+</option>
+                <option value="80">80+</option>
+                <option value="90">90+</option>
+              </select>
+            </div>
+            {(filterBadge || filterQuality || filterMinScore) && (
+              <button onClick={() => { setFilterBadge(''); setFilterQuality(''); setFilterMinScore(''); }}
                 className="text-xs text-muted-foreground hover:text-white border border-white/10 rounded-sm px-3 py-1.5 transition-colors">
                 Clear
               </button>
