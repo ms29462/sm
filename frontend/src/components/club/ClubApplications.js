@@ -181,6 +181,8 @@ const PlayerProfilePopup = ({ player, onClose, verifications = {} }) => {
 const ClubApplications = () => {
   const [applications, setApplications] = useState([]);
   const [verifications, setVerifications] = useState({});
+  const [expandedOpps, setExpandedOpps] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
@@ -218,6 +220,35 @@ const ClubApplications = () => {
     }
   };
 
+  // Group applications by opportunity
+  const grouped = applications.reduce((acc, app) => {
+    const oppId = app.opportunity_id;
+    if (!acc[oppId]) {
+      acc[oppId] = {
+        opportunity: app.opportunity,
+        applications: []
+      };
+    }
+    acc[oppId].applications.push(app);
+    return acc;
+  }, {});
+
+  // Filter by search
+  const filteredGroups = Object.entries(grouped).filter(([_, group]) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      group.opportunity?.club_name?.toLowerCase().includes(q) ||
+      group.opportunity?.position?.toLowerCase().includes(q) ||
+      group.opportunity?.league_level?.toLowerCase().includes(q) ||
+      group.applications.some(a => a.player_name?.toLowerCase().includes(q))
+    );
+  });
+
+  const toggleOpp = (oppId) => {
+    setExpandedOpps(prev => ({ ...prev, [oppId]: !prev[oppId] }));
+  };
+
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
@@ -240,7 +271,39 @@ const ClubApplications = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {applications.map((app) => (
+          {/* Search */}
+          <div className="relative">
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search by opportunity, position, player..."
+              className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-4 text-sm text-white outline-none focus:border-primary"
+            />
+          </div>
+          <p className="text-sm text-muted-foreground">{filteredGroups.length} opportunities · {applications.length} total applications</p>
+          {filteredGroups.map(([oppId, group]) => (
+            <div key={oppId} className="bg-card border border-border/50 rounded-sm overflow-hidden">
+              {/* Opportunity Header */}
+              <button
+                onClick={() => toggleOpp(oppId)}
+                className="w-full flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-white/5 transition-colors gap-2"
+              >
+                <div className="flex-1 text-left">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <h3 className="font-heading font-bold uppercase">{group.opportunity?.position || "Position N/A"}</h3>
+                    <span className="text-xs bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-sm">
+                      {group.applications.length} applicant{group.applications.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{group.opportunity?.league_level} · {group.opportunity?.salary_range || "Salary N/A"}</p>
+                </div>
+                <span className="text-muted-foreground text-sm">{expandedOpps[oppId] ? '▲ Collapse' : '▼ Expand'}</span>
+              </button>
+
+              {/* Applications List */}
+              {expandedOpps[oppId] && (
+                <div className="border-t border-border/50 divide-y divide-border/30">
+                  {group.applications.map((app) => (
             <div key={app.id} data-testid={"application-card-" + app.id} onClick={() => setSelectedPlayer(app.player)} className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -278,6 +341,10 @@ const ClubApplications = () => {
                   </select>
                 </div>
               </div>
+            </div>
+          ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
