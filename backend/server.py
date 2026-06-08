@@ -1947,6 +1947,28 @@ async def update_application_status(
     )
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Application not found")
+    
+    # Notify player of status change
+    try:
+        application = await db.applications.find_one({"id": application_id}, {"_id": 0})
+        if application:
+            status_messages = {
+                "viewed": "Your application has been viewed",
+                "shortlisted": "You have been shortlisted",
+                "interview_requested": "An interview has been requested",
+                "accepted": "Congratulations! Your application has been accepted",
+                "rejected": "Your application status has been updated"
+            }
+            msg = status_messages.get(status_update.status, f"Your application status changed to {status_update.status}")
+            await create_notification(
+                application.get("player_id"),
+                "application_update",
+                f"📋 {msg}",
+                {"application_id": application_id, "status": status_update.status}
+            )
+    except Exception as e:
+        print(f"Notification error: {e}")
+    
     return {"message": "Status updated"}
 
 @api_router.get("/players/{player_id}/verification")
@@ -4076,6 +4098,18 @@ async def add_to_pipeline(data: PipelinePlayerAdd, current_user: dict = Depends(
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
     await db.pipeline.insert_one(pp)
+    
+    # Notify player they were added to pipeline
+    try:
+        await create_notification(
+            data.player_id,
+            "pipeline",
+            "🎯 You have been added to a recruitment pipeline",
+            {"org_id": current_user["user_id"]}
+        )
+    except Exception as e:
+        print(f"Notification error: {e}")
+    
     return pp
 
 @api_router.put("/pipeline/{pipeline_id}")
