@@ -61,7 +61,7 @@ const PlayerApplications = () => {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="text-xl font-heading font-bold uppercase mb-1">{app.opportunity.club_name}</h3>
-                  <p className="text-sm text-muted-foreground">{app.opportunity.position} Â· {app.opportunity.league_level}</p>
+                  <p className="text-sm text-muted-foreground">{app.opportunity.position} · {app.opportunity.league_level}</p>
                 </div>
                 <span
                   data-testid={`status-${app.id}`}
