@@ -112,7 +112,7 @@ const ChatRoom = () => {
       emit("typing_start", {
         room_id: roomId,
         user_id: user.userId,
-        sender_name: user.email
+        sender_name: user.name || user.email
       });
     }
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -135,7 +135,8 @@ const ChatRoom = () => {
       emit("send_chat_message", {
         room_id: roomId,
         sender_id: user.userId,
-        sender_name: user.email,
+        sender_name: user.name || user.email,
+        sender_role: user.role,
         message: newMessage.trim()
       });
       setNewMessage("");
@@ -207,7 +208,7 @@ const ChatRoom = () => {
                 >
                   {!isMe && (
                     <p className="text-xs font-bold uppercase mb-1 text-primary">
-                      {message.sender_name}
+                      {message.sender_role === "player" ? message.sender_name : "Scout / Organization"}
                     </p>
                   )}
                   <p className="text-sm break-words">{message.message}</p>

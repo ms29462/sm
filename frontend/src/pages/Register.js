@@ -27,7 +27,7 @@ const Register = () => {
     try {
       const response = await api.register({ name, email, password, role });
       const { token, role: userRole, user_id, email: userEmail } = response.data;
-      login(token, userRole, user_id, userEmail, response.data.refresh_token);
+      login(token, userRole, user_id, userEmail, response.data.refresh_token, response.data.name);
       toast.success('Registration successful!');
 
       if (userRole === 'player') {

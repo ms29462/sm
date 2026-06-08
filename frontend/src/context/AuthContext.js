@@ -14,21 +14,23 @@ export const AuthProvider = ({ children }) => {
     const role = localStorage.getItem("role");
     const userId = localStorage.getItem("userId");
     const email = localStorage.getItem("email");
+    const name = localStorage.getItem("name");
     if (token && role && userId) {
-      setUser({ token, refreshToken, role, userId, email });
+      setUser({ token, refreshToken, role, userId, email, name });
     }
     setLoading(false);
   }, []);
 
-  const login = (token, role, userId, email, refreshToken = null) => {
+  const login = (token, role, userId, email, refreshToken = null, name = null) => {
     localStorage.setItem("token", token);
     localStorage.setItem("role", role);
     localStorage.setItem("userId", userId);
     localStorage.setItem("email", email);
+    if (name) localStorage.setItem("name", name);
     if (refreshToken) {
       localStorage.setItem("refresh_token", refreshToken);
     }
-    setUser({ token, refreshToken, role, userId, email });
+    setUser({ token, refreshToken, role, userId, email, name });
   };
 
   const logout = () => {
@@ -37,6 +39,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("role");
     localStorage.removeItem("userId");
     localStorage.removeItem("email");
+    localStorage.removeItem("name");
     setUser(null);
   };
 

@@ -25,7 +25,7 @@ const Login = ({ admin = false }) => {
         : await api.login({ email, password });
 
       const { token, role, user_id, email: userEmail } = response.data;
-      login(token, role, user_id, userEmail, response.data.refresh_token);
+      login(token, role, user_id, userEmail, response.data.refresh_token, response.data.name);
       toast.success("Login successful!");
 
       if (role === "admin") {

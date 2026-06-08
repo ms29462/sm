@@ -5174,6 +5174,7 @@ async def send_chat_message(sid, data):
     room_id = data.get('room_id')
     sender_id = data.get('sender_id')
     sender_name = data.get('sender_name')
+    sender_role = data.get('sender_role', 'unknown')
     message_text = data.get('message')
     
     if room_id and sender_id and message_text:
@@ -5182,6 +5183,7 @@ async def send_chat_message(sid, data):
             room_id=room_id,
             sender_id=sender_id,
             sender_name=sender_name,
+            sender_role=sender_role,
             message=message_text,
             timestamp=datetime.now(timezone.utc).isoformat()
         )

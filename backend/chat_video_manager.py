@@ -10,6 +10,7 @@ class ChatMessage(BaseModel):
     room_id: str
     sender_id: str
     sender_name: str
+    sender_role: str = "unknown"
     message: str
     timestamp: str
 
