@@ -5374,6 +5374,33 @@ async def admin_update_agent_representation(user_id: str, data: dict, current_us
         )
     return {"success": True}
 
+
+@api_router.post("/chat-requests/{request_id}/deletion-request")
+async def request_chat_deletion(request_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] == "player":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Store deletion request
+    deletion_doc = {
+        "id": str(uuid.uuid4()),
+        "request_id": request_id,
+        "requester_id": current_user["user_id"],
+        "requester_role": current_user["role"],
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.chat_deletion_requests.insert_one(deletion_doc)
+    
+    # Notify admin
+    await create_notification(
+        "admin-001",
+        "deletion_request",
+        f"Organization requests deletion of chat request {request_id}",
+        {"request_id": request_id, "requester_id": current_user["user_id"]}
+    )
+    
+    return {"success": True, "message": "Deletion request sent to admin"}
+
 fastapi_app.include_router(api_router)
 
 fastapi_app.add_middleware(

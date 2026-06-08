@@ -251,6 +251,8 @@ export const api = {
   // Player Evaluations (for all roles)
   getPlayerEvaluations: (playerId) => axios.get(`${API}/player/${playerId}/evaluations`, { headers: getAuthHeaders() }),
   getPlayerDashboard: (playerId) => axios.get(`${API}/player/${playerId}/dashboard`, { headers: getAuthHeaders() }),
+  requestChatDeletion: (requestId) => axios.post(`${API}/chat-requests/${requestId}/deletion-request`, {}, { headers: getAuthHeaders() }),
+
   // Agent Representation
   getMyAgentRepresentation: () => axios.get(`${API}/player/agent-representation`, { headers: getAuthHeaders() }),
   updateMyAgentRepresentation: (data) => axios.put(`${API}/player/agent-representation`, data, { headers: getAuthHeaders() }),

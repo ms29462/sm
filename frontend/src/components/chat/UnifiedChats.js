@@ -18,6 +18,7 @@ const UnifiedChats = () => {
   const [requests, setRequests] = useState([]);
   const [loadingChats, setLoadingChats] = useState(true);
   const [loadingRequests, setLoadingRequests] = useState(true);
+  const [deletionRequested, setDeletionRequested] = useState({});
   const { unreadChats } = useNotifications();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -43,6 +44,13 @@ const UnifiedChats = () => {
       setRequests(res.data || []);
     } catch (e) {}
     setLoadingRequests(false);
+  };
+
+  const handleRequestDeletion = async (reqId) => {
+    try {
+      await api.requestChatDeletion(reqId);
+    } catch (e) {}
+    setDeletionRequested(prev => ({ ...prev, [reqId]: true }));
   };
 
   const handleRespond = async (requestId, status) => {
@@ -163,6 +171,20 @@ const UnifiedChats = () => {
                       className="flex-1 border border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-sm py-2 text-sm flex items-center justify-center gap-1">
                       <XCircle className="w-4 h-4" /> Decline
                     </button>
+                  </div>
+                )}
+                {user?.role !== "player" && (
+                  <div className="mt-2">
+                    {deletionRequested[req.id] ? (
+                      <p className="text-xs text-green-400 flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" /> Deletion request sent to admin
+                      </p>
+                    ) : (
+                      <button onClick={() => handleRequestDeletion(req.id)}
+                        className="text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400/50 rounded-sm px-3 py-1.5 transition-colors">
+                        Request Deletion
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
