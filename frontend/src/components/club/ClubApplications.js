@@ -49,8 +49,8 @@ const PlayerProfilePopup = ({ player, onClose }) => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={goToFullProfile} className="px-3 py-1.5 border border-primary text-primary hover:bg-primary hover:text-black rounded-sm text-xs font-bold uppercase tracking-wide transition-colors">
-              View Full Profile
+            <button onClick={goToFullProfile} className="px-2 py-1 border border-primary text-primary hover:bg-primary hover:text-black rounded-sm text-[10px] font-bold uppercase tracking-wide transition-colors">
+              Profile
             </button>
             <button onClick={onClose} className="text-muted-foreground hover:text-white transition-colors p-1">
               <X className="w-6 h-6" />
