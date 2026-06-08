@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ const QUALITY_COLORS = {
 
 const ClubPlayers = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [verifications, setVerifications] = useState({});
@@ -227,7 +229,7 @@ const ClubPlayers = () => {
             <div
               key={player.user_id}
               data-testid={`player-card-${player.user_id}`}
-              onClick={() => navigate(`/club/player/${player.user_id}`)}
+              onClick={() => navigate(user?.role === 'analyst' ? `/analyst/player-profile/${player.user_id}` : `/club/player/${player.user_id}`)}
               className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer flex flex-col"
             >
               <div className="flex items-start space-x-4 mb-4">

@@ -1961,7 +1961,7 @@ async def get_player_verification_public(player_id: str, current_user: dict = De
 @api_router.get("/players/{player_id}", response_model=PlayerProfile)
 async def get_player_detail(player_id: str, current_user: dict = Depends(get_current_user)):
     """Get detailed player profile by user_id"""
-    if current_user['role'] not in ['club', 'admin', 'federation', 'college', 'agent', 'specialist']:
+    if current_user['role'] not in ['club', 'admin', 'federation', 'college', 'agent', 'specialist', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     # Send profile viewed notification
@@ -3007,7 +3007,7 @@ async def delete_match_from_archive(match_id: str, current_user: dict = Depends(
 @api_router.get("/players/{player_id}/match-archive")
 async def get_player_match_archive_public(player_id: str, current_user: dict = Depends(get_current_user)):
     """Clubs and federations can view player match archive"""
-    if current_user['role'] not in ['club', 'federation', 'admin']:
+    if current_user['role'] not in ['club', 'federation', 'admin', 'college', 'agent', 'specialist', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     matches = await db.match_archive.find({"player_id": player_id}, {"_id": 0}).sort("match_date", -1).to_list(100)
