@@ -17,7 +17,25 @@ const STATUS_COLORS = {
   accepted: "bg-green-500/10 text-green-500 border-green-500/20",
 };
 
-const PlayerProfilePopup = ({ player, onClose }) => {
+const BADGE_LABELS = {
+  verified_profile: "Verified", match_ready: "Match Ready", scout_approved: "Scout Approved",
+  professional_experience: "Pro Experience", international_player: "International",
+  university_eligible: "Uni Eligible", top_prospect: "Top Prospect",
+  diaspora_eligible: "Diaspora", video_verified: "Video Verified"
+};
+const BADGE_ICONS = {
+  verified_profile: "✓", match_ready: "⚡", scout_approved: "👁", professional_experience: "🏆",
+  international_player: "🌍", university_eligible: "🎓", top_prospect: "⭐",
+  diaspora_eligible: "🌐", video_verified: "🎥"
+};
+const QUALITY_COLORS = {
+  Bronze: "text-amber-600 border-amber-600/30 bg-amber-600/10",
+  Silver: "text-gray-300 border-gray-300/30 bg-gray-300/10",
+  Gold: "text-yellow-400 border-yellow-400/30 bg-yellow-400/10",
+  Elite: "text-purple-400 border-purple-400/30 bg-purple-400/10",
+};
+
+const PlayerProfilePopup = ({ player, onClose, verifications = {} }) => {
   const navigate = useNavigate();
   const goToFullProfile = () => { onClose(); navigate(`/club/player/${player.user_id}`); };
   if (!player) return null;
@@ -60,6 +78,27 @@ const PlayerProfilePopup = ({ player, onClose }) => {
         <div className="p-6 space-y-6">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-widest text-primary mb-3">Personal Information</h3>
+            {/* Badges & Quality Score */}
+            {verifications[player?.user_id] && (
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                {verifications[player?.user_id]?.quality_score > 0 && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-black/20 border border-white/10 rounded-sm">
+                    <span className="text-xs text-muted-foreground">Score</span>
+                    <span className="text-xs font-bold text-primary">{verifications[player?.user_id].quality_score}/100</span>
+                  </div>
+                )}
+                {verifications[player?.user_id]?.quality_level && (
+                  <span className={`text-xs px-2 py-0.5 rounded-sm border font-bold ${QUALITY_COLORS[verifications[player?.user_id].quality_level]}`}>
+                    {verifications[player?.user_id].quality_level}
+                  </span>
+                )}
+                {verifications[player?.user_id]?.badges?.slice(0, 3).map(badge => (
+                  <span key={badge} title={BADGE_LABELS[badge]} className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-sm bg-white/5 border border-white/10 text-muted-foreground">
+                    {BADGE_ICONS[badge]} <span className="hidden sm:inline">{BADGE_LABELS[badge]}</span>
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="bg-background border border-border/50 rounded-sm p-3">
                 <div className="flex items-center gap-2 mb-1"><Activity className="w-3 h-3 text-muted-foreground" /><span className="text-xs text-muted-foreground uppercase">Age</span></div>
@@ -141,6 +180,7 @@ const PlayerProfilePopup = ({ player, onClose }) => {
 
 const ClubApplications = () => {
   const [applications, setApplications] = useState([]);
+  const [verifications, setVerifications] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
@@ -151,7 +191,16 @@ const ClubApplications = () => {
   const loadApplications = async () => {
     try {
       const response = await api.getClubApplications();
-      setApplications(response.data);
+      setApplications(response.data || []);
+      // Load verifications for all players
+      const verifs = {};
+      await Promise.allSettled((response.data || []).map(async (app) => {
+        try {
+          const v = await api.getPlayerVerification(app.player_id);
+          if (v.data) verifs[app.player_id] = v.data;
+        } catch (e) {}
+      }));
+      setVerifications({...verifs});
     } catch (error) {
       toast.error("Failed to load applications");
     } finally {
@@ -179,7 +228,7 @@ const ClubApplications = () => {
 
   return (
     <div className="p-8">
-      {selectedPlayer && <PlayerProfilePopup player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />}
+      {selectedPlayer && <PlayerProfilePopup player={selectedPlayer} onClose={() => setSelectedPlayer(null)} verifications={verifications} />}
       <div className="mb-8">
         <h1 className="text-3xl font-heading font-bold uppercase mb-2">APPLICATIONS</h1>
         <p className="text-muted-foreground">Review and manage player applications - click a card to view full profile</p>
