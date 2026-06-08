@@ -116,15 +116,15 @@ const PlayerProfilePopup = ({ player, onClose }) => {
               </div>
             </div>
           )}
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex flex-wrap items-center gap-2 pt-2">
             {player.highlight_video && (
-              <a href={player.highlight_video} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-primary text-black font-bold text-sm uppercase tracking-wide rounded-sm hover:bg-primary/90 transition-colors">
+              <a href={player.highlight_video} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 bg-primary text-black font-bold text-xs uppercase tracking-wide rounded-sm hover:bg-primary/90 transition-colors whitespace-nowrap">
                 <Trophy className="w-4 h-4" />
                 Watch Highlights
               </a>
             )}
             {player.transfermarkt_url && (
-              <a href={player.transfermarkt_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white font-bold text-sm uppercase tracking-wide rounded-sm hover:bg-white/20 transition-colors">
+              <a href={player.transfermarkt_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 bg-white/10 text-white font-bold text-xs uppercase tracking-wide rounded-sm hover:bg-white/20 transition-colors whitespace-nowrap">
                 <ExternalLink className="w-4 h-4" />
                 Transfermarkt
               </a>
