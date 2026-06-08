@@ -215,18 +215,18 @@ const ClubApplications = () => {
                   <span>ASSISTS: {app.player.assists || 0}</span>
                   <span>GAMES: {app.player.games || 0}</span>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm text-muted-foreground uppercase tracking-wide">UPDATE STATUS:</span>
-                  <Select value={app.status} onValueChange={(value) => handleStatusChange(app.id, value)}>
-                    <SelectTrigger data-testid={"status-select-" + app.id} className="w-40 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUS_OPTIONS.map((status) => (
-                        <SelectItem key={status} value={status}>{status.toUpperCase()}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Update Status:</span>
+                  <select
+                    data-testid={"status-select-" + app.id}
+                    value={app.status}
+                    onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                    className="w-full sm:w-auto bg-black/20 border border-white/10 rounded-sm h-9 px-2 text-sm text-white outline-none cursor-pointer"
+                  >
+                    {STATUS_OPTIONS.map((status) => (
+                      <option key={status} value={status}>{status.replace(/_/g, " ").toUpperCase()}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
