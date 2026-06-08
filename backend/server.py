@@ -842,6 +842,8 @@ class Application(BaseModel):
     player_name: str
     club_id: str
     status: str = 'submitted'
+    fit_score: Optional[int] = None
+    fit_reasons: Optional[List[str]] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class ApplicationStatusUpdate(BaseModel):
@@ -1805,7 +1807,8 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
         if opp:
             result.append({
                 **app,
-                "opportunity": opp
+                "opportunity": opp,
+                "fit_score": app.get("fit_score", None)
             })
     return result
 

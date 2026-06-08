@@ -13,6 +13,7 @@ const STATUS_COLORS = {
 
 const PlayerApplications = () => {
   const [applications, setApplications] = useState([]);
+  const [matchScores, setMatchScores] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,8 +22,17 @@ const PlayerApplications = () => {
 
   const loadApplications = async () => {
     try {
-      const response = await api.getMyApplications();
-      setApplications(response.data);
+      const [appsResponse, scoresResponse] = await Promise.all([
+        api.getMyApplications(),
+        api.getPlayerMatchScores().catch(() => ({ data: { scores: [] } }))
+      ]);
+      setApplications(appsResponse.data);
+      // Build scores map by opportunity_id
+      const scoresMap = {};
+      (scoresResponse.data.scores || []).forEach(s => {
+        scoresMap[s.opportunity_id] = s.fit_score;
+      });
+      setMatchScores(scoresMap);
     } catch (error) {
       toast.error('Failed to load applications');
     } finally {
@@ -58,17 +68,28 @@ const PlayerApplications = () => {
               data-testid={`application-card-${app.id}`}
               className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-xl font-heading font-bold uppercase mb-1">{app.opportunity.club_name}</h3>
+              <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl font-heading font-bold uppercase mb-1 truncate">{app.opportunity.club_name}</h3>
                   <p className="text-sm text-muted-foreground">{app.opportunity.position} · {app.opportunity.league_level}</p>
                 </div>
-                <span
-                  data-testid={`status-${app.id}`}
-                  className={`px-3 py-1 text-[10px] uppercase tracking-wider border rounded-sm ${STATUS_COLORS[app.status]}`}
-                >
-                  {app.status}
-                </span>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {(matchScores[app.opportunity_id] != null) && (
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Fit</p>
+                      <p className={`text-lg font-bold font-heading ${
+                        matchScores[app.opportunity_id] >= 70 ? "text-green-400" :
+                        matchScores[app.opportunity_id] >= 50 ? "text-yellow-400" : "text-red-400"
+                      }`}>{matchScores[app.opportunity_id]}%</p>
+                    </div>
+                  )}
+                  <span
+                    data-testid={`status-${app.id}`}
+                    className={`px-3 py-1 text-[10px] uppercase tracking-wider border rounded-sm ${STATUS_COLORS[app.status]}`}
+                  >
+                    {app.status}
+                  </span>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 {app.opportunity.salary_range && (
