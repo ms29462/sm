@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,9 @@ const FederationTeams = () => {
   const [teamPlayers, setTeamPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterPosition, setFilterPosition] = useState('');
   const [newTeamName, setNewTeamName] = useState('');
   const [newTeamDescription, setNewTeamDescription] = useState('');
 
@@ -111,6 +115,14 @@ const FederationTeams = () => {
       toast.error('Failed to remove player');
     }
   };
+
+  const filteredPlayers = teamPlayers.filter(player => {
+    if (searchQuery && !player.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (filterPosition && player.position !== filterPosition) return false;
+    return true;
+  });
+
+  const positions = [...new Set(teamPlayers.map(p => p.position).filter(Boolean))];
 
   if (loading) {
     return (
@@ -234,9 +246,25 @@ const FederationTeams = () => {
                   </Button>
                 </div>
 
-                <div className="mb-4">
-                  <h3 className="text-sm text-muted-foreground uppercase tracking-wide mb-3">
-                    PLAYERS ({teamPlayers.length})
+                <div className="mb-4 space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                      placeholder="Search by name..."
+                      className="flex-1 min-w-[150px] bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none focus:border-primary" />
+                    <select value={filterPosition} onChange={e => setFilterPosition(e.target.value)}
+                      className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+                      <option value="">All Positions</option>
+                      {positions.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                    {(searchQuery || filterPosition) && (
+                      <button onClick={() => { setSearchQuery(''); setFilterPosition(''); }}
+                        className="text-xs text-muted-foreground hover:text-white border border-white/10 rounded-sm px-3">
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <h3 className="text-sm text-muted-foreground uppercase tracking-wide">
+                    PLAYERS ({filteredPlayers.length}{filteredPlayers.length !== teamPlayers.length ? ` of ${teamPlayers.length}` : ''})
                   </h3>
                 </div>
 
@@ -250,26 +278,31 @@ const FederationTeams = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {teamPlayers.map((player) => (
+                    {filteredPlayers.map((player) => (
                       <div
                         key={player.user_id}
-                        className="flex items-center justify-between p-3 bg-background rounded-sm"
+                        className="flex items-center justify-between p-3 bg-background rounded-sm hover:bg-white/5 cursor-pointer transition-colors"
+                        onClick={() => navigate(`/federation/player/${player.user_id}`)}
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-sm bg-muted flex items-center justify-center">
-                            <Users className="w-5 h-5 text-muted-foreground" />
+                          <div className="w-10 h-10 rounded-sm bg-muted flex items-center justify-center overflow-hidden">
+                            {player.profile_picture ? (
+                              <img src={player.profile_picture} alt={player.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <Users className="w-5 h-5 text-muted-foreground" />
+                            )}
                           </div>
                           <div>
                             <p className="font-medium">{player.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {player.position || 'Position not set'} â€¢ {player.age ? `${player.age} yrs` : 'Age not set'}
+                              {player.position || 'Position not set'} · {player.age ? `${player.age} yrs` : 'Age not set'}
                             </p>
                           </div>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleRemovePlayer(player.user_id)}
+                          onClick={(e) => { e.stopPropagation(); handleRemovePlayer(player.user_id); }}
                           className="text-red-500 hover:text-red-500 hover:bg-red-500/10"
                         >
                           <Trash2 className="w-4 h-4" />

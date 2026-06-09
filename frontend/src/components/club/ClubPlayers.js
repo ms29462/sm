@@ -30,6 +30,7 @@ const ClubPlayers = () => {
   const [filterBadge, setFilterBadge] = useState('');
   const [filterRepresentation, setFilterRepresentation] = useState('');
   const [filterMinScore, setFilterMinScore] = useState('');
+  const [filterTeam, setFilterTeam] = useState('');
   const [filterMandate, setFilterMandate] = useState('');
   const [filterQuality, setFilterQuality] = useState('');
   const [filters, setFilters] = useState({
@@ -41,7 +42,7 @@ const ClubPlayers = () => {
 
   useEffect(() => {
     loadPlayers();
-  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore]);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam]);
 
   const loadPlayers = async () => {
     try {
@@ -57,6 +58,7 @@ const ClubPlayers = () => {
       if (filterRepresentation) queryFilters.representation_status = filterRepresentation;
       if (filterMandate) queryFilters.mandate_status = filterMandate;
       if (filterMinScore) queryFilters.min_quality_score = parseInt(filterMinScore);
+      if (filterTeam) queryFilters.national_team = filterTeam;
 
       const response = await api.getPlayers(queryFilters);
       setPlayers(response.data);
@@ -210,6 +212,20 @@ const ClubPlayers = () => {
                 <option value="Elite">Elite</option>
               </select>
             </div>
+            {user?.role === 'federation' && (
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Team:</label>
+                <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)}
+                  className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                  <option value="">All Teams</option>
+                  <option value="Senior">Senior</option>
+                  <option value="U23">U23</option>
+                  <option value="U20">U20</option>
+                  <option value="U17">U17</option>
+                  <option value="U15">U15</option>
+                </select>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Min Score:</label>
               <select value={filterMinScore} onChange={e => setFilterMinScore(e.target.value)}
