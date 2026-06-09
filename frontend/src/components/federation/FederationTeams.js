@@ -24,6 +24,7 @@ const FederationTeams = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPosition, setFilterPosition] = useState('');
+  const [filterResidence, setFilterResidence] = useState('');
   const [newTeamName, setNewTeamName] = useState('');
   const [newTeamDescription, setNewTeamDescription] = useState('');
 
@@ -119,10 +120,12 @@ const FederationTeams = () => {
   const filteredPlayers = teamPlayers.filter(player => {
     if (searchQuery && !player.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (filterPosition && player.position !== filterPosition) return false;
+    if (filterResidence && player.residence_country !== filterResidence) return false;
     return true;
   });
 
   const positions = [...new Set(teamPlayers.map(p => p.position).filter(Boolean))];
+  const residences = [...new Set(teamPlayers.map(p => p.residence_country).filter(Boolean))];
 
   if (loading) {
     return (
@@ -256,8 +259,13 @@ const FederationTeams = () => {
                       <option value="">All Positions</option>
                       {positions.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
-                    {(searchQuery || filterPosition) && (
-                      <button onClick={() => { setSearchQuery(''); setFilterPosition(''); }}
+                    <select value={filterResidence} onChange={e => setFilterResidence(e.target.value)}
+                      className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+                      <option value="">All Residences</option>
+                      {residences.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                    {(searchQuery || filterPosition || filterResidence) && (
+                      <button onClick={() => { setSearchQuery(''); setFilterPosition(''); setFilterResidence(''); }}
                         className="text-xs text-muted-foreground hover:text-white border border-white/10 rounded-sm px-3">
                         Clear
                       </button>

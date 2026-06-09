@@ -31,6 +31,7 @@ const ClubPlayers = () => {
   const [filterRepresentation, setFilterRepresentation] = useState('');
   const [filterMinScore, setFilterMinScore] = useState('');
   const [filterTeam, setFilterTeam] = useState('');
+  const [filterResidence, setFilterResidence] = useState('');
   const [filterMandate, setFilterMandate] = useState('');
   const [filterQuality, setFilterQuality] = useState('');
   const [filters, setFilters] = useState({
@@ -42,7 +43,7 @@ const ClubPlayers = () => {
 
   useEffect(() => {
     loadPlayers();
-  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam]);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence]);
 
   const loadPlayers = async () => {
     try {
@@ -59,6 +60,7 @@ const ClubPlayers = () => {
       if (filterMandate) queryFilters.mandate_status = filterMandate;
       if (filterMinScore) queryFilters.min_quality_score = parseInt(filterMinScore);
       if (filterTeam) queryFilters.national_team = filterTeam;
+      if (filterResidence) queryFilters.residence_country = filterResidence;
 
       const response = await api.getPlayers(queryFilters);
       setPlayers(response.data);
@@ -210,6 +212,21 @@ const ClubPlayers = () => {
                 <option value="Silver">Silver</option>
                 <option value="Gold">Gold</option>
                 <option value="Elite">Elite</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Residence:</label>
+              <select value={filterResidence} onChange={e => setFilterResidence(e.target.value)}
+                className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                <option value="">Any Country</option>
+                <option>France</option><option>England</option><option>Spain</option><option>Germany</option><option>Italy</option>
+                <option>Portugal</option><option>Belgium</option><option>Netherlands</option><option>Brazil</option><option>Argentina</option>
+                <option>USA</option><option>Canada</option><option>Morocco</option><option>Senegal</option><option>Nigeria</option>
+                <option>Ghana</option><option>Cameroon</option><option>Ivory Coast</option><option>Algeria</option><option>Tunisia</option>
+                <option>Egypt</option><option>South Africa</option><option>Japan</option><option>South Korea</option><option>Australia</option>
+                <option>Mexico</option><option>Colombia</option><option>Chile</option><option>Uruguay</option><option>Turkey</option>
+                <option>Sweden</option><option>Norway</option><option>Denmark</option><option>Switzerland</option><option>Poland</option>
+                <option>Ukraine</option><option>Serbia</option><option>Croatia</option><option>Scotland</option><option>Ireland</option>
               </select>
             </div>
             {user?.role === 'federation' && (

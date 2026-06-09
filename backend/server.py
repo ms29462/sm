@@ -2086,6 +2086,7 @@ async def get_players(
     mandate_status: Optional[str] = None,
     min_quality_score: Optional[int] = None,
     national_team: Optional[str] = None,
+    residence_country: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
@@ -2115,6 +2116,8 @@ async def get_players(
     # National team filter
     if national_team:
         query["national_team"] = national_team
+    if residence_country:
+        query["residence_country"] = residence_country
 
     # Min quality score filter
     if min_quality_score:
