@@ -67,7 +67,7 @@ const AnalystDashboard = () => {
           <div className="p-4 lg:p-6 border-b border-border">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-lg lg:text-xl font-heading font-bold tracking-tight text-primary">SOCCERMATCH</h1>
+                <h1 className="text-lg lg:text-xl font-heading font-bold tracking-tight text-primary"><img src="/logo.png" alt="Soccer Match" className="h-8 w-auto" /></h1>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Scout Analytics</p>
               </div>
               <Button 
@@ -149,7 +149,7 @@ const AnalystDashboard = () => {
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
             <Menu className="w-5 h-5" />
           </Button>
-          <h1 className="text-base font-heading font-bold text-primary">SOCCERMATCH</h1>
+          <h1 className="text-base font-heading font-bold text-primary"><img src="/logo.png" alt="Soccer Match" className="h-8 w-auto" /></h1>
           <div className="w-9" />
         </div>
 

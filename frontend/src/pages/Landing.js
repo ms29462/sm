@@ -19,8 +19,8 @@ const Landing = () => {
       <nav className="relative z-10 bg-black/40 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Trophy className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-heading font-bold tracking-tight">SOCCERMATCH</h1>
+            
+            <h1 className="text-2xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-10 w-auto" /></h1>
           </div>
           <div className="flex items-center space-x-4">
             <Button
@@ -89,7 +89,7 @@ const Landing = () => {
             className="bg-card border border-border/50 p-8 rounded-sm hover:border-primary/50 transition-colors group cursor-pointer"
             onClick={() => navigate('/register?role=club')}
           >
-            <Trophy className="w-12 h-12 text-primary mb-6" />
+            
             <h3 className="text-2xl font-heading font-bold uppercase mb-4">FOR ORGANIZATIONS</h3>
             <p className="text-muted-foreground mb-6">
               Post opportunities, discover talented players, and build your network. Clubs, universities, federations and agents welcome.

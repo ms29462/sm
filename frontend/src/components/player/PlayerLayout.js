@@ -39,9 +39,9 @@ const PlayerLayout = ({ children }) => {
       <aside className="w-64 border-r border-border bg-background fixed h-full hidden md:block">
         <div className="p-6 border-b border-border flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Trophy className="w-8 h-8 text-primary" />
+            
             <div>
-              <h1 className="text-xl font-heading font-bold tracking-tight">SOCCERMATCH</h1>
+              <h1 className="text-xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-8 w-auto" /></h1>
               <p className="text-xs text-muted-foreground uppercase">Player Portal</p>
             </div>
           </div>

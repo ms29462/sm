@@ -129,9 +129,8 @@ const MobileHeader = ({ title, showMenu = true, children }) => {
     <>
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b border-border md:hidden" style={{paddingTop: "env(safe-area-inset-top)"}}>
         <div className="flex items-center justify-between h-14 px-4" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-          <div className="flex items-center gap-3">
-            <Trophy className="w-6 h-6 text-primary" />
-            <span className="font-heading font-bold text-lg">{title || 'SOCCERMATCH'}</span>
+          <div className="flex items-center">
+            <img src="/logo.png" alt="Soccer Match" className="h-7 w-auto" />
           </div>
           <div className="flex items-center gap-1">
             {showMenu && (
