@@ -3,13 +3,13 @@ import NewsFeed from '@/components/shared/NewsFeed';
 import FederationLayout from '@/components/federation/FederationLayout';
 import FederationHome from '@/components/federation/FederationHome';
 import FederationProfile from '@/components/federation/FederationProfile';
-import FederationPlayers from '@/components/federation/FederationPlayers';
+import ClubPlayers from '@/components/club/ClubPlayers';
 import FederationRecommended from '@/components/federation/FederationRecommended';
 import FederationScouting from '@/components/federation/FederationScouting';
 import ScoutingHub from '@/components/club/ScoutingHub';
 import TrackingOverview from '@/components/club/TrackingOverview';
 import FederationTeams from '@/components/federation/FederationTeams';
-import FederationPlayerDetailView from '@/components/federation/FederationPlayerDetailView';
+import PlayerDetailView from '@/components/club/PlayerDetailView';
 
 
 const FederationDashboard = () => {
@@ -18,8 +18,8 @@ const FederationDashboard = () => {
       <Routes>
         <Route path="dashboard" element={<FederationHome />} />
         <Route path="profile" element={<FederationProfile />} />
-        <Route path="players" element={<FederationPlayers />} />
-        <Route path="player/:playerId" element={<FederationPlayerDetailView />} />
+        <Route path="players" element={<ClubPlayers />} />
+        <Route path="player/:playerId" element={<PlayerDetailView />} />
         <Route path="recommended" element={<FederationRecommended />} />
         <Route path="scouting" element={<ScoutingHub />} />
         <Route path="scouting/:playerId" element={<TrackingOverview />} />

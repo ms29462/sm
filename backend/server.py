@@ -1816,7 +1816,7 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
 # ============ CLUB ENDPOINTS ============
 @api_router.get("/club/profile", response_model=ClubProfile)
 async def get_club_profile(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
@@ -1826,7 +1826,7 @@ async def get_club_profile(current_user: dict = Depends(get_current_user)):
 
 @api_router.put("/club/profile", response_model=ClubProfile)
 async def update_club_profile(update: ClubUpdate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     update_data = {k: v for k, v in update.model_dump().items() if v is not None}
@@ -1838,7 +1838,7 @@ async def update_club_profile(update: ClubUpdate, current_user: dict = Depends(g
 
 @api_router.post("/opportunities", response_model=Opportunity)
 async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
@@ -1856,7 +1856,7 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
 
 @api_router.get("/club/opportunities", response_model=List[Opportunity])
 async def get_club_opportunities(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     await auto_close_expired_opportunities(db)
     opportunities = await db.opportunities.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
@@ -1907,7 +1907,7 @@ async def get_opportunity_changes(current_user: dict = Depends(get_current_user)
 
 @api_router.delete("/opportunities/{opportunity_id}")
 async def delete_opportunity(opportunity_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     result = await db.opportunities.delete_one({"id": opportunity_id, "club_id": current_user['user_id']})
@@ -1917,7 +1917,7 @@ async def delete_opportunity(opportunity_id: str, current_user: dict = Depends(g
 
 @api_router.get("/club/applications", response_model=List[dict])
 async def get_club_applications(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     applications = await db.applications.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
@@ -1942,7 +1942,7 @@ async def update_application_status(
     status_update: ApplicationStatusUpdate,
     current_user: dict = Depends(get_current_user)
 ):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     player_label = APPLICATION_STATUS_LABELS.get(status_update.status, status_update.status)
@@ -2087,7 +2087,7 @@ async def get_players(
     min_quality_score: Optional[int] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     query = {"approved": True}
@@ -2144,7 +2144,7 @@ async def get_players(
 
 @api_router.get("/players/recommended-list", response_model=List[PlayerProfile])
 async def get_recommended_players(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
@@ -2170,7 +2170,7 @@ async def get_recommended_players(current_user: dict = Depends(get_current_user)
 
 @api_router.post("/favorites", response_model=Favorite)
 async def add_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     existing = await db.favorites.find_one({
@@ -2191,7 +2191,7 @@ async def add_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_cur
 
 @api_router.get("/favorites", response_model=List[PlayerProfile])
 async def get_favorites(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     favorites = await db.favorites.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
@@ -2204,7 +2204,7 @@ async def get_favorites(current_user: dict = Depends(get_current_user)):
 
 @api_router.delete("/favorites/{player_id}")
 async def remove_favorite(player_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     result = await db.favorites.delete_one({"club_id": current_user['user_id'], "player_id": player_id})

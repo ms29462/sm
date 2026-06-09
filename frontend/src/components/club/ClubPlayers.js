@@ -244,7 +244,7 @@ const ClubPlayers = () => {
             <div
               key={player.user_id}
               data-testid={`player-card-${player.user_id}`}
-              onClick={() => navigate(user?.role === 'analyst' ? `/analyst/player-profile/${player.user_id}` : `/club/player/${player.user_id}`)}
+              onClick={() => navigate(user?.role === 'analyst' ? `/analyst/player-profile/${player.user_id}` : user?.role === 'federation' ? `/federation/player/${player.user_id}` : `/club/player/${player.user_id}`)}
               className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer flex flex-col"
             >
               <div className="flex items-start space-x-4 mb-4">
