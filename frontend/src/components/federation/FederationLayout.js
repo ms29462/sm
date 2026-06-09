@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Flag, Users, Heart, Briefcase, LogOut, Home, UserCircle, FolderOpen, Sparkles , Newspaper } from 'lucide-react';
+import { Trophy, Flag, Users, Heart, Briefcase, LogOut, Home, UserCircle, FolderOpen, Sparkles, Newspaper, FileText, Kanban, MessageCircle } from 'lucide-react';
 
 const FederationLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -103,6 +103,36 @@ const FederationLayout = ({ children }) => {
             >
               <Heart className="w-4 h-4 mr-3" />
               Scouting List
+            </Button>
+          </Link>
+          <Link to="/federation/favorites">
+            <Button variant={isActive('/federation/favorites') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Heart className="w-4 h-4 mr-3" />
+              Favorites
+            </Button>
+          </Link>
+          <Link to="/federation/opportunities">
+            <Button variant={isActive('/federation/opportunities') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Briefcase className="w-4 h-4 mr-3" />
+              Opportunities
+            </Button>
+          </Link>
+          <Link to="/federation/applications">
+            <Button variant={isActive('/federation/applications') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <FileText className="w-4 h-4 mr-3" />
+              Applications
+            </Button>
+          </Link>
+          <Link to="/federation/pipeline">
+            <Button variant={isActive('/federation/pipeline') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Kanban className="w-4 h-4 mr-3" />
+              Pipeline
+            </Button>
+          </Link>
+          <Link to="/federation/chats">
+            <Button variant={isActive('/federation/chats') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <MessageCircle className="w-4 h-4 mr-3" />
+              Chats
             </Button>
           </Link>
           <Link to="/federation/teams">
