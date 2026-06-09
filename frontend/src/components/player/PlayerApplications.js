@@ -5,10 +5,29 @@ import { FileText } from 'lucide-react';
 
 const STATUS_COLORS = {
   submitted: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  viewed: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-  shortlisted: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+  under_review: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+  interested: 'bg-green-500/10 text-green-400 border-green-500/20',
   rejected: 'bg-red-500/10 text-red-500 border-red-500/20',
-  accepted: 'bg-green-500/10 text-green-500 border-green-500/20',
+  // Pipeline stages
+  under_evaluation: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  interview_scheduled: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+  trial_scheduled: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  offer_received: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  signed: 'bg-green-500/10 text-green-400 border-green-500/20',
+};
+
+const STATUS_LABELS = {
+  submitted: 'Application Submitted',
+  under_review: 'Under Review',
+  interested: 'Selected for Evaluation',
+  rejected: 'Not Selected',
+  under_evaluation: 'Under Evaluation',
+  video_analysis: 'Video Analysis',
+  interview_scheduled: 'Interview Scheduled',
+  trial_scheduled: 'Trial Scheduled',
+  contract_discussion: 'Contract Discussion',
+  offer_received: 'Offer Received',
+  signed: 'Signed',
 };
 
 const PlayerApplications = () => {
@@ -86,11 +105,9 @@ const PlayerApplications = () => {
             className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
             <option value="">All Statuses</option>
             <option value="submitted">Submitted</option>
-            <option value="viewed">Viewed</option>
-            <option value="shortlisted">Shortlisted</option>
-            <option value="interview_requested">Interview Requested</option>
-            <option value="accepted">Accepted</option>
-            <option value="rejected">Rejected</option>
+            <option value="under_review">Under Review</option>
+            <option value="interested">Selected for Evaluation</option>
+            <option value="rejected">Not Selected</option>
           </select>
           {(filterPosition || filterLeague || filterStatus) && (
             <button onClick={() => { setFilterPosition(''); setFilterLeague(''); setFilterStatus(''); }}
@@ -133,7 +150,7 @@ const PlayerApplications = () => {
                     data-testid={`status-${app.id}`}
                     className={`px-3 py-1 text-[10px] uppercase tracking-wider border rounded-sm ${STATUS_COLORS[app.status]}`}
                   >
-                    {app.status}
+  {app.player_status_label || app.status}
                   </span>
                 </div>
               </div>

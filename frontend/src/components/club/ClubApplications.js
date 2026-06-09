@@ -7,14 +7,19 @@ import { toast } from "sonner";
 import { FileText, X, User, Trophy, Activity, Flag, Ruler, Weight, Footprints, Building, ExternalLink } from "lucide-react";
 import RequestChatDialog from '@/components/club/RequestChatDialog';
 
-const STATUS_OPTIONS = ["submitted", "viewed", "shortlisted", "interview_requested", "accepted", "rejected"];
+const STATUS_OPTIONS = ["submitted", "under_review", "interested", "rejected"];
 const STATUS_COLORS = {
   submitted: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  viewed: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-  shortlisted: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-  interview_requested: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+  under_review: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+  interested: "bg-green-500/10 text-green-400 border-green-500/20",
   rejected: "bg-red-500/10 text-red-500 border-red-500/20",
-  accepted: "bg-green-500/10 text-green-500 border-green-500/20",
+};
+
+const STATUS_LABELS = {
+  submitted: "Submitted",
+  under_review: "Under Review",
+  interested: "Interested",
+  rejected: "Rejected",
 };
 
 const BADGE_LABELS = {
@@ -336,10 +341,8 @@ const ClubApplications = () => {
               className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
               <option value="">All Statuses</option>
               <option value="submitted">Submitted</option>
-              <option value="viewed">Viewed</option>
-              <option value="shortlisted">Shortlisted</option>
-              <option value="interview_requested">Interview Requested</option>
-              <option value="accepted">Accepted</option>
+              <option value="under_review">Under Review</option>
+              <option value="interested">Interested</option>
               <option value="rejected">Rejected</option>
             </select>
             {(filterPosition || filterStatus || searchQuery) && (
@@ -450,7 +453,7 @@ const ClubApplications = () => {
                     className="w-full sm:w-auto bg-black/20 border border-white/10 rounded-sm h-9 px-2 text-sm text-white outline-none cursor-pointer"
                   >
                     {STATUS_OPTIONS.map((status) => (
-                      <option key={status} value={status}>{status.replace(/_/g, " ").toUpperCase()}</option>
+                      <option key={status} value={status}>{STATUS_LABELS[status] || status.replace(/_/g, " ").toUpperCase()}</option>
                     ))}
                   </select>
                 </div>

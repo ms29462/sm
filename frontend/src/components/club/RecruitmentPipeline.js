@@ -11,6 +11,19 @@ const STAGES = [
   "Shortlisted", "Contacted", "Trial Planned", "Negotiation", "Signed", "Rejected"
 ];
 
+const STAGE_LABELS = {
+  "New Application": "New Application",
+  "Under Review": "Under Review",
+  "Video Reviewed": "Video Reviewed",
+  "Live Scouting": "Live Scouting",
+  "Shortlisted": "Shortlisted",
+  "Contacted": "Contacted",
+  "Trial Planned": "Trial Planned",
+  "Negotiation": "Negotiation",
+  "Signed": "Signed",
+  "Rejected": "Rejected"
+};
+
 const PRIORITY_COLORS = {
   low: "bg-gray-500/20 text-gray-400 border-gray-500/30",
   medium: "bg-blue-500/20 text-blue-400 border-blue-500/30",
@@ -105,6 +118,11 @@ const RecruitmentPipeline = () => {
   const [selectedPp, setSelectedPp] = useState(null);
   const [noteForm, setNoteForm] = useState({ content: "", type: "note" });
   const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [confirmRemoveId, setConfirmRemoveId] = useState(null);
+  const [viewMode, setViewMode] = useState('opportunity'); // 'kanban' or 'opportunity'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedOpps, setExpandedOpps] = useState({});
+  const [opportunities, setOpportunities] = useState([]);
   const [addStage, setAddStage] = useState("New Application");
   const [trackedPlayers, setTrackedPlayers] = useState([]);
   const [editingPp, setEditingPp] = useState(null);
@@ -118,7 +136,11 @@ const RecruitmentPipeline = () => {
 
   const loadPipeline = async () => {
     try {
-      const res = await api.getPipeline();
+      const [res, oppsRes] = await Promise.all([
+      api.getPipeline(),
+      api.getClubOpportunities().catch(() => ({ data: [] }))
+    ]);
+    setOpportunities(oppsRes.data || []);
       setPipeline(res.data || []);
     } catch (e) {
       toast.error("Failed to load pipeline");
@@ -158,19 +180,24 @@ const RecruitmentPipeline = () => {
     setDragOverStage(null);
   };
 
-  const handleRemove = async (ppId) => {
+  const handleRemove = (ppId) => {
+    setConfirmRemoveId(ppId);
+  };
+
+  const confirmRemove = async () => {
     try {
-      await api.removeFromPipeline(ppId);
-      setPipeline(prev => prev.filter(p => p.id !== ppId));
+      await api.removeFromPipeline(confirmRemoveId);
+      setPipeline(prev => prev.filter(p => p.id !== confirmRemoveId));
       toast.success("Removed from pipeline");
     } catch (e) {
       toast.error("Failed to remove");
     }
+    setConfirmRemoveId(null);
   };
 
   const handleAddPlayer = async (playerId) => {
     try {
-      const res = await api.addToPipeline({ player_id: playerId, stage: addStage });
+      const res = await api.addToPipeline({ player_id: playerId, stage: addStage, opportunity_id: addOpportunityId || null });
       await loadPipeline();
       setShowAddPlayer(false);
       toast.success("Player added to pipeline!");
@@ -222,10 +249,98 @@ const RecruitmentPipeline = () => {
         </Button>
       </div>
 
+      {/* View Toggle & Search */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <div className="flex rounded-sm border border-white/10 overflow-hidden">
+          <button onClick={() => setViewMode('opportunity')}
+            className={`px-3 py-1.5 text-xs font-bold uppercase transition-colors ${viewMode === 'opportunity' ? 'bg-primary text-black' : 'text-muted-foreground hover:text-white'}`}>
+            By Opportunity
+          </button>
+          <button onClick={() => setViewMode('kanban')}
+            className={`px-3 py-1.5 text-xs font-bold uppercase transition-colors ${viewMode === 'kanban' ? 'bg-primary text-black' : 'text-muted-foreground hover:text-white'}`}>
+            Kanban
+          </button>
+        </div>
+        {viewMode === 'opportunity' && (
+          <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search opportunities or players..."
+            className="flex-1 min-w-[200px] bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none focus:border-primary" />
+        )}
+      </div>
+
+      {/* Opportunity View */}
+      {viewMode === 'opportunity' && (() => {
+        // Group pipeline players by opportunity
+        const oppGroups = { 'unassigned': { opportunity: null, players: [], label: 'General Pipeline' } };
+        pipeline.forEach(pp => {
+          const oppId = pp.opportunity_id || 'unassigned';
+          if (!oppGroups[oppId]) {
+            const opp = opportunities.find(o => o.id === oppId);
+            oppGroups[oppId] = { opportunity: opp, players: [], label: opp ? `${opp.positions?.[0] || opp.position || 'N/A'} - ${opp.league_level || ''}` : 'General Pipeline' };
+          }
+          oppGroups[oppId].players.push(pp);
+        });
+
+        const filteredGroups = Object.entries(oppGroups).filter(([_, g]) => {
+          if (!searchQuery) return true;
+          const q = searchQuery.toLowerCase();
+          return g.label.toLowerCase().includes(q) || g.players.some(p => p.player?.name?.toLowerCase().includes(q));
+        });
+
+        return (
+          <div className="space-y-3 mb-6">
+            {filteredGroups.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">No pipeline players found</div>
+            )}
+            {filteredGroups.map(([oppId, group]) => (
+              <div key={oppId} className="bg-card border border-border/50 rounded-sm overflow-hidden">
+                <button onClick={() => setExpandedOpps(prev => ({ ...prev, [oppId]: !prev[oppId] }))}
+                  className="w-full flex flex-wrap items-center justify-between p-4 hover:bg-white/5 transition-colors gap-2 text-left">
+                  <div>
+                    <p className="font-heading font-bold uppercase text-sm">{group.label}</p>
+                    {group.opportunity && <p className="text-xs text-muted-foreground mt-0.5">{group.opportunity.salary_range || 'Salary N/A'}</p>}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-sm">
+                      {group.players.length} candidate{group.players.length !== 1 ? 's' : ''}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{expandedOpps[oppId] ? '▲' : '▼'}</span>
+                  </div>
+                </button>
+                {expandedOpps[oppId] && (
+                  <div className="border-t border-border/50 divide-y divide-border/30">
+                    {group.players.map(pp => {
+                      const player = pp.player || {};
+                      return (
+                        <div key={pp.id} className="flex flex-wrap items-center justify-between p-3 gap-3 hover:bg-white/5 transition-colors">
+                          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedPp(pp)}>
+                            <p className="font-bold text-sm">{player.name || 'Unknown'}</p>
+                            <p className="text-xs text-muted-foreground">{player.position || '—'} · {player.nationality || '—'}</p>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-sm border ${PRIORITY_COLORS[pp.priority] || PRIORITY_COLORS.low}`}>{pp.priority || 'low'}</span>
+                            <span className="text-xs bg-white/10 px-2 py-0.5 rounded-sm">{STAGE_LABELS[pp.stage] || pp.stage}</span>
+                            <button onClick={() => handleRemove(pp.id)} className="text-muted-foreground hover:text-red-500 transition-colors ml-1">
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* Kanban Board */}
+      {viewMode === 'kanban' &&
       <div className="flex gap-3 overflow-x-auto pb-4 flex-1" style={{minHeight: "60vh", scrollbarWidth: "thin"}}>
         {STAGES.map(stage => {
           const stagePlayers = pipeline.filter(p => p.stage === stage);
+
           const isDragOver = dragOverStage === stage;
           return (
             <div
@@ -237,7 +352,7 @@ const RecruitmentPipeline = () => {
               {/* Stage Header */}
               <div className="p-3 border-b border-border/50">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wide">{stage}</h3>
+                  <h3 className="text-xs font-bold uppercase tracking-wide">{STAGE_LABELS[stage] || stage}</h3>
                   <span className="text-xs bg-white/10 px-2 py-0.5 rounded-sm">{stagePlayers.length}</span>
                 </div>
               </div>
@@ -265,6 +380,27 @@ const RecruitmentPipeline = () => {
           );
         })}
       </div>
+
+      }
+      {/* Confirm Remove Dialog */}
+      {confirmRemoveId && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border/50 rounded-sm p-6 max-w-sm w-full">
+            <h3 className="font-heading font-bold uppercase mb-2">Remove from Pipeline</h3>
+            <p className="text-sm text-muted-foreground mb-6">Are you sure you want to remove this player from the pipeline? This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmRemoveId(null)}
+                className="flex-1 border border-white/10 text-muted-foreground hover:text-white rounded-sm py-2 text-sm transition-colors">
+                Cancel
+              </button>
+              <button onClick={confirmRemove}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold rounded-sm py-2 text-sm transition-colors">
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Player Modal */}
       <Dialog open={showAddPlayer} onOpenChange={setShowAddPlayer}>

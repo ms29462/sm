@@ -392,6 +392,7 @@ class PipelinePlayerAdd(BaseModel):
     player_id: str
     stage: str = "New Application"
     priority: Literal["low", "medium", "high", "urgent"] = "medium"
+    opportunity_id: Optional[str] = None
 
 class PipelinePlayerUpdate(BaseModel):
     stage: Optional[str] = None
@@ -847,7 +848,7 @@ class Application(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class ApplicationStatusUpdate(BaseModel):
-    status: Literal['submitted', 'viewed', 'shortlisted', 'rejected', 'accepted']
+    status: Literal['submitted', 'viewed', 'shortlisted', 'rejected', 'accepted', 'under_review', 'interested', 'interview_requested', 'offer_received']
 
 # ============ FAVORITE MODELS ============
 class FavoriteCreate(BaseModel):
@@ -1872,7 +1873,7 @@ async def update_opportunity_status(opportunity_id: str, status_update: dict, cu
         {"id": opportunity_id, "club_id": current_user["user_id"]},
         {"$set": {"status": status}}
     )
-    return {"message": "Status updated"}
+
 
 @api_router.put("/opportunities/{opportunity_id}")
 async def update_opportunity(opportunity_id: str, update: dict, current_user: dict = Depends(get_current_user)):
@@ -1944,9 +1945,21 @@ async def update_application_status(
     if current_user['role'] not in ['club', 'college', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    player_label = APPLICATION_STATUS_LABELS.get(status_update.status, status_update.status)
     result = await db.applications.update_one(
-        {"id": application_id, "club_id": current_user['user_id']},
-        {"$set": {"status": status_update.status}}
+        {"id": application_id, "club_id": current_user["user_id"]},
+        {"$set": {
+            "status": status_update.status,
+            "player_status_label": player_label,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        },
+        "$push": {
+            "status_history": {
+                "status": status_update.status,
+                "label": player_label,
+                "changed_at": datetime.now(timezone.utc).isoformat()
+            }
+        }}
     )
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Application not found")
@@ -1971,6 +1984,53 @@ async def update_application_status(
             )
     except Exception as e:
         print(f"Notification error: {e}")
+    
+
+        if app:
+            new_stage = STATUS_TO_PIPELINE_STAGE.get(status_update.status)
+            AUTO_PIPELINE_STATUSES = ["interested"]
+            
+            if new_stage and status_update.status in AUTO_PIPELINE_STATUSES:
+                existing = await db.pipeline.find_one({
+                    "player_id": app["player_id"],
+                    "org_id": current_user["user_id"]
+                })
+                
+                if existing:
+                    await db.pipeline.update_one(
+                        {"id": existing["id"]},
+                        {"$set": {"stage": new_stage, "opportunity_id": app.get("opportunity_id"), "updated_at": datetime.now(timezone.utc).isoformat()}}
+                    )
+                    print("DEBUG: Updated existing pipeline entry")
+                else:
+                    import uuid as uuid_mod
+                    pp = {
+                        "id": str(uuid_mod.uuid4()),
+                        "org_id": current_user["user_id"],
+                        "player_id": app["player_id"],
+                        "opportunity_id": app.get("opportunity_id"),
+                        "stage": new_stage,
+                        "priority": "medium",
+                        "scout_assigned": None,
+                        "internal_rating": None,
+                        "notes": [],
+                        "tags": [],
+                        "created_at": datetime.now(timezone.utc).isoformat(),
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    await db.pipeline.insert_one(pp)
+                    print("DEBUG: Created new pipeline entry!")
+                    
+                    await create_notification(
+                        app["player_id"],
+                        "pipeline_update",
+                        "🎯 You have been added to a recruitment pipeline",
+                        {"org_id": current_user["user_id"]}
+                    )
+    except Exception as e:
+        import traceback
+        print(f"Pipeline sync error: {e}")
+        traceback.print_exc()
     
     return {"message": "Status updated"}
 
@@ -4091,6 +4151,18 @@ async def get_pipeline(current_user: dict = Depends(get_current_user)):
         player = await db.players.find_one({"user_id": pp["player_id"]}, {"_id": 0})
         if player:
             pp["player"] = strip_player_private_info(player)
+        # Auto-link to opportunity if not set
+        if not pp.get("opportunity_id"):
+            app = await db.applications.find_one({
+                "player_id": pp["player_id"],
+                "$or": [{"club_id": current_user["user_id"]}, {"org_id": current_user["user_id"]}]
+            }, {"_id": 0})
+            if app and app.get("opportunity_id"):
+                pp["opportunity_id"] = app["opportunity_id"]
+                await db.pipeline.update_one(
+                    {"id": pp["id"]},
+                    {"$set": {"opportunity_id": app["opportunity_id"]}}
+                )
         result.append(pp)
     return result
 
@@ -4107,6 +4179,7 @@ async def add_to_pipeline(data: PipelinePlayerAdd, current_user: dict = Depends(
         "player_id": data.player_id,
         "stage": data.stage,
         "priority": data.priority,
+        "opportunity_id": data.opportunity_id,
         "scout_assigned": None,
         "internal_rating": None,
         "notes": [],
@@ -4156,6 +4229,40 @@ async def update_pipeline_player(pipeline_id: str, update: PipelinePlayerUpdate,
                 stage_messages[update.stage],
                 {"stage": update.stage, "org_id": current_user["user_id"]}
             )
+        
+        # Sync application status with pipeline stage
+        stage_key = update.stage.lower().replace(" ", "_")
+        new_status = PIPELINE_STAGE_TO_STATUS.get(stage_key)
+        player_label = PIPELINE_STAGE_PLAYER_LABELS.get(stage_key)
+        
+        if new_status:
+            # Find and update the application
+            await db.applications.update_many(
+                {"player_id": pp["player_id"], "club_id": current_user["user_id"]},
+                {"$set": {
+                    "status": new_status,
+                    "player_status_label": player_label,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                },
+                "$push": {
+                    "status_history": {
+                        "status": new_status,
+                        "label": player_label,
+                        "pipeline_stage": update.stage,
+                        "changed_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }}
+            )
+            
+            # Notify player of application status change
+            if player_label:
+                await create_notification(
+                    pp["player_id"],
+                    "application_update",
+                    f"📋 {player_label}",
+                    {"status": new_status, "label": player_label}
+                )
+    
     return {"message": "Updated"}
 
 @api_router.delete("/pipeline/{pipeline_id}")
@@ -5315,6 +5422,55 @@ async def webrtc_ice_candidate(sid, data):
     }, room=session_id, skip_sid=sid)
 
 
+
+# Pipeline stage to application status mapping
+STATUS_TO_PIPELINE_STAGE = {
+    "submitted": "scouting",
+    "under_review": "scouting",
+    "interested": "scouting",
+    "rejected": "rejected",
+}
+
+APPLICATION_STATUS_LABELS = {
+    "submitted": "Application Submitted",
+    "under_review": "Under Review",
+    "interested": "Selected for Evaluation",
+    "rejected": "Not Selected",
+}
+
+PIPELINE_STAGE_TO_STATUS = {
+    "scouting": "under_review",
+    "video_analysis": "under_review",
+    "interview": "under_review",
+    "trial_scheduled": "under_review",
+    "contract_discussion": "under_review",
+    "offer_sent": "interested",
+    "signed": "interested",
+    "rejected": "rejected",
+}
+
+PIPELINE_STAGE_PLAYER_LABELS = {
+    "scouting": "Under Evaluation",
+    "video_analysis": "Video Analysis",
+    "interview": "Interview Scheduled",
+    "trial_scheduled": "Trial Scheduled",
+    "contract_discussion": "Contract Discussion",
+    "offer_sent": "Offer Received",
+    "signed": "Signed",
+    "rejected": "Not Selected",
+}
+
+PIPELINE_STAGE_TO_PLAYER_STATUS_OLD = {
+    "new": "Application Received",
+    "under_review": "Profile Under Review",
+    "interview": "Trial or Interview Scheduled",
+    "trial": "Trial or Interview Scheduled",
+    "shortlisted": "Shortlisted",
+    "offer_sent": "Offer Received",
+    "rejected": "Application Unsuccessful",
+    "signed": "Successfully Signed",
+}
+
 # ============ AGENT REPRESENTATION ENDPOINTS ============
 
 @api_router.get("/player/agent-representation")
@@ -5400,6 +5556,16 @@ async def request_chat_deletion(request_id: str, current_user: dict = Depends(ge
     )
     
     return {"success": True, "message": "Deletion request sent to admin"}
+
+@api_router.get("/admin/fix-pipeline-stages")
+async def fix_pipeline_stages(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    result = await db.pipeline.update_many(
+        {"stage": {"$in": ["scouting", "submitted", "viewed", "shortlisted", "interview_requested", "accepted", "rejected_old"]}},
+        {"$set": {"stage": "New Application"}}
+    )
+    return {"fixed": result.modified_count}
 
 fastapi_app.include_router(api_router)
 
