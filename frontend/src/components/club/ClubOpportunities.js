@@ -33,6 +33,7 @@ const ClubOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
+  const [errors, setErrors] = useState({});
   const [deleteId, setDeleteId] = useState(null);
   const [editingOpp, setEditingOpp] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -62,14 +63,28 @@ const ClubOpportunities = () => {
   };
 
   const handleCreate = async () => {
-    if (!formData.position || !formData.league_level || !formData.description) {
-      toast.error("Please fill in all required fields");
+    const newErrors = {};
+    if (!formData.position && (!formData.positions || formData.positions.length === 0)) newErrors.position = "Please select a position";
+    if (!formData.league_level) newErrors.league_level = "Please select a league level";
+    if (!formData.description) newErrors.description = "Please add a description";
+    if (!formData.deadline) newErrors.deadline = "Please set an application deadline";
+    if (!formData.max_applicants) newErrors.max_applicants = "Please set max applicants";
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Please fix the highlighted fields");
       return;
     }
+    setErrors({});
     try {
-      await api.createOpportunity(formData);
+      const submitData = {
+        ...formData,
+        age_min: formData.age_min ? parseInt(formData.age_min) : null,
+        age_max: formData.age_max ? parseInt(formData.age_max) : null,
+        max_applicants: formData.max_applicants ? parseInt(formData.max_applicants) : null,
+      };
+      await api.createOpportunity(submitData);
       toast.success("Opportunity created!");
-      setShowDialog(false);
+      setShowDialog(false); setErrors({});
       setFormData({
         position: "", league_level: "", salary_range: "",
         contract_duration: "", description: "",
@@ -77,7 +92,13 @@ const ClubOpportunities = () => {
       });
       loadOpportunities();
     } catch (error) {
-      toast.error("Failed to create opportunity");
+      const detail = error.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        const missing = detail.map(e => e.loc?.[e.loc.length-1]).join(", ");
+        toast.error(`Missing required fields: ${missing}`);
+      } else {
+        toast.error(detail || "Failed to create opportunity");
+      }
     }
   };
 
@@ -187,7 +208,8 @@ const ClubOpportunities = () => {
                     className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. 2 years" />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Deadline</Label>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Deadline *</Label>
+                {errors.deadline && <p className="text-xs text-red-400 mt-1">⚠ {errors.deadline}</p>}
                   <Input type="date" value={editForm.deadline} onChange={(e) => setEditForm(f => ({...f, deadline: e.target.value}))}
                     style={{colorScheme: "dark"}} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
                 </div>
@@ -259,6 +281,7 @@ const ClubOpportunities = () => {
             <div className="space-y-4 mt-4">
               <div>
                 <Label className="text-sm font-medium uppercase tracking-wide">Position *</Label>
+                {errors.position && <p className="text-xs text-red-400 mt-1">⚠ {errors.position}</p>}
                 <Select value={formData.position} onValueChange={(v) => handleChange("position", v)}>
                   <SelectTrigger data-testid="position-select" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12">
                     <SelectValue placeholder="Select position" />
@@ -270,6 +293,7 @@ const ClubOpportunities = () => {
               </div>
               <div>
                 <Label className="text-sm font-medium uppercase tracking-wide">League Level *</Label>
+                {errors.league_level && <p className="text-xs text-red-400 mt-1">⚠ {errors.league_level}</p>}
                 <select value={formData.league_level} onChange={(e) => handleChange("league_level", e.target.value)} className="mt-2 w-full bg-black/20 border border-white/10 rounded-sm h-12 px-3 text-sm text-white outline-none cursor-pointer">
                   <option value="">Select league level</option>
                   {LEAGUES.map((l) => <option key={l} value={l}>{l}</option>)}
@@ -297,16 +321,19 @@ const ClubOpportunities = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Deadline</Label>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Deadline *</Label>
+                {errors.deadline && <p className="text-xs text-red-400 mt-1">⚠ {errors.deadline}</p>}
                   <Input type="date" value={formData.deadline} onChange={(e) => handleChange("deadline", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Max Applicants</Label>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Max Applicants *</Label>
+                {errors.max_applicants && <p className="text-xs text-red-400 mt-1">⚠ {errors.max_applicants}</p>}
                   <Input type="number" value={formData.max_applicants} onChange={(e) => handleChange("max_applicants", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 50" />
                 </div>
               </div>
               <div>
                 <Label className="text-sm font-medium uppercase tracking-wide">Description *</Label>
+                {errors.description && <p className="text-xs text-red-400 mt-1">⚠ {errors.description}</p>}
                 <Textarea data-testid="description-input" value={formData.description} onChange={(e) => handleChange("description", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" placeholder="Describe the opportunity..." />
               </div>
               <Button data-testid="submit-opportunity-btn" onClick={handleCreate} className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12">
