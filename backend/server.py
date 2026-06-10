@@ -112,6 +112,26 @@ class PlayerProfile(BaseModel):
     approved: bool = False
     verified: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    # Extended fields
+    residence_country: Optional[str] = None
+    current_country: Optional[str] = None
+    market_value: Optional[str] = None
+    bio: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    contract_status: Optional[str] = None
+    looking_for: Optional[list] = None
+    open_to: Optional[list] = None
+    representation_status: Optional[str] = None
+    agent_name: Optional[str] = None
+    agency_name: Optional[str] = None
+    jersey_number: Optional[str] = None
+    secondary_positions: Optional[list] = None
+    national_team: Optional[str] = None
+    full_game_videos: Optional[list] = None
+    contract_end_date: Optional[str] = None
+    languages: Optional[list] = None
+    profile_status: Optional[str] = None
+    completion_score: Optional[int] = None
 
 
 # Helper function to strip private info from player data
@@ -161,10 +181,28 @@ class PlayerUpdate(BaseModel):
     has_postsecondary: Optional[bool] = None
     postsecondary_start_date: Optional[str] = None
     annual_budget: Optional[str] = None
-
-
-
-
+    # Missing fields
+    residence_country: Optional[str] = None
+    current_country: Optional[str] = None
+    market_value: Optional[str] = None
+    bio: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    contract_status: Optional[str] = None
+    looking_for: Optional[list] = None
+    open_to: Optional[list] = None
+    representation_status: Optional[str] = None
+    agent_name: Optional[str] = None
+    agency_name: Optional[str] = None
+    jersey_number: Optional[str] = None
+    secondary_positions: Optional[list] = None
+    national_team: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    full_game_videos: Optional[list] = None
+    contract_end_date: Optional[str] = None
+    languages: Optional[list] = None
+    instagram: Optional[str] = None
+    twitter: Optional[str] = None
+    linkedin: Optional[str] = None
 
 
 # ============ MATCHING PLAYER NOTIFICATIONS ============
@@ -1119,7 +1157,22 @@ async def update_player_profile(update: PlayerUpdate, background_tasks: Backgrou
             trigger_analysis = True
     
     if update_data:
-        await db.players.update_one({"user_id": current_user['user_id']}, {"$set": update_data})
+        await db.players.update_one({"user_id": current_user["user_id"]}, {"$set": update_data})
+    
+    # Recalculate profile completion after update
+    try:
+        updated_player = await db.players.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+        if updated_player:
+            completion = calculate_profile_completion(updated_player)
+            await db.players.update_one(
+                {"user_id": current_user["user_id"]},
+                {"$set": {
+                    "profile_status": completion["status"],
+                    "completion_score": completion["completion_score"]
+                }}
+            )
+    except Exception as e:
+        print(f"Completion calc error: {e}")
     
     # Trigger background video analysis if video URL changed
     if trigger_analysis:
