@@ -123,6 +123,23 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
         )}
       </div>
 
+      {/* Requirements */}
+      {opp.requirements && opp.requirements.length > 0 && (
+        <div className="mb-3 p-2 bg-yellow-500/5 border border-yellow-500/20 rounded-sm">
+          <p className="text-xs font-bold text-yellow-400 mb-1">Required to apply:</p>
+          <div className="flex flex-wrap gap-1">
+            {opp.requirements.map(req => (
+              <span key={req} className="text-[10px] px-2 py-0.5 bg-yellow-500/10 text-yellow-400 rounded-sm">
+                {req === 'highlight_video' ? '🎥 Highlight Video' :
+                 req === 'full_match' ? '📹 Full Match Video' :
+                 req === 'profile_picture' ? '📸 Profile Photo' :
+                 req === 'cv' ? '📄 CV/Resume' : req}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Apply Button */}
       <div className="flex gap-2 mt-auto">
         <Button

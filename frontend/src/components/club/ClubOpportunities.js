@@ -40,7 +40,7 @@ const ClubOpportunities = () => {
   const [formData, setFormData] = useState({
     position: "", league_level: "", salary_range: "",
     contract_duration: "", description: "",
-    deadline: "", max_applicants: "", age_min: "", age_max: ""
+    deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: []
   });
 
   useEffect(() => {
@@ -332,6 +332,27 @@ const ClubOpportunities = () => {
                 </div>
               </div>
               <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Mandatory Requirements</Label>
+                <p className="text-xs text-muted-foreground mb-2">Players must have these to apply</p>
+                <div className="space-y-2">
+                  {[
+                    {id: "highlight_video", label: "Highlight Video"},
+                    {id: "full_match", label: "Full Match Video"},
+                    {id: "profile_picture", label: "Profile Photo"},
+                    {id: "cv", label: "CV / Resume"},
+                  ].map(req => (
+                    <label key={req.id} className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox"
+                        checked={formData.requirements?.includes(req.id) || false}
+                        onChange={e => {
+                          const curr = formData.requirements || [];
+                          handleChange("requirements", e.target.checked ? [...curr, req.id] : curr.filter(r => r !== req.id));
+                        }}
+                        className="accent-primary w-4 h-4" />
+                      <span className="text-sm">{req.label}</span>
+                    </label>
+                  ))}
+                </div>
                 <Label className="text-sm font-medium uppercase tracking-wide">Description *</Label>
                 {errors.description && <p className="text-xs text-red-400 mt-1">⚠ {errors.description}</p>}
                 <Textarea data-testid="description-input" value={formData.description} onChange={(e) => handleChange("description", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" placeholder="Describe the opportunity..." />

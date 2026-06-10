@@ -848,6 +848,7 @@ class OpportunityCreate(BaseModel):
     age_max: Optional[int] = None
     deadline: Optional[str] = None
     max_applicants: Optional[int] = None
+    requirements: Optional[list] = None
 
 class Opportunity(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -866,6 +867,7 @@ class Opportunity(BaseModel):
     age_max: Optional[int] = None
     deadline: Optional[str] = None
     max_applicants: Optional[int] = None
+    requirements: Optional[list] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: Optional[str] = None
 
@@ -1833,6 +1835,24 @@ async def create_application(app_create: ApplicationCreate, current_user: dict =
     opportunity = await db.opportunities.find_one({"id": app_create.opportunity_id}, {"_id": 0})
     if not opportunity:
         raise HTTPException(status_code=404, detail="Opportunity not found")
+    
+    # Check mandatory requirements
+    requirements = opportunity.get("requirements", [])
+    if requirements:
+        player = await db.players.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+        missing_req = []
+        if "highlight_video" in requirements and not player.get("highlight_video"):
+            missing_req.append("Highlight Video")
+        if "full_match" in requirements:
+            match_archive = await db.match_archive.find_one({"player_id": current_user["user_id"]})
+            if not player.get("full_game_videos") and not match_archive:
+                missing_req.append("Full Match Video")
+        if "profile_picture" in requirements and not player.get("profile_picture"):
+            missing_req.append("Profile Photo")
+        if "cv" in requirements and not player.get("cv"):
+            missing_req.append("CV / Resume")
+        if missing_req:
+            raise HTTPException(status_code=400, detail=f"Missing required info: {', '.join(missing_req)}")
     
     player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     
