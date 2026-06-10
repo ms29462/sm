@@ -229,20 +229,7 @@ const ClubPlayers = () => {
                 <option>Ukraine</option><option>Serbia</option><option>Croatia</option><option>Scotland</option><option>Ireland</option>
               </select>
             </div>
-            {user?.role === 'federation' && (
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Team:</label>
-                <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)}
-                  className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
-                  <option value="">All Teams</option>
-                  <option value="Senior">Senior</option>
-                  <option value="U23">U23</option>
-                  <option value="U20">U20</option>
-                  <option value="U17">U17</option>
-                  <option value="U15">U15</option>
-                </select>
-              </div>
-            )}
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Min Score:</label>
               <select value={filterMinScore} onChange={e => setFilterMinScore(e.target.value)}
