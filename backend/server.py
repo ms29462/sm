@@ -2113,6 +2113,13 @@ async def get_players(
     if mandate_status:
         query["mandate_status"] = mandate_status
 
+    # Visibility filter - only show active/verified players
+    query["$or"] = [
+        {"profile_status": {"$in": ["active", "verified"]}},
+        {"profile_status": {"$exists": False}},  # Legacy players without status
+        {"highlight_video": {"$exists": True, "$ne": ""}},  # Legacy check
+    ]
+
     # National team filter
     if national_team:
         query["national_team"] = national_team
@@ -5479,6 +5486,79 @@ PIPELINE_STAGE_TO_PLAYER_STATUS_OLD = {
     "signed": "Successfully Signed",
 }
 
+
+def calculate_profile_completion(player: dict) -> dict:
+    """Calculate profile completion score and status"""
+    fields = {
+        # Identity (20%)
+        "date_of_birth": 5,
+        "nationality": 5,
+        "profile_picture": 10,
+        # Football info (20%)
+        "position": 10,
+        "preferred_foot": 5,
+        "playing_level": 5,
+        # Physical (10%)
+        "height": 5,
+        "weight": 5,
+        # Current situation (15%)
+        "current_club": 5,
+        "current_country": 5,
+        "residence_country": 5,
+        # Media (20%)
+        "highlight_video": 20,
+        # Availability (15%)
+        "contract_status": 5,
+        "looking_for": 5,
+        "bio": 5,
+    }
+    
+    score = 0
+    completed = []
+    missing = []
+    
+    for field, weight in fields.items():
+        val = player.get(field)
+        if val and str(val).strip():
+            score += weight
+            completed.append(field)
+        else:
+            missing.append(field)
+    
+    score = min(score, 100)
+    
+    # Determine status
+    required_for_visibility = ["profile_picture", "nationality", "position", "playing_level", "highlight_video"]
+    is_visible = all(player.get(f) for f in required_for_visibility)
+    
+    if score == 0:
+        status = "draft"
+    elif not is_visible:
+        status = "incomplete"
+    else:
+        status = "active"
+    
+    # Quality level
+    if score >= 95:
+        quality = "Elite"
+    elif score >= 90:
+        quality = "Gold"
+    elif score >= 75:
+        quality = "Silver"
+    elif score >= 50:
+        quality = "Bronze"
+    else:
+        quality = None
+    
+    return {
+        "completion_score": score,
+        "status": status,
+        "quality_level": quality,
+        "is_visible": is_visible,
+        "missing_fields": missing,
+        "completed_fields": completed
+    }
+
 # ============ AGENT REPRESENTATION ENDPOINTS ============
 
 @api_router.get("/player/agent-representation")
@@ -5574,6 +5654,25 @@ async def fix_pipeline_stages(current_user: dict = Depends(get_current_user)):
         {"$set": {"stage": "New Application"}}
     )
     return {"fixed": result.modified_count}
+
+
+@api_router.get("/player/completion")
+async def get_profile_completion(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "player":
+        raise HTTPException(status_code=403, detail="Player only")
+    player = await db.players.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not player:
+        return {"completion_score": 0, "status": "draft", "missing_fields": [], "is_visible": False}
+    completion = calculate_profile_completion(player)
+    # Update player status in DB
+    await db.players.update_one(
+        {"user_id": current_user["user_id"]},
+        {"$set": {
+            "profile_status": completion["status"],
+            "completion_score": completion["completion_score"]
+        }}
+    )
+    return completion
 
 fastapi_app.include_router(api_router)
 

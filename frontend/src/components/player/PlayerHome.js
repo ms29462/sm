@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { Briefcase, TrendingUp, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import ProfileCompletionBanner from '@/components/player/ProfileCompletionBanner';
+
 const PlayerHome = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
@@ -51,6 +53,7 @@ const PlayerHome = () => {
 
   return (
     <div className="p-8">
+      <ProfileCompletionBanner />
       <div className="mb-8">
         <h1 className="text-3xl font-heading font-bold uppercase mb-2">DASHBOARD</h1>
         <p className="text-muted-foreground">Welcome back, {profile?.name}</p>

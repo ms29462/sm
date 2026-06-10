@@ -253,6 +253,8 @@ export const api = {
   getPlayerDashboard: (playerId) => axios.get(`${API}/player/${playerId}/dashboard`, { headers: getAuthHeaders() }),
   requestChatDeletion: (requestId) => axios.post(`${API}/chat-requests/${requestId}/deletion-request`, {}, { headers: getAuthHeaders() }),
 
+  getProfileCompletion: () => axios.get(`${API}/player/completion`, { headers: getAuthHeaders() }),
+
   // Agent Representation
   getMyAgentRepresentation: () => axios.get(`${API}/player/agent-representation`, { headers: getAuthHeaders() }),
   updateMyAgentRepresentation: (data) => axios.put(`${API}/player/agent-representation`, data, { headers: getAuthHeaders() }),
