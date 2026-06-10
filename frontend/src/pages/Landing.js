@@ -51,7 +51,7 @@ const Landing = () => {
           <div
             data-testid="player-card"
             className="bg-card border border-border/50 p-8 rounded-sm hover:border-primary/50 transition-colors group cursor-pointer"
-            onClick={() => navigate('/register?role=player')}
+            onClick={() => navigate('/player-register')}
           >
             <Users className="w-12 h-12 text-primary mb-6" />
             <h3 className="text-2xl font-heading font-bold uppercase mb-4">FOR PLAYERS</h3>
@@ -78,6 +78,7 @@ const Landing = () => {
             </ul>
             <Button
               data-testid="player-register-btn"
+              onClick={() => navigate('/player-register')}
               className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
             >
               JOIN AS PLAYER
@@ -114,6 +115,7 @@ const Landing = () => {
             </ul>
             <Button
               data-testid="club-register-btn"
+              onClick={() => navigate('/register?role=club')}
               className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
             >
               JOIN AS ORGANIZATION

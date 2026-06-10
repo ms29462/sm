@@ -18,7 +18,15 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState(searchParams.get('role') || 'player');
   const isOrgFlow = searchParams.get('role') === 'club';
+  const roleParam = searchParams.get('role');
   const [loading, setLoading] = useState(false);
+  
+  // Redirect players to dedicated registration flow
+  useEffect(() => {
+    if (!roleParam || roleParam === 'player') {
+      navigate('/player-register');
+    }
+  }, [roleParam, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

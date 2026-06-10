@@ -6,6 +6,8 @@ import Landing from '@/pages/Landing';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import PlayerDashboard from '@/pages/PlayerDashboard';
+import PlayerRegister from '@/pages/PlayerRegister';
+import PlayerOnboarding from '@/pages/PlayerOnboarding';
 import ClubDashboard from '@/pages/ClubDashboard';
 import FederationDashboard from '@/pages/FederationDashboard';
 import AgentDashboard from '@/pages/AgentDashboard';
@@ -37,6 +39,7 @@ function App() {
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+        <Route path="/player-register" element={<PlayerRegister />} />
                 <Route path="/admin/login" element={<Login admin={true} />} />
                 <Route
                   path="/player/*"

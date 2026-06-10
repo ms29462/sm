@@ -73,6 +73,22 @@ class UserRegister(BaseModel):
     password: str
     role: Literal['player', 'club', 'federation', 'agent', 'specialist', 'college', 'analyst']
     name: str
+    # Player registration fields
+    date_of_birth: Optional[str] = None
+    residence_country: Optional[str] = None
+    gender: Optional[str] = None
+    nationality: Optional[str] = None
+    nationality_2: Optional[str] = None
+    position: Optional[str] = None
+    secondary_position: Optional[str] = None
+    looking_for: Optional[list] = None
+    playing_level: Optional[str] = None
+    height: Optional[int] = None
+    weight: Optional[int] = None
+    preferred_foot: Optional[str] = None
+    highlight_video: Optional[str] = None
+    full_game_videos: Optional[list] = None
+    phone: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -1029,7 +1045,22 @@ async def register(user: UserRegister):
             "name": user.name,
             "email": user.email,
             "approved": False,
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "date_of_birth": user.date_of_birth,
+            "residence_country": user.residence_country,
+            "gender": user.gender,
+            "nationality": user.nationality,
+            "nationality_2": user.nationality_2,
+            "position": user.position,
+            "secondary_position": user.secondary_position,
+            "playing_level": user.playing_level,
+            "height": user.height,
+            "weight": user.weight,
+            "preferred_foot": user.preferred_foot,
+            "highlight_video": user.highlight_video,
+            "full_game_videos": user.full_game_videos or [],
+            "phone": user.phone,
+            "profile_status": "incomplete",
         }
         await db.players.insert_one(player_doc)
     elif user.role == 'federation':
