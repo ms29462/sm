@@ -175,20 +175,7 @@ const ClubOpportunities = () => {
               <DialogTitle className="font-heading uppercase">Edit Opportunity</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-2">
-              <div>
-                <Label className="text-sm font-medium uppercase tracking-wide">Position(s)</Label>
-                <div className="mt-2 grid grid-cols-3 gap-2 bg-black/20 border border-white/10 rounded-sm p-3">
-                  {POSITIONS.map((pos) => (
-                    <label key={pos} className="flex items-center gap-2 cursor-pointer text-sm">
-                      <input type="radio" checked={editForm.positions?.includes(pos) || false}
-                        onChange={(e) => {
-                          setEditForm(f => ({...f, positions: e.target.checked ? [...curr, pos] : curr.filter(p => p !== pos)}));
-                        }} className="accent-primary" />
-                      {pos}
-                    </label>
-                  ))}
-                </div>
-              </div>
+              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">League Level</Label>
