@@ -55,7 +55,7 @@ const Landing = () => {
               points: ["Build a professional profile", "Upload highlight videos", "Apply to opportunities", "Track your applications"]
             },
             {
-              role: "club", label: "For Clubs", icon: "🏟️", btn: "Join as Club", path: "/register?role=club",
+              role: "club", label: "For Clubs", icon: "🏟️", btn: "Join as Club", path: "/club-register",
               desc: "Find the right talent for your squad. Post opportunities and manage your recruitment.",
               points: ["Post recruitment opportunities", "Browse & filter players", "Manage applications", "Build your pipeline"]
             },

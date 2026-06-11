@@ -7,6 +7,8 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import PlayerDashboard from '@/pages/PlayerDashboard';
 import PlayerRegister from '@/pages/PlayerRegister';
+import ClubRegister from '@/pages/ClubRegister';
+import ClubPending from '@/pages/ClubPending';
 import PlayerOnboarding from '@/pages/PlayerOnboarding';
 import ClubDashboard from '@/pages/ClubDashboard';
 import FederationDashboard from '@/pages/FederationDashboard';
@@ -40,6 +42,10 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
         <Route path="/player-register" element={<PlayerRegister />} />
+        <Route path="/club-register" element={<ClubRegister />} />
+        <Route path="/club-pending" element={<ClubPending />} />
+        <Route path="/club-register" element={<ClubRegister />} />
+        <Route path="/club-pending" element={<ClubPending />} />
                 <Route path="/admin/login" element={<Login admin={true} />} />
                 <Route
                   path="/player/*"

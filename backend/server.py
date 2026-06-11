@@ -89,6 +89,20 @@ class UserRegister(BaseModel):
     highlight_video: Optional[str] = None
     full_game_videos: Optional[list] = None
     phone: Optional[str] = None
+    # Club registration fields
+    club_name: Optional[str] = None
+    division: Optional[str] = None
+    description: Optional[str] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+    rep_first_name: Optional[str] = None
+    rep_last_name: Optional[str] = None
+    rep_role: Optional[str] = None
+    rep_email: Optional[str] = None
+    rep_phone: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -736,6 +750,20 @@ class AgentProfile(BaseModel):
     fifa_registered: bool = False
     country: Optional[str] = None
     phone: Optional[str] = None
+    # Club registration fields
+    club_name: Optional[str] = None
+    division: Optional[str] = None
+    description: Optional[str] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+    rep_first_name: Optional[str] = None
+    rep_last_name: Optional[str] = None
+    rep_role: Optional[str] = None
+    rep_email: Optional[str] = None
+    rep_phone: Optional[str] = None
     profile_picture: Optional[str] = None
     bio: Optional[str] = None
     specializations: List[str] = []  # From AGENT_SPECIALIZATIONS
@@ -764,6 +792,20 @@ class AgentUpdate(BaseModel):
     fifa_registered: Optional[bool] = None
     country: Optional[str] = None
     phone: Optional[str] = None
+    # Club registration fields
+    club_name: Optional[str] = None
+    division: Optional[str] = None
+    description: Optional[str] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+    rep_first_name: Optional[str] = None
+    rep_last_name: Optional[str] = None
+    rep_role: Optional[str] = None
+    rep_email: Optional[str] = None
+    rep_phone: Optional[str] = None
     profile_picture: Optional[str] = None
     bio: Optional[str] = None
     specializations: Optional[List[str]] = None
@@ -809,6 +851,20 @@ class SpecialistProfile(BaseModel):
     country: Optional[str] = None
     city: Optional[str] = None
     phone: Optional[str] = None
+    # Club registration fields
+    club_name: Optional[str] = None
+    division: Optional[str] = None
+    description: Optional[str] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+    rep_first_name: Optional[str] = None
+    rep_last_name: Optional[str] = None
+    rep_role: Optional[str] = None
+    rep_email: Optional[str] = None
+    rep_phone: Optional[str] = None
     certifications: List[str] = []  # From SPECIALIST_CERTIFICATIONS
     years_experience: Optional[int] = None
     current_club: Optional[str] = None  # If working with a club
@@ -839,6 +895,20 @@ class SpecialistUpdate(BaseModel):
     country: Optional[str] = None
     city: Optional[str] = None
     phone: Optional[str] = None
+    # Club registration fields
+    club_name: Optional[str] = None
+    division: Optional[str] = None
+    description: Optional[str] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+    rep_first_name: Optional[str] = None
+    rep_last_name: Optional[str] = None
+    rep_role: Optional[str] = None
+    rep_email: Optional[str] = None
+    rep_phone: Optional[str] = None
     certifications: Optional[List[str]] = None
     years_experience: Optional[int] = None
     current_club: Optional[str] = None
@@ -1069,7 +1139,7 @@ async def register(user: UserRegister):
             "user_id": user_id,
             "name": user.name,
             "email": user.email,
-            "country": "",  # To be filled in profile
+            "country": "",
             "approved": False,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
