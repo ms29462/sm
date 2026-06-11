@@ -47,80 +47,67 @@ const Landing = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          <div
-            data-testid="player-card"
-            className="bg-card border border-border/50 p-8 rounded-sm hover:border-primary/50 transition-colors group cursor-pointer"
-            onClick={() => navigate('/player-register')}
-          >
-            <Users className="w-12 h-12 text-primary mb-6" />
-            <h3 className="text-2xl font-heading font-bold uppercase mb-4">FOR PLAYERS</h3>
-            <p className="text-muted-foreground mb-6">
-              Create your profile, showcase your skills, and connect with clubs worldwide. Get discovered by scouts and agents.
-            </p>
-            <ul className="space-y-2 mb-8 text-sm">
-              <li className="flex items-center space-x-2">
-                <ChevronRight className="w-4 h-4 text-primary" />
-                <span>Build professional profile</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <ChevronRight className="w-4 h-4 text-primary" />
-                <span>Upload highlight videos</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <ChevronRight className="w-4 h-4 text-primary" />
-                <span>Apply to opportunities</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <ChevronRight className="w-4 h-4 text-primary" />
-                <span>Track application status</span>
-              </li>
-            </ul>
-            <Button
-              data-testid="player-register-btn"
-              onClick={() => navigate('/player-register')}
-              className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
+          {[
+            {
+              role: "player", label: "For Players", icon: "👤", btn: "Join as Player", path: "/player-register",
+              desc: "Create your profile, showcase your skills and get discovered by clubs worldwide.",
+              points: ["Build a professional profile", "Upload highlight videos", "Apply to opportunities", "Track your applications"]
+            },
+            {
+              role: "club", label: "For Clubs", icon: "🏟️", btn: "Join as Club", path: "/register?role=club",
+              desc: "Find the right talent for your squad. Post opportunities and manage your recruitment.",
+              points: ["Post recruitment opportunities", "Browse & filter players", "Manage applications", "Build your pipeline"]
+            },
+            {
+              role: "college", label: "For Colleges", icon: "🎓", btn: "Join as College", path: "/register?role=college",
+              desc: "Identify international student-athletes that match your program's academic and athletic standards.",
+              points: ["Search eligible players", "Post scholarships", "Filter by NCAA eligibility", "Manage recruitment"]
+            },
+            {
+              role: "federation", label: "For Federations", icon: "🌍", btn: "Join as Federation", path: "/register?role=federation",
+              desc: "Identify and track talent for your national teams across all age categories.",
+              points: ["Scout national team talent", "Manage team groups", "Track player development", "Collaborate with clubs"]
+            },
+            {
+              role: "agent", label: "For Agents", icon: "🤝", btn: "Join as Agent", path: "/register?role=agent",
+              desc: "Represent your players and connect them with the right opportunities worldwide.",
+              points: ["Manage player portfolios", "Browse opportunities", "Connect with clubs", "Track player careers"]
+            },
+            {
+              role: "specialist", label: "For Specialists", icon: "📊", btn: "Join as Specialist", path: "/register?role=specialist",
+              desc: "Offer your expertise to players and organizations looking to improve performance.",
+              points: ["Connect with players", "Offer specialized services", "Build your network", "Grow your practice"]
+            },
+            {
+              role: "analyst", label: "For Analysts", icon: "🔍", btn: "Join as Analyst", path: "/register?role=analyst",
+              desc: "Evaluate players and provide professional scouting reports for organizations.",
+              points: ["Evaluate player profiles", "Write scouting reports", "Browse player database", "Collaborate with clubs"]
+            },
+          ].map(card => (
+            <div key={card.role}
+              className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer flex flex-col"
+              onClick={() => navigate(card.path)}
             >
-              JOIN AS PLAYER
-            </Button>
-          </div>
-
-          <div
-            data-testid="club-card"
-            className="bg-card border border-border/50 p-8 rounded-sm hover:border-primary/50 transition-colors group cursor-pointer"
-            onClick={() => navigate('/register?role=club')}
-          >
-            
-            <h3 className="text-2xl font-heading font-bold uppercase mb-4">FOR ORGANIZATIONS</h3>
-            <p className="text-muted-foreground mb-6">
-              Post opportunities, discover talented players, and build your network. Clubs, universities, federations and agents welcome.
-            </p>
-            <ul className="space-y-2 mb-8 text-sm">
-              <li className="flex items-center space-x-2">
-                <ChevronRight className="w-4 h-4 text-primary" />
-                <span>Post opportunities</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <ChevronRight className="w-4 h-4 text-primary" />
-                <span>Browse player profiles</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <ChevronRight className="w-4 h-4 text-primary" />
-                <span>Filter by position & level</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <ChevronRight className="w-4 h-4 text-primary" />
-                <span>Save favorite players</span>
-              </li>
-            </ul>
-            <Button
-              data-testid="club-register-btn"
-              onClick={() => navigate('/register?role=club')}
-              className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
-            >
-              JOIN AS ORGANIZATION
-            </Button>
-          </div>
+              <div className="text-3xl mb-4">{card.icon}</div>
+              <h3 className="text-lg font-heading font-bold uppercase mb-3">{card.label}</h3>
+              <p className="text-muted-foreground text-sm mb-4 flex-1">{card.desc}</p>
+              <ul className="space-y-1.5 mb-5 text-sm">
+                {card.points.map((pt, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <ChevronRight className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    <span className="text-muted-foreground">{pt}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                onClick={e => { e.stopPropagation(); navigate(card.path); }}
+                className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10 text-sm"
+              >
+                {card.btn}
+              </Button>
+            </div>
+          ))}
         </div>
       </main>
 
