@@ -40,7 +40,7 @@ const ClubOpportunities = () => {
   const [formData, setFormData] = useState({
     position: "", league_level: "", salary_range: "",
     contract_duration: "", description: "",
-    deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: []
+    deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: [], visibility: "anonymous"
   });
 
   useEffect(() => {
@@ -64,6 +64,7 @@ const ClubOpportunities = () => {
 
   const handleCreate = async () => {
     const newErrors = {};
+    if (!formData.visibility) newErrors.visibility = "Please select opportunity visibility";
     if (!formData.position && (!formData.positions || formData.positions.length === 0)) newErrors.position = "Please select a position";
     if (!formData.league_level) newErrors.league_level = "Please select a league level";
     if (!formData.description) newErrors.description = "Please add a description";
@@ -319,6 +320,25 @@ const ClubOpportunities = () => {
                 </div>
               </div>
               <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Opportunity Visibility *</Label>
+                <div className="space-y-2 mb-4">
+                  {[
+                    {id: "anonymous", label: "Anonymous Opportunity", desc: "Your organization identity is hidden from players"},
+                    {id: "public", label: "Public Opportunity", desc: "Your organization name and info are visible to players"},
+                  ].map(opt => (
+                    <label key={opt.id} onClick={() => handleChange("visibility", opt.id)}
+                      className={`flex items-start gap-3 p-3 rounded-sm border-2 cursor-pointer transition-colors ${
+                        formData.visibility === opt.id ? "border-primary bg-primary/10" : "border-white/10 hover:border-white/30"
+                      }`}>
+                      <input type="radio" checked={formData.visibility === opt.id} onChange={() => handleChange("visibility", opt.id)}
+                        className="accent-primary mt-0.5" />
+                      <div>
+                        <p className="text-sm font-bold">{opt.label}</p>
+                        <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
                 <Label className="text-sm font-medium uppercase tracking-wide">Mandatory Requirements</Label>
                 <p className="text-xs text-muted-foreground mb-2">Players must have these to apply</p>
                 <div className="space-y-2">

@@ -884,6 +884,7 @@ class Opportunity(BaseModel):
     deadline: Optional[str] = None
     max_applicants: Optional[int] = None
     requirements: Optional[list] = None
+    visibility: str = 'anonymous'
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: Optional[str] = None
 
@@ -1833,6 +1834,32 @@ async def auto_close_expired_opportunities(db):
 async def get_opportunities(current_user: dict = Depends(get_current_user)):
     await auto_close_expired_opportunities(db)
     opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
+    
+    # Anonymize opportunities for players
+    if current_user["role"] == "player":
+        result = []
+        for opp in opportunities:
+            if opp.get("visibility", "anonymous") != "public":
+                # Build anonymous label from level and country
+                level = opp.get("league_level", "")
+                country = opp.get("club_country", "")
+                anon_label = f"Anonymous Club"
+                if level and country:
+                    anon_label = f"Anonymous Club ({country}, {level})"
+                elif level:
+                    anon_label = f"Anonymous Club ({level})"
+                elif country:
+                    anon_label = f"Anonymous Club ({country})"
+                opp["club_name"] = anon_label
+                opp["club_id"] = "anonymous"
+                opp.pop("club_logo", None)
+                opp.pop("club_website", None)
+                opp.pop("club_email", None)
+                opp.pop("club_phone", None)
+                opp.pop("club_city", None)
+            result.append(opp)
+        return [Opportunity(**opp) for opp in result]
+    
     return [Opportunity(**opp) for opp in opportunities]
 
 @api_router.get("/opportunities/recommended", response_model=List[Opportunity])
@@ -2496,6 +2523,32 @@ async def get_all_opportunities_admin(current_user: dict = Depends(get_current_u
         raise HTTPException(status_code=403, detail="Not an admin")
     
     opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
+    
+    # Anonymize opportunities for players
+    if current_user["role"] == "player":
+        result = []
+        for opp in opportunities:
+            if opp.get("visibility", "anonymous") != "public":
+                # Build anonymous label from level and country
+                level = opp.get("league_level", "")
+                country = opp.get("club_country", "")
+                anon_label = f"Anonymous Club"
+                if level and country:
+                    anon_label = f"Anonymous Club ({country}, {level})"
+                elif level:
+                    anon_label = f"Anonymous Club ({level})"
+                elif country:
+                    anon_label = f"Anonymous Club ({country})"
+                opp["club_name"] = anon_label
+                opp["club_id"] = "anonymous"
+                opp.pop("club_logo", None)
+                opp.pop("club_website", None)
+                opp.pop("club_email", None)
+                opp.pop("club_phone", None)
+                opp.pop("club_city", None)
+            result.append(opp)
+        return [Opportunity(**opp) for opp in result]
+    
     return [Opportunity(**opp) for opp in opportunities]
 
 @api_router.delete("/admin/opportunities/{opportunity_id}")
@@ -2971,6 +3024,32 @@ async def get_agent_opportunities(current_user: dict = Depends(get_current_user)
         raise HTTPException(status_code=403, detail="Not an agent")
     
     opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
+    
+    # Anonymize opportunities for players
+    if current_user["role"] == "player":
+        result = []
+        for opp in opportunities:
+            if opp.get("visibility", "anonymous") != "public":
+                # Build anonymous label from level and country
+                level = opp.get("league_level", "")
+                country = opp.get("club_country", "")
+                anon_label = f"Anonymous Club"
+                if level and country:
+                    anon_label = f"Anonymous Club ({country}, {level})"
+                elif level:
+                    anon_label = f"Anonymous Club ({level})"
+                elif country:
+                    anon_label = f"Anonymous Club ({country})"
+                opp["club_name"] = anon_label
+                opp["club_id"] = "anonymous"
+                opp.pop("club_logo", None)
+                opp.pop("club_website", None)
+                opp.pop("club_email", None)
+                opp.pop("club_phone", None)
+                opp.pop("club_city", None)
+            result.append(opp)
+        return [Opportunity(**opp) for opp in result]
+    
     return [Opportunity(**opp) for opp in opportunities]
 
 
