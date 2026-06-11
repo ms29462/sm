@@ -1837,28 +1837,7 @@ async def get_opportunities(current_user: dict = Depends(get_current_user)):
     
     # Anonymize opportunities for players
     if current_user["role"] == "player":
-        result = []
-        for opp in opportunities:
-            if opp.get("visibility", "anonymous") != "public":
-                # Build anonymous label from level and country
-                level = opp.get("league_level", "")
-                country = opp.get("club_country", "")
-                anon_label = f"Anonymous Club"
-                if level and country:
-                    anon_label = f"Anonymous Club ({country}, {level})"
-                elif level:
-                    anon_label = f"Anonymous Club ({level})"
-                elif country:
-                    anon_label = f"Anonymous Club ({country})"
-                opp["club_name"] = anon_label
-                opp["club_id"] = "anonymous"
-                opp.pop("club_logo", None)
-                opp.pop("club_website", None)
-                opp.pop("club_email", None)
-                opp.pop("club_phone", None)
-                opp.pop("club_city", None)
-            result.append(opp)
-        return [Opportunity(**opp) for opp in result]
+        opportunities = await anonymize_opportunities(opportunities, db)
     
     return [Opportunity(**opp) for opp in opportunities]
 
@@ -1876,6 +1855,7 @@ async def get_recommended_opportunities(current_user: dict = Depends(get_current
         query['position'] = player['position']
     
     opportunities = await db.opportunities.find(query, {"_id": 0}).to_list(100)
+    opportunities = await anonymize_opportunities(opportunities, db)
     return [Opportunity(**opp) for opp in opportunities]
 
 @api_router.post("/applications", response_model=Application)
@@ -2529,16 +2509,26 @@ async def get_all_opportunities_admin(current_user: dict = Depends(get_current_u
         result = []
         for opp in opportunities:
             if opp.get("visibility", "anonymous") != "public":
-                # Build anonymous label from level and country
-                level = opp.get("league_level", "")
+                # Build anonymous label using club's playing level
+                org_id = opp.get("club_id")
+                club_profile = await db.clubs.find_one({"user_id": org_id}, {"_id": 0}) if org_id else None
+                college_profile = await db.colleges.find_one({"user_id": org_id}, {"_id": 0}) if (org_id and not club_profile) else None
                 country = opp.get("club_country", "")
-                anon_label = f"Anonymous Club"
-                if level and country:
-                    anon_label = f"Anonymous Club ({country}, {level})"
-                elif level:
-                    anon_label = f"Anonymous Club ({level})"
-                elif country:
-                    anon_label = f"Anonymous Club ({country})"
+                if college_profile:
+                    anon_label = f"College{(' (' + country + ')') if country else ''}"
+                elif club_profile:
+                    level = club_profile.get("playing_level", "") or club_profile.get("league_level", "")
+                    level_map = {
+                        "Professional": "Professional",
+                        "Semi-Professional": "Semi-Professional",
+                        "Amateur": "Amateur",
+                        "University/College": "College",
+                    }
+                    clean_level = level_map.get(level, level)
+                    level_label = f"{clean_level} Club" if clean_level else "Club"
+                    anon_label = f"{level_label}{(' (' + country + ')') if country else ''}"
+                else:
+                    anon_label = f"Club{(' (' + country + ')') if country else ''}"
                 opp["club_name"] = anon_label
                 opp["club_id"] = "anonymous"
                 opp.pop("club_logo", None)
@@ -3030,16 +3020,26 @@ async def get_agent_opportunities(current_user: dict = Depends(get_current_user)
         result = []
         for opp in opportunities:
             if opp.get("visibility", "anonymous") != "public":
-                # Build anonymous label from level and country
-                level = opp.get("league_level", "")
+                # Build anonymous label using club's playing level
+                org_id = opp.get("club_id")
+                club_profile = await db.clubs.find_one({"user_id": org_id}, {"_id": 0}) if org_id else None
+                college_profile = await db.colleges.find_one({"user_id": org_id}, {"_id": 0}) if (org_id and not club_profile) else None
                 country = opp.get("club_country", "")
-                anon_label = f"Anonymous Club"
-                if level and country:
-                    anon_label = f"Anonymous Club ({country}, {level})"
-                elif level:
-                    anon_label = f"Anonymous Club ({level})"
-                elif country:
-                    anon_label = f"Anonymous Club ({country})"
+                if college_profile:
+                    anon_label = f"College{(' (' + country + ')') if country else ''}"
+                elif club_profile:
+                    level = club_profile.get("playing_level", "") or club_profile.get("league_level", "")
+                    level_map = {
+                        "Professional": "Professional",
+                        "Semi-Professional": "Semi-Professional",
+                        "Amateur": "Amateur",
+                        "University/College": "College",
+                    }
+                    clean_level = level_map.get(level, level)
+                    level_label = f"{clean_level} Club" if clean_level else "Club"
+                    anon_label = f"{level_label}{(' (' + country + ')') if country else ''}"
+                else:
+                    anon_label = f"Club{(' (' + country + ')') if country else ''}"
                 opp["club_name"] = anon_label
                 opp["club_id"] = "anonymous"
                 opp.pop("club_logo", None)
@@ -5741,6 +5741,103 @@ def calculate_profile_completion(player: dict) -> dict:
         "missing_fields": missing,
         "completed_fields": completed
     }
+
+
+
+LEAGUE_CATEGORY_MAP = {
+    # Professional leagues
+    "Premier League": "Professional",
+    "La Liga": "Professional",
+    "Bundesliga": "Professional",
+    "Serie A": "Professional",
+    "Ligue 1": "Professional",
+    "Eredivisie": "Professional",
+    "Primeira Liga": "Professional",
+    "Pro League": "Professional",
+    "Saudi Pro League": "Professional",
+    "J1 League": "Professional",
+    "MLS": "Professional",
+    "Brasileirao": "Professional",
+    "Primera Division": "Professional",
+    "Colombian Primera": "Professional",
+    "Egyptian Premier": "Professional",
+    "South African PSL": "Professional",
+    "CPL": "Professional",
+    "Liga MX": "Professional",
+    # Semi-Professional
+    "Championship": "Semi-Professional",
+    "League One": "Semi-Professional",
+    "League Two": "Semi-Professional",
+    "USL Championship": "Semi-Professional",
+    "USL League One": "Semi-Professional",
+    "National League": "Semi-Professional",
+    "Challenger Pro League": "Semi-Professional",
+    "Botola Pro": "Semi-Professional",
+    "National": "Semi-Professional",
+    "National 2": "Semi-Professional",
+    "Ligue 2": "Semi-Professional",
+    "Ligue 1 Quebec": "Semi-Professional",
+    "Ligue 1 Québec": "Semi-Professional",
+    "PLSQ": "Semi-Professional",
+    "LSEQ": "Semi-Professional",
+    "RSEQ": "Semi-Professional",
+    # College/University
+    "NCAA Division I": "College",
+    "NCAA Division II": "College",
+    "NCAA Division III": "College",
+    "NAIA": "College",
+    "NJCAA": "College",
+    "U SPORTS": "College",
+    "CCAA": "College",
+    # Amateur
+    "Semi-Professional": "Semi-Professional",
+    "Amateur": "Amateur",
+    "National League": "Amateur",
+}
+
+def get_org_category(playing_level: str, league_level: str = "") -> str:
+    # Check league level first
+    if league_level and league_level in LEAGUE_CATEGORY_MAP:
+        return LEAGUE_CATEGORY_MAP[league_level]
+    # Fall back to playing level
+    level_map = {
+        "Professional": "Professional",
+        "Semi-Professional": "Semi-Professional", 
+        "Amateur": "Amateur",
+        "University/College": "College",
+    }
+    return level_map.get(playing_level, playing_level or "Club")
+
+async def anonymize_opportunities(opportunities: list, db) -> list:
+    result = []
+    for opp in opportunities:
+        if opp.get("visibility", "anonymous") != "public":
+            org_id = opp.get("club_id")
+            club_profile = await db.clubs.find_one({"user_id": org_id}, {"_id": 0}) if org_id else None
+            college_profile = await db.colleges.find_one({"user_id": org_id}, {"_id": 0}) if (org_id and not club_profile) else None
+            country = opp.get("club_country", "")
+            if college_profile:
+                anon_label = f"College{(' (' + country + ')') if country else ''}"
+            elif club_profile:
+                level = club_profile.get("playing_level", "") or club_profile.get("league_level", "")
+                league_level = opp.get("league_level", "")
+                # Use opportunity league level to determine category
+                category = LEAGUE_CATEGORY_MAP.get(league_level, "")
+                if not category and club_profile:
+                    category = get_org_category(club_profile.get("playing_level", ""), league_level)
+                if category == "College":
+                    level_label = "College"
+                elif category:
+                    level_label = f"{category} Club"
+                else:
+                    level_label = "Club"
+                anon_label = f"{level_label}{(' (' + country + ')') if country else ''}"
+            else:
+                anon_label = f"Club{(' (' + country + ')') if country else ''}"
+            opp["club_name"] = anon_label
+            opp["club_id"] = "anonymous"
+        result.append(opp)
+    return result
 
 # ============ AGENT REPRESENTATION ENDPOINTS ============
 
