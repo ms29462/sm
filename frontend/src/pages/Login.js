@@ -109,7 +109,7 @@ const Login = ({ admin = false }) => {
                 Don't have an account?{" "}
                 <button
                   data-testid="login-register-link"
-                  onClick={() => navigate("/register")}
+                  onClick={() => navigate("/")}
                   className="text-primary hover:text-primary/80 font-medium"
                 >
                   Register

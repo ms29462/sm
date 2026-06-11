@@ -21,9 +21,9 @@ const Register = () => {
   const roleParam = searchParams.get('role');
   const [loading, setLoading] = useState(false);
   
-  // Redirect players to dedicated registration flow
+  // Redirect players to dedicated registration flow only if explicitly selected
   useEffect(() => {
-    if (!roleParam || roleParam === 'player') {
+    if (roleParam === 'player') {
       navigate('/player-register');
     }
   }, [roleParam, navigate]);
