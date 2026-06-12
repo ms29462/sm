@@ -100,8 +100,11 @@ const AdminClubApplications = () => {
                   {app.status || "pending"}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">{app.country} — {app.league}</p>
-              <p className="text-xs text-muted-foreground">{app.playing_level} • {app.created_at?.slice(0,10)}</p>
+              <p className="text-xs text-muted-foreground">{app.country} — {app.league || app.competition_level}</p>
+              <div className="flex items-center gap-2">
+                {app.institution_type && <span className="text-[10px] px-1.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-sm">{app.institution_type}</span>}
+                <p className="text-xs text-muted-foreground">{app.playing_level || app.competition_level} • {app.created_at?.slice(0,10)}</p>
+              </div>
             </div>
           ))}
         </div>

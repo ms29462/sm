@@ -1214,10 +1214,12 @@ async def login(credentials: UserLogin):
     
     user_id = user.get('user_id', user.get('id'))
     
-    # Check if club is pending review
-    if user['role'] == 'club':
+    # Check if club or college is pending review
+    if user['role'] in ['club', 'college']:
         club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
-        if club and club.get('status') == 'pending':
+        college = await db.colleges.find_one({"user_id": user_id}, {"_id": 0}) if not club else None
+        org = club or college
+        if org and org.get('status') == 'pending':
             raise HTTPException(status_code=403, detail="PENDING_REVIEW")
     
     token = create_token(user_id, user['email'], user['role'])

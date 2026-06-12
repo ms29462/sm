@@ -60,7 +60,7 @@ const Landing = () => {
               points: ["Post recruitment opportunities", "Browse & filter players", "Manage applications", "Build your pipeline"]
             },
             {
-              role: "college", label: "For Colleges", icon: "🎓", btn: "Join as College", path: "/register?role=college",
+              role: "college", label: "For Colleges", icon: "🎓", btn: "Join as College", path: "/college-register",
               desc: "Identify international student-athletes that match your program's academic and athletic standards.",
               points: ["Search eligible players", "Post scholarships", "Filter by NCAA eligibility", "Manage recruitment"]
             },
