@@ -1213,6 +1213,13 @@ async def login(credentials: UserLogin):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     user_id = user.get('user_id', user.get('id'))
+    
+    # Check if club is pending review
+    if user['role'] == 'club':
+        club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
+        if club and club.get('status') == 'pending':
+            raise HTTPException(status_code=403, detail="PENDING_REVIEW")
+    
     token = create_token(user_id, user['email'], user['role'])
     return AuthResponse(token=token, role=user['role'], user_id=user_id, email=user['email'])
 

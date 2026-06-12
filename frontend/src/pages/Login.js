@@ -15,6 +15,7 @@ const Login = ({ admin = false }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPendingModal, setShowPendingModal] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,7 +47,11 @@ const Login = ({ admin = false }) => {
         navigate("/college/dashboard");
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Login failed");
+      if (error.response?.data?.detail === 'PENDING_REVIEW') {
+        setShowPendingModal(true);
+      } else {
+        toast.error('Invalid email or password');
+      }
     } finally {
       setLoading(false);
     }
@@ -130,6 +135,32 @@ const Login = ({ admin = false }) => {
           </button>
         </div>
       </div>
+      {showPendingModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border/50 rounded-sm p-6 max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-yellow-500/10 border border-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">⏳</span>
+            </div>
+            <h3 className="font-heading font-bold uppercase text-lg mb-3">Application Under Review</h3>
+            <div className="inline-block px-3 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded-sm mb-4">
+              <p className="text-xs font-bold text-yellow-400 uppercase tracking-wide">Pending Review</p>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+              Your club application is currently being reviewed by the Soccer Match team.
+            </p>
+            <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+              A member of our team will contact you within <strong className="text-white">48 hours</strong> to verify your club and finalize your account activation.
+            </p>
+            <p className="text-sm text-muted-foreground mb-5">
+              Questions? <a href="mailto:contact@soccermatch.ca" className="text-primary hover:underline">contact@soccermatch.ca</a>
+            </p>
+            <button onClick={() => setShowPendingModal(false)}
+              className="w-full bg-primary text-black font-bold uppercase rounded-sm h-11 hover:bg-primary/90 transition-colors">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
