@@ -70,7 +70,7 @@ const Landing = () => {
               points: ["Scout national team talent", "Manage team groups", "Track player development", "Collaborate with clubs"]
             },
             {
-              role: "agent", label: "For Agents", icon: "🤝", btn: "Join as Agent", path: "/register?role=agent",
+              role: "agent", label: "For Agents", icon: "🤝", btn: "Join as Agent", path: "/agent-register",
               desc: "Represent your players and connect them with the right opportunities worldwide.",
               points: ["Manage player portfolios", "Browse opportunities", "Connect with clubs", "Track player careers"]
             },

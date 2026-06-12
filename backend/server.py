@@ -106,6 +106,27 @@ class UserRegister(BaseModel):
     country: Optional[str] = None
     league: Optional[str] = None
 
+    # Agent fields
+    license_type: Optional[str] = None
+    bio: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    licensing_authority: Optional[str] = None
+    license_number: Optional[str] = None
+    license_document: Optional[str] = None
+    agency_name: Optional[str] = None
+    agency_logo: Optional[str] = None
+    experience: Optional[str] = None
+    primary_market: Optional[str] = None
+    regions: Optional[list] = None
+    twitter: Optional[str] = None
+    recruitment_priorities: Optional[list] = None
+    institution_type: Optional[str] = None
+    competition_level: Optional[str] = None
+    athletic_program: Optional[str] = None
+    team_gender: Optional[str] = None
+    scholarship: Optional[str] = None
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -1152,7 +1173,24 @@ async def register(user: UserRegister):
             "name": user.name,
             "email": user.email,
             "approved": False,
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "country": user.country,
+            "license_type": user.license_type,
+            "licensing_authority": user.licensing_authority,
+            "license_number": user.license_number,
+            "license_document": user.license_document,
+            "agency_name": user.agency_name,
+            "agency_logo": user.agency_logo,
+            "website": user.website,
+            "instagram": user.instagram,
+            "linkedin": user.linkedin,
+            "bio": user.bio,
+            "experience": user.experience,
+            "primary_market": user.primary_market,
+            "regions": user.regions or [],
+            "phone": user.phone,
+            "discovery_call_status": "Not Contacted",
         }
         await db.agents.insert_one(agent_doc)
     elif user.role == 'analyst':
@@ -1215,10 +1253,11 @@ async def login(credentials: UserLogin):
     user_id = user.get('user_id', user.get('id'))
     
     # Check if club or college is pending review
-    if user['role'] in ['club', 'college']:
+    if user['role'] in ['club', 'college', 'agent']:
         club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
         college = await db.colleges.find_one({"user_id": user_id}, {"_id": 0}) if not club else None
-        org = club or college
+        agent = await db.agents.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college else None
+        org = club or college or agent
         if org and org.get('status') == 'pending':
             raise HTTPException(status_code=403, detail="PENDING_REVIEW")
     
