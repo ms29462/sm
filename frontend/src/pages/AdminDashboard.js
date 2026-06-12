@@ -18,6 +18,7 @@ import AdminVideoManagement from '@/components/admin/AdminVideoManagement';
 import AdminChatRequests from '@/components/admin/AdminChatRequests';
 import AdminBenchmark from '@/components/admin/AdminBenchmark';
 import AdminMasterclass from '@/components/admin/AdminMasterclass';
+import AdminClubApplications from '@/components/admin/AdminClubApplications';
 
 const AdminDashboard = () => {
   return (
@@ -26,6 +27,7 @@ const AdminDashboard = () => {
         <Route path="dashboard" element={<AdminHome />} />
         <Route path="players" element={<AdminPlayers />} />
         <Route path="clubs" element={<AdminClubs />} />
+        <Route path="club-applications" element={<AdminClubApplications />} />
         <Route path="federations" element={<AdminFederations />} />
         <Route path="agents" element={<AdminAgents />} />
                 <Route path="colleges" element={<AdminColleges />} />

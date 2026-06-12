@@ -103,6 +103,8 @@ class UserRegister(BaseModel):
     rep_role: Optional[str] = None
     rep_email: Optional[str] = None
     rep_phone: Optional[str] = None
+    country: Optional[str] = None
+    league: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -1176,10 +1178,28 @@ async def register(user: UserRegister):
     else:  # club
         club_doc = {
             "user_id": user_id,
-            "name": user.name,
+            "name": user.club_name or user.name,
             "email": user.email,
             "approved": False,
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "country": user.country,
+            "league": user.league,
+            "division": user.division,
+            "playing_level": user.playing_level,
+            "description": user.description,
+            "logo": user.logo,
+            "website": user.website,
+            "instagram": user.instagram,
+            "facebook": user.facebook,
+            "linkedin": user.linkedin,
+            "rep_first_name": user.rep_first_name,
+            "rep_last_name": user.rep_last_name,
+            "rep_role": user.rep_role,
+            "rep_email": user.rep_email,
+            "rep_phone": user.rep_phone,
+            "discovery_call_status": "Not Contacted",
+            "recommended_tier": user.playing_level,
         }
         await db.clubs.insert_one(club_doc)
     
@@ -6023,6 +6043,32 @@ async def get_profile_completion(current_user: dict = Depends(get_current_user))
         }}
     )
     return completion
+
+
+@api_router.delete("/admin/clubs/{club_id}")
+async def delete_club(club_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    await db.clubs.delete_one({"user_id": club_id})
+    await db.users.delete_one({"id": club_id})
+    return {"message": "Club deleted"}
+
+@api_router.get("/admin/club-applications")
+async def get_club_applications(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    clubs = await db.clubs.find({"status": "pending"}, {"_id": 0}).to_list(1000)
+    # Also include all clubs for admin review
+    all_clubs = await db.clubs.find({}, {"_id": 0}).to_list(1000)
+    return all_clubs
+
+@api_router.put("/admin/club-applications/{club_id}")
+async def update_club_application(club_id: str, update: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    update.pop("_id", None)
+    await db.clubs.update_one({"user_id": club_id}, {"$set": update})
+    return {"message": "Updated"}
 
 fastapi_app.include_router(api_router)
 

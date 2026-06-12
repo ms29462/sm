@@ -58,10 +58,10 @@ const AdminLayout = ({ children }) => {
               Players
             </Button>
           </Link>
-          <Link to="/admin/clubs">
+          <Link to="/admin/club-applications">
             <Button
               data-testid="nav-clubs-btn"
-              variant={isActive('/admin/clubs') ? 'secondary' : 'ghost'}
+              variant={isActive('/admin/club-applications') ? 'secondary' : 'ghost'}
               className="w-full justify-start"
             >
               <Building className="w-4 h-4 mr-3" />
