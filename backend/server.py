@@ -106,6 +106,12 @@ class UserRegister(BaseModel):
     country: Optional[str] = None
     league: Optional[str] = None
 
+    # Federation fields
+    federation_type: Optional[str] = None
+    primary_objective: Optional[str] = None
+    age_categories: Optional[list] = None
+    eligible_nationalities: Optional[list] = None
+
     # Agent fields
     license_type: Optional[str] = None
     bio: Optional[str] = None
@@ -1162,9 +1168,26 @@ async def register(user: UserRegister):
             "user_id": user_id,
             "name": user.name,
             "email": user.email,
-            "country": "",
             "approved": False,
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "country": user.country,
+            "federation_type": user.federation_type,
+            "primary_objective": user.primary_objective,
+            "age_categories": user.age_categories or [],
+            "eligible_nationalities": user.eligible_nationalities or [],
+            "logo": user.logo,
+            "description": user.description,
+            "website": user.website,
+            "instagram": user.instagram,
+            "facebook": user.facebook,
+            "linkedin": user.linkedin,
+            "rep_first_name": user.rep_first_name,
+            "rep_last_name": user.rep_last_name,
+            "rep_role": user.rep_role,
+            "rep_email": user.rep_email,
+            "rep_phone": user.rep_phone,
+            "discovery_call_status": "Not Contacted",
         }
         await db.federations.insert_one(federation_doc)
     elif user.role == 'agent':
@@ -1253,12 +1276,13 @@ async def login(credentials: UserLogin):
     user_id = user.get('user_id', user.get('id'))
     
     # Check if club or college is pending review
-    if user['role'] in ['club', 'college', 'agent']:
+    if user['role'] in ['club', 'college', 'agent', 'federation']:
         club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
         college = await db.colleges.find_one({"user_id": user_id}, {"_id": 0}) if not club else None
         agent = await db.agents.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college else None
-        org = club or college or agent
-        if org and org.get('status') == 'pending':
+        federation = await db.federations.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college and not agent else None
+        org = club or college or agent or federation
+        if org and org.get('status') == 'pending' and not org.get('approved', False):
             raise HTTPException(status_code=403, detail="PENDING_REVIEW")
     
     token = create_token(user_id, user['email'], user['role'])

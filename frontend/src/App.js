@@ -12,6 +12,7 @@ import ClubPending from '@/pages/ClubPending';
 import ClubPendingLogin from '@/pages/ClubPendingLogin';
 import CollegeRegister from '@/pages/CollegeRegister';
 import AgentRegister from '@/pages/AgentRegister';
+import FederationRegister from '@/pages/FederationRegister';
 import PlayerOnboarding from '@/pages/PlayerOnboarding';
 import ClubDashboard from '@/pages/ClubDashboard';
 import FederationDashboard from '@/pages/FederationDashboard';
@@ -52,6 +53,8 @@ function App() {
         <Route path="/college-pending" element={<ClubPending />} />
         <Route path="/agent-register" element={<AgentRegister />} />
         <Route path="/agent-pending" element={<ClubPending />} />
+        <Route path="/federation-register" element={<FederationRegister />} />
+        <Route path="/federation-pending" element={<ClubPending />} />
         <Route path="/club-register" element={<ClubRegister />} />
         <Route path="/club-pending" element={<ClubPending />} />
         <Route path="/club-pending-review" element={<ClubPendingLogin />} />
@@ -59,6 +62,8 @@ function App() {
         <Route path="/college-pending" element={<ClubPending />} />
         <Route path="/agent-register" element={<AgentRegister />} />
         <Route path="/agent-pending" element={<ClubPending />} />
+        <Route path="/federation-register" element={<FederationRegister />} />
+        <Route path="/federation-pending" element={<ClubPending />} />
                 <Route path="/admin/login" element={<Login admin={true} />} />
                 <Route
                   path="/player/*"

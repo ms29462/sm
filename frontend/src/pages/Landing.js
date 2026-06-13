@@ -65,7 +65,7 @@ const Landing = () => {
               points: ["Search eligible players", "Post scholarships", "Filter by NCAA eligibility", "Manage recruitment"]
             },
             {
-              role: "federation", label: "For Federations", icon: "🌍", btn: "Join as Federation", path: "/register?role=federation",
+              role: "federation", label: "For Federations", icon: "🌍", btn: "Join as Federation", path: "/federation-register",
               desc: "Identify and track talent for your national teams across all age categories.",
               points: ["Scout national team talent", "Manage team groups", "Track player development", "Collaborate with clubs"]
             },
