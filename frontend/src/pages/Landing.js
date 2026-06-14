@@ -75,7 +75,7 @@ const Landing = () => {
               points: ["Manage player portfolios", "Browse opportunities", "Connect with clubs", "Track player careers"]
             },
             {
-              role: "specialist", label: "For Specialists", icon: "📊", btn: "Join as Specialist", path: "/register?role=specialist",
+              role: "specialist", label: "For Specialists", icon: "📊", btn: "Join as Specialist", path: "/specialist-register",
               desc: "Offer your expertise to players and organizations looking to improve performance.",
               points: ["Connect with players", "Offer specialized services", "Build your network", "Grow your practice"]
             },

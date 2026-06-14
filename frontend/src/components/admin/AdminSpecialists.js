@@ -125,7 +125,7 @@ const AdminSpecialists = () => {
                       <p className="text-sm text-muted-foreground">Working with: {specialist.current_club}</p>
                     )}
                     <div className="flex gap-2 mt-2 flex-wrap">
-                      {specialist.certifications?.map(cert => (
+                      {(Array.isArray(specialist.certifications) ? specialist.certifications : (specialist.certifications ? specialist.certifications.split(', ') : [])).map(cert => (
                         <span key={cert} className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded-sm flex items-center gap-1">
                           <Award className="w-3 h-3" /> {cert}
                         </span>

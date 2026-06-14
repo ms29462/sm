@@ -106,6 +106,12 @@ class UserRegister(BaseModel):
     country: Optional[str] = None
     league: Optional[str] = None
 
+    # Specialist fields
+    specialist_type: Optional[str] = None
+    current_organization: Optional[str] = None
+    org_type: Optional[str] = None
+    certifications: Optional[str] = None
+
     # Federation fields
     federation_type: Optional[str] = None
     primary_objective: Optional[str] = None
@@ -894,7 +900,7 @@ class SpecialistProfile(BaseModel):
     rep_role: Optional[str] = None
     rep_email: Optional[str] = None
     rep_phone: Optional[str] = None
-    certifications: List[str] = []  # From SPECIALIST_CERTIFICATIONS
+    certifications: Optional[str] = None
     years_experience: Optional[int] = None
     current_club: Optional[str] = None  # If working with a club
     hourly_rate: Optional[str] = None
@@ -938,7 +944,7 @@ class SpecialistUpdate(BaseModel):
     rep_role: Optional[str] = None
     rep_email: Optional[str] = None
     rep_phone: Optional[str] = None
-    certifications: Optional[List[str]] = None
+    certifications: Optional[str] = None
     years_experience: Optional[int] = None
     current_club: Optional[str] = None
     hourly_rate: Optional[str] = None
@@ -1233,7 +1239,21 @@ async def register(user: UserRegister):
             "name": user.name,
             "email": user.email,
             "approved": False,
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "country": user.country,
+            "specialist_type": user.specialist_type,
+            "experience": user.experience,
+            "bio": user.bio,
+            "current_organization": user.current_organization,
+            "org_type": user.org_type,
+            "certifications": user.certifications,
+            "website": user.website,
+            "instagram": user.instagram,
+            "linkedin": user.linkedin,
+            "facebook": user.facebook,
+            "phone": user.phone,
+            "discovery_call_status": "Not Contacted",
         }
         await db.specialists.insert_one(specialist_doc)
     else:  # club
@@ -1276,12 +1296,13 @@ async def login(credentials: UserLogin):
     user_id = user.get('user_id', user.get('id'))
     
     # Check if club or college is pending review
-    if user['role'] in ['club', 'college', 'agent', 'federation']:
+    if user['role'] in ['club', 'college', 'agent', 'federation', 'specialist']:
         club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
         college = await db.colleges.find_one({"user_id": user_id}, {"_id": 0}) if not club else None
         agent = await db.agents.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college else None
         federation = await db.federations.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college and not agent else None
-        org = club or college or agent or federation
+        specialist = await db.specialists.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college and not agent and not federation else None
+        org = club or college or agent or federation or specialist
         if org and org.get('status') == 'pending' and not org.get('approved', False):
             raise HTTPException(status_code=403, detail="PENDING_REVIEW")
     
@@ -3391,7 +3412,12 @@ async def get_all_specialists(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Not an admin")
     
     specialists = await db.specialists.find({}, {"_id": 0}).to_list(1000)
-    return [SpecialistProfile(**s) for s in specialists]
+    result = []
+    for s in specialists:
+        if isinstance(s.get("certifications"), list):
+            s["certifications"] = ", ".join(s["certifications"]) if s["certifications"] else None
+        result.append(SpecialistProfile(**s))
+    return result
 
 
 @api_router.put("/admin/specialists/{user_id}/approve")
