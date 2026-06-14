@@ -79,11 +79,6 @@ const Landing = () => {
               desc: "Offer your expertise to players and organizations looking to improve performance.",
               points: ["Connect with players", "Offer specialized services", "Build your network", "Grow your practice"]
             },
-            {
-              role: "analyst", label: "For Analysts", icon: "🔍", btn: "Join as Analyst", path: "/register?role=analyst",
-              desc: "Evaluate players and provide professional scouting reports for organizations.",
-              points: ["Evaluate player profiles", "Write scouting reports", "Browse player database", "Collaborate with clubs"]
-            },
           ].map(card => (
             <div key={card.role}
               className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer flex flex-col"

@@ -1227,10 +1227,18 @@ async def register(user: UserRegister):
             "user_id": user_id,
             "name": user.name,
             "email": user.email,
-            "approved": True,
-            "verified": False,
-            "evaluations_count": 0,
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "approved": False,
+            "certified_analyst": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "country": user.country,
+            "analyst_type": user.analyst_type,
+            "experience": user.experience,
+            "bio": user.bio,
+            "certifications": user.certifications,
+            "current_organization": user.current_organization,
+            "website": user.website,
+            "linkedin": user.linkedin,
+            "badges": [],
         }
         await db.analysts.insert_one(analyst_doc)
     elif user.role == 'specialist':
@@ -6167,6 +6175,79 @@ async def update_club_application(club_id: str, update: dict, current_user: dict
     update.pop("_id", None)
     await db.clubs.update_one({"user_id": club_id}, {"$set": update})
     return {"message": "Updated"}
+
+
+@api_router.post("/admin/invite-analyst")
+async def invite_analyst(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    email = data.get("email")
+    name = data.get("name")
+    if not email or not name:
+        raise HTTPException(status_code=400, detail="Name and email required")
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    import secrets
+    activation_token = secrets.token_urlsafe(32)
+    user_id = str(uuid.uuid4())
+    user_doc = {
+        "id": user_id,
+        "email": email,
+        "password_hash": "",
+        "role": "analyst",
+        "status": "invited",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(user_doc)
+    analyst_doc = {
+        "user_id": user_id,
+        "name": name,
+        "email": email,
+        "approved": False,
+        "certified_analyst": False,
+        "status": "invited",
+        "activation_token": activation_token,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "country": data.get("country", ""),
+        "analyst_type": data.get("analyst_type", ""),
+        "experience": data.get("experience", ""),
+        "bio": data.get("bio", ""),
+        "certifications": data.get("certifications", ""),
+        "current_organization": data.get("current_organization", ""),
+        "website": data.get("website", ""),
+        "linkedin": data.get("linkedin", ""),
+        "badges": [],
+    }
+    await db.analysts.insert_one(analyst_doc)
+    activation_link = f"http://localhost:3000/analyst/activate/{activation_token}"
+    return {"message": "Analyst invited", "activation_link": activation_link, "token": activation_token}
+
+@api_router.post("/analyst/activate/{token}")
+async def activate_analyst(token: str, data: dict):
+    password = data.get("password")
+    if not password or len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    analyst = await db.analysts.find_one({"activation_token": token}, {"_id": 0})
+    if not analyst:
+        raise HTTPException(status_code=404, detail="Invalid or expired activation link")
+    if analyst.get("status") == "active":
+        raise HTTPException(status_code=400, detail="Account already activated")
+    hashed = hash_password(password)
+    await db.users.update_one({"id": analyst["user_id"]}, {"$set": {"password_hash": hashed, "status": "active"}})
+    await db.analysts.update_one(
+        {"activation_token": token},
+        {"$set": {
+            "status": "active",
+            "approved": True,
+            "certified_analyst": True,
+            "activated_at": datetime.now(timezone.utc).isoformat(),
+            "badges": ["soccer_match_certified_analyst"],
+            "activation_token": None
+        }}
+    )
+    login_token = create_token(analyst["user_id"], analyst["email"], "analyst")
+    return AuthResponse(token=login_token, role="analyst", user_id=analyst["user_id"], email=analyst["email"])
 
 fastapi_app.include_router(api_router)
 

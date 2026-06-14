@@ -256,6 +256,10 @@ export const api = {
   getProfileCompletion: () => axios.get(`${API}/player/completion`, { headers: getAuthHeaders() }),
   getClubApplications: () => axios.get(`${API}/admin/club-applications`, { headers: getAuthHeaders() }),
   deleteClub: (clubId) => axios.delete(`${API}/admin/clubs/${clubId}`, { headers: getAuthHeaders() }),
+  updateAnalyst: (analystId, data) => axios.put(`${API}/admin/analysts/${analystId}`, data, { headers: getAuthHeaders() }),
+  inviteAnalyst: (data) => axios.post(`${API}/admin/invite-analyst`, data, { headers: getAuthHeaders() }),
+  activateAnalyst: (token, password) => axios.post(`${API}/analyst/activate/${token}`, { password }),
+  deleteAnalyst: (analystId) => axios.delete(`${API}/admin/analysts/${analystId}`, { headers: getAuthHeaders() }),
   updateClubApplication: (clubId, data) => axios.put(`${API}/admin/club-applications/${clubId}`, data, { headers: getAuthHeaders() }),
 
   // Agent Representation

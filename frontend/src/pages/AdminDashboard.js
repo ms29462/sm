@@ -19,6 +19,7 @@ import AdminChatRequests from '@/components/admin/AdminChatRequests';
 import AdminBenchmark from '@/components/admin/AdminBenchmark';
 import AdminMasterclass from '@/components/admin/AdminMasterclass';
 import AdminClubApplications from '@/components/admin/AdminClubApplications';
+import AdminAnalystManagement from '@/components/admin/AdminAnalystManagement';
 
 const AdminDashboard = () => {
   return (
@@ -28,6 +29,7 @@ const AdminDashboard = () => {
         <Route path="players" element={<AdminPlayers />} />
         <Route path="clubs" element={<AdminClubs />} />
         <Route path="club-applications" element={<AdminClubApplications />} />
+        <Route path="analyst-management" element={<AdminAnalystManagement />} />
         <Route path="federations" element={<AdminFederations />} />
         <Route path="agents" element={<AdminAgents />} />
                 <Route path="colleges" element={<AdminColleges />} />
