@@ -414,7 +414,6 @@ const ClubOpportunities = () => {
         </div>
       )}
     </div>
-  );
     </ApprovedGate>
   );
 };
