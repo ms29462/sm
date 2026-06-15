@@ -255,6 +255,11 @@ export const api = {
 
   getProfileCompletion: () => axios.get(`${API}/player/completion`, { headers: getAuthHeaders() }),
   getMyPermissions: () => axios.get(`${API}/my-permissions`, { headers: getAuthHeaders() }),
+  getMySubscription: () => axios.get(`${API}/subscription/my`, { headers: getAuthHeaders() }),
+  getSubscriptionPlans: () => axios.get(`${API}/subscription/plans`, { headers: getAuthHeaders() }),
+  assignSubscription: (data) => axios.post(`${API}/subscription/assign`, data, { headers: getAuthHeaders() }),
+  cancelSubscription: (data) => axios.post(`${API}/subscription/cancel`, data, { headers: getAuthHeaders() }),
+  getAllSubscriptions: () => axios.get(`${API}/admin/subscriptions`, { headers: getAuthHeaders() }),
   getClubApplications: () => axios.get(`${API}/admin/club-applications`, { headers: getAuthHeaders() }),
   deleteClub: (clubId) => axios.delete(`${API}/admin/clubs/${clubId}`, { headers: getAuthHeaders() }),
   updateAnalyst: (analystId, data) => axios.put(`${API}/admin/analysts/${analystId}`, data, { headers: getAuthHeaders() }),

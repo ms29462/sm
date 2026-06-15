@@ -78,6 +78,11 @@ const AdminLayout = ({ children }) => {
               Federations
             </Button>
           </Link>
+          <Link to="/admin/subscriptions">
+            <Button variant={isActive('/admin/subscriptions') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              Subscriptions
+            </Button>
+          </Link>
           <Link to="/admin/analyst-management">
             <Button variant={isActive('/admin/analyst-management') ? 'secondary' : 'ghost'} className="w-full justify-start">
               Analyst Management

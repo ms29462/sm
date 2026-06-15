@@ -33,6 +33,7 @@ from player_matching import (
     build_player_dict_from_transfermarkt_url, calculate_match_score_for_opportunity,
     AVAILABLE_LEAGUES, DEFAULT_LEAGUES
 )
+from subscription_plans import SUBSCRIPTION_PLANS, get_plan, get_plans_for_role, create_subscription, is_subscription_active, get_default_plan
 from permissions import get_user_status, get_permissions, has_permission
 from video_analysis import analyze_highlight_video, calculate_overall_score, analyze_video_with_gemini
 from chatbot_service import SoccerMatchChatbot, search_players_from_criteria, search_opportunities_from_criteria, format_player_results, format_opportunity_results
@@ -6282,7 +6283,21 @@ async def get_my_permissions(current_user: dict = Depends(get_current_user)):
         analyst = await db.analysts.find_one({"user_id": user_id}, {"_id": 0})
         user_data = analyst or {}
     
+    # Get subscription
+    subscription = await db.subscriptions.find_one({"user_id": user_id}, {"_id": 0})
+    
+    # Check if subscription is active
+    from subscription_plans import is_subscription_active, get_plan
+    sub_active = subscription and is_subscription_active(subscription)
+    
     status = get_user_status(role, user_data)
+    
+    # Override status if premium subscription active
+    if sub_active:
+        plan_id = subscription.get("plan_id", "")
+        if plan_id == "player_premium":
+            status = "premium"
+    
     permissions = get_permissions(role, status)
     
     return {
@@ -6291,6 +6306,90 @@ async def get_my_permissions(current_user: dict = Depends(get_current_user)):
         "permissions": permissions,
         "is_premium": user_data.get("is_premium", False),
     }
+
+
+# ============ SUBSCRIPTION ENDPOINTS ============
+
+@api_router.get("/subscription/plans")
+async def get_subscription_plans(current_user: dict = Depends(get_current_user)):
+    role = current_user["role"]
+    plans = get_plans_for_role(role)
+    return {"plans": plans, "role": role}
+
+@api_router.get("/subscription/my")
+async def get_my_subscription(current_user: dict = Depends(get_current_user)):
+    role = current_user["role"]
+    user_id = current_user["user_id"]
+    sub = await db.subscriptions.find_one({"user_id": user_id}, {"_id": 0})
+    if not sub:
+        default = get_default_plan(role)
+        return {
+            "plan_id": default,
+            "plan": get_plan(default) if default else None,
+            "status": "none",
+            "is_active": False,
+        }
+    plan = get_plan(sub.get("plan_id", ""))
+    return {
+        **sub,
+        "plan": plan,
+        "is_active": is_subscription_active(sub),
+    }
+
+@api_router.post("/subscription/assign")
+async def assign_subscription(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    target_user_id = data.get("user_id")
+    plan_id = data.get("plan_id")
+    billing = data.get("billing", "yearly")
+    
+    if not target_user_id or not plan_id:
+        raise HTTPException(status_code=400, detail="user_id and plan_id required")
+    
+    plan = get_plan(plan_id)
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    
+    sub = create_subscription(plan_id, billing)
+    sub["user_id"] = target_user_id
+    sub["assigned_by"] = current_user["user_id"]
+    sub["assigned_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.subscriptions.update_one(
+        {"user_id": target_user_id},
+        {"$set": sub},
+        upsert=True
+    )
+    
+    # Update player premium status
+    if plan.get("role") == "player" and plan_id == "player_premium":
+        await db.players.update_one(
+            {"user_id": target_user_id},
+            {"$set": {"is_premium": True}}
+        )
+    
+    return {"message": "Subscription assigned", "subscription": sub}
+
+@api_router.post("/subscription/cancel")
+async def cancel_subscription(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    target_user_id = data.get("user_id")
+    await db.subscriptions.update_one(
+        {"user_id": target_user_id},
+        {"$set": {"status": "cancelled", "cancelled_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"message": "Subscription cancelled"}
+
+@api_router.get("/admin/subscriptions")
+async def get_all_subscriptions(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    subs = await db.subscriptions.find({}, {"_id": 0}).to_list(1000)
+    return subs
 
 fastapi_app.include_router(api_router)
 

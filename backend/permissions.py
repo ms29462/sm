@@ -148,7 +148,19 @@ PERMISSIONS = {
     }
 }
 
-def get_user_status(role: str, user_data: dict) -> str:
+def get_user_status(role: str, user_data: dict, subscription: dict = None) -> str:
+    from subscription_plans import is_subscription_active, get_plan
+    
+    # Check subscription status first
+    if subscription and is_subscription_active(subscription):
+        plan_id = subscription.get("plan_id", "")
+        plan = get_plan(plan_id)
+        if plan:
+            if plan_id == "player_premium":
+                return "premium"
+            return "active_subscriber"
+    
+def get_user_status_legacy(role: str, user_data: dict) -> str:
     if role == "admin":
         return "any"
     if role == "player":
