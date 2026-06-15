@@ -362,7 +362,7 @@ async def notify_federations_of_player(player: dict):
                     message,
                     {
                         "player_id": player_id,
-                        "player_name": player_name,
+                        "player_name": "Anonymous",  # Anonymized
                         "nationalities": nationalities,
                         "position": position,
                         "is_diaspora": is_diaspora
@@ -2359,7 +2359,7 @@ async def get_player_detail(player_id: str, current_user: dict = Depends(get_cur
             org_name = org.get("name", "An organization") if org else "An organization"
             await create_notification(
                 player_id, "profile_viewed",
-                f"{org_name} viewed your profile",
+                "A " + (current_user["role"].capitalize() if current_user["role"] != "college" else "College") + " viewed your profile",
                 {"viewer_id": current_user["user_id"], "viewer_role": current_user["role"]}
             )
         except Exception:
@@ -4721,7 +4721,7 @@ async def send_trial_invitation(invite: TrialInvitation, current_user: dict = De
     await create_notification(
         invite.player_id,
         "trial_invitation",
-        f"🏆 Trial invitation from {org_name} on {invite.trial_date} at {invite.location}!",
+        f"🏆 You have received a trial invitation for {invite.trial_date} at {invite.location}!",
         {"invitation_id": invitation["id"], "org_name": org_name, "trial_date": invite.trial_date, "location": invite.location}
     )
     return {"message": "Trial invitation sent!", "id": invitation["id"]}
@@ -4747,7 +4747,7 @@ async def respond_to_trial(invite_id: str, response: dict, current_user: dict = 
     await create_notification(
         invite["org_id"],
         "trial_response",
-        f"{player_name} {'accepted' if status == 'accepted' else 'declined'} your trial invitation",
+        f"A player {'accepted' if status == 'accepted' else 'declined'} your trial invitation",
         {"invite_id": invite_id, "player_id": current_user["user_id"], "status": status}
     )
     return {"message": "Response sent"}
