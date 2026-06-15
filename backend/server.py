@@ -33,6 +33,7 @@ from player_matching import (
     build_player_dict_from_transfermarkt_url, calculate_match_score_for_opportunity,
     AVAILABLE_LEAGUES, DEFAULT_LEAGUES
 )
+from permissions import get_user_status, get_permissions, has_permission
 from video_analysis import analyze_highlight_video, calculate_overall_score, analyze_video_with_gemini
 from chatbot_service import SoccerMatchChatbot, search_players_from_criteria, search_opportunities_from_criteria, format_player_results, format_opportunity_results
 import asyncio
@@ -6248,6 +6249,48 @@ async def activate_analyst(token: str, data: dict):
     )
     login_token = create_token(analyst["user_id"], analyst["email"], "analyst")
     return AuthResponse(token=login_token, role="analyst", user_id=analyst["user_id"], email=analyst["email"])
+
+
+@api_router.get("/my-permissions")
+async def get_my_permissions(current_user: dict = Depends(get_current_user)):
+    role = current_user["role"]
+    user_id = current_user["user_id"]
+    
+    # Get user data based on role
+    user_data = {}
+    if role == "player":
+        player = await db.players.find_one({"user_id": user_id}, {"_id": 0})
+        user_data = player or {}
+    elif role in ["club"]:
+        club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
+        user_data = club or {}
+    elif role == "college":
+        college = await db.colleges.find_one({"user_id": user_id}, {"_id": 0})
+        if not college:
+            college = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
+        user_data = college or {}
+    elif role == "federation":
+        fed = await db.federations.find_one({"user_id": user_id}, {"_id": 0})
+        user_data = fed or {}
+    elif role == "agent":
+        agent = await db.agents.find_one({"user_id": user_id}, {"_id": 0})
+        user_data = agent or {}
+    elif role == "specialist":
+        spec = await db.specialists.find_one({"user_id": user_id}, {"_id": 0})
+        user_data = spec or {}
+    elif role == "analyst":
+        analyst = await db.analysts.find_one({"user_id": user_id}, {"_id": 0})
+        user_data = analyst or {}
+    
+    status = get_user_status(role, user_data)
+    permissions = get_permissions(role, status)
+    
+    return {
+        "role": role,
+        "status": status,
+        "permissions": permissions,
+        "is_premium": user_data.get("is_premium", False),
+    }
 
 fastapi_app.include_router(api_router)
 

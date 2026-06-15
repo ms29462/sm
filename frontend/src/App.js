@@ -1,5 +1,6 @@
 import '@/App.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { PermissionsProvider } from '@/context/PermissionsContext';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import Landing from '@/pages/Landing';
@@ -39,6 +40,7 @@ function App() {
     <ErrorBoundary>
     <PWAProvider>
       <AuthProvider>
+      <PermissionsProvider>
         <NotificationProvider>
           <div className="App min-h-screen">
             <OfflineBanner />
@@ -156,7 +158,8 @@ function App() {
             <Toaster position="top-right" richColors />
           </div>
         </NotificationProvider>
-      </AuthProvider>
+      </PermissionsProvider>
+    </AuthProvider>
     </PWAProvider>
     </ErrorBoundary>
   );

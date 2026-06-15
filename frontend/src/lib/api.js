@@ -254,6 +254,7 @@ export const api = {
   requestChatDeletion: (requestId) => axios.post(`${API}/chat-requests/${requestId}/deletion-request`, {}, { headers: getAuthHeaders() }),
 
   getProfileCompletion: () => axios.get(`${API}/player/completion`, { headers: getAuthHeaders() }),
+  getMyPermissions: () => axios.get(`${API}/my-permissions`, { headers: getAuthHeaders() }),
   getClubApplications: () => axios.get(`${API}/admin/club-applications`, { headers: getAuthHeaders() }),
   deleteClub: (clubId) => axios.delete(`${API}/admin/clubs/${clubId}`, { headers: getAuthHeaders() }),
   updateAnalyst: (analystId, data) => axios.put(`${API}/admin/analysts/${analystId}`, data, { headers: getAuthHeaders() }),

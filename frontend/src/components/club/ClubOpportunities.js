@@ -168,6 +168,7 @@ const ClubOpportunities = () => {
   }
 
   return (
+    <ApprovedGate message="Opportunity management is only available to approved organizations.">
     <div className="p-4 md:p-8">
       {editingOpp && (
         <Dialog open={!!editingOpp} onOpenChange={(open) => !open && setEditingOpp(null)}>
@@ -413,6 +414,8 @@ const ClubOpportunities = () => {
         </div>
       )}
     </div>
+  );
+    </ApprovedGate>
   );
 };
 
