@@ -48,9 +48,9 @@ const FederationRecommended = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">RECOMMENDED PLAYERS</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">RECOMMENDED PLAYERS</h1>
         <p className="text-muted-foreground">Players eligible for your national team</p>
       </div>
 
@@ -80,7 +80,7 @@ const FederationRecommended = () => {
           <p className="text-muted-foreground">No recommended players found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {players.map((player) => (
             <div
               key={player.user_id}

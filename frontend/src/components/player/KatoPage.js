@@ -235,7 +235,7 @@ const CollegeFitPage = () => {
   return (
     <div className="min-h-screen p-6 max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-heading font-bold uppercase tracking-tight mb-2">COLLEGE FIT</h1>
+        <h1 className="text-2xl md:text-4xl font-heading font-bold uppercase tracking-tight mb-2">COLLEGE FIT</h1>
         <p className="text-muted-foreground text-sm max-w-md mx-auto">Your personal college soccer eligibility advisor. Fill in your details and let College Fit analyze your compatibility.</p>
       </div>
 

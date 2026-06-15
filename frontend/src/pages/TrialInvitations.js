@@ -65,7 +65,7 @@ const TrialInvitations = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase">Trial Invitations</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">Trial Invitations</h1>
         <p className="text-muted-foreground text-sm mt-1">
           {user?.role === "player" ? "Manage your trial invitations from organizations" : "Track trial invitations you have sent"}
         </p>

@@ -19,7 +19,7 @@ const NewsArticle = ({ post, onClose }) => (
             <iframe src={`https://www.youtube.com/embed/${getYouTubeId(post.media_url)}`} className="w-full h-full" allowFullScreen title={post.title} />
           </div>
         )}
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-2">
               {post.pinned && <Pin className="w-4 h-4 text-primary flex-shrink-0" />}
@@ -33,7 +33,7 @@ const NewsArticle = ({ post, onClose }) => (
               <X className="w-5 h-5" />
             </button>
           </div>
-          <h1 className="text-3xl font-heading font-bold uppercase mb-6">{post.title}</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-6">{post.title}</h1>
           <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap text-base">{post.content}</p>
         </div>
       </div>
@@ -68,7 +68,7 @@ const NewsFeed = () => {
       <div className="mb-8 flex items-center gap-3">
         <Newspaper className="w-6 h-6 text-primary" />
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase">News Feed</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">News Feed</h1>
           <p className="text-muted-foreground text-sm mt-1">Latest updates from Soccer Match</p>
         </div>
       </div>
@@ -97,7 +97,7 @@ const NewsFeed = () => {
                   </div>
                 </div>
               )}
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-sm font-bold uppercase">Pinned</span>
                   <span className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>

@@ -63,7 +63,7 @@ const Login = ({ admin = false }) => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
             
-            <h1 className="text-3xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-10 w-auto" /></h1>
+            <h1 className="text-2xl md:text-3xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-10 w-auto" /></h1>
           </div>
           <h2 className="text-2xl font-heading uppercase text-muted-foreground">
             {admin ? "ADMIN LOGIN" : "LOGIN"}

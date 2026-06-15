@@ -87,7 +87,7 @@ const AdminNews = () => {
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-3">
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase">News Feed</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">News Feed</h1>
           <p className="text-muted-foreground text-sm mt-1">Publish updates and announcements</p>
         </div>
         <Button onClick={openCreate} className="bg-primary text-black font-bold rounded-sm">

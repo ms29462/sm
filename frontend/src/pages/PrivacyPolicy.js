@@ -9,7 +9,7 @@ const PrivacyPolicy = () => {
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">Privacy Policy / Politique de Confidentialité</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">Privacy Policy / Politique de Confidentialité</h1>
         <p className="text-muted-foreground mb-8 text-sm">Last updated / Dernière mise à jour : May 2026</p>
 
         <div className="space-y-8 text-sm leading-relaxed">

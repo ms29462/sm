@@ -79,10 +79,10 @@ const FederationProfile = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-heading font-bold uppercase">FEDERATION PROFILE</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">FEDERATION PROFILE</h1>
           {profile?.verified && (
             <span className="flex items-center gap-1 px-3 py-1 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-sm text-xs uppercase tracking-wide">
               <CheckCircle className="w-3 h-3" />

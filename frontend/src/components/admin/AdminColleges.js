@@ -46,9 +46,9 @@ const AdminColleges = () => {
   if (loading) return <div className="p-8 text-center text-primary font-heading">LOADING...</div>;
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase">Colleges & Universities</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">Colleges & Universities</h1>
         <p className="text-muted-foreground mt-1">{colleges.length} registered institutions</p>
       </div>
 

@@ -86,7 +86,7 @@ const AdminAnalysts = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-3">

@@ -82,7 +82,7 @@ const OpportunityDetail = () => {
       <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-heading font-bold uppercase mb-1">{opportunity.club_name}</h1>
+            <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1">{opportunity.club_name}</h1>
             <div className="flex items-center gap-2 text-muted-foreground">
               <MapPin className="w-4 h-4" />
               <span>{opportunity.club_country || "International"}</span>

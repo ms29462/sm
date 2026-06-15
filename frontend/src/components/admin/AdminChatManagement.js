@@ -88,7 +88,7 @@ const AdminChatManagement = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteRoomId} onOpenChange={(open) => !open && setDeleteRoomId(null)}>
@@ -115,7 +115,7 @@ const AdminChatManagement = () => {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-3">
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase mb-2">CHAT MANAGEMENT</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">CHAT MANAGEMENT</h1>
           <p className="text-muted-foreground">Create and monitor chat rooms</p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

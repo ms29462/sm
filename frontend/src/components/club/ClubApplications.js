@@ -104,7 +104,7 @@ const PlayerProfilePopup = ({ player, onClose, verifications = {} }) => {
                 ))}
               </div>
             )}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="bg-background border border-border/50 rounded-sm p-3">
                 <div className="flex items-center gap-2 mb-1"><Activity className="w-3 h-3 text-muted-foreground" /><span className="text-xs text-muted-foreground uppercase">Age</span></div>
                 <span className="font-medium">{player.age ? player.age + " years" : "N/A"}</span>
@@ -133,17 +133,17 @@ const PlayerProfilePopup = ({ player, onClose, verifications = {} }) => {
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-widest text-primary mb-3">Season Statistics</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="bg-background border border-border/50 rounded-sm p-4 text-center">
-                <div className="text-3xl font-heading font-bold text-primary mb-1">{player.games || 0}</div>
+                <div className="text-2xl md:text-3xl font-heading font-bold text-primary mb-1">{player.games || 0}</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wide">Games</div>
               </div>
               <div className="bg-background border border-border/50 rounded-sm p-4 text-center">
-                <div className="text-3xl font-heading font-bold text-primary mb-1">{player.goals || 0}</div>
+                <div className="text-2xl md:text-3xl font-heading font-bold text-primary mb-1">{player.goals || 0}</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wide">Goals</div>
               </div>
               <div className="bg-background border border-border/50 rounded-sm p-4 text-center">
-                <div className="text-3xl font-heading font-bold text-primary mb-1">{player.assists || 0}</div>
+                <div className="text-2xl md:text-3xl font-heading font-bold text-primary mb-1">{player.assists || 0}</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wide">Assists</div>
               </div>
             </div>
@@ -152,7 +152,7 @@ const PlayerProfilePopup = ({ player, onClose, verifications = {} }) => {
             <div>
               <h3 className="text-xs font-bold uppercase tracking-widest text-primary mb-3">AI Video Analysis Score</h3>
               <div className="bg-background border border-border/50 rounded-sm p-4 flex items-center gap-4">
-                <div className="text-4xl font-heading font-bold text-primary">{player.video_analysis_score}</div>
+                <div className="text-2xl md:text-4xl font-heading font-bold text-primary">{player.video_analysis_score}</div>
                 <div className="flex-1 bg-border rounded-full h-2">
                   <div className="bg-primary h-2 rounded-full" style={{ width: player.video_analysis_score + "%" }} />
                 </div>
@@ -308,10 +308,10 @@ const ClubApplications = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {selectedPlayer && <PlayerProfilePopup player={selectedPlayer} onClose={() => setSelectedPlayer(null)} verifications={verifications} />}
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">APPLICATIONS</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">APPLICATIONS</h1>
         <p className="text-muted-foreground">Review and manage player applications - click a card to view full profile</p>
       </div>
       {applications.length === 0 ? (

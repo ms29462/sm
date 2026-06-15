@@ -49,9 +49,9 @@ const FederationHome = () => {
   const needsSetup = !profile?.country;
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">
           {profile?.name || 'FEDERATION DASHBOARD'}
         </h1>
         <p className="text-muted-foreground">National team scouting and management</p>
@@ -89,7 +89,7 @@ const FederationHome = () => {
         <div className="bg-card border border-border/50 p-6 rounded-sm">
           <div className="flex items-center justify-between mb-4">
             <Users className="w-8 h-8 text-primary" />
-            <span className="text-3xl font-heading font-bold">{stats.recommendedPlayers}</span>
+            <span className="text-2xl md:text-3xl font-heading font-bold">{stats.recommendedPlayers}</span>
           </div>
           <h3 className="text-sm text-muted-foreground uppercase tracking-wide">Recommended Players</h3>
           <p className="text-xs text-muted-foreground mt-1">Players matching your nationality</p>
@@ -98,7 +98,7 @@ const FederationHome = () => {
         <div className="bg-card border border-border/50 p-6 rounded-sm">
           <div className="flex items-center justify-between mb-4">
             <Heart className="w-8 h-8 text-red-500" />
-            <span className="text-3xl font-heading font-bold">{stats.scoutingList}</span>
+            <span className="text-2xl md:text-3xl font-heading font-bold">{stats.scoutingList}</span>
           </div>
           <h3 className="text-sm text-muted-foreground uppercase tracking-wide">Scouting List</h3>
           <p className="text-xs text-muted-foreground mt-1">Players you're tracking</p>
@@ -107,7 +107,7 @@ const FederationHome = () => {
         <div className="bg-card border border-border/50 p-6 rounded-sm">
           <div className="flex items-center justify-between mb-4">
             <FolderOpen className="w-8 h-8 text-blue-500" />
-            <span className="text-3xl font-heading font-bold">{stats.teams}</span>
+            <span className="text-2xl md:text-3xl font-heading font-bold">{stats.teams}</span>
           </div>
           <h3 className="text-sm text-muted-foreground uppercase tracking-wide">Team Groups</h3>
           <p className="text-xs text-muted-foreground mt-1">Senior, U23, U20, U17, U15</p>

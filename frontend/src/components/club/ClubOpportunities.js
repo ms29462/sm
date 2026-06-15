@@ -168,7 +168,7 @@ const ClubOpportunities = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {editingOpp && (
         <Dialog open={!!editingOpp} onOpenChange={(open) => !open && setEditingOpp(null)}>
           <DialogContent className="bg-card border border-border/50 max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -249,7 +249,7 @@ const ClubOpportunities = () => {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase mb-2">OPPORTUNITIES</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">OPPORTUNITIES</h1>
           <p className="text-muted-foreground">Manage your posted opportunities</p>
         </div>
         <Dialog open={showDialog} onOpenChange={setShowDialog}>

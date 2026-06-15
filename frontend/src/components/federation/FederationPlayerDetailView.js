@@ -86,7 +86,7 @@ const FederationPlayerDetailView = () => {
 
   if (!player) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="text-center">
           <p className="text-muted-foreground">Player not found</p>
           <Button onClick={() => navigate(-1)} className="mt-4">
@@ -106,7 +106,7 @@ const FederationPlayerDetailView = () => {
   ].filter(Boolean);
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8 flex items-center space-x-4">
         <Button
           data-testid="back-btn"
@@ -117,7 +117,7 @@ const FederationPlayerDetailView = () => {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase mb-2">PLAYER PROFILE</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">PLAYER PROFILE</h1>
           <p className="text-muted-foreground">Complete scouting information</p>
         </div>
       </div>
@@ -139,7 +139,7 @@ const FederationPlayerDetailView = () => {
             )}
             <div className="flex-1">
               <div className="flex items-center space-x-3 mb-2">
-                <h2 className="text-3xl font-heading font-bold uppercase">{player.name}</h2>
+                <h2 className="text-2xl md:text-3xl font-heading font-bold uppercase">{player.name}</h2>
                 {player.verified && (
                   <span
                     data-testid="verified-badge"
@@ -256,7 +256,7 @@ const FederationPlayerDetailView = () => {
           <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">
             PERSONAL INFORMATION
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {player.age && (
               <div>
                 <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Age</p>
@@ -295,17 +295,17 @@ const FederationPlayerDetailView = () => {
           <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">
             CAREER STATISTICS
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <div className="text-center p-6 bg-background rounded-sm border border-border">
-              <p className="text-4xl font-heading font-bold text-primary mb-2">{player.games || 0}</p>
+              <p className="text-2xl md:text-4xl font-heading font-bold text-primary mb-2">{player.games || 0}</p>
               <p className="text-sm text-muted-foreground uppercase tracking-wide">Games Played</p>
             </div>
             <div className="text-center p-6 bg-background rounded-sm border border-border">
-              <p className="text-4xl font-heading font-bold text-primary mb-2">{player.goals || 0}</p>
+              <p className="text-2xl md:text-4xl font-heading font-bold text-primary mb-2">{player.goals || 0}</p>
               <p className="text-sm text-muted-foreground uppercase tracking-wide">Goals</p>
             </div>
             <div className="text-center p-6 bg-background rounded-sm border border-border">
-              <p className="text-4xl font-heading font-bold text-primary mb-2">{player.assists || 0}</p>
+              <p className="text-2xl md:text-4xl font-heading font-bold text-primary mb-2">{player.assists || 0}</p>
               <p className="text-sm text-muted-foreground uppercase tracking-wide">Assists</p>
             </div>
           </div>

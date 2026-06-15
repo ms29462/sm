@@ -153,12 +153,12 @@ const AdminMasterclass = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <GraduationCap className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-heading font-bold uppercase">MANAGE MASTERCLASSES</h1>
+            <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">MANAGE MASTERCLASSES</h1>
           </div>
           <p className="text-muted-foreground">Create and manage educational content for players</p>
         </div>

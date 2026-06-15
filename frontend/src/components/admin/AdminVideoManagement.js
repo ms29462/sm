@@ -86,10 +86,10 @@ const AdminVideoManagement = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-3">
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase mb-2">VIDEO MANAGEMENT</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">VIDEO MANAGEMENT</h1>
           <p className="text-muted-foreground">Create and monitor video sessions</p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

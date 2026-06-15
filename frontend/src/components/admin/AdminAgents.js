@@ -52,11 +52,11 @@ const AdminAgents = () => {
   }
 
   return (
-    <div className="p-8" data-testid="admin-agents">
+    <div className="p-4 md:p-8" data-testid="admin-agents">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Briefcase className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-heading font-bold uppercase">MANAGE AGENTS</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">MANAGE AGENTS</h1>
         </div>
         <p className="text-muted-foreground">Approve and verify football agents</p>
       </div>

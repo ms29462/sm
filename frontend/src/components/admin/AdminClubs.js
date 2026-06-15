@@ -54,9 +54,9 @@ const AdminClubs = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">CLUB MANAGEMENT</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">CLUB MANAGEMENT</h1>
         <p className="text-muted-foreground">Approve and manage club accounts</p>
       </div>
 

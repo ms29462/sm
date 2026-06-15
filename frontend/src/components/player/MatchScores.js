@@ -89,9 +89,9 @@ const MatchScores = () => {
 
   if (error) {
     return (
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-heading font-bold uppercase mb-2">MY MATCH SCORES</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">MY MATCH SCORES</h1>
           <p className="text-muted-foreground">AI-powered opportunity matching based on your profile</p>
         </div>
         <div className="bg-card border border-border/50 p-8 rounded-sm text-center">
@@ -106,9 +106,9 @@ const MatchScores = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">MY MATCH SCORES</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">MY MATCH SCORES</h1>
         <p className="text-muted-foreground">AI-powered opportunity matching based on your profile</p>
       </div>
 
@@ -164,7 +164,7 @@ const MatchScores = () => {
                   <div className="ml-6 flex flex-col items-end gap-3">
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground uppercase mb-1">Fit Score</p>
-                      <div className={`text-3xl font-heading font-bold ${getFitScoreColor(score.fit_score)}`}>
+                      <div className={`text-2xl md:text-3xl font-heading font-bold ${getFitScoreColor(score.fit_score)}`}>
                         {score.fit_score !== null ? Math.round(score.fit_score) : '--'}
                       </div>
                       <p className="text-xs text-muted-foreground">{score.fit_label}</p>

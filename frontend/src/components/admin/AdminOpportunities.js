@@ -44,9 +44,9 @@ const AdminOpportunities = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">OPPORTUNITY MODERATION</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">OPPORTUNITY MODERATION</h1>
         <p className="text-muted-foreground">Review and moderate posted opportunities</p>
       </div>
 

@@ -69,9 +69,9 @@ const ClubHome = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">DASHBOARD</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">DASHBOARD</h1>
         <p className="text-muted-foreground">Welcome back, {profile?.name}</p>
       </div>
 
@@ -134,7 +134,7 @@ const ClubHome = () => {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {recommended.slice(0, 6).map((player) => (
               <div
                 key={player.user_id}

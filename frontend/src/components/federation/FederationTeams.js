@@ -136,10 +136,10 @@ const FederationTeams = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase mb-2">TEAM GROUPS</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">TEAM GROUPS</h1>
           <p className="text-muted-foreground">Manage your national team squads</p>
         </div>
         <div className="flex gap-2">
@@ -200,7 +200,7 @@ const FederationTeams = () => {
           <p className="text-sm text-muted-foreground mt-2">Create your first team to start organizing players</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Team List */}
           <div className="bg-card border border-border/50 rounded-sm p-4">
             <h3 className="font-heading font-bold uppercase text-sm text-muted-foreground mb-4">TEAMS</h3>

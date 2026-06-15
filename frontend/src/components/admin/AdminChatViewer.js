@@ -65,7 +65,7 @@ const AdminChatViewer = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8 flex items-center space-x-4">
         <Button
           data-testid="back-btn"
@@ -76,7 +76,7 @@ const AdminChatViewer = () => {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase mb-2">
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">
             {roomInfo?.player_name} ↔ {roomInfo?.other_party}
           </h1>
           <p className="text-muted-foreground">

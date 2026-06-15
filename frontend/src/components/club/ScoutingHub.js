@@ -267,7 +267,7 @@ const ScoutingHub = () => {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase">Scouting Hub</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">Scouting Hub</h1>
           <p className="text-muted-foreground text-sm mt-1">Track players, write notes and game reports, collaborate with your team</p>
         </div>
 

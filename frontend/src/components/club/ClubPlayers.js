@@ -101,15 +101,15 @@ const ClubPlayers = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">BROWSE PLAYERS</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">BROWSE PLAYERS</h1>
         <p className="text-muted-foreground">Find and save talented players</p>
       </div>
 
       <div className="bg-card border border-border/50 p-6 rounded-sm mb-6">
         <h3 className="text-lg font-heading font-bold uppercase mb-4">FILTERS</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
             <label className="text-sm font-medium uppercase tracking-wide block mb-2">Player Name</label>
             <div className="relative">
@@ -259,7 +259,7 @@ const ClubPlayers = () => {
           <p className="text-muted-foreground">No players found matching your criteria</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {players.map((player) => (
             <div
               key={player.user_id}

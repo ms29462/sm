@@ -241,7 +241,7 @@ const RecruitmentPipeline = () => {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase">Recruitment Pipeline</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">Recruitment Pipeline</h1>
           <p className="text-muted-foreground text-sm mt-1">{pipeline.length} players tracked across {STAGES.length} stages</p>
         </div>
         <Button onClick={() => setShowAddPlayer(true)} className="bg-primary text-black font-bold rounded-sm">
@@ -337,7 +337,7 @@ const RecruitmentPipeline = () => {
 
       {/* Kanban Board */}
       {viewMode === 'kanban' &&
-      <div className="flex gap-3 overflow-x-auto pb-4 flex-1" style={{minHeight: "60vh", scrollbarWidth: "thin"}}>
+      <div className="flex gap-3 overflow-x-auto pb-4 flex-1 -mx-4 px-4 md:mx-0 md:px-0" style={{minHeight: "60vh", scrollbarWidth: "thin"}}>
         {STAGES.map(stage => {
           const stagePlayers = pipeline.filter(p => p.stage === stage);
 

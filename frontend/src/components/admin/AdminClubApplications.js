@@ -73,7 +73,7 @@ const AdminClubApplications = () => {
 
   return (
     <div className="p-4 md:p-6">
-      <h1 className="text-3xl font-heading font-bold uppercase mb-1">Club Management</h1>
+      <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1">Club Management</h1>
       <p className="text-muted-foreground mb-4">Review and manage club registrations</p>
 
       <div className="flex flex-wrap gap-2 mb-4">
@@ -85,7 +85,7 @@ const AdminClubApplications = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {/* List */}
         <div className="space-y-2 lg:col-span-1">
           {filtered.length === 0 && (

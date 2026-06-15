@@ -72,7 +72,7 @@ const AdminFederations = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent className="bg-card border border-border/50">
           <AlertDialogHeader>
@@ -94,7 +94,7 @@ const AdminFederations = () => {
       </AlertDialog>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">MANAGE FEDERATIONS</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">MANAGE FEDERATIONS</h1>
         <p className="text-muted-foreground">Approve and verify football federations</p>
       </div>
 

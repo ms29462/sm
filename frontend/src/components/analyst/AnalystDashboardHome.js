@@ -57,7 +57,7 @@ const AnalystDashboardHome = () => {
       {/* Welcome Header */}
       <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-heading font-bold">
+          <h1 className="text-2xl lg:text-2xl md:text-3xl font-heading font-bold">
             Welcome, {profile?.name || 'Analyst'}
           </h1>
           <p className="text-sm lg:text-base text-muted-foreground mt-1">

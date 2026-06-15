@@ -115,7 +115,7 @@ const AdminDuplicates = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-3">
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase">Potential Duplicate Profiles</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">Potential Duplicate Profiles</h1>
           <p className="text-muted-foreground text-sm mt-1">Identify and investigate suspicious profile similarities</p>
         </div>
         <div className="flex gap-2 flex-wrap">

@@ -118,7 +118,7 @@ const AdminAnalystManagement = () => {
     <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-3xl font-heading font-bold uppercase mb-1">Analyst Management</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1">Analyst Management</h1>
           <p className="text-muted-foreground">Create and manage Soccer Match analysts</p>
         </div>
         <button onClick={() => setShowCreate(true)}
@@ -136,7 +136,7 @@ const AdminAnalystManagement = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {/* List */}
         <div className="space-y-2">
           {filtered.length === 0 && (

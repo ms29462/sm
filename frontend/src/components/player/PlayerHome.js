@@ -52,10 +52,10 @@ const PlayerHome = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <ProfileCompletionBanner />
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">DASHBOARD</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">DASHBOARD</h1>
         <p className="text-muted-foreground">Welcome back, {profile?.name}</p>
       </div>
 
@@ -82,7 +82,7 @@ const PlayerHome = () => {
       )}
 
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
           <div className="flex items-center space-x-3">
             <TrendingUp className="w-6 h-6 text-primary" />
             <h2 className="text-2xl font-heading font-bold uppercase">RECOMMENDED FOR YOU</h2>
