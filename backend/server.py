@@ -6501,7 +6501,7 @@ async def migrate_opportunities(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403)
     result = await db.opportunities.update_many(
-        {"status": "active"},
+        {"$or": [{"status": "active"}, {"status": {"$exists": False}}, {"status": None}]},
         {"$set": {"status": "pending_review", "admin_status": "pending_review", "credit_cost": None}}
     )
     return {"migrated": result.modified_count}
