@@ -4,7 +4,7 @@ from datetime import datetime
 
 resend.api_key = os.environ.get("RESEND_API_KEY", "")
 
-FROM_EMAIL = "Soccer Match <noreply@soccermatch.app>"
+FROM_EMAIL = "Soccer Match <noreply@soccer-match.org>"
 PLATFORM_URL = "https://www.soccermatch.app"
 
 def get_base_template(content: str, title: str = "Soccer Match") -> str:
