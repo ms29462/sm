@@ -35,8 +35,6 @@ const ClubPlayers = () => {
   const [filterResidence, setFilterResidence] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [filterMandate, setFilterMandate] = useState('');
   const [filterQuality, setFilterQuality] = useState('');
   const [filters, setFilters] = useState({
