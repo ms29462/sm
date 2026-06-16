@@ -384,8 +384,25 @@ const ClubOpportunities = () => {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <h3 className="text-xl font-heading font-bold uppercase">{opp.position}</h3>
-                    <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">{opp.league_level}</span>
+                    <h3 className="text-xl font-heading font-bold uppercase">{opp.position}
+                  {opp.status && opp.status !== "published" && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ml-2 ${
+                      opp.status === "pending_review" ? "text-yellow-400 bg-yellow-500/10 border-yellow-500/20" :
+                      opp.status === "changes_requested" ? "text-orange-400 bg-orange-500/10 border-orange-500/20" :
+                      opp.status === "rejected" ? "text-red-400 bg-red-500/10 border-red-500/20" :
+                      "text-gray-400 bg-gray-500/10 border-gray-500/20"
+                    }`}>{opp.status.replace("_", " ")}</span>
+                  )}</h3>
+                    <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">{opp.league_level}
+                {opp.credit_cost && (
+                  <span className="text-xs font-bold text-primary">⭐ {opp.credit_cost} credit{opp.credit_cost > 1 ? "s" : ""}</span>
+                )}
+                  {opp.status === "pending_review" && (
+                    <p className="text-xs text-yellow-400 mt-1">⏳ Under review by Soccer Match</p>
+                  )}
+                  {opp.status === "changes_requested" && opp.public_feedback && (
+                    <p className="text-xs text-orange-400 mt-1">📝 {opp.public_feedback}</p>
+                  )}</span>
                     <span className={`px-2 py-1 text-[10px] uppercase tracking-wider border rounded-sm ${STATUS_COLORS[opp.status || "open"]}`}>
                       {opp.status || "open"}
                     </span>

@@ -118,6 +118,15 @@ const OpportunityDetail = () => {
             onClick={() => setShowConfirm(true)}
             className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
           >
+            {opportunity.credit_cost && (
+              <div className="p-3 bg-primary/5 border border-primary/20 rounded-sm mb-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-primary uppercase tracking-widest">Application Cost</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Credits deducted on apply</p>
+                </div>
+                <p className="text-2xl font-heading font-bold text-primary">{opportunity.credit_cost} cr.</p>
+              </div>
+            )}
             APPLY NOW
           </Button>
         )}

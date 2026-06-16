@@ -1,117 +1,251 @@
-﻿import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { Briefcase, Trash2 } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
+
+const STATUS_COLORS = {
+  pending_review: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+  approved: "text-green-400 bg-green-500/10 border-green-500/20",
+  published: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+  rejected: "text-red-400 bg-red-500/10 border-red-500/20",
+  changes_requested: "text-orange-400 bg-orange-500/10 border-orange-500/20",
+  draft: "text-gray-400 bg-gray-500/10 border-gray-500/20",
+  closed: "text-gray-400 bg-gray-500/10 border-gray-500/20",
+};
+
+const CREDIT_PRESETS = [
+  { label: "Amateur (1 credit)", value: 1 },
+  { label: "Semi-Pro (3 credits)", value: 3 },
+  { label: "Professional (5 credits)", value: 5 },
+  { label: "NCAA / University (5 credits)", value: 5 },
+  { label: "Premium / Urgent (10 credits)", value: 10 },
+];
+
+const Field = ({ label, value }) => (
+  <div className="bg-black/20 rounded-sm p-3">
+    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">{label}</p>
+    <p className="text-sm font-medium">{value || "—"}</p>
+  </div>
+);
 
 const AdminOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+  const [tab, setTab] = useState("pending_review");
+  const [creditCost, setCreditCost] = useState(1);
+  const [adminNotes, setAdminNotes] = useState("");
+  const [publicFeedback, setPublicFeedback] = useState("");
 
-  useEffect(() => {
-    loadOpportunities();
-  }, []);
+  const filtered = opportunities.filter(o => tab === "all" ? true : o.status === tab);
+
+  useEffect(() => { loadOpportunities(); }, []);
 
   const loadOpportunities = async () => {
     try {
-      const response = await api.getAllOpportunities();
-      setOpportunities(response.data);
-    } catch (error) {
-      toast.error('Failed to load opportunities');
+      const res = await api.getAdminOpportunities();
+      setOpportunities(res.data);
+    } catch (e) {
+      toast.error("Failed to load opportunities");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this opportunity?')) return;
+  const selectOpp = (opp) => {
+    setSelected(opp);
+    setCreditCost(opp.credit_cost || 1);
+    setAdminNotes(opp.admin_notes || "");
+    setPublicFeedback(opp.public_feedback || "");
+  };
 
+  const handleApprove = async () => {
     try {
-      await api.deleteOpportunityAdmin(id);
-      toast.success('Opportunity deleted');
+      await api.approveOpportunity(selected.id, { credit_cost: creditCost });
+      toast.success("Opportunity approved and published!");
       loadOpportunities();
-    } catch (error) {
-      toast.error('Failed to delete opportunity');
+      setSelected(prev => ({ ...prev, status: "published", credit_cost: creditCost }));
+    } catch (e) {
+      toast.error("Failed to approve");
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
-      </div>
-    );
-  }
+  const handleReject = async () => {
+    if (!publicFeedback) { toast.error("Please add feedback for the organization"); return; }
+    try {
+      await api.rejectOpportunity(selected.id, { feedback: publicFeedback, notes: adminNotes });
+      toast.success("Opportunity rejected");
+      loadOpportunities();
+      setSelected(prev => ({ ...prev, status: "rejected" }));
+    } catch (e) {
+      toast.error("Failed to reject");
+    }
+  };
+
+  const handleRequestChanges = async () => {
+    if (!publicFeedback) { toast.error("Please add feedback for the organization"); return; }
+    try {
+      await api.requestOpportunityChanges(selected.id, { feedback: publicFeedback, notes: adminNotes });
+      toast.success("Changes requested");
+      loadOpportunities();
+      setSelected(prev => ({ ...prev, status: "changes_requested" }));
+    } catch (e) {
+      toast.error("Failed to request changes");
+    }
+  };
+
+  const handleSaveNotes = async () => {
+    try {
+      await api.updateAdminOpportunity(selected.id, { admin_notes: adminNotes });
+      toast.success("Notes saved");
+    } catch (e) {
+      toast.error("Failed to save notes");
+    }
+  };
+
+  const tabs = [
+    { id: "pending_review", label: "Pending Review", count: opportunities.filter(o => o.status === "pending_review").length },
+    { id: "changes_requested", label: "Changes Requested", count: opportunities.filter(o => o.status === "changes_requested").length },
+    { id: "published", label: "Published", count: opportunities.filter(o => o.status === "published").length },
+    { id: "rejected", label: "Rejected", count: opportunities.filter(o => o.status === "rejected").length },
+    { id: "all", label: "All", count: opportunities.length },
+  ];
+
+  if (loading) return <div className="p-8 text-primary font-heading">LOADING...</div>;
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">OPPORTUNITY MODERATION</h1>
-        <p className="text-muted-foreground">Review and moderate posted opportunities</p>
+    <div className="p-4 md:p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1">Opportunity Review</h1>
+        <p className="text-muted-foreground text-sm">Review, approve and assign credits to opportunities</p>
       </div>
 
-      {opportunities.length === 0 ? (
-        <div data-testid="no-opportunities" className="bg-card border border-border/50 p-12 rounded-sm text-center">
-          <Briefcase className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No opportunities posted yet</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {opportunities.map((opp) => (
-            <div
-              key={opp.id}
-              data-testid={`opportunity-card-${opp.id}`}
-              className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="text-xl font-heading font-bold uppercase">{opp.position}</h3>
-                    <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">
-                      {opp.league_level}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Posted by: <span className="font-medium">{opp.club_name}</span>
-                    {opp.club_country && ` Â· ${opp.club_country}`}
-                  </p>
-                  <p className="text-sm text-muted-foreground mb-4">{opp.description}</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    {opp.salary_range && (
-                      <div>
-                        <span className="text-muted-foreground block mb-1">Salary Range</span>
-                        <span className="font-medium font-mono">{opp.salary_range}</span>
-                      </div>
-                    )}
-                    {opp.contract_duration && (
-                      <div>
-                        <span className="text-muted-foreground block mb-1">Duration</span>
-                        <span className="font-medium">{opp.contract_duration}</span>
-                      </div>
-                    )}
-                    <div>
-                      <span className="text-muted-foreground block mb-1">Posted On</span>
-                      <span className="font-medium">{new Date(opp.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-                <Button
-                  data-testid={`delete-btn-${opp.id}`}
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => handleDelete(opp.id)}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10 ml-4"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`px-3 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${tab === t.id ? "bg-primary text-black border-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+            {t.label} ({t.count})
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* List */}
+        <div className="space-y-2">
+          {filtered.length === 0 && (
+            <div className="bg-card border border-border/50 rounded-sm p-8 text-center text-muted-foreground text-sm">No opportunities</div>
+          )}
+          {filtered.map(opp => (
+            <div key={opp.id} onClick={() => selectOpp(opp)}
+              className={`bg-card border rounded-sm p-4 cursor-pointer transition-colors ${selected?.id === opp.id ? "border-primary" : "border-border/50 hover:border-white/30"}`}>
+              <div className="flex items-start justify-between mb-2">
+                <p className="font-bold text-sm">{opp.title || opp.position}</p>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ${STATUS_COLORS[opp.status] || STATUS_COLORS.draft}`}>
+                  {opp.status?.replace("_", " ")}
+                </span>
               </div>
+              <p className="text-xs text-muted-foreground">{opp.country} • {opp.league_level}</p>
+              <p className="text-xs text-muted-foreground">{opp.created_at?.slice(0,10)}</p>
+              {opp.credit_cost && (
+                <p className="text-xs text-primary mt-1">⭐ {opp.credit_cost} credit{opp.credit_cost > 1 ? "s" : ""}</p>
+              )}
             </div>
           ))}
         </div>
-      )}
+
+        {/* Detail */}
+        <div className="lg:col-span-2">
+          {!selected ? (
+            <div className="bg-card border border-border/50 rounded-sm p-12 text-center text-muted-foreground">
+              Select an opportunity to review
+            </div>
+          ) : (
+            <div className="bg-card border border-border/50 rounded-sm p-6 space-y-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-xl font-heading font-bold uppercase">{selected.title || selected.position}</h2>
+                  <p className="text-sm text-muted-foreground">{selected.country} • {selected.league_level}</p>
+                </div>
+                <span className={`text-xs font-bold px-3 py-1 rounded-sm border ${STATUS_COLORS[selected.status] || STATUS_COLORS.draft}`}>
+                  {selected.status?.replace("_", " ")}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <Field label="Position" value={selected.position} />
+                <Field label="League Level" value={selected.league_level} />
+                <Field label="Country" value={selected.country} />
+                <Field label="Contract Type" value={selected.contract_type} />
+                <Field label="Deadline" value={selected.deadline} />
+                <Field label="Max Applicants" value={selected.max_applicants} />
+              </div>
+
+              {selected.description && (
+                <div className="bg-black/20 rounded-sm p-3">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Description</p>
+                  <p className="text-sm">{selected.description}</p>
+                </div>
+              )}
+
+              {/* Credit Cost Assignment */}
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-sm">
+                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Credit Cost Assignment</p>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {CREDIT_PRESETS.map(p => (
+                    <button key={p.value + p.label} onClick={() => setCreditCost(p.value)} type="button"
+                      className={`px-3 py-1.5 text-xs rounded-sm border transition-all ${creditCost === p.value ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <input type="number" value={creditCost} onChange={e => setCreditCost(Number(e.target.value))} min={1}
+                    className="w-24 bg-black/20 border border-white/10 rounded-sm px-3 h-9 text-sm text-white outline-none focus:border-primary" />
+                  <span className="text-sm text-muted-foreground">credits required to apply</span>
+                </div>
+              </div>
+
+              {/* Public Feedback */}
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Public Feedback <span className="text-muted-foreground font-normal normal-case">(visible to organization)</span></p>
+                <textarea value={publicFeedback} onChange={e => setPublicFeedback(e.target.value)} rows={3}
+                  placeholder="Feedback for the organization (required for rejection or changes)..."
+                  className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-primary resize-none" />
+              </div>
+
+              {/* Internal Notes */}
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Internal Notes <span className="text-muted-foreground font-normal normal-case">(admin only)</span></p>
+                <textarea value={adminNotes} onChange={e => setAdminNotes(e.target.value)} rows={2}
+                  placeholder="Internal notes (never visible to organizations or players)..."
+                  className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-primary resize-none" />
+                <button onClick={handleSaveNotes} className="mt-1 text-xs border border-white/10 rounded-sm px-3 py-1.5 hover:bg-white/10 transition-colors">
+                  Save Notes
+                </button>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-wrap gap-3 pt-2">
+                {selected.status !== "published" && (
+                  <button onClick={handleApprove}
+                    className="flex-1 bg-green-500 text-black font-bold rounded-sm py-2.5 text-sm hover:bg-green-400 transition-colors">
+                    ✓ Approve & Publish ({creditCost} credit{creditCost > 1 ? "s" : ""})
+                  </button>
+                )}
+                <button onClick={handleRequestChanges}
+                  className="flex-1 bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold rounded-sm py-2.5 text-sm hover:bg-orange-500/30 transition-colors">
+                  Request Changes
+                </button>
+                <button onClick={handleReject}
+                  className="px-4 bg-red-900/30 text-red-400 border border-red-500/30 font-bold rounded-sm py-2.5 text-sm hover:bg-red-900/50 transition-colors">
+                  Reject
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
 export default AdminOpportunities;
-

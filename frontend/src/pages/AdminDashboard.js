@@ -32,6 +32,7 @@ const AdminDashboard = () => {
         <Route path="club-applications" element={<AdminClubApplications />} />
         <Route path="analyst-management" element={<AdminAnalystManagement />} />
         <Route path="subscriptions" element={<AdminSubscriptions />} />
+        <Route path="opportunities" element={<AdminOpportunities />} />
         <Route path="federations" element={<AdminFederations />} />
         <Route path="agents" element={<AdminAgents />} />
                 <Route path="colleges" element={<AdminColleges />} />

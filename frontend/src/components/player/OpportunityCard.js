@@ -106,6 +106,12 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
           <span className="text-muted-foreground">League Level:</span>
           <span className="font-medium">{opp.league_level}</span>
         </div>
+          {opp.credit_cost && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Application Cost:</span>
+              <span className="font-bold text-primary">⭐ {opp.credit_cost} credit{opp.credit_cost > 1 ? "s" : ""}</span>
+            </div>
+          )}
         {opp.salary_range && (
           <div className="flex justify-between">
             <span className="text-muted-foreground">Salary:</span>
