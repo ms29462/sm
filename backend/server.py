@@ -1172,6 +1172,10 @@ async def register(user: UserRegister):
             "profile_status": "incomplete",
         }
         await db.players.insert_one(player_doc)
+        try:
+            await send_player_welcome(user.email, user.name)
+        except Exception as e:
+            print(f"Welcome email error: {e}")
     elif user.role == 'federation':
         federation_doc = {
             "user_id": user_id,
