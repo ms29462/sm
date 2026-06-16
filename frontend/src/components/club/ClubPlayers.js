@@ -102,7 +102,6 @@ const ClubPlayers = () => {
   }
 
   return (
-    <ApprovedGate message="Player search is only available to approved organizations.">
     <div className="p-4 md:p-8">
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">BROWSE PLAYERS</h1>
@@ -370,7 +369,6 @@ const ClubPlayers = () => {
         </div>
       )}
     </div>
-  </ApprovedGate>
   );
 };
 
