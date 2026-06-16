@@ -34,6 +34,7 @@ from player_matching import (
     AVAILABLE_LEAGUES, DEFAULT_LEAGUES
 )
 from subscription_plans import SUBSCRIPTION_PLANS, get_plan, get_plans_for_role, create_subscription, is_subscription_active, get_default_plan
+from email_service import send_player_welcome, send_org_application_received, send_org_approved, send_analyst_invitation, send_application_status_update
 from permissions import get_user_status, get_permissions, has_permission
 from video_analysis import analyze_highlight_video, calculate_overall_score, analyze_video_with_gemini
 from chatbot_service import SoccerMatchChatbot, search_players_from_criteria, search_opportunities_from_criteria, format_player_results, format_opportunity_results
@@ -1293,6 +1294,10 @@ async def register(user: UserRegister):
             "recommended_tier": user.playing_level,
         }
         await db.clubs.insert_one(club_doc)
+        try:
+            await send_org_application_received(user.rep_email or user.email, user.club_name or user.name, "club")
+        except Exception as e:
+            print(f"Email error: {e}")
     
     token = create_token(user_id, user.email, user.role)
     return AuthResponse(token=token, role=user.role, user_id=user_id, email=user.email)
@@ -2336,6 +2341,15 @@ async def update_application_status(
         print(f"Pipeline sync error: {e}")
         traceback.print_exc()
     
+    # Send email notification to player
+    try:
+        app = await db.applications.find_one({"id": application_id}, {"_id": 0})
+        if app:
+            player = await db.players.find_one({"user_id": app["player_id"]}, {"_id": 0})
+            if player and player.get("email"):
+                await send_application_status_update(player["email"], player.get("name", "Player"), status_update.status)
+    except Exception as e:
+        print(f"Email error: {e}")
     return {"message": "Status updated"}
 
 @api_router.get("/players/{player_id}/verification")
@@ -6184,6 +6198,16 @@ async def update_club_application(club_id: str, update: dict, current_user: dict
         raise HTTPException(status_code=403)
     update.pop("_id", None)
     await db.clubs.update_one({"user_id": club_id}, {"$set": update})
+    # Send approval email if approved
+    if update.get("approved") and update.get("status") == "approved":
+        try:
+            club = await db.clubs.find_one({"user_id": club_id}, {"_id": 0})
+            if club:
+                email = club.get("rep_email") or club.get("email")
+                name = club.get("name", "")
+                await send_org_approved(email, name, "club")
+        except Exception as e:
+            print(f"Email error: {e}")
     return {"message": "Updated"}
 
 
@@ -6231,6 +6255,11 @@ async def invite_analyst(data: dict, current_user: dict = Depends(get_current_us
     }
     await db.analysts.insert_one(analyst_doc)
     activation_link = f"http://localhost:3000/analyst/activate/{activation_token}"
+    # Send invitation email
+    try:
+        await send_analyst_invitation(email, name, activation_link)
+    except Exception as e:
+        print(f"Email error: {e}")
     return {"message": "Analyst invited", "activation_link": activation_link, "token": activation_token}
 
 @api_router.post("/analyst/activate/{token}")
