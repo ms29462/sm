@@ -35,7 +35,7 @@ const AdminClubApplications = () => {
 
   const loadApplications = async () => {
     try {
-      const res = await api.getClubApplications();
+      const res = await api.getAdminClubApplications();
       setApplications(res.data);
     } catch (e) {
       toast.error("Failed to load applications");

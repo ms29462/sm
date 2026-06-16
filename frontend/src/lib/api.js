@@ -260,12 +260,12 @@ export const api = {
   assignSubscription: (data) => axios.post(`${API}/subscription/assign`, data, { headers: getAuthHeaders() }),
   cancelSubscription: (data) => axios.post(`${API}/subscription/cancel`, data, { headers: getAuthHeaders() }),
   getAllSubscriptions: () => axios.get(`${API}/admin/subscriptions`, { headers: getAuthHeaders() }),
-  getClubApplications: () => axios.get(`${API}/admin/club-applications`, { headers: getAuthHeaders() }),
   deleteClub: (clubId) => axios.delete(`${API}/admin/clubs/${clubId}`, { headers: getAuthHeaders() }),
   updateAnalyst: (analystId, data) => axios.put(`${API}/admin/analysts/${analystId}`, data, { headers: getAuthHeaders() }),
   inviteAnalyst: (data) => axios.post(`${API}/admin/invite-analyst`, data, { headers: getAuthHeaders() }),
   activateAnalyst: (token, password) => axios.post(`${API}/analyst/activate/${token}`, { password }),
   deleteAnalyst: (analystId) => axios.delete(`${API}/admin/analysts/${analystId}`, { headers: getAuthHeaders() }),
+  getAdminClubApplications: () => axios.get(`${API}/admin/club-applications`, { headers: getAuthHeaders() }),
   updateClubApplication: (clubId, data) => axios.put(`${API}/admin/club-applications/${clubId}`, data, { headers: getAuthHeaders() }),
 
   // Agent Representation
