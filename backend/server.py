@@ -2385,6 +2385,8 @@ async def get_players(
     has_highlights: Optional[bool] = None,
     has_full_game: Optional[bool] = None,
     badge: Optional[str] = None,
+    page: int = 1,
+    limit: int = 20,
     quality_level: Optional[str] = None,
     representation_status: Optional[str] = None,
     mandate_status: Optional[str] = None,
@@ -2456,7 +2458,8 @@ async def get_players(
         else:
             query["user_id"] = {"$in": verif_user_ids}
 
-    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    skip = (page - 1) * limit
+    players = await db.players.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
     # Strip private info for club users
     players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
@@ -2791,7 +2794,8 @@ async def get_college_players(
         query["playing_level"] = level
     if name:
         query["name"] = {"$regex": name, "$options": "i"}
-    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    skip = (page - 1) * limit
+    players = await db.players.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
     players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
 
@@ -2860,7 +2864,8 @@ async def get_federation_players(
         else:
             query['age'] = {"$lte": max_age}
     
-    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    skip = (page - 1) * limit
+    players = await db.players.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
     players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
 
@@ -2888,7 +2893,8 @@ async def get_recommended_players_for_federation(current_user: dict = Depends(ge
         ]
     }
     
-    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    skip = (page - 1) * limit
+    players = await db.players.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
     players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
 
@@ -3131,7 +3137,8 @@ async def get_agent_players(
         else:
             query['age'] = {"$lte": max_age}
     
-    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    skip = (page - 1) * limit
+    players = await db.players.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
     players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
 
@@ -3336,7 +3343,8 @@ async def get_specialist_players(
     if name:
         query['name'] = {"$regex": name, "$options": "i"}
     
-    players = await db.players.find(query, {"_id": 0}).to_list(1000)
+    skip = (page - 1) * limit
+    players = await db.players.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
     players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
 

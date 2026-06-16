@@ -33,6 +33,8 @@ const ClubPlayers = () => {
   const [filterMinScore, setFilterMinScore] = useState('');
   const [filterTeam, setFilterTeam] = useState('');
   const [filterResidence, setFilterResidence] = useState('');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [filterMandate, setFilterMandate] = useState('');
   const [filterQuality, setFilterQuality] = useState('');
   const [filters, setFilters] = useState({
@@ -62,6 +64,8 @@ const ClubPlayers = () => {
       if (filterMinScore) queryFilters.min_quality_score = parseInt(filterMinScore);
       if (filterTeam) queryFilters.national_team = filterTeam;
       if (filterResidence) queryFilters.residence_country = filterResidence;
+      queryFilters.page = page;
+      queryFilters.limit = 20;
 
       const response = await api.getPlayers(queryFilters);
       setPlayers(response.data);
@@ -368,6 +372,18 @@ const ClubPlayers = () => {
           ))}
         </div>
       )}
+      {/* Pagination */}
+      <div className="flex items-center justify-center gap-3 mt-6">
+        <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1}
+          className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
+          Previous
+        </button>
+        <span className="text-sm text-muted-foreground">Page {page}</span>
+        <button onClick={() => setPage(p => p+1)} disabled={players.length < 20}
+          className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
+          Next
+        </button>
+      </div>
     </div>
   );
 };
