@@ -35,6 +35,7 @@ from player_matching import (
 )
 from subscription_plans import SUBSCRIPTION_PLANS, get_plan, get_plans_for_role, create_subscription, is_subscription_active, get_default_plan
 from email_service import send_player_welcome, send_org_application_received, send_org_approved, send_analyst_invitation, send_application_status_update
+from credits import REWARD_TYPES, MAX_FREE_CREDITS, OPPORTUNITY_TIERS, CREDIT_PACKS, get_tier_cost, get_pack
 from permissions import get_user_status, get_permissions, has_permission
 from video_analysis import analyze_highlight_video, calculate_overall_score, analyze_video_with_gemini
 from chatbot_service import SoccerMatchChatbot, search_players_from_criteria, search_opportunities_from_criteria, format_player_results, format_opportunity_results
@@ -993,6 +994,7 @@ class Opportunity(BaseModel):
     visibility: str = 'anonymous'
     status: Optional[str] = None
     admin_status: Optional[str] = None
+    tier: Optional[str] = None
     credit_cost: Optional[int] = None
     admin_notes: Optional[str] = None
     public_feedback: Optional[str] = None
@@ -2069,6 +2071,20 @@ async def create_application(app_create: ApplicationCreate, current_user: dict =
     if current_user['role'] != 'player':
         raise HTTPException(status_code=403, detail="Not a player")
     
+    # Get opportunity and check status
+    opp = await db.opportunities.find_one({"id": app_create.opportunity_id}, {"_id": 0})
+    if not opp:
+        raise HTTPException(status_code=404, detail="Opportunity not found")
+    if opp.get("status") != "published":
+        raise HTTPException(status_code=400, detail="Opportunity is not published")
+    
+    # Check credits
+    credit_cost = opp.get("credit_cost", 0) or 0
+    if credit_cost > 0:
+        balance = await get_player_credits(current_user["user_id"])
+        if balance < credit_cost:
+            raise HTTPException(status_code=400, detail=f"Insufficient credits. Need {credit_cost}, have {balance}")
+    
     existing = await db.applications.find_one({
         "player_id": current_user['user_id'],
         "opportunity_id": app_create.opportunity_id
@@ -2110,6 +2126,26 @@ async def create_application(app_create: ApplicationCreate, current_user: dict =
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.applications.insert_one(app_doc)
+    
+    # Deduct credits if opportunity has a credit cost
+    credit_cost = opportunity.get("credit_cost", 0) or 0
+    if credit_cost > 0:
+        player_credits = await get_player_credits(current_user["user_id"])
+        if player_credits < credit_cost:
+            await db.applications.delete_one({"id": app_doc["id"]})
+            raise HTTPException(status_code=400, detail=f"Insufficient credits. Need {credit_cost}, have {player_credits}")
+        await deduct_credits(
+            current_user["user_id"],
+            credit_cost,
+            "application_spend",
+            f"Application to {opportunity.get('position', 'opportunity')}",
+            app_create.opportunity_id
+        )
+        await db.applications.update_one(
+            {"id": app_doc["id"]},
+            {"$set": {"credit_cost": credit_cost}}
+        )
+    
     return Application(**app_doc)
 
 @api_router.get("/applications/my", response_model=List[dict])
@@ -6460,12 +6496,14 @@ async def admin_update_opportunity(opp_id: str, data: dict, current_user: dict =
 async def admin_approve_opportunity(opp_id: str, data: dict, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403)
-    credit_cost = data.get("credit_cost", 1)
+    tier = data.get("tier", "amateur")
+    credit_cost = get_tier_cost(tier)
     await db.opportunities.update_one(
         {"id": opp_id},
         {"$set": {
             "status": "published",
             "admin_status": "approved",
+            "tier": tier,
             "credit_cost": credit_cost,
             "approved_at": datetime.now(timezone.utc).isoformat(),
             "approved_by": current_user["user_id"],
@@ -6513,6 +6551,142 @@ async def migrate_opportunities(current_user: dict = Depends(get_current_user)):
         {"$set": {"status": "pending_review", "admin_status": "pending_review", "credit_cost": None}}
     )
     return {"migrated": result.modified_count}
+
+
+# ============ CREDIT SYSTEM ============
+
+async def get_player_credits(user_id: str) -> int:
+    player = await db.players.find_one({"user_id": user_id}, {"_id": 0, "credits": 1})
+    return player.get("credits", 0) if player else 0
+
+async def add_credits(user_id: str, amount: int, transaction_type: str, reason: str, reference: str = None):
+    # Update player balance
+    await db.players.update_one(
+        {"user_id": user_id},
+        {"$inc": {"credits": amount}}
+    )
+    # Record transaction
+    transaction = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "type": transaction_type,
+        "amount": amount,
+        "reason": reason,
+        "reference": reference,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.credit_transactions.insert_one(transaction)
+    return transaction
+
+async def deduct_credits(user_id: str, amount: int, transaction_type: str, reason: str, reference: str = None):
+    player = await db.players.find_one({"user_id": user_id}, {"_id": 0, "credits": 1})
+    balance = player.get("credits", 0) if player else 0
+    if balance < amount:
+        return False
+    await db.players.update_one(
+        {"user_id": user_id},
+        {"$inc": {"credits": -amount}}
+    )
+    transaction = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "type": transaction_type,
+        "amount": -amount,
+        "reason": reason,
+        "reference": reference,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.credit_transactions.insert_one(transaction)
+    return True
+
+async def grant_reward(user_id: str, reward_type: str) -> bool:
+    # Check if already granted
+    existing = await db.credit_transactions.find_one({
+        "user_id": user_id,
+        "type": reward_type
+    })
+    if existing:
+        return False
+    
+    # Check free credit cap
+    player = await db.players.find_one({"user_id": user_id}, {"_id": 0, "credits": 1})
+    balance = player.get("credits", 0) if player else 0
+    
+    amount = REWARD_TYPES.get(reward_type, 0)
+    if amount == 0:
+        return False
+    
+    await add_credits(user_id, amount, reward_type, f"Reward: {reward_type.replace('_', ' ')}")
+    return True
+
+@api_router.get("/player/credits")
+async def get_credits(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "player":
+        raise HTTPException(status_code=403)
+    user_id = current_user["user_id"]
+    balance = await get_player_credits(user_id)
+    transactions = await db.credit_transactions.find(
+        {"user_id": user_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    return {"balance": balance, "transactions": transactions}
+
+@api_router.post("/player/credits/claim-reward")
+async def claim_reward(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "player":
+        raise HTTPException(status_code=403)
+    reward_type = data.get("reward_type")
+    if reward_type not in REWARD_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid reward type")
+    granted = await grant_reward(current_user["user_id"], reward_type)
+    if not granted:
+        raise HTTPException(status_code=400, detail="Reward already claimed or not eligible")
+    return {"message": "Reward granted", "amount": REWARD_TYPES[reward_type]}
+
+@api_router.get("/player/credits/packs")
+async def get_credit_packs(current_user: dict = Depends(get_current_user)):
+    return CREDIT_PACKS
+
+@api_router.get("/player/credits/transactions")
+async def get_credit_transactions(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "player":
+        raise HTTPException(status_code=403)
+    transactions = await db.credit_transactions.find(
+        {"user_id": current_user["user_id"]}, {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return transactions
+
+@api_router.post("/admin/credits/adjust")
+async def admin_adjust_credits(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    user_id = data.get("user_id")
+    amount = data.get("amount", 0)
+    note = data.get("note", "")
+    if not note:
+        raise HTTPException(status_code=400, detail="Internal note required")
+    if amount > 0:
+        await add_credits(user_id, amount, "admin_adjustment", f"Admin adjustment: {note}")
+    else:
+        await deduct_credits(user_id, abs(amount), "admin_adjustment", f"Admin adjustment: {note}")
+    return {"message": "Credits adjusted"}
+
+@api_router.post("/admin/credits/refund/{application_id}")
+async def admin_refund_credits(application_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    app = await db.applications.find_one({"id": application_id}, {"_id": 0})
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+    if app.get("credits_refunded"):
+        raise HTTPException(status_code=400, detail="Already refunded")
+    credit_cost = app.get("credit_cost", 0)
+    if credit_cost > 0:
+        await add_credits(app["player_id"], credit_cost, "refund", f"Refund for application {application_id}")
+        await db.applications.update_one(
+            {"id": application_id},
+            {"$set": {"credits_refunded": True}}
+        )
+    return {"message": f"Refunded {credit_cost} credits"}
 
 fastapi_app.include_router(api_router)
 

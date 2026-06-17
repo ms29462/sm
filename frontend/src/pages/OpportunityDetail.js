@@ -114,10 +114,7 @@ const OpportunityDetail = () => {
             ✓ Already Applied
           </Button>
         ) : (
-          <Button
-            onClick={() => setShowConfirm(true)}
-            className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
-          >
+          <>
             {opportunity.credit_cost && (
               <div className="p-3 bg-primary/5 border border-primary/20 rounded-sm mb-3 flex items-center justify-between">
                 <div>
@@ -127,8 +124,13 @@ const OpportunityDetail = () => {
                 <p className="text-2xl font-heading font-bold text-primary">{opportunity.credit_cost} cr.</p>
               </div>
             )}
+          <Button
+            onClick={() => setShowConfirm(true)}
+            className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
+          >
             APPLY NOW
           </Button>
+          </>
         )}
       </div>
 

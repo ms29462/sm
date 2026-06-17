@@ -8,7 +8,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap, CalendarCheck , Newspaper } from 'lucide-react';
+import { Star, Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap, CalendarCheck , Newspaper } from 'lucide-react';
 
 const PlayerLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -129,6 +129,11 @@ const PlayerLayout = ({ children }) => {
             >
               <FileText className="w-4 h-4 mr-3" />
               My Applications
+            </Button>
+          </Link>
+          <Link to="/player/credits">
+            <Button variant={location.pathname === "/player/credits" ? "secondary" : "ghost"} className="w-full justify-start">
+              <Star className="w-4 h-4 mr-3" /> Credits
             </Button>
           </Link>
           <Link to="/player/chats">

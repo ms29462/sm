@@ -12,12 +12,11 @@ const STATUS_COLORS = {
   closed: "text-gray-400 bg-gray-500/10 border-gray-500/20",
 };
 
-const CREDIT_PRESETS = [
-  { label: "Amateur (1 credit)", value: 1 },
-  { label: "Semi-Pro (3 credits)", value: 3 },
-  { label: "Professional (5 credits)", value: 5 },
-  { label: "NCAA / University (5 credits)", value: 5 },
-  { label: "Premium / Urgent (10 credits)", value: 10 },
+const TIERS = [
+  { id: "amateur", label: "Amateur", credits: 2 },
+  { id: "semi_professional", label: "Semi-Professional", credits: 5 },
+  { id: "university", label: "University", credits: 5 },
+  { id: "professional", label: "Professional", credits: 10 },
 ];
 
 const Field = ({ label, value }) => (
@@ -32,7 +31,7 @@ const AdminOpportunities = () => {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [tab, setTab] = useState("pending_review");
-  const [creditCost, setCreditCost] = useState(1);
+  const [tier, setTier] = useState('amateur');
   const [adminNotes, setAdminNotes] = useState("");
   const [publicFeedback, setPublicFeedback] = useState("");
 
@@ -54,14 +53,14 @@ const AdminOpportunities = () => {
 
   const selectOpp = (opp) => {
     setSelected(opp);
-    setCreditCost(opp.credit_cost || 1);
+    setTier(opp.tier || 'amateur');
     setAdminNotes(opp.admin_notes || "");
     setPublicFeedback(opp.public_feedback || "");
   };
 
   const handleApprove = async () => {
     try {
-      await api.approveOpportunity(selected.id, { credit_cost: creditCost });
+      await api.approveOpportunity(selected.id, { tier });
       toast.success("Opportunity approved and published!");
       loadOpportunities();
       setSelected(prev => ({ ...prev, status: "published", credit_cost: creditCost }));
@@ -189,19 +188,15 @@ const AdminOpportunities = () => {
 
               {/* Credit Cost Assignment */}
               <div className="p-4 bg-primary/5 border border-primary/20 rounded-sm">
-                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Credit Cost Assignment</p>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {CREDIT_PRESETS.map(p => (
-                    <button key={p.value + p.label} onClick={() => setCreditCost(p.value)} type="button"
-                      className={`px-3 py-1.5 text-xs rounded-sm border transition-all ${creditCost === p.value ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
-                      {p.label}
+                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Opportunity Tier</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {TIERS.map(t => (
+                    <button key={t.id} onClick={() => setTier(t.id)} type="button"
+                      className={`px-3 py-2 text-xs rounded-sm border transition-all text-left ${tier === t.id ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+                      <p className="font-bold">{t.label}</p>
+                      <p className="text-[10px] mt-0.5">{t.credits} credits to apply</p>
                     </button>
                   ))}
-                </div>
-                <div className="flex items-center gap-3">
-                  <input type="number" value={creditCost} onChange={e => setCreditCost(Number(e.target.value))} min={1}
-                    className="w-24 bg-black/20 border border-white/10 rounded-sm px-3 h-9 text-sm text-white outline-none focus:border-primary" />
-                  <span className="text-sm text-muted-foreground">credits required to apply</span>
                 </div>
               </div>
 
@@ -229,7 +224,7 @@ const AdminOpportunities = () => {
                 {selected.status !== "published" && (
                   <button onClick={handleApprove}
                     className="flex-1 bg-green-500 text-black font-bold rounded-sm py-2.5 text-sm hover:bg-green-400 transition-colors">
-                    ✓ Approve & Publish ({creditCost} credit{creditCost > 1 ? "s" : ""})
+                    {`✓ Approve & Publish (${TIERS.find(t => t.id === tier)?.credits || 2} credits)`}
                   </button>
                 )}
                 <button onClick={handleRequestChanges}

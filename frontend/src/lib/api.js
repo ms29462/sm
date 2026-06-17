@@ -255,6 +255,11 @@ export const api = {
 
   getProfileCompletion: () => axios.get(`${API}/player/completion`, { headers: getAuthHeaders() }),
   getMyPermissions: () => axios.get(`${API}/my-permissions`, { headers: getAuthHeaders() }),
+  getMyCredits: () => axios.get(`${API}/player/credits`, { headers: getAuthHeaders() }),
+  getCreditPacks: () => axios.get(`${API}/player/credits/packs`, { headers: getAuthHeaders() }),
+  claimReward: (reward_type) => axios.post(`${API}/player/credits/claim-reward`, { reward_type }, { headers: getAuthHeaders() }),
+  adminAdjustCredits: (data) => axios.post(`${API}/admin/credits/adjust`, data, { headers: getAuthHeaders() }),
+  adminRefundCredits: (applicationId) => axios.post(`${API}/admin/credits/refund/${applicationId}`, {}, { headers: getAuthHeaders() }),
   getMySubscription: () => axios.get(`${API}/subscription/my`, { headers: getAuthHeaders() }),
   getSubscriptionPlans: () => axios.get(`${API}/subscription/plans`, { headers: getAuthHeaders() }),
   assignSubscription: (data) => axios.post(`${API}/subscription/assign`, data, { headers: getAuthHeaders() }),

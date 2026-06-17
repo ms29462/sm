@@ -159,7 +159,7 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
           <Button disabled className="flex-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-sm h-12 font-bold uppercase tracking-wide cursor-not-allowed">
             ✓ Applied
           </Button>
-        ) : (!opp.status || opp.status === "open") ? (
+        ) : (!opp.status || opp.status === "open" || opp.status === "published") ? (
           <Button
             data-testid={`apply-btn-${opp.id}`}
             onClick={() => setShowConfirm(true)}
@@ -177,7 +177,7 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
         open={showConfirm}
         onOpenChange={setShowConfirm}
         title="Apply to Opportunity"
-        description={`Are you sure you want to apply to this ${opp.position} position at ${opp.club_name}?`}
+        description={opp.credit_cost ? `This application costs ${opp.credit_cost} credit${opp.credit_cost > 1 ? "s" : ""}. Confirm to spend credits and apply.` : `Are you sure you want to apply to this ${opp.position} position?`}
         confirmLabel="Apply Now"
         confirmVariant="primary"
         onConfirm={handleApply}

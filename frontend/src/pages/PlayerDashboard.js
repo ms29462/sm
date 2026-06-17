@@ -7,6 +7,7 @@ import PlayerHome from '@/components/player/PlayerHome';
 import PlayerProfile from '@/components/player/PlayerProfile';
 import PlayerOpportunities from '@/components/player/PlayerOpportunities';
 import PlayerApplications from '@/components/player/PlayerApplications';
+import PlayerCredits from '@/components/player/PlayerCredits';
 import UnifiedChats from '@/components/chat/UnifiedChats';
 import VideoList from '@/components/video/VideoList';
 import ChatRequests from '@/components/player/ChatRequests';
@@ -31,6 +32,7 @@ const PlayerDashboard = () => {
         <Route path="masterclass/category/:category" element={<MasterclassCategory />} />
         <Route path="masterclass/:masterclassId" element={<MasterclassDetail />} />
         <Route path="applications" element={<PlayerApplications />} />
+        <Route path="credits" element={<PlayerCredits />} />
         <Route path="chat-requests" element={<ChatRequests />} />
         <Route path="chats" element={<UnifiedChats />} />
         <Route path="videos" element={<VideoList />} />
