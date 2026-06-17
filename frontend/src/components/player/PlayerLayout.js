@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 ﻿import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import NotificationBell from '@/components/ui/NotificationBell';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
+import { api } from '@/lib/api';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
 import { Star, Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap, CalendarCheck , Newspaper } from 'lucide-react';
@@ -13,6 +14,11 @@ import { Star, Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, V
 const PlayerLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useAuth();
+  const [creditBalance, setCreditBalance] = useState(null);
+
+  useEffect(() => {
+    api.getMyCredits().then(res => setCreditBalance(res.data.balance)).catch(() => {});
+  }, []);
   const navigate = useNavigate();
   const location = useLocation();
   const { totalUnread, totalPending } = useNotifications();
@@ -32,7 +38,17 @@ const PlayerLayout = ({ children }) => {
   return (
     <>
     <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Mobile Header */}
+      {/* Mobile Credit Bar */}
+        <div className="md:hidden flex items-center justify-between px-4 py-2 bg-card border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <Star className="w-3.5 h-3.5 text-primary fill-primary" />
+            <span className="text-sm font-bold text-primary">{creditBalance ?? 0} credits</span>
+          </div>
+          <Link to="/player/credits?tab=buy" className="text-xs font-bold text-black bg-primary px-3 py-1 rounded-sm hover:bg-primary/90 transition-colors">
+            Buy Credits
+          </Link>
+        </div>
+        {/* Mobile Header */}
       <MobileHeader title="SOCCERMATCH" />
 
       {/* Desktop Sidebar */}
@@ -132,8 +148,11 @@ const PlayerLayout = ({ children }) => {
             </Button>
           </Link>
           <Link to="/player/credits">
-            <Button variant={location.pathname === "/player/credits" ? "secondary" : "ghost"} className="w-full justify-start">
-              <Star className="w-4 h-4 mr-3" /> Credits
+            <Button variant={location.pathname === "/player/credits" ? "secondary" : "ghost"} className="w-full justify-start justify-between">
+              <span className="flex items-center"><Star className="w-4 h-4 mr-3" /> Credits</span>
+              {creditBalance !== null && (
+                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-sm">{creditBalance}</span>
+              )}
             </Button>
           </Link>
           <Link to="/player/chats">

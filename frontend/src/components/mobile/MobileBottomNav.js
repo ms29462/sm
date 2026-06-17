@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, User, Users, Heart, FileText, Settings, MessageCircle, Briefcase, Activity, GraduationCap, Flag, Building, Shield, Target } from 'lucide-react';
+import { Home, User, Users, Heart, FileText, Settings, MessageCircle, Briefcase, Activity, GraduationCap, Flag, Building, Shield, Target, Star } from 'lucide-react';
 
 const MobileNavConfig = {
   player: [
     { path: '/player/dashboard', icon: Home, label: 'Home' },
     { path: '/player/profile', icon: User, label: 'Profile' },
     { path: '/player/opportunities', icon: FileText, label: 'Opportunities' },
+    { path: '/player/credits', icon: Star, label: 'Credits' },
     { path: '/player/masterclass', icon: GraduationCap, label: 'Masterclass' },
     { path: '/player/chat-requests', icon: MessageCircle, label: 'Chats' }
   ],
