@@ -35,6 +35,8 @@ from player_matching import (
 )
 from subscription_plans import SUBSCRIPTION_PLANS, get_plan, get_plans_for_role, create_subscription, is_subscription_active, get_default_plan
 from email_service import send_player_welcome, send_org_application_received, send_org_approved, send_analyst_invitation, send_application_status_update
+import stripe
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', '')
 from credits import REWARD_TYPES, MAX_FREE_CREDITS, OPPORTUNITY_TIERS, CREDIT_PACKS, get_tier_cost, get_pack
 from permissions import get_user_status, get_permissions, has_permission
 from video_analysis import analyze_highlight_video, calculate_overall_score, analyze_video_with_gemini
@@ -6687,6 +6689,85 @@ async def admin_refund_credits(application_id: str, data: dict, current_user: di
             {"$set": {"credits_refunded": True}}
         )
     return {"message": f"Refunded {credit_cost} credits"}
+
+
+# ============ STRIPE ENDPOINTS ============
+
+CREDIT_PACKS_STRIPE = {
+    "starter": {"credits": 10, "price": 499, "name": "Starter Pack - 10 Credits"},
+    "standard": {"credits": 25, "price": 999, "name": "Standard Pack - 25 Credits"},
+    "pro": {"credits": 75, "price": 2499, "name": "Pro Pack - 75 Credits"},
+    "elite": {"credits": 200, "price": 5999, "name": "Elite Pack - 200 Credits"},
+}
+
+@api_router.post("/stripe/create-checkout")
+async def create_checkout_session(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "player":
+        raise HTTPException(status_code=403, detail="Players only")
+    
+    pack_id = data.get("pack_id")
+    pack = CREDIT_PACKS_STRIPE.get(pack_id)
+    if not pack:
+        raise HTTPException(status_code=400, detail="Invalid pack")
+    
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {"name": pack["name"]},
+                    "unit_amount": pack["price"],
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url="https://www.soccermatch.app/player/credits?success=true",
+            cancel_url="https://www.soccermatch.app/player/credits?cancelled=true",
+            metadata={
+                "user_id": current_user["user_id"],
+                "pack_id": pack_id,
+                "credits": str(pack["credits"]),
+            }
+        )
+        return {"checkout_url": session.url, "session_id": session.id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.post("/stripe/webhook")
+async def stripe_webhook(request: Request):
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+    
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        metadata = session.get("metadata", {})
+        user_id = metadata.get("user_id")
+        pack_id = metadata.get("pack_id")
+        credits = int(metadata.get("credits", 0))
+        session_id = session.get("id")
+        
+        # Idempotency check
+        existing = await db.credit_transactions.find_one({"reference": session_id})
+        if existing:
+            return {"status": "already processed"}
+        
+        if user_id and credits > 0:
+            await add_credits(
+                user_id,
+                credits,
+                "credit_purchase",
+                f"Purchase: {pack_id} pack ({credits} credits)",
+                session_id
+            )
+    
+    return {"status": "ok"}
 
 fastapi_app.include_router(api_router)
 

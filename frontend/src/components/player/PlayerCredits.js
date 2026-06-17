@@ -36,7 +36,18 @@ const PlayerCredits = () => {
   const [tab, setTab] = useState("overview");
   const [claiming, setClaiming] = useState(null);
 
-  useEffect(() => { loadCredits(); }, []);
+  useEffect(() => {
+    loadCredits();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "true") {
+      toast.success("Payment successful! Credits added to your account.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+    if (params.get("cancelled") === "true") {
+      toast.info("Payment cancelled.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   const loadCredits = async () => {
     try {
@@ -65,7 +76,12 @@ const PlayerCredits = () => {
   };
 
   const handleBuyPack = async (packId) => {
-    toast.info("Stripe checkout coming soon!");
+    try {
+      const res = await api.createCheckout(packId);
+      window.location.href = res.data.checkout_url;
+    } catch (e) {
+      toast.error(e.response?.data?.detail || "Failed to start checkout");
+    }
   };
 
   if (loading) return <div className="p-8 text-primary font-heading">LOADING...</div>;
