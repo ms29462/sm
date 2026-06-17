@@ -11,10 +11,10 @@ const REWARDS = [
 ];
 
 const PACKS = [
-  { id: "starter", name: "Starter Pack", credits: 10, price: "4.99€", color: "border-blue-500/30 bg-blue-500/5" },
-  { id: "standard", name: "Standard Pack", credits: 25, price: "9.99€", color: "border-primary/30 bg-primary/5", popular: true },
-  { id: "pro", name: "Pro Pack", credits: 75, price: "24.99€", color: "border-purple-500/30 bg-purple-500/5" },
-  { id: "elite", name: "Elite Pack", credits: 200, price: "59.99€", color: "border-orange-500/30 bg-orange-500/5" },
+  { id: "starter", name: "Starter Pack", credits: 10, price: "$4.99", color: "border-blue-500/30 bg-blue-500/5" },
+  { id: "standard", name: "Standard Pack", credits: 25, price: "$9.99", color: "border-primary/30 bg-primary/5", popular: true },
+  { id: "pro", name: "Pro Pack", credits: 75, price: "2$4.99", color: "border-purple-500/30 bg-purple-500/5" },
+  { id: "elite", name: "Elite Pack", credits: 200, price: "5$9.99", color: "border-orange-500/30 bg-orange-500/5" },
 ];
 
 const TRANSACTION_LABELS = {
