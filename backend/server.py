@@ -34,7 +34,7 @@ from player_matching import (
     AVAILABLE_LEAGUES, DEFAULT_LEAGUES
 )
 from subscription_plans import SUBSCRIPTION_PLANS, get_plan, get_plans_for_role, create_subscription, is_subscription_active, get_default_plan
-from email_service import send_player_welcome, send_org_application_received, send_org_approved, send_analyst_invitation, send_application_status_update
+from email_service import send_player_welcome, send_org_application_received, send_org_approved, send_analyst_invitation, send_application_status_update, send_credit_purchase_confirmation
 import stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', '')
 from credits import REWARD_TYPES, MAX_FREE_CREDITS, OPPORTUNITY_TIERS, CREDIT_PACKS, get_tier_cost, get_pack
@@ -6766,6 +6766,22 @@ async def stripe_webhook(request: Request):
                 f"Purchase: {pack_id} pack ({credits} credits)",
                 session_id
             )
+            # Send confirmation email
+            try:
+                player = await db.players.find_one({"user_id": user_id}, {"_id": 0})
+                user = await db.users.find_one({"id": user_id}, {"_id": 0})
+                if user and player:
+                    pack_info = CREDIT_PACKS_STRIPE.get(pack_id, {})
+                    amount = f"${pack_info.get('price', 0)/100:.2f}"
+                    await send_credit_purchase_confirmation(
+                        user["email"],
+                        player.get("name", "Player"),
+                        credits,
+                        pack_info.get("name", pack_id),
+                        amount
+                    )
+            except Exception as e:
+                print(f"Email error: {e}")
     
     return {"status": "ok"}
 

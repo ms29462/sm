@@ -165,3 +165,25 @@ async def send_application_status_update(email: str, player_name: str, status: s
       </table>
     """
     await send_email(email, f"{subject_text} — Soccer Match", get_base_template(content))
+async def send_credit_purchase_confirmation(email: str, name: str, credits: int, pack_name: str, amount: str):
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Payment Confirmed ✓</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {name},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Your payment of <strong style="color:#fff;">{amount}</strong> has been confirmed. Your credits have been added to your account.
+      </p>
+      <div style="background-color:#1a1a1a;border:1px solid #333;border-left:3px solid #c8f135;padding:16px 20px;margin:0 0 24px;border-radius:4px;">
+        <p style="color:#c8f135;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 4px;">Credits Added</p>
+        <p style="color:#fff;font-size:28px;font-weight:700;margin:0;">+{credits} credits</p>
+        <p style="color:#999;font-size:13px;margin:4px 0 0;">{pack_name}</p>
+      </div>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}/player/credits" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">View My Credits</a>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#555;font-size:13px;">Questions? Contact us at <a href="mailto:contact@soccer-match.org" style="color:#c8f135;">contact@soccer-match.org</a></p>
+    """
+    await send_email(email, f"Payment Confirmed - {pack_name} — Soccer Match", get_base_template(content))
