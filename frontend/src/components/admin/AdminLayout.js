@@ -78,6 +78,11 @@ const AdminLayout = ({ children }) => {
               Federations
             </Button>
           </Link>
+          <Link to="/admin/credits">
+            <Button variant={isActive('/admin/credits') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              Credits
+            </Button>
+          </Link>
           <Link to="/admin/opportunities">
             <Button variant={isActive('/admin/opportunities') ? 'secondary' : 'ghost'} className="w-full justify-start">
               Opportunities
@@ -117,6 +122,11 @@ const AdminLayout = ({ children }) => {
             >
               <Activity className="w-4 h-4 mr-3" />
               Specialists
+            </Button>
+          </Link>
+          <Link to="/admin/credits">
+            <Button variant={isActive('/admin/credits') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              Credits
             </Button>
           </Link>
           <Link to="/admin/opportunities">

@@ -259,6 +259,7 @@ export const api = {
   getCreditPacks: () => axios.get(`${API}/player/credits/packs`, { headers: getAuthHeaders() }),
   claimReward: (reward_type) => axios.post(`${API}/player/credits/claim-reward`, { reward_type }, { headers: getAuthHeaders() }),
   adminAdjustCredits: (data) => axios.post(`${API}/admin/credits/adjust`, data, { headers: getAuthHeaders() }),
+  getAdminPlayerCredits: (userId) => axios.get(`${API}/admin/player-credits/${userId}`, { headers: getAuthHeaders() }),
   adminRefundCredits: (applicationId) => axios.post(`${API}/admin/credits/refund/${applicationId}`, {}, { headers: getAuthHeaders() }),
   createCheckout: (pack_id) => axios.post(`${API}/stripe/create-checkout`, { pack_id }, { headers: getAuthHeaders() }),
   getMySubscription: () => axios.get(`${API}/subscription/my`, { headers: getAuthHeaders() }),

@@ -12,6 +12,7 @@ import AdminDuplicates from '@/components/admin/AdminDuplicates';
 import AdminAgents from '@/components/admin/AdminAgents';
 import AdminSpecialists from '@/components/admin/AdminSpecialists';
 import AdminOpportunities from '@/components/admin/AdminOpportunities';
+import AdminCredits from '@/components/admin/AdminCredits';
 import AdminChatManagement from '@/components/admin/AdminChatManagement';
 import AdminChatViewer from '@/components/admin/AdminChatViewer';
 import AdminVideoManagement from '@/components/admin/AdminVideoManagement';
@@ -33,6 +34,7 @@ const AdminDashboard = () => {
         <Route path="analyst-management" element={<AdminAnalystManagement />} />
         <Route path="subscriptions" element={<AdminSubscriptions />} />
         <Route path="opportunities" element={<AdminOpportunities />} />
+        <Route path="credits" element={<AdminCredits />} />
         <Route path="federations" element={<AdminFederations />} />
         <Route path="agents" element={<AdminAgents />} />
                 <Route path="colleges" element={<AdminColleges />} />
@@ -43,6 +45,7 @@ const AdminDashboard = () => {
                 <Route path="duplicates" element={<AdminDuplicates />} />
         <Route path="specialists" element={<AdminSpecialists />} />
         <Route path="opportunities" element={<AdminOpportunities />} />
+        <Route path="credits" element={<AdminCredits />} />
         <Route path="masterclass" element={<AdminMasterclass />} />
         <Route path="chat-requests" element={<AdminChatRequests />} />
         <Route path="chats" element={<AdminChatManagement />} />
