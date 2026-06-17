@@ -282,9 +282,7 @@ async def notify_orgs_of_new_player(player: dict):
         nationality = player.get("nationality", "")
 
         # Find opportunities that match this player
-        opportunities = await db.opportunities.find({
-            "status": {"$ne": "closed"}
-        }, {"_id": 0}).to_list(1000)
+        opportunities = await db.opportunities.find({"status": "published"}, {"_id": 0}).to_list(1000)
 
         notified_orgs = set()
         for opp in opportunities:
@@ -993,6 +991,12 @@ class Opportunity(BaseModel):
     max_applicants: Optional[int] = None
     requirements: Optional[list] = None
     visibility: str = 'anonymous'
+    status: Optional[str] = None
+    admin_status: Optional[str] = None
+    credit_cost: Optional[int] = None
+    admin_notes: Optional[str] = None
+    public_feedback: Optional[str] = None
+    approved_at: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: Optional[str] = None
 
@@ -1782,7 +1786,7 @@ async def get_masterclasses(
     limit: int = 50
 ):
     """Get all published masterclasses with optional filters"""
-    query = {"published": True}
+    query = {"status": "published"}
     
     if category:
         query["category"] = category
@@ -1808,7 +1812,7 @@ async def get_masterclasses(
 async def get_masterclass(masterclass_id: str):
     """Get a single masterclass by ID"""
     masterclass = await db.masterclasses.find_one(
-        {"id": masterclass_id, "published": True},
+        {"id": masterclass_id, "status": "published"},
         {"_id": 0}
     )
     if not masterclass:
@@ -1902,7 +1906,7 @@ async def bookmark_masterclass(masterclass_id: str, current_user: dict = Depends
     if current_user['role'] != 'player':
         raise HTTPException(status_code=403, detail="Only players can bookmark masterclasses")
     
-    masterclass = await db.masterclasses.find_one({"id": masterclass_id, "published": True})
+    masterclass = await db.masterclasses.find_one({"id": masterclass_id, "status": "published"})
     if not masterclass:
         raise HTTPException(status_code=404, detail="Masterclass not found")
     
@@ -1951,7 +1955,7 @@ async def get_user_bookmarks(current_user: dict = Depends(get_current_user)):
     masterclass_ids = [b['masterclass_id'] for b in bookmarks]
     
     masterclasses = await db.masterclasses.find(
-        {"id": {"$in": masterclass_ids}, "published": True},
+        {"id": {"$in": masterclass_ids}, "status": "published"},
         {"_id": 0}
     ).to_list(100)
     
@@ -1962,7 +1966,7 @@ async def get_user_bookmarks(current_user: dict = Depends(get_current_user)):
 @api_router.post("/masterclass/{masterclass_id}/comments")
 async def add_comment(masterclass_id: str, content: dict, current_user: dict = Depends(get_current_user)):
     """Add a comment to a masterclass"""
-    masterclass = await db.masterclasses.find_one({"id": masterclass_id, "published": True})
+    masterclass = await db.masterclasses.find_one({"id": masterclass_id, "status": "published"})
     if not masterclass:
         raise HTTPException(status_code=404, detail="Masterclass not found")
     
@@ -2035,7 +2039,7 @@ async def auto_close_expired_opportunities(db):
 @api_router.get("/opportunities", response_model=List[Opportunity])
 async def get_opportunities(current_user: dict = Depends(get_current_user)):
     await auto_close_expired_opportunities(db)
-    opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
+    opportunities = await db.opportunities.find({"status": "published"}, {"_id": 0}).to_list(1000)
     
     # Anonymize opportunities for players
     if current_user["role"] == "player":
@@ -2162,6 +2166,11 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
         "club_name": club.get('name', 'Unknown Club'),
         "club_country": club.get('country'),
         **opp.model_dump(),
+        "status": "pending_review",
+        "admin_status": "pending_review",
+        "credit_cost": None,
+        "admin_notes": "",
+        "public_feedback": "",
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.opportunities.insert_one(opp_doc)
@@ -2711,12 +2720,11 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
     await db.specialists.delete_one({"user_id": user_id})
     return {"message": "User deleted"}
 
-@api_router.get("/admin/opportunities", response_model=List[Opportunity])
+@api_router.get("/admin/opportunities")
 async def get_all_opportunities_admin(current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
-        raise HTTPException(status_code=403, detail="Not an admin")
-    
-    opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
+        raise HTTPException(status_code=403)
+    opportunities = await db.opportunities.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     
     # Anonymize opportunities for players
     if current_user["role"] == "player":
@@ -3231,7 +3239,7 @@ async def get_agent_opportunities(current_user: dict = Depends(get_current_user)
     if current_user['role'] != 'agent':
         raise HTTPException(status_code=403, detail="Not an agent")
     
-    opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
+    opportunities = await db.opportunities.find({"status": "published"}, {"_id": 0}).to_list(1000)
     
     # Anonymize opportunities for players
     if current_user["role"] == "player":
@@ -4180,7 +4188,7 @@ async def get_player_match_scores_endpoint(current_user: dict = Depends(get_curr
     transfermarkt_url = player.get("transfermarkt_url")
     
     # Get all opportunities
-    opportunities = await db.opportunities.find({}, {"_id": 0}).to_list(1000)
+    opportunities = await db.opportunities.find({"status": "published"}, {"_id": 0}).to_list(1000)
     if not opportunities:
         return {"scores": [], "message": "No opportunities available"}
     
@@ -6501,7 +6509,7 @@ async def migrate_opportunities(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403)
     result = await db.opportunities.update_many(
-        {"$or": [{"status": "active"}, {"status": {"$exists": False}}, {"status": None}]},
+        {},  # Match ALL opportunities
         {"$set": {"status": "pending_review", "admin_status": "pending_review", "credit_cost": None}}
     )
     return {"migrated": result.modified_count}

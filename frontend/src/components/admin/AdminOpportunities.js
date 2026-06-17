@@ -36,7 +36,8 @@ const AdminOpportunities = () => {
   const [adminNotes, setAdminNotes] = useState("");
   const [publicFeedback, setPublicFeedback] = useState("");
 
-  const filtered = opportunities.filter(o => tab === "all" ? true : o.status === tab);
+  const getStatus = (o) => o.status || "pending_review";
+  const filtered = opportunities.filter(o => tab === "all" ? true : getStatus(o) === tab);
 
   useEffect(() => { loadOpportunities(); }, []);
 
@@ -103,10 +104,10 @@ const AdminOpportunities = () => {
   };
 
   const tabs = [
-    { id: "pending_review", label: "Pending Review", count: opportunities.filter(o => o.status === "pending_review").length },
-    { id: "changes_requested", label: "Changes Requested", count: opportunities.filter(o => o.status === "changes_requested").length },
-    { id: "published", label: "Published", count: opportunities.filter(o => o.status === "published").length },
-    { id: "rejected", label: "Rejected", count: opportunities.filter(o => o.status === "rejected").length },
+    { id: "pending_review", label: "Pending Review", count: opportunities.filter(o => getStatus(o) === "pending_review").length },
+    { id: "changes_requested", label: "Changes Requested", count: opportunities.filter(o => getStatus(o) === "changes_requested").length },
+    { id: "published", label: "Published", count: opportunities.filter(o => getStatus(o) === "published").length },
+    { id: "rejected", label: "Rejected", count: opportunities.filter(o => getStatus(o) === "rejected").length },
     { id: "all", label: "All", count: opportunities.length },
   ];
 
@@ -139,8 +140,8 @@ const AdminOpportunities = () => {
               className={`bg-card border rounded-sm p-4 cursor-pointer transition-colors ${selected?.id === opp.id ? "border-primary" : "border-border/50 hover:border-white/30"}`}>
               <div className="flex items-start justify-between mb-2">
                 <p className="font-bold text-sm">{opp.title || opp.position}</p>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ${STATUS_COLORS[opp.status] || STATUS_COLORS.draft}`}>
-                  {opp.status?.replace("_", " ")}
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ${STATUS_COLORS[getStatus(opp)] || STATUS_COLORS.draft}`}>
+                  {getStatus(opp).replace("_", " ")}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">{opp.country} • {opp.league_level}</p>

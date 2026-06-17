@@ -32,6 +32,7 @@ const STATUS_COLORS = {
 const ClubOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showReviewPopup, setShowReviewPopup] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [errors, setErrors] = useState({});
   const [deleteId, setDeleteId] = useState(null);
@@ -169,6 +170,7 @@ const ClubOpportunities = () => {
 
   return (
     <div className="p-4 md:p-8">
+      {showReviewPopup && <ReviewPopup />}
       {editingOpp && (
         <Dialog open={!!editingOpp} onOpenChange={(open) => !open && setEditingOpp(null)}>
           <DialogContent className="bg-card border border-border/50 max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -385,13 +387,17 @@ const ClubOpportunities = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <h3 className="text-xl font-heading font-bold uppercase">{opp.position}
-                  {opp.status && opp.status !== "published" && (
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ml-2 ${
-                      opp.status === "pending_review" ? "text-yellow-400 bg-yellow-500/10 border-yellow-500/20" :
-                      opp.status === "changes_requested" ? "text-orange-400 bg-orange-500/10 border-orange-500/20" :
-                      opp.status === "rejected" ? "text-red-400 bg-red-500/10 border-red-500/20" :
-                      "text-gray-400 bg-gray-500/10 border-gray-500/20"
-                    }`}>{opp.status.replace("_", " ")}</span>
+                  {(!opp.status || opp.status === "pending_review") && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm border text-yellow-400 bg-yellow-500/10 border-yellow-500/20 ml-2">Under Review</span>
+                  )}
+                  {opp.status === "published" && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm border text-green-400 bg-green-500/10 border-green-500/20 ml-2">Published</span>
+                  )}
+                  {opp.status === "changes_requested" && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm border text-orange-400 bg-orange-500/10 border-orange-500/20 ml-2">Changes Requested</span>
+                  )}
+                  {opp.status === "rejected" && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm border text-red-400 bg-red-500/10 border-red-500/20 ml-2">Rejected</span>
                   )}</h3>
                     <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">{opp.league_level}
                 {opp.credit_cost && (
@@ -431,6 +437,30 @@ const ClubOpportunities = () => {
       )}
     </div>
   );
+  const ReviewPopup = () => (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-card border border-border/50 rounded-sm p-6 max-w-md w-full">
+        <div className="w-12 h-12 bg-yellow-500/10 border border-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">⏳</span>
+        </div>
+        <h3 className="font-heading font-bold uppercase text-lg mb-3 text-center">Opportunity Submitted</h3>
+        <p className="text-sm text-muted-foreground text-center mb-3 leading-relaxed">
+          Your opportunity has been submitted and is currently under review by the Soccer Match team.
+        </p>
+        <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-sm mb-5">
+          <p className="text-xs text-yellow-400 font-bold text-center">You will receive a response within 24 hours.</p>
+        </div>
+        <p className="text-xs text-muted-foreground text-center mb-5">
+          Once approved, your opportunity will be visible to players on the platform.
+        </p>
+        <button onClick={() => setShowReviewPopup(false)}
+          className="w-full bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors">
+          Got it
+        </button>
+      </div>
+    </div>
+  );
+
 };
 
 export default ClubOpportunities;

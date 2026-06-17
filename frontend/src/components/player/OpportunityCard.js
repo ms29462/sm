@@ -58,7 +58,7 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
           <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">
             {opp.position}
           </span>
-          {opp.status && opp.status !== "open" && (
+          {(opp.status === "closed" || opp.status === "filled") && (
             <span className={`uppercase text-[10px] tracking-wider px-2 py-1 border rounded-sm font-bold ${
               opp.status === "filled" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"
             }`}>
