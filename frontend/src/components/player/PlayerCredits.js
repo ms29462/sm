@@ -38,6 +38,8 @@ const PlayerCredits = () => {
   useEffect(() => {
     loadCredits();
     const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get("tab");
+    if (tabParam) setTab(tabParam);
     if (params.get("success") === "true") {
       toast.success("Payment successful! Credits added to your account.");
       window.history.replaceState({}, "", window.location.pathname);

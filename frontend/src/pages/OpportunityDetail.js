@@ -52,7 +52,18 @@ const OpportunityDetail = () => {
       setShowConfirm(false);
       setHasApplied(true);
     } catch (e) {
-      toast.error(e.response?.data?.detail || "Failed to apply");
+      const detail = e.response?.data?.detail || "Failed to apply";
+      if (detail.includes("Insufficient credits") || detail.includes("credits")) {
+        toast.error(detail, {
+          action: {
+            label: "Buy Credits",
+            onClick: () => window.location.href = "/player/credits?tab=buy"
+          },
+          duration: 6000
+        });
+      } else {
+        toast.error(detail);
+      }
     }
     setApplying(false);
   };
