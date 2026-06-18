@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Star, Check, Clock, ShoppingCart, History } from "lucide-react";
+import PremiumUpgrade from "@/components/player/PremiumUpgrade";
 
 const REWARDS = [
   { type: "email_verification", label: "Verify Email", credits: 1, description: "Verify your email address in your profile settings" },
@@ -33,7 +34,9 @@ const PlayerCredits = () => {
   const [claimedRewards, setClaimedRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("overview");
+  const [showPremium, setShowPremium] = useState(false);
   const [claiming, setClaiming] = useState(null);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     loadCredits();
@@ -162,6 +165,20 @@ const PlayerCredits = () => {
         </div>
       )}
 
+      {/* Premium Banner */}
+      {tab === "overview" && !isPremium && (
+        <div className="bg-primary/5 border border-primary/20 rounded-sm p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <p className="font-bold text-primary flex items-center gap-2"><Star className="w-4 h-4 fill-primary" /> Player Premium</p>
+            <p className="text-xs text-muted-foreground mt-1">Unlock unlimited messaging, College Fit, analytics + 20 credits/year</p>
+          </div>
+          <button onClick={() => setShowPremium(true)}
+            className="flex-shrink-0 bg-primary text-black font-bold rounded-sm px-4 py-2 text-sm hover:bg-primary/90 transition-colors">
+            Upgrade
+          </button>
+        </div>
+      )}
+
       {/* Earn Free Credits */}
       {tab === "earn" && (
         <div className="space-y-3">
@@ -257,6 +274,7 @@ const PlayerCredits = () => {
           ))}
         </div>
       )}
+      {showPremium && <PremiumUpgrade onClose={() => setShowPremium(false)} />}
     </div>
   );
 };
