@@ -144,6 +144,7 @@ class UserRegister(BaseModel):
     athletic_program: Optional[str] = None
     team_gender: Optional[str] = None
     scholarship: Optional[str] = None
+    referral_code: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
