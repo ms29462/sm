@@ -1419,8 +1419,21 @@ async def update_player_profile(update: PlayerUpdate, background_tasks: Backgrou
                     "completion_score": completion["completion_score"]
                 }}
             )
+            # Auto-grant profile completion reward
+            if completion["status"] == "complete" or completion["completion_score"] >= 100:
+                try:
+                    await grant_reward(current_user["user_id"], "profile_completion")
+                except Exception:
+                    pass
     except Exception as e:
         print(f"Completion calc error: {e}")
+    
+    # Auto-grant highlights reward if video uploaded
+    if 'highlight_video' in update_data and update_data['highlight_video']:
+        try:
+            await grant_reward(current_user["user_id"], "highlights_uploaded")
+        except Exception:
+            pass
     
     # Trigger background video analysis if video URL changed
     if trigger_analysis:

@@ -5,8 +5,8 @@ import { Star, Check, Clock, ShoppingCart, History } from "lucide-react";
 
 const REWARDS = [
   { type: "email_verification", label: "Verify Email", credits: 1, description: "Verify your email address in your profile settings" },
-  { type: "profile_completion", label: "Complete Profile", credits: 1, description: "Fill all required fields: photo, position, nationality, height, weight, strong foot, target level and highlight video" },
-  { type: "highlights_uploaded", label: "Upload Highlights", credits: 1, description: "Add a highlight video (YouTube, Vimeo or direct upload) to your profile" },
+  { type: "profile_completion", label: "Complete Profile", credits: 1, description: "Fill all required fields in your profile. Credit is automatically granted when your profile reaches 100%.", auto: true },
+  { type: "highlights_uploaded", label: "Upload Highlights", credits: 1, description: "Add a highlight video to your profile. Credit is automatically granted when you save your video.", auto: true },
   { type: "referral_reward", label: "Refer a Player", credits: 3, description: "Refer a player using your referral link and they must verify their email" },
 ];
 
