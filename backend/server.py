@@ -1179,7 +1179,9 @@ async def register(user: UserRegister):
             "phone": user.phone,
             "profile_status": "incomplete",
         }
-        # Generate referral code
+        await db.players.insert_one(player_doc)
+        
+        # Generate referral code AFTER insert
         import secrets as sec
         referral_code = sec.token_hex(6).upper()
         await db.players.update_one({"user_id": user_id}, {"$set": {"referral_code": referral_code}})
@@ -1194,8 +1196,6 @@ async def register(user: UserRegister):
                     "verified": False,
                     "created_at": datetime.now(timezone.utc).isoformat()
                 })
-        
-        await db.players.insert_one(player_doc)
         try:
             import secrets
             token = secrets.token_urlsafe(32)
