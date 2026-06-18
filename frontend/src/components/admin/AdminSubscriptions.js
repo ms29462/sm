@@ -38,6 +38,8 @@ const ALL_PLANS = [
 
 const AdminSubscriptions = () => {
   const [subscriptions, setSubscriptions] = useState([]);
+  const [players, setPlayers] = useState([]);
+  const [playerSearch, setPlayerSearch] = useState("");
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAssign, setShowAssign] = useState(false);
@@ -55,6 +57,7 @@ const AdminSubscriptions = () => {
         api.getAllClubs(),
       ]);
       setSubscriptions(subRes.data);
+      setPlayers(playersRes.data || []);
       setUsers([
         ...(playersRes.data || []).map(p => ({ ...p, role: "player" })),
         ...(clubsRes.data || []).map(c => ({ ...c, role: "club" })),
@@ -174,10 +177,25 @@ const AdminSubscriptions = () => {
             <h3 className="font-heading font-bold uppercase text-lg mb-4">Assign Subscription</h3>
             <div className="space-y-4">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">User ID *</p>
-                <input value={form.user_id} onChange={e => setForm(f => ({...f, user_id: e.target.value}))}
-                  placeholder="Paste user_id here..."
-                  className="w-full bg-black/20 border border-white/10 rounded-sm px-3 h-10 text-sm text-white outline-none focus:border-primary" />
+                <p className="text-xs text-muted-foreground mb-1">Search Player *</p>
+                <input value={playerSearch} onChange={e => setPlayerSearch(e.target.value)}
+                  placeholder="Search by name or email..."
+                  className="w-full bg-black/20 border border-white/10 rounded-sm px-3 h-10 text-sm text-white outline-none focus:border-primary mb-2" />
+                {playerSearch && (
+                  <div className="max-h-32 overflow-y-auto border border-white/10 rounded-sm">
+                    {players.filter(p => 
+                      p.name?.toLowerCase().includes(playerSearch.toLowerCase()) ||
+                      p.email?.toLowerCase().includes(playerSearch.toLowerCase())
+                    ).slice(0, 5).map(p => (
+                      <button key={p.user_id} onClick={() => { setForm(f => ({...f, user_id: p.user_id})); setPlayerSearch(p.name + " — " + p.email); }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 transition-colors border-b border-white/5">
+                        <p className="font-medium">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">{p.email}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {form.user_id && <p className="text-xs text-primary mt-1">✓ Player selected</p>}
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Plan *</p>
