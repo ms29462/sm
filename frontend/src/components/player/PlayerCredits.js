@@ -4,10 +4,10 @@ import { toast } from "sonner";
 import { Star, Check, Clock, ShoppingCart, History } from "lucide-react";
 
 const REWARDS = [
-  { type: "email_verification", label: "Verify Email", credits: 1, description: "Verify your email address" },
-  { type: "profile_completion", label: "Complete Profile", credits: 1, description: "Complete all required profile fields" },
-  { type: "highlights_uploaded", label: "Upload Highlights", credits: 1, description: "Add at least one highlight video" },
-  { type: "referral_reward", label: "Refer a Player", credits: 3, description: "Refer a player who verifies their email" },
+  { type: "email_verification", label: "Verify Email", credits: 1, description: "Verify your email address in your profile settings" },
+  { type: "profile_completion", label: "Complete Profile", credits: 1, description: "Fill all required fields: photo, position, nationality, height, weight, strong foot, target level and highlight video" },
+  { type: "highlights_uploaded", label: "Upload Highlights", credits: 1, description: "Add a highlight video (YouTube, Vimeo or direct upload) to your profile" },
+  { type: "referral_reward", label: "Refer a Player", credits: 3, description: "Refer a player using your referral link and they must verify their email" },
 ];
 
 const PACKS = [

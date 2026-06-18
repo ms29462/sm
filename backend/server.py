@@ -1181,7 +1181,11 @@ async def register(user: UserRegister):
         }
         await db.players.insert_one(player_doc)
         try:
-            await send_player_welcome(user.email, user.name)
+            import secrets
+            token = secrets.token_urlsafe(32)
+            await db.users.update_one({"id": user_id}, {"$set": {"email_verification_token": token, "email_verified": False}})
+            verification_link = f"https://www.soccermatch.app/verify-email/{token}"
+            await send_player_welcome(user.email, user.name, verification_link)
         except Exception as e:
             print(f"Welcome email error: {e}")
     elif user.role == 'federation':
@@ -6639,9 +6643,41 @@ async def claim_reward(data: dict, current_user: dict = Depends(get_current_user
     reward_type = data.get("reward_type")
     if reward_type not in REWARD_TYPES:
         raise HTTPException(status_code=400, detail="Invalid reward type")
-    granted = await grant_reward(current_user["user_id"], reward_type)
+    
+    user_id = current_user["user_id"]
+    player = await db.players.find_one({"user_id": user_id}, {"_id": 0})
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    
+    if not player:
+        raise HTTPException(status_code=404, detail="Player profile not found")
+    
+    # Verify eligibility based on reward type
+    if reward_type == "email_verification":
+        if not user or not user.get("email_verified"):
+            raise HTTPException(status_code=400, detail="Email not verified yet. Please verify your email first.")
+    
+    elif reward_type == "profile_completion":
+        required = ["profile_picture", "first_name", "last_name", "date_of_birth", 
+                    "residence_country", "citizenship", "position", "height", 
+                    "weight", "strong_foot", "target_level", "highlight_video"]
+        missing = [f for f in required if not player.get(f)]
+        if missing:
+            raise HTTPException(status_code=400, detail=f"Profile incomplete. Missing: {', '.join(missing)}")
+    
+    elif reward_type == "highlights_uploaded":
+        has_highlight = player.get("highlight_video") or player.get("youtube_link") or player.get("vimeo_link")
+        if not has_highlight:
+            raise HTTPException(status_code=400, detail="No highlight video found. Please upload a highlight video first.")
+    
+    elif reward_type == "referral_reward":
+        # Check if player has a verified referral
+        referral = await db.referrals.find_one({"referrer_id": user_id, "verified": True})
+        if not referral:
+            raise HTTPException(status_code=400, detail="No verified referral found yet.")
+    
+    granted = await grant_reward(user_id, reward_type)
     if not granted:
-        raise HTTPException(status_code=400, detail="Reward already claimed or not eligible")
+        raise HTTPException(status_code=400, detail="Reward already claimed")
     return {"message": "Reward granted", "amount": REWARD_TYPES[reward_type]}
 
 @api_router.get("/player/credits/packs")
@@ -6794,6 +6830,22 @@ async def stripe_webhook(request: Request):
                 print(f"Email error: {e}")
     
     return {"status": "ok"}
+
+
+@api_router.get("/verify-email/{token}")
+async def verify_email(token: str):
+    user = await db.users.find_one({"email_verification_token": token}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Invalid or expired verification link")
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"email_verified": True, "email_verification_token": None}}
+    )
+    try:
+        await grant_reward(user["id"], "email_verification")
+    except:
+        pass
+    return {"message": "Email verified successfully!"}
 
 fastapi_app.include_router(api_router)
 

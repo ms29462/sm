@@ -16,6 +16,7 @@ import AgentRegister from '@/pages/AgentRegister';
 import FederationRegister from '@/pages/FederationRegister';
 import SpecialistRegister from '@/pages/SpecialistRegister';
 import AnalystActivate from '@/pages/AnalystActivate';
+import VerifyEmail from '@/pages/VerifyEmail';
 import PlayerOnboarding from '@/pages/PlayerOnboarding';
 import ClubDashboard from '@/pages/ClubDashboard';
 import FederationDashboard from '@/pages/FederationDashboard';
@@ -62,6 +63,7 @@ function App() {
         <Route path="/specialist-register" element={<SpecialistRegister />} />
         <Route path="/specialist-pending" element={<ClubPending />} />
         <Route path="/analyst/activate/:token" element={<AnalystActivate />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/club-register" element={<ClubRegister />} />
         <Route path="/club-pending" element={<ClubPending />} />
         <Route path="/club-pending-review" element={<ClubPendingLogin />} />
@@ -74,6 +76,7 @@ function App() {
         <Route path="/specialist-register" element={<SpecialistRegister />} />
         <Route path="/specialist-pending" element={<ClubPending />} />
         <Route path="/analyst/activate/:token" element={<AnalystActivate />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
                 <Route path="/admin/login" element={<Login admin={true} />} />
                 <Route
                   path="/player/*"

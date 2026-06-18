@@ -64,7 +64,7 @@ async def send_email(to: str, subject: str, html: str):
         print(f"Email error: {e}")
         return False
 
-async def send_player_welcome(email: str, name: str):
+async def send_player_welcome(email: str, name: str, verification_link: str = None):
     content = f"""
       <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Welcome to Soccer Match</h1>
       <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {name},</p>
@@ -82,7 +82,14 @@ async def send_player_welcome(email: str, name: str):
         Required for visibility: Profile photo, position, nationality, competition level and highlight video.
       </p>
     """
-    await send_email(email, "Welcome to Soccer Match 🎯", get_base_template(content, "Welcome to Soccer Match"))
+    verify_section = f'''
+      <div style="margin-top:24px;padding:16px;background:#1a1a1a;border:1px solid #333;border-left:3px solid #c8f135;border-radius:4px;">
+        <p style="color:#c8f135;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Verify Your Email — Earn +1 Credit</p>
+        <p style="color:#ccc;font-size:13px;margin:0 0 12px;">Click below to verify your email and receive your first free credit.</p>
+        <a href="{verification_link}" style="background:#c8f135;color:#000;font-weight:700;font-size:13px;padding:10px 20px;border-radius:4px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Verify Email</a>
+      </div>''' if verification_link else ''
+    content_html = content.replace("{verify_section}", verify_section)
+    await send_email(email, "Welcome to Soccer Match 🎯", get_base_template(content_html, "Welcome to Soccer Match"))
 
 async def send_org_application_received(email: str, name: str, org_type: str):
     content = f"""
