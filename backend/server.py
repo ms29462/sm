@@ -1396,6 +1396,16 @@ async def update_player_profile(update: PlayerUpdate, background_tasks: Backgrou
     
     update_data = {k: v for k, v in update.model_dump().items() if v is not None or isinstance(v, bool)}
     
+    # Lock highlight_video if reward already granted
+    if 'highlight_video' in update_data and update_data['highlight_video']:
+        existing_reward = await db.credit_transactions.find_one({
+            "user_id": current_user["user_id"],
+            "type": "highlights_uploaded"
+        })
+        if existing_reward:
+            # Remove highlight_video from update - cannot change after reward granted
+            del update_data['highlight_video']
+    
     # Validate highlight video URL
     if 'highlight_video' in update_data and update_data['highlight_video']:
         import re

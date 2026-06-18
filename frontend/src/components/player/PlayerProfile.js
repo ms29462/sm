@@ -46,6 +46,7 @@ const PlayerProfile = () => {
   const [saving, setSaving] = useState(false);
   const [verification, setVerification] = useState(null);
   const [formData, setFormData] = useState({});
+  const [highlightLocked, setHighlightLocked] = useState(false);
   
   // Match Archive state
   const [matchArchive, setMatchArchive] = useState([]);
@@ -72,6 +73,13 @@ const PlayerProfile = () => {
     stadium: '',
     location: ''
   });
+
+  useEffect(() => {
+    api.getMyCredits().then(res => {
+      const claimed = res.data.transactions?.some(t => t.type === "highlights_uploaded");
+      setHighlightLocked(claimed);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     loadProfile();
@@ -702,7 +710,7 @@ const PlayerProfile = () => {
             </div>
 
             <div className="md:col-span-2">
-              <Label htmlFor="highlight_video" className="text-sm font-medium uppercase tracking-wide">
+              <Label htmlFor="highlight_video" className="text-sm font-medium uppercase tracking-wide flex items-center gap-2">
                 Highlight Video (YouTube/Vimeo URL)
               </Label>
               <Input
