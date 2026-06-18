@@ -68,6 +68,11 @@ const PlayerRegister = () => {
         }
         return true;
       case 2:
+        if (!form.position || !form.preferred_level) {
+          toast.error("Please select your position and preferred level"); return false;
+        }
+        return true;
+      case 3:
         if (form.highlight_video) {
           const ytPattern = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]+/;
           const vimeoPattern = /^(https?:\/\/)?(www\.)?vimeo\.com\/[0-9]+/;
@@ -76,11 +81,6 @@ const PlayerRegister = () => {
             return false;
           }
         }
-        if (!form.position || !form.preferred_level) {
-          toast.error("Please select your position and preferred level"); return false;
-        }
-        return true;
-      case 3:
         if (!form.height || !form.weight || !form.preferred_foot) {
           toast.error("Please fill in all physical information"); return false;
         }
