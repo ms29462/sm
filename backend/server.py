@@ -6847,6 +6847,26 @@ async def verify_email(token: str):
         pass
     return {"message": "Email verified successfully!"}
 
+
+@api_router.post("/player/send-verification-email")
+async def send_verification_email_endpoint(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "player":
+        raise HTTPException(status_code=403)
+    user = await db.users.find_one({"id": current_user["user_id"]}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404)
+    if user.get("email_verified"):
+        raise HTTPException(status_code=400, detail="Email already verified")
+    import secrets
+    token = secrets.token_urlsafe(32)
+    await db.users.update_one({"id": current_user["user_id"]}, {"$set": {"email_verification_token": token}})
+    verification_link = f"https://www.soccermatch.app/verify-email/{token}"
+    try:
+        await send_email_verification(user["email"], user.get("name", "Player"), verification_link)
+    except Exception as e:
+        print(f"Email error: {e}")
+    return {"message": "Verification email sent"}
+
 fastapi_app.include_router(api_router)
 
 fastapi_app.add_middleware(

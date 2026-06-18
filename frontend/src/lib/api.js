@@ -262,6 +262,7 @@ export const api = {
   getAdminPlayerCredits: (userId) => axios.get(`${API}/admin/player-credits/${userId}`, { headers: getAuthHeaders() }),
   adminRefundCredits: (applicationId) => axios.post(`${API}/admin/credits/refund/${applicationId}`, {}, { headers: getAuthHeaders() }),
   createCheckout: (pack_id) => axios.post(`${API}/stripe/create-checkout`, { pack_id }, { headers: getAuthHeaders() }),
+  sendVerificationEmail: () => axios.post(`${API}/player/send-verification-email`, {}, { headers: getAuthHeaders() }),
   getMySubscription: () => axios.get(`${API}/subscription/my`, { headers: getAuthHeaders() }),
   getSubscriptionPlans: () => axios.get(`${API}/subscription/plans`, { headers: getAuthHeaders() }),
   assignSubscription: (data) => axios.post(`${API}/subscription/assign`, data, { headers: getAuthHeaders() }),

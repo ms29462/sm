@@ -63,6 +63,15 @@ const PlayerCredits = () => {
     }
   };
 
+  const handleSendVerification = async () => {
+    try {
+      await api.sendVerificationEmail();
+      toast.success("Verification email sent! Check your inbox.");
+    } catch (e) {
+      toast.error(e.response?.data?.detail || "Failed to send email");
+    }
+  };
+
   const handleClaimReward = async (rewardType) => {
     setClaiming(rewardType);
     try {
@@ -174,10 +183,17 @@ const PlayerCredits = () => {
                   {claimed ? (
                     <span className="text-xs text-green-400 font-bold">Claimed ✓</span>
                   ) : (
+                    {reward.type === "email_verification" ? (
+                    <button onClick={handleSendVerification}
+                      className="px-3 py-1.5 bg-blue-500 text-white font-bold rounded-sm text-xs hover:bg-blue-400 transition-colors">
+                      Resend Email
+                    </button>
+                  ) : (
                     <button onClick={() => handleClaimReward(reward.type)} disabled={claiming === reward.type}
                       className="px-3 py-1.5 bg-primary text-black font-bold rounded-sm text-xs hover:bg-primary/90 transition-colors disabled:opacity-50">
                       {claiming === reward.type ? "..." : "Claim"}
                     </button>
+                  )}
                   )}
                 </div>
               </div>
