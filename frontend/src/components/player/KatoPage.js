@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
+import PremiumUpgrade from "@/components/player/PremiumUpgrade";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { GraduationCap } from "lucide-react";
 
@@ -206,6 +208,20 @@ const runAnalysis = (form, division) => {
 };
 
 const CollegeFitPage = () => {
+  const [isPremium, setIsPremium] = useState(null);
+
+  useEffect(() => {
+    api.getMyPermissions().then(res => setIsPremium(res.data.status === "premium")).catch(() => setIsPremium(false));
+  }, []);
+
+  if (isPremium === null) return <div className="p-8 text-primary font-heading">LOADING...</div>;
+
+  if (!isPremium) return (
+    <div className="p-4 md:p-8 flex flex-col items-center justify-center min-h-[60vh]">
+      <PremiumUpgrade compact={false} />
+    </div>
+  );
+
   const [division, setDivision] = useState("");
   const [form, setForm] = useState({
     country: "", age: "", playing_level: "",
