@@ -7,7 +7,6 @@ const REWARDS = [
   { type: "email_verification", label: "Verify Email", credits: 1, description: "Verify your email address in your profile settings" },
   { type: "profile_completion", label: "Complete Profile", credits: 1, description: "Fill all required fields in your profile. Credit is automatically granted when your profile reaches 100%.", auto: true },
   { type: "highlights_uploaded", label: "Upload Highlights", credits: 1, description: "Add a highlight video to your profile. Credit is automatically granted when you save your video.", auto: true },
-  { type: "referral_reward", label: "Refer a Player", credits: 3, description: "Refer a player using your referral link and they must verify their email" },
 ];
 
 const PACKS = [
@@ -35,11 +34,9 @@ const PlayerCredits = () => {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("overview");
   const [claiming, setClaiming] = useState(null);
-  const [referralCode, setReferralCode] = useState(null);
 
   useEffect(() => {
     loadCredits();
-    api.getPlayerProfile().then(res => setReferralCode(res.data.referral_code)).catch(() => {});
     const params = new URLSearchParams(window.location.search);
     if (params.get("success") === "true") {
       toast.success("Payment successful! Credits added to your account.");
@@ -80,7 +77,6 @@ const PlayerCredits = () => {
       const res = await api.claimReward(rewardType);
       toast.success(`+${res.data.amount} credits earned!`);
       loadCredits();
-    api.getPlayerProfile().then(res => setReferralCode(res.data.referral_code)).catch(() => {});
     } catch (e) {
       toast.error(e.response?.data?.detail || "Already claimed");
     }
@@ -202,23 +198,7 @@ const PlayerCredits = () => {
               </div>
             );
           })}
-        {referralCode && (
-          <div className="mt-4 p-4 bg-card border border-border/50 rounded-sm">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Your Referral Link</p>
-            <p className="text-xs text-muted-foreground mb-3">Share this link with players. Earn +3 credits when they verify their email.</p>
-            <div className="flex gap-2">
-              <input readOnly value={`https://www.soccermatch.app/player-register?ref=${referralCode}`}
-                className="flex-1 bg-black/20 border border-white/10 rounded-sm px-3 h-9 text-xs text-white outline-none" />
-              <button onClick={() => {
-                navigator.clipboard.writeText(`https://www.soccermatch.app/player-register?ref=${referralCode}`);
-                toast.success("Referral link copied!");
-              }} className="px-3 h-9 bg-primary text-black font-bold rounded-sm text-xs hover:bg-primary/90 transition-colors">
-                Copy
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+              </div>
       )}
 
       {/* Buy Credits */}
