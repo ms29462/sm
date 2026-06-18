@@ -68,6 +68,14 @@ const PlayerRegister = () => {
         }
         return true;
       case 2:
+        if (form.highlight_video) {
+          const ytPattern = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]+/;
+          const vimeoPattern = /^(https?:\/\/)?(www\.)?vimeo\.com\/[0-9]+/;
+          if (!ytPattern.test(form.highlight_video) && !vimeoPattern.test(form.highlight_video)) {
+            toast.error("Please enter a valid YouTube or Vimeo link for your highlight video");
+            return false;
+          }
+        }
         if (!form.position || !form.preferred_level) {
           toast.error("Please select your position and preferred level"); return false;
         }

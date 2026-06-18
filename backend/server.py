@@ -37,6 +37,15 @@ from subscription_plans import SUBSCRIPTION_PLANS, get_plan, get_plans_for_role,
 from email_service import send_player_welcome, send_org_application_received, send_org_approved, send_analyst_invitation, send_application_status_update, send_credit_purchase_confirmation
 import stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', '')
+
+def validate_video_url(url: str) -> bool:
+    import re
+    if not url:
+        return True
+    youtube = r'(https?://)?(www\.)?(youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)[a-zA-Z0-9_-]+'
+    vimeo = r'(https?://)?(www\.)?vimeo\.com/[0-9]+'
+    return bool(re.search(youtube, url) or re.search(vimeo, url))
+
 from credits import REWARD_TYPES, MAX_FREE_CREDITS, OPPORTUNITY_TIERS, CREDIT_PACKS, get_tier_cost, get_pack
 from permissions import get_user_status, get_permissions, has_permission
 from video_analysis import analyze_highlight_video, calculate_overall_score, analyze_video_with_gemini
@@ -1180,6 +1189,10 @@ async def register(user: UserRegister):
             "phone": user.phone,
             "profile_status": "incomplete",
         }
+        # Validate highlight video if provided
+        if user.highlight_video and not validate_video_url(user.highlight_video):
+            raise HTTPException(status_code=400, detail="Please enter a valid YouTube or Vimeo link for your highlight video.")
+        
         await db.players.insert_one(player_doc)
         
         # Generate referral code AFTER insert
