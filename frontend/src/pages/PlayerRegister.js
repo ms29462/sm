@@ -73,19 +73,19 @@ const PlayerRegister = () => {
         }
         return true;
       case 3:
-        if (form.highlight_video) {
-          const ytPattern = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]+/;
-          const vimeoPattern = /^(https?:\/\/)?(www\.)?vimeo\.com\/[0-9]+/;
-          if (!ytPattern.test(form.highlight_video) && !vimeoPattern.test(form.highlight_video)) {
-            toast.error("Please enter a valid YouTube or Vimeo link for your highlight video");
-            return false;
-          }
-        }
         if (!form.height || !form.weight || !form.preferred_foot) {
           toast.error("Please fill in all physical information"); return false;
         }
         return true;
       case 4:
+        if (form.highlight_video) {
+          const ytPattern = /(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[a-zA-Z0-9_-]+/;
+          const vimeoPattern = /vimeo\.com\/[0-9]+/;
+          if (!ytPattern.test(form.highlight_video) && !vimeoPattern.test(form.highlight_video)) {
+            toast.error("Please enter a valid YouTube or Vimeo link for your highlight video");
+            return false;
+          }
+        }
         if (!form.highlight_video) {
           toast.error("A highlight video is required"); return false;
         }
