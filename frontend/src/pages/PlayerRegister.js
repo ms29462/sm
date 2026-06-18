@@ -30,6 +30,12 @@ const PlayerRegister = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showIntegrityModal, setShowIntegrityModal] = useState(false);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) setForm(f => ({...f, referral_code: ref}));
+  }, []);
+
   const [form, setForm] = useState({
     // Step 1 - Personal
     first_name: "", last_name: "", date_of_birth: "",
@@ -45,7 +51,8 @@ const PlayerRegister = () => {
     // Step 5 - Contact
     phone: "", email: "", password: "", confirm_password: "",
     // Step 6 - Terms
-    terms_accepted: false, integrity_certified: false,
+    terms_accepted: false,
+    referral_code: "", integrity_certified: false,
   });
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));

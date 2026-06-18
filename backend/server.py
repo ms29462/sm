@@ -1179,6 +1179,22 @@ async def register(user: UserRegister):
             "phone": user.phone,
             "profile_status": "incomplete",
         }
+        # Generate referral code
+        import secrets as sec
+        referral_code = sec.token_hex(6).upper()
+        await db.players.update_one({"user_id": user_id}, {"$set": {"referral_code": referral_code}})
+        
+        # Process referral if ref code provided
+        if user.referral_code:
+            referrer = await db.players.find_one({"referral_code": user.referral_code}, {"_id": 0})
+            if referrer and referrer["user_id"] != user_id:
+                await db.referrals.insert_one({
+                    "referrer_id": referrer["user_id"],
+                    "referred_id": user_id,
+                    "verified": False,
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                })
+        
         await db.players.insert_one(player_doc)
         try:
             import secrets
@@ -6877,6 +6893,19 @@ async def verify_email(token: str):
         await grant_reward(user["id"], "email_verification")
     except:
         pass
+    
+    # Check for pending referral and grant reward to referrer
+    try:
+        referral = await db.referrals.find_one({"referred_id": user["id"], "verified": False})
+        if referral:
+            await db.referrals.update_one(
+                {"referred_id": user["id"]},
+                {"$set": {"verified": True, "verified_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            await grant_reward(referral["referrer_id"], "referral_reward")
+    except Exception as e:
+        print(f"Referral reward error: {e}")
+    
     return {"message": "Email verified successfully!"}
 
 

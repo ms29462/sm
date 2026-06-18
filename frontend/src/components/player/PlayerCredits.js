@@ -35,9 +35,11 @@ const PlayerCredits = () => {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("overview");
   const [claiming, setClaiming] = useState(null);
+  const [referralCode, setReferralCode] = useState(null);
 
   useEffect(() => {
     loadCredits();
+    api.getPlayerProfile().then(res => setReferralCode(res.data.referral_code)).catch(() => {});
     const params = new URLSearchParams(window.location.search);
     if (params.get("success") === "true") {
       toast.success("Payment successful! Credits added to your account.");
@@ -78,6 +80,7 @@ const PlayerCredits = () => {
       const res = await api.claimReward(rewardType);
       toast.success(`+${res.data.amount} credits earned!`);
       loadCredits();
+    api.getPlayerProfile().then(res => setReferralCode(res.data.referral_code)).catch(() => {});
     } catch (e) {
       toast.error(e.response?.data?.detail || "Already claimed");
     }
@@ -199,7 +202,23 @@ const PlayerCredits = () => {
               </div>
             );
           })}
-        </div>
+        {referralCode && (
+          <div className="mt-4 p-4 bg-card border border-border/50 rounded-sm">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Your Referral Link</p>
+            <p className="text-xs text-muted-foreground mb-3">Share this link with players. Earn +3 credits when they verify their email.</p>
+            <div className="flex gap-2">
+              <input readOnly value={`https://www.soccermatch.app/player-register?ref=${referralCode}`}
+                className="flex-1 bg-black/20 border border-white/10 rounded-sm px-3 h-9 text-xs text-white outline-none" />
+              <button onClick={() => {
+                navigator.clipboard.writeText(`https://www.soccermatch.app/player-register?ref=${referralCode}`);
+                toast.success("Referral link copied!");
+              }} className="px-3 h-9 bg-primary text-black font-bold rounded-sm text-xs hover:bg-primary/90 transition-colors">
+                Copy
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
       )}
 
       {/* Buy Credits */}
