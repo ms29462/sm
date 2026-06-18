@@ -1480,7 +1480,19 @@ async def update_player_profile(update: PlayerUpdate, background_tasks: Backgrou
     # Auto-grant highlights reward if video uploaded
     if 'highlight_video' in update_data and update_data['highlight_video']:
         try:
-            await grant_reward(current_user["user_id"], "highlights_uploaded")
+            granted = await grant_reward(current_user["user_id"], "highlights_uploaded")
+            if granted:
+                # Notify admin to review
+                await create_notification(
+                    "admin-001",
+                    "highlight_review",
+                    f"Player uploaded a highlight video - review and revoke if fake",
+                    {
+                        "player_id": current_user["user_id"],
+                        "video_url": update_data['highlight_video'],
+                        "action": "revoke_highlight_credit"
+                    }
+                )
         except Exception:
             pass
     

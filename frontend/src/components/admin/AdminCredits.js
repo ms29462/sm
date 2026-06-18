@@ -166,6 +166,12 @@ const AdminCredits = () => {
                           <p className={`font-bold text-sm ${tx.amount > 0 ? "text-green-400" : "text-red-400"}`}>
                             {tx.amount > 0 ? "+" : ""}{tx.amount} cr.
                           </p>
+                          {tx.type === "highlights_uploaded" && (
+                            <button onClick={() => handleAdjust_revoke(selected.user_id, -1, "Highlight video revoked by admin")}
+                              className="text-xs border border-red-500/30 text-red-400 rounded-sm px-2 py-1 hover:bg-red-500/10 transition-colors">
+                              Revoke
+                            </button>
+                          )}
                           {tx.type === "application_spend" && !tx.refunded && (
                             <button onClick={() => handleRefund(tx.reference)}
                               className="text-xs border border-primary/30 text-primary rounded-sm px-2 py-1 hover:bg-primary/10 transition-colors">
