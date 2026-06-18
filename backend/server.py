@@ -1396,6 +1396,15 @@ async def update_player_profile(update: PlayerUpdate, background_tasks: Backgrou
     
     update_data = {k: v for k, v in update.model_dump().items() if v is not None or isinstance(v, bool)}
     
+    # Validate highlight video URL
+    if 'highlight_video' in update_data and update_data['highlight_video']:
+        import re
+        video_url = update_data['highlight_video']
+        youtube_pattern = r'(https?://)?(www\.)?(youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)[a-zA-Z0-9_-]{11}'
+        vimeo_pattern = r'(https?://)?(www\.)?vimeo\.com/[0-9]+'
+        if not re.search(youtube_pattern, video_url) and not re.search(vimeo_pattern, video_url):
+            raise HTTPException(status_code=400, detail="Please enter a valid YouTube or Vimeo link for your highlight video.")
+
     # Check if highlight_video is being updated - trigger auto analysis
     trigger_analysis = False
     if 'highlight_video' in update_data and update_data['highlight_video']:
