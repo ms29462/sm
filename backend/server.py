@@ -2601,8 +2601,23 @@ async def get_players(
         else:
             query["user_id"] = {"$in": verif_user_ids}
 
+    # Fetch a larger pool to allow fair re-ranking with premium tiebreaker
+    pool_size = max(limit * 3, 60)
+    all_matching = await db.players.find(query, {"_id": 0}).limit(pool_size).to_list(pool_size)
+    
+    # Moderate featured visibility: small tiebreaker boost for Premium players.
+    # This only reorders among players with similar profile quality - it does not
+    # override filters or push less relevant players above more relevant ones.
+    def ranking_key(p):
+        base_score = p.get("completion_score", 0) or 0
+        premium_boost = 3 if p.get("is_premium") else 0  # small, secondary factor
+        return -(base_score + premium_boost)
+    
+    all_matching.sort(key=ranking_key)
+    
     skip = (page - 1) * limit
-    players = await db.players.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
+    players = all_matching[skip:skip + limit]
+    
     # Strip private info for club users
     players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
