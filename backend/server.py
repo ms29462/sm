@@ -5882,6 +5882,22 @@ async def send_chat_message(sid, data):
     message_text = data.get('message')
     
     if room_id and sender_id and message_text:
+        # Check messaging limits for free players
+        if sender_role == 'player':
+            player = await db.players.find_one({"user_id": sender_id}, {"_id": 0})
+            is_premium = player.get("is_premium", False) if player else False
+            
+            if not is_premium:
+                room = await chat_room_manager.get_chat_room(room_id)
+                if room:
+                    player_message_count = sum(1 for m in room.messages if m.sender_id == sender_id)
+                    if player_message_count >= 1:
+                        await sio.emit('message_blocked', {
+                            'room_id': room_id,
+                            'reason': 'Upgrade to Premium to continue this conversation.'
+                        }, room=sid)
+                        return
+        
         message = ChatMessage(
             id=str(uuid.uuid4()),
             room_id=room_id,
@@ -6546,6 +6562,11 @@ async def cancel_subscription(data: dict, current_user: dict = Depends(get_curre
     await db.subscriptions.update_one(
         {"user_id": target_user_id},
         {"$set": {"status": "cancelled", "cancelled_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    # Also reset is_premium on player document
+    await db.players.update_one(
+        {"user_id": target_user_id},
+        {"$set": {"is_premium": False, "premium_status": "cancelled"}}
     )
     return {"message": "Subscription cancelled"}
 

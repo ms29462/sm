@@ -9,6 +9,7 @@ import { Send, ArrowLeft, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 const formatMessageTime = (timestamp) => {
   if (!timestamp) return "";
@@ -71,12 +72,31 @@ const ChatRoom = () => {
         }
       };
 
+      const handleMessageBlocked = (data) => {
+        toast.error(data.reason || "Upgrade to Premium to continue this conversation.", {
+          action: {
+            label: "Upgrade",
+            onClick: async () => {
+              try {
+                const res = await api.createPremiumCheckout();
+                window.location.href = res.data.checkout_url;
+              } catch (e) {
+                navigate("/player/credits");
+              }
+            }
+          },
+          duration: 8000
+        });
+      };
+
+      on("message_blocked", handleMessageBlocked);
       on("previous_messages", handlePreviousMessages);
       on("new_chat_message", handleNewMessage);
       on("user_typing", handleUserTyping);
       on("user_stopped_typing", handleUserStoppedTyping);
 
       return () => {
+        off("message_blocked", handleMessageBlocked);
         off("previous_messages", handlePreviousMessages);
         off("new_chat_message", handleNewMessage);
         off("user_typing", handleUserTyping);
