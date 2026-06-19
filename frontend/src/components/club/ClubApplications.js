@@ -422,7 +422,7 @@ const ClubApplications = () => {
                   <div className="divide-y divide-border/30">
                   {getFilteredCandidates(oppId, group.applications).map((app) => (
             <div key={app.id} data-testid={"application-card-" + app.id} onClick={() => setSelectedPlayer(app.player)} className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer">
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-2 mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
                     <h3 className="text-xl font-heading font-bold uppercase">{app.player.name}</h3>
@@ -430,7 +430,18 @@ const ClubApplications = () => {
                   </div>
                   <p className="text-sm text-muted-foreground">Applied for: {app.opportunity.position} - {app.opportunity.league_level}</p>
                 </div>
-                <span data-testid={"status-" + app.id} className={"px-3 py-1 text-[10px] uppercase tracking-wider border rounded-sm " + STATUS_COLORS[app.status]}>{app.status}</span>
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 flex-shrink-0">
+                  {app.match_score !== null && app.match_score !== undefined && (
+                    <div className="flex items-center gap-1.5 bg-black/20 border border-border/50 rounded-sm px-2.5 py-1">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Fit</span>
+                      <span className={
+                        "text-sm font-bold " +
+                        (app.match_score >= 75 ? "text-green-500" : app.match_score >= 50 ? "text-yellow-500" : "text-red-500")
+                      }>{Math.round(app.match_score)}/100</span>
+                    </div>
+                  )}
+                  <span data-testid={"status-" + app.id} className={"px-3 py-1 text-[10px] uppercase tracking-wider border rounded-sm " + STATUS_COLORS[app.status]}>{app.status}</span>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 text-sm">
                 {app.player.position && (<div><span className="text-muted-foreground block mb-1">Position</span><span className="font-medium">{app.player.position}</span></div>)}

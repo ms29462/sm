@@ -2365,12 +2365,24 @@ async def get_club_applications(current_user: dict = Depends(get_current_user)):
         player = await db.players.find_one({"user_id": app['player_id']}, {"_id": 0})
         opp = await db.opportunities.find_one({"id": app['opportunity_id']}, {"_id": 0})
         if player and opp:
+            # Calculate the same match score shown to the player for this opportunity
+            match_score = None
+            try:
+                scores_result = await get_player_match_scores(
+                    db, player.get("transfermarkt_url"), [opp], player_profile=player
+                )
+                if scores_result:
+                    match_score = scores_result[0].get("fit_score")
+            except Exception:
+                match_score = None
+            
             # Strip private info from player data
             player = strip_player_private_info(player)
             result.append({
                 **app,
                 "player": player,
-                "opportunity": opp
+                "opportunity": opp,
+                "match_score": match_score
             })
     return result
 
