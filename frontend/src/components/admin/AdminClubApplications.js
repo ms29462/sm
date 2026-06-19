@@ -195,6 +195,38 @@ const AdminClubApplications = () => {
                 </select>
               </div>
 
+              {/* Subscription Access Control */}
+              <div className="p-3 bg-primary/5 border border-primary/20 rounded-sm">
+                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Subscription Access</p>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Status: <span className="font-bold text-white">{selected.club_sub_status || "pending_review"}</span>
+                  {selected.active_plan && <span className="ml-2 text-green-400">({selected.active_plan})</span>}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={async () => {
+                      await api.adminUpdateClubSubscription(selected.user_id, { club_sub_status: "approved_awaiting_payment" });
+                      handleUpdate(selected.user_id, { club_sub_status: "approved_awaiting_payment" });
+                    }}
+                    className="text-xs px-3 py-1.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-sm hover:bg-blue-500/30 transition-colors">
+                    Allow Payment
+                  </button>
+                  <button onClick={async () => {
+                      await api.adminUpdateClubSubscription(selected.user_id, { club_sub_status: "active", active_plan: selected.recommended_tier || "club_amateur" });
+                      handleUpdate(selected.user_id, { club_sub_status: "active" });
+                    }}
+                    className="text-xs px-3 py-1.5 bg-green-500/20 text-green-400 border border-green-500/30 rounded-sm hover:bg-green-500/30 transition-colors">
+                    Manually Activate
+                  </button>
+                  <button onClick={async () => {
+                      await api.adminUpdateClubSubscription(selected.user_id, { club_sub_status: "cancelled" });
+                      handleUpdate(selected.user_id, { club_sub_status: "cancelled" });
+                    }}
+                    className="text-xs px-3 py-1.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-sm hover:bg-red-500/30 transition-colors">
+                    Suspend Access
+                  </button>
+                </div>
+              </div>
+
               {/* Internal Notes */}
               <div>
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Internal Notes</p>

@@ -16,29 +16,34 @@ import ScoutingHub from "@/components/club/ScoutingHub";
 import RecruitmentPipeline from "@/components/club/RecruitmentPipeline";
 import TrialInvitations from "@/pages/TrialInvitations";
 import TrackingOverview from "@/components/club/TrackingOverview";
+import ClubSubscribe from "@/components/club/ClubSubscribe";
+import ClubSubscriptionGate from "@/components/club/ClubSubscriptionGate";
 
 const ClubDashboard = () => {
   const { user } = useAuth();
   const isCollege = user?.role === "college";
   const isAnalyst = user?.role === "analyst";
 
+  const isClub = user?.role === "club";
+  const Gate = ({ children }) => isClub ? <ClubSubscriptionGate>{children}</ClubSubscriptionGate> : children;
+
   return (
     <ClubLayout isCollege={isCollege}>
       <Routes>
         <Route path="dashboard" element={<ClubHome />} />
         <Route path="profile" element={isCollege ? <CollegeProfile /> : <ClubProfile />} />
-        <Route path="opportunities" element={<ClubOpportunities />} />
-        <Route path="players" element={<ClubPlayers />} />
-        <Route path="player/:playerId" element={<PlayerDetailView />} />
-        <Route path="applications" element={<ClubApplications />} />
-        <Route path="favorites" element={<ClubFavorites />} />
-        <Route path="chats" element={<UnifiedChats />} />
+        <Route path="subscribe" element={<ClubSubscribe />} />
+        <Route path="opportunities" element={<Gate><ClubOpportunities /></Gate>} />
+        <Route path="players" element={<Gate><ClubPlayers /></Gate>} />
+        <Route path="player/:playerId" element={<Gate><PlayerDetailView /></Gate>} />
+        <Route path="applications" element={<Gate><ClubApplications /></Gate>} />
+        <Route path="favorites" element={<Gate><ClubFavorites /></Gate>} />
+        <Route path="chats" element={<Gate><UnifiedChats /></Gate>} />
         <Route path="videos" element={<VideoList />} />
-        <Route path="scouting" element={<ScoutingHub />} />
-        <Route path="pipeline" element={<RecruitmentPipeline />} />
-        <Route path="trials" element={<TrialInvitations />} />
-        <Route path="scouting/:playerId" element={<TrackingOverview />} />
-        <Route path="scouting/:playerId" element={<TrackingOverview />} />
+        <Route path="scouting" element={<Gate><ScoutingHub /></Gate>} />
+        <Route path="pipeline" element={<Gate><RecruitmentPipeline /></Gate>} />
+        <Route path="trials" element={<Gate><TrialInvitations /></Gate>} />
+        <Route path="scouting/:playerId" element={<Gate><TrackingOverview /></Gate>} />
         <Route path="*" element={<ClubHome />
         } />
         <Route path="news" element={<NewsFeed />} />

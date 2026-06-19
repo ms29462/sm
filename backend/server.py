@@ -6916,13 +6916,39 @@ async def stripe_webhook(request: Request):
     if event["type"] == "customer.subscription.created" or event["type"] == "customer.subscription.updated":
         sub = event["data"]["object"]
         user_id = sub.get("metadata", {}).get("user_id")
+        sub_type = sub.get("metadata", {}).get("type")
+        
         if not user_id:
-            # Try to find by stripe customer
             customer_id = sub.get("customer")
             player = await db.players.find_one({"stripe_customer_id": customer_id}, {"_id": 0})
             if player:
                 user_id = player["user_id"]
-        if user_id:
+                sub_type = "premium_subscription"
+            else:
+                club = await db.clubs.find_one({"stripe_customer_id": customer_id}, {"_id": 0})
+                if club:
+                    user_id = club["user_id"]
+                    sub_type = "club_subscription"
+        
+        if user_id and sub_type == "club_subscription":
+            status = sub.get("status")
+            period_end = sub.get("current_period_end")
+            plan_id = sub.get("metadata", {}).get("plan_id")
+            if not plan_id:
+                club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
+                plan_id = club.get("active_plan") if club else None
+            if status == "active" and plan_id:
+                await activate_club_subscription(user_id, plan_id, sub["id"], period_end)
+            elif status in ["canceled", "unpaid", "past_due"]:
+                await db.clubs.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"club_sub_status": status if status != "canceled" else "cancelled"}}
+                )
+                await db.subscriptions.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"status": status}}
+                )
+        elif user_id:
             status = sub.get("status")
             period_end = sub.get("current_period_end")
             if status == "active":
@@ -6981,7 +7007,6 @@ async def stripe_webhook(request: Request):
         session_id = session.get("id")
         
         if session_type == "premium_subscription":
-            # Premium subscription - will be handled by subscription webhooks
             sub_id = session.get("subscription")
             if user_id and sub_id:
                 period_end = None
@@ -6992,6 +7017,24 @@ async def stripe_webhook(request: Request):
                     await grant_premium_credits(user_id, sub_id)
                 except Exception as e:
                     print(f"Premium activation error: {e}")
+        
+        elif session_type == "club_subscription":
+            sub_id = session.get("subscription")
+            plan_id = metadata.get("plan_id")
+            if user_id and sub_id and plan_id:
+                period_end = None
+                try:
+                    sub = stripe.Subscription.retrieve(sub_id)
+                    period_end = sub.get("current_period_end")
+                    await activate_club_subscription(user_id, plan_id, sub_id, period_end)
+                    # Send welcome email
+                    club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
+                    if club:
+                        email = club.get("rep_email") or club.get("email")
+                        if email:
+                            await send_org_approved(email, club.get("name", ""), "club")
+                except Exception as e:
+                    print(f"Club subscription activation error: {e}")
         else:
             pack_id = metadata.get("pack_id")
             credits = int(metadata.get("credits", 0))
@@ -7159,6 +7202,131 @@ async def grant_premium_credits(user_id: str, stripe_subscription_id: str):
         stripe_subscription_id
     )
     return True
+
+
+# ============ CLUB SUBSCRIPTION SYSTEM ============
+
+CLUB_PLAN_PRICE_IDS = {
+    "club_amateur": os.environ.get("STRIPE_CLUB_AMATEUR_PRICE_ID"),
+    "club_semi_pro": os.environ.get("STRIPE_CLUB_SEMIPRO_PRICE_ID"),
+    "club_professional": os.environ.get("STRIPE_CLUB_PRO_PRICE_ID"),
+}
+
+CLUB_PLAN_NAMES = {
+    "club_amateur": "Amateur Club",
+    "club_semi_pro": "Semi-Professional Club",
+    "club_professional": "Professional Club",
+}
+
+CLUB_SUB_STATUSES = [
+    "pending_review", "qualification", "discovery_call", "proposal",
+    "approved_awaiting_payment", "active", "past_due", "cancelled", "expired"
+]
+
+def recommend_club_plan(club: dict) -> str:
+    category = (club.get("category") or club.get("club_type") or "").lower()
+    league = (club.get("league") or "").lower()
+    division = (club.get("division") or "").lower()
+    text = f"{category} {league} {division}"
+    if "professional" in text and "semi" not in text:
+        return "club_professional"
+    if "semi" in text:
+        return "club_semi_pro"
+    return "club_amateur"
+
+@api_router.get("/club/subscription-status")
+async def get_club_subscription_status(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "club":
+        raise HTTPException(status_code=403)
+    club = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not club:
+        raise HTTPException(status_code=404)
+    sub_status = club.get("club_sub_status", "pending_review")
+    recommended = club.get("recommended_plan") or recommend_club_plan(club)
+    return {
+        "sub_status": sub_status,
+        "recommended_plan": recommended,
+        "active_plan": club.get("active_plan"),
+        "has_access": sub_status == "active",
+    }
+
+@api_router.post("/stripe/create-club-checkout")
+async def create_club_checkout(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "club":
+        raise HTTPException(status_code=403, detail="Clubs only")
+    
+    club = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not club:
+        raise HTTPException(status_code=404, detail="Club not found")
+    
+    if club.get("club_sub_status") not in ["approved_awaiting_payment", "active", "past_due", "cancelled", "expired"]:
+        raise HTTPException(status_code=400, detail="Club must be approved before subscribing")
+    
+    plan_id = data.get("plan_id")
+    price_id = CLUB_PLAN_PRICE_IDS.get(plan_id)
+    if not price_id:
+        raise HTTPException(status_code=400, detail="Invalid plan or price not configured")
+    
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{"price": price_id, "quantity": 1}],
+            mode="subscription",
+            success_url="https://www.soccermatch.app/club/dashboard?subscription=success",
+            cancel_url="https://www.soccermatch.app/club/subscribe?cancelled=true",
+            metadata={
+                "user_id": current_user["user_id"],
+                "type": "club_subscription",
+                "plan_id": plan_id,
+            },
+            customer_email=club.get("email") or club.get("rep_email")
+        )
+        return {"checkout_url": session.url, "session_id": session.id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def activate_club_subscription(user_id: str, plan_id: str, stripe_subscription_id: str, period_end: int = None):
+    from datetime import datetime, timezone
+    end_date = datetime.fromtimestamp(period_end, tz=timezone.utc).isoformat() if period_end else None
+    await db.clubs.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "club_sub_status": "active",
+            "active_plan": plan_id,
+            "stripe_subscription_id": stripe_subscription_id,
+            "subscription_started_at": datetime.now(timezone.utc).isoformat(),
+            "subscription_expires_at": end_date,
+        }}
+    )
+    await db.subscriptions.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "user_id": user_id,
+            "plan_id": plan_id,
+            "plan_name": CLUB_PLAN_NAMES.get(plan_id, plan_id),
+            "status": "active",
+            "stripe_subscription_id": stripe_subscription_id,
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": end_date,
+            "billing_cycle": "yearly"
+        }},
+        upsert=True
+    )
+
+@api_router.put("/admin/clubs/{club_id}/subscription")
+async def admin_update_club_subscription(club_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    update = {}
+    if "club_sub_status" in data:
+        update["club_sub_status"] = data["club_sub_status"]
+    if "recommended_plan" in data:
+        update["recommended_plan"] = data["recommended_plan"]
+    if "active_plan" in data:
+        update["active_plan"] = data["active_plan"]
+    if update:
+        await db.clubs.update_one({"user_id": club_id}, {"$set": update})
+    return {"message": "Updated"}
 
 fastapi_app.include_router(api_router)
 

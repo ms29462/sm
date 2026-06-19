@@ -386,18 +386,7 @@ const ClubPlayers = () => {
           Next
         </button>
       </div>
-      {/* Pagination */}
-      <div className="flex items-center justify-center gap-3 mt-6">
-        <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1}
-          className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
-          Previous
-        </button>
-        <span className="text-sm text-muted-foreground">Page {page}</span>
-        <button onClick={() => setPage(p => p+1)} disabled={players.length < 20}
-          className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
-          Next
-        </button>
-      </div>
+
     </div>
   );
 };
