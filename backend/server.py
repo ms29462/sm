@@ -3478,6 +3478,8 @@ async def get_specialist_profile(current_user: dict = Depends(get_current_user))
     specialist = await db.specialists.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     if not specialist:
         raise HTTPException(status_code=404, detail="Profile not found")
+    if isinstance(specialist.get("certifications"), list):
+        specialist["certifications"] = ", ".join(specialist["certifications"]) if specialist["certifications"] else None
     return SpecialistProfile(**specialist)
 
 
@@ -3503,6 +3505,8 @@ async def get_specialist_players(
     nationality: Optional[str] = None,
     level: Optional[str] = None,
     name: Optional[str] = None,
+    page: int = 1,
+    limit: int = 20,
     current_user: dict = Depends(get_current_user)
 ):
     """Specialist searches for players to offer services"""
@@ -6951,6 +6955,11 @@ async def stripe_webhook(request: Request):
                         if college:
                             user_id = college["user_id"]
                             sub_type = "college_subscription"
+                        else:
+                            specialist = await db.specialists.find_one({"stripe_customer_id": customer_id}, {"_id": 0})
+                            if specialist:
+                                user_id = specialist["user_id"]
+                                sub_type = "specialist_subscription"
         
         if user_id and sub_type == "club_subscription":
             status = sub.get("status")
@@ -6995,6 +7004,20 @@ async def stripe_webhook(request: Request):
                 await target.update_one(
                     {"user_id": user_id},
                     {"$set": {"college_sub_status": status if status != "canceled" else "cancelled"}}
+                )
+                await db.subscriptions.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"status": status}}
+                )
+        elif user_id and sub_type == "specialist_subscription":
+            status = sub.get("status")
+            period_end = sub.get("current_period_end")
+            if status == "active":
+                await activate_specialist_subscription(user_id, sub["id"], period_end)
+            elif status in ["canceled", "unpaid", "past_due"]:
+                await db.specialists.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"specialist_sub_status": status if status != "canceled" else "cancelled"}}
                 )
                 await db.subscriptions.update_one(
                     {"user_id": user_id},
@@ -7116,6 +7139,20 @@ async def stripe_webhook(request: Request):
                             await send_org_approved(email, college.get("name", ""), "college")
                 except Exception as e:
                     print(f"College subscription activation error: {e}")
+        
+        elif session_type == "specialist_subscription":
+            sub_id = session.get("subscription")
+            if user_id and sub_id:
+                period_end = None
+                try:
+                    sub = stripe.Subscription.retrieve(sub_id)
+                    period_end = sub.get("current_period_end")
+                    await activate_specialist_subscription(user_id, sub_id, period_end)
+                    specialist = await db.specialists.find_one({"user_id": user_id}, {"_id": 0})
+                    if specialist and specialist.get("email"):
+                        await send_org_approved(specialist["email"], specialist.get("name", ""), "specialist")
+                except Exception as e:
+                    print(f"Specialist subscription activation error: {e}")
         else:
             pack_id = metadata.get("pack_id")
             credits = int(metadata.get("credits", 0))
@@ -7598,6 +7635,98 @@ async def admin_update_college_subscription(college_id: str, data: dict, current
         is_college = await db.colleges.find_one({"user_id": college_id}, {"_id": 0})
         target_collection = db.colleges if is_college else db.clubs
         await target_collection.update_one({"user_id": college_id}, {"$set": update})
+    return {"message": "Updated"}
+
+
+# ============ SPECIALIST SUBSCRIPTION SYSTEM ============
+
+SPECIALIST_PRICE_ID = os.environ.get("STRIPE_SPECIALIST_PRICE_ID")
+
+@api_router.get("/specialist/subscription-status")
+async def get_specialist_subscription_status(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "specialist":
+        raise HTTPException(status_code=403)
+    specialist = await db.specialists.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not specialist:
+        raise HTTPException(status_code=404)
+    sub_status = specialist.get("specialist_sub_status", "pending_review")
+    return {
+        "sub_status": sub_status,
+        "has_access": sub_status == "active",
+    }
+
+@api_router.post("/stripe/create-specialist-checkout")
+async def create_specialist_checkout(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "specialist":
+        raise HTTPException(status_code=403, detail="Specialists only")
+    
+    specialist = await db.specialists.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not specialist:
+        raise HTTPException(status_code=404, detail="Specialist not found")
+    
+    if specialist.get("specialist_sub_status") not in ["approved_awaiting_payment", "active", "past_due", "cancelled", "expired"]:
+        raise HTTPException(status_code=400, detail="Specialist must be approved before subscribing")
+    
+    if not SPECIALIST_PRICE_ID:
+        raise HTTPException(status_code=500, detail="Specialist plan price not configured")
+    
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{"price": SPECIALIST_PRICE_ID, "quantity": 1}],
+            mode="subscription",
+            success_url="https://www.soccermatch.app/specialist/dashboard?subscription=success",
+            cancel_url="https://www.soccermatch.app/specialist/subscribe?cancelled=true",
+            metadata={
+                "user_id": current_user["user_id"],
+                "type": "specialist_subscription",
+                "plan_id": "specialist_plan",
+            },
+            customer_email=specialist.get("email")
+        )
+        return {"checkout_url": session.url, "session_id": session.id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def activate_specialist_subscription(user_id: str, stripe_subscription_id: str, period_end: int = None):
+    from datetime import datetime, timezone
+    end_date = datetime.fromtimestamp(period_end, tz=timezone.utc).isoformat() if period_end else None
+    await db.specialists.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "specialist_sub_status": "active",
+            "stripe_subscription_id": stripe_subscription_id,
+            "subscription_started_at": datetime.now(timezone.utc).isoformat(),
+            "subscription_expires_at": end_date,
+            "badges": ["verified_specialist"],
+        }}
+    )
+    await db.subscriptions.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "user_id": user_id,
+            "plan_id": "specialist_plan",
+            "plan_name": "Specialist Plan",
+            "status": "active",
+            "stripe_subscription_id": stripe_subscription_id,
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": end_date,
+            "billing_cycle": "yearly"
+        }},
+        upsert=True
+    )
+
+@api_router.put("/admin/specialists/{specialist_id}/subscription")
+async def admin_update_specialist_subscription(specialist_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    update = {}
+    if "specialist_sub_status" in data:
+        update["specialist_sub_status"] = data["specialist_sub_status"]
+    if update:
+        await db.specialists.update_one({"user_id": specialist_id}, {"$set": update})
+        if data.get("specialist_sub_status") == "active":
+            await db.specialists.update_one({"user_id": specialist_id}, {"$set": {"badges": ["verified_specialist"]}})
     return {"message": "Updated"}
 
 fastapi_app.include_router(api_router)

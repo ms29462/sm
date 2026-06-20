@@ -7,6 +7,8 @@ import SpecialistProfile from '@/components/specialist/SpecialistProfile';
 import SpecialistPlayers from '@/components/specialist/SpecialistPlayers';
 import SpecialistPlayerDetail from '@/components/specialist/SpecialistPlayerDetail';
 import SpecialistClients from '@/components/specialist/SpecialistClients';
+import SpecialistSubscribe from '@/components/specialist/SpecialistSubscribe';
+import SpecialistSubscriptionGate from '@/components/specialist/SpecialistSubscriptionGate';
 
 const SpecialistDashboard = () => {
   return (
@@ -14,12 +16,13 @@ const SpecialistDashboard = () => {
       <Routes>
         <Route path="dashboard" element={<SpecialistHome />} />
         <Route path="profile" element={<SpecialistProfile />} />
+        <Route path="subscribe" element={<SpecialistSubscribe />} />
         <Route path="players" element={<SpecialistPlayers />} />
         <Route path="player/:playerId" element={<SpecialistPlayerDetail />} />
-        <Route path="clients" element={<SpecialistClients />} />
+        <Route path="clients" element={<SpecialistSubscriptionGate><SpecialistClients /></SpecialistSubscriptionGate>} />
         <Route path="*" element={<Navigate to="/specialist/dashboard" replace />} />
         <Route path="news" element={<NewsFeed />} />
-        <Route path="chats" element={<UnifiedChats />} />
+        <Route path="chats" element={<SpecialistSubscriptionGate><UnifiedChats /></SpecialistSubscriptionGate>} />
       </Routes>
     </SpecialistLayout>
   );
