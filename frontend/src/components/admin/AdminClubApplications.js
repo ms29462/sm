@@ -17,7 +17,7 @@ const Field = ({ label, value }) => (
   </div>
 );
 
-const AdminClubApplications = () => {
+const AdminClubApplications = ({ mode = "all" }) => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -26,6 +26,8 @@ const AdminClubApplications = () => {
   const [saving, setSaving] = useState(false);
 
   const filtered = applications.filter(a => {
+    if (mode === "clubs" && a.institution_type) return false;
+    if (mode === "colleges" && !a.institution_type) return false;
     if (tab === "all") return true;
     if (tab === "pending") return !a.status || a.status === "pending";
     return a.status === tab;

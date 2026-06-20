@@ -2745,7 +2745,9 @@ async def get_all_clubs(current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
     
-    clubs = await db.clubs.find({}, {"_id": 0}).to_list(1000)
+    # Exclude college-role users so colleges only appear in /admin/colleges
+    college_user_ids = await db.users.distinct("id", {"role": "college"})
+    clubs = await db.clubs.find({"user_id": {"$nin": college_user_ids}}, {"_id": 0}).to_list(1000)
     return [ClubProfile(**c) for c in clubs]
 
 @api_router.put("/admin/players/{user_id}/approve")
@@ -4947,11 +4949,11 @@ async def get_all_colleges(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Not an admin")
     # Colleges are stored in clubs collection with role=college in users
     college_users = await db.users.find({"role": "college"}, {"_id": 0}).to_list(1000)
-    college_ids = [u["user_id"] for u in college_users]
+    college_ids = [u["id"] for u in college_users]
     colleges = await db.clubs.find({"user_id": {"$in": college_ids}}, {"_id": 0}).to_list(1000)
     # Add email from users
     for college in colleges:
-        user = next((u for u in college_users if u["user_id"] == college["user_id"]), None)
+        user = next((u for u in college_users if u["id"] == college["user_id"]), None)
         if user:
             college["email"] = user.get("email", "")
     return colleges
@@ -6365,12 +6367,12 @@ async def delete_club(club_id: str, current_user: dict = Depends(get_current_use
     return {"message": "Club deleted"}
 
 @api_router.get("/admin/club-applications")
-async def get_club_applications(current_user: dict = Depends(get_current_user)):
+async def get_club_applications_admin_review(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403)
-    clubs = await db.clubs.find({"status": "pending"}, {"_id": 0}).to_list(1000)
-    # Also include all clubs for admin review
-    all_clubs = await db.clubs.find({}, {"_id": 0}).to_list(1000)
+    # Exclude college-role users so colleges only appear in the college admin section
+    college_user_ids = await db.users.distinct("id", {"role": "college"})
+    all_clubs = await db.clubs.find({"user_id": {"$nin": college_user_ids}}, {"_id": 0}).to_list(1000)
     return all_clubs
 
 @api_router.put("/admin/club-applications/{club_id}")
