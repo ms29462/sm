@@ -18,6 +18,8 @@ import TrialInvitations from "@/pages/TrialInvitations";
 import TrackingOverview from "@/components/club/TrackingOverview";
 import ClubSubscribe from "@/components/club/ClubSubscribe";
 import ClubSubscriptionGate from "@/components/club/ClubSubscriptionGate";
+import CollegeSubscribe from "@/components/college/CollegeSubscribe";
+import CollegeSubscriptionGate from "@/components/college/CollegeSubscriptionGate";
 
 const ClubDashboard = () => {
   const { user } = useAuth();
@@ -25,14 +27,19 @@ const ClubDashboard = () => {
   const isAnalyst = user?.role === "analyst";
 
   const isClub = user?.role === "club";
-  const Gate = ({ children }) => isClub ? <ClubSubscriptionGate>{children}</ClubSubscriptionGate> : children;
+  const isCollegeRole = user?.role === "college";
+  const Gate = ({ children }) => {
+    if (isClub) return <ClubSubscriptionGate>{children}</ClubSubscriptionGate>;
+    if (isCollegeRole) return <CollegeSubscriptionGate>{children}</CollegeSubscriptionGate>;
+    return children;
+  };
 
   return (
     <ClubLayout isCollege={isCollege}>
       <Routes>
         <Route path="dashboard" element={<ClubHome />} />
         <Route path="profile" element={isCollege ? <CollegeProfile /> : <ClubProfile />} />
-        <Route path="subscribe" element={<ClubSubscribe />} />
+        <Route path="subscribe" element={isCollege ? <CollegeSubscribe /> : <ClubSubscribe />} />
         <Route path="opportunities" element={<Gate><ClubOpportunities /></Gate>} />
         <Route path="players" element={<Gate><ClubPlayers /></Gate>} />
         <Route path="player/:playerId" element={<Gate><PlayerDetailView /></Gate>} />

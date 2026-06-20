@@ -2924,6 +2924,8 @@ async def get_college_profile(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Not a college")
     college = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     if not college:
+        college = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not college:
         raise HTTPException(status_code=404, detail="Profile not found")
     return CollegeProfile(**college)
 
@@ -2932,14 +2934,20 @@ async def update_college_profile(update: CollegeUpdate, current_user: dict = Dep
     if current_user['role'] != 'college':
         raise HTTPException(status_code=403, detail="Not a college")
     update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    
+    existing_in_colleges = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    target_collection = db.colleges if existing_in_colleges else db.clubs
+    existing = existing_in_colleges or await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    
     if update_data:
         update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
-        await db.colleges.update_one(
+        await target_collection.update_one(
             {"user_id": current_user['user_id']},
             {"$set": update_data},
-            upsert=True
+            upsert=not existing
         )
-    college = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    
+    college = await target_collection.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     if not college:
         raise HTTPException(status_code=404, detail="Profile not found")
     return CollegeProfile(**college)
@@ -6936,6 +6944,11 @@ async def stripe_webhook(request: Request):
                     if agent:
                         user_id = agent["user_id"]
                         sub_type = "agent_subscription"
+                    else:
+                        college = await db.colleges.find_one({"stripe_customer_id": customer_id}, {"_id": 0})
+                        if college:
+                            user_id = college["user_id"]
+                            sub_type = "college_subscription"
         
         if user_id and sub_type == "club_subscription":
             status = sub.get("status")
@@ -6964,6 +6977,22 @@ async def stripe_webhook(request: Request):
                 await db.agents.update_one(
                     {"user_id": user_id},
                     {"$set": {"agent_sub_status": status if status != "canceled" else "cancelled"}}
+                )
+                await db.subscriptions.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"status": status}}
+                )
+        elif user_id and sub_type == "college_subscription":
+            status = sub.get("status")
+            period_end = sub.get("current_period_end")
+            if status == "active":
+                await activate_college_subscription(user_id, sub["id"], period_end)
+            elif status in ["canceled", "unpaid", "past_due"]:
+                is_college = await db.colleges.find_one({"user_id": user_id}, {"_id": 0})
+                target = db.colleges if is_college else db.clubs
+                await target.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"college_sub_status": status if status != "canceled" else "cancelled"}}
                 )
                 await db.subscriptions.update_one(
                     {"user_id": user_id},
@@ -7069,6 +7098,22 @@ async def stripe_webhook(request: Request):
                         await send_org_approved(agent["email"], agent.get("name", ""), "agent")
                 except Exception as e:
                     print(f"Agent subscription activation error: {e}")
+        
+        elif session_type == "college_subscription":
+            sub_id = session.get("subscription")
+            if user_id and sub_id:
+                period_end = None
+                try:
+                    sub = stripe.Subscription.retrieve(sub_id)
+                    period_end = sub.get("current_period_end")
+                    await activate_college_subscription(user_id, sub_id, period_end)
+                    college = await db.colleges.find_one({"user_id": user_id}, {"_id": 0}) or await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
+                    if college:
+                        email = college.get("rep_email") or college.get("email")
+                        if email:
+                            await send_org_approved(email, college.get("name", ""), "college")
+                except Exception as e:
+                    print(f"College subscription activation error: {e}")
         else:
             pack_id = metadata.get("pack_id")
             credits = int(metadata.get("credits", 0))
@@ -7452,6 +7497,105 @@ async def admin_update_agent_subscription(agent_id: str, data: dict, current_use
         await db.agents.update_one({"user_id": agent_id}, {"$set": update})
         if data.get("agent_sub_status") == "active":
             await db.agents.update_one({"user_id": agent_id}, {"$set": {"badges": ["verified_licensed_agent"]}})
+    return {"message": "Updated"}
+
+
+# ============ COLLEGE SUBSCRIPTION SYSTEM ============
+
+COLLEGE_PRICE_ID = os.environ.get("STRIPE_COLLEGE_PRICE_ID")
+
+@api_router.get("/college/subscription-status")
+async def get_college_subscription_status(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "college":
+        raise HTTPException(status_code=403)
+    college = await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not college:
+        college = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not college:
+        raise HTTPException(status_code=404)
+    sub_status = college.get("college_sub_status", "pending_review")
+    return {
+        "sub_status": sub_status,
+        "has_access": sub_status == "active",
+    }
+
+@api_router.post("/stripe/create-college-checkout")
+async def create_college_checkout(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "college":
+        raise HTTPException(status_code=403, detail="Colleges only")
+    
+    college = await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not college:
+        college = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not college:
+        raise HTTPException(status_code=404, detail="Institution not found")
+    
+    if college.get("college_sub_status") not in ["approved_awaiting_payment", "active", "past_due", "cancelled", "expired"]:
+        raise HTTPException(status_code=400, detail="Institution must be approved before subscribing")
+    
+    if not COLLEGE_PRICE_ID:
+        raise HTTPException(status_code=500, detail="College plan price not configured")
+    
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{"price": COLLEGE_PRICE_ID, "quantity": 1}],
+            mode="subscription",
+            success_url="https://www.soccermatch.app/club/dashboard?subscription=success",
+            cancel_url="https://www.soccermatch.app/club/subscribe?cancelled=true",
+            metadata={
+                "user_id": current_user["user_id"],
+                "type": "college_subscription",
+                "plan_id": "college_plan",
+            },
+            customer_email=college.get("email") or college.get("rep_email")
+        )
+        return {"checkout_url": session.url, "session_id": session.id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def activate_college_subscription(user_id: str, stripe_subscription_id: str, period_end: int = None):
+    from datetime import datetime, timezone
+    end_date = datetime.fromtimestamp(period_end, tz=timezone.utc).isoformat() if period_end else None
+    
+    is_college_collection = await db.colleges.find_one({"user_id": user_id}, {"_id": 0})
+    target_collection = db.colleges if is_college_collection else db.clubs
+    
+    await target_collection.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "college_sub_status": "active",
+            "stripe_subscription_id": stripe_subscription_id,
+            "subscription_started_at": datetime.now(timezone.utc).isoformat(),
+            "subscription_expires_at": end_date,
+        }}
+    )
+    await db.subscriptions.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "user_id": user_id,
+            "plan_id": "college_plan",
+            "plan_name": "College / University Plan",
+            "status": "active",
+            "stripe_subscription_id": stripe_subscription_id,
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": end_date,
+            "billing_cycle": "yearly"
+        }},
+        upsert=True
+    )
+
+@api_router.put("/admin/colleges/{college_id}/subscription")
+async def admin_update_college_subscription(college_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    update = {}
+    if "college_sub_status" in data:
+        update["college_sub_status"] = data["college_sub_status"]
+    if update:
+        is_college = await db.colleges.find_one({"user_id": college_id}, {"_id": 0})
+        target_collection = db.colleges if is_college else db.clubs
+        await target_collection.update_one({"user_id": college_id}, {"$set": update})
     return {"message": "Updated"}
 
 fastapi_app.include_router(api_router)
