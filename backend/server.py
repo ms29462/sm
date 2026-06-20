@@ -3278,6 +3278,8 @@ async def get_agent_players(
     name: Optional[str] = None,
     min_age: Optional[int] = None,
     max_age: Optional[int] = None,
+    page: int = 1,
+    limit: int = 20,
     current_user: dict = Depends(get_current_user)
 ):
     """Agent searches for players with filters"""
@@ -6929,6 +6931,11 @@ async def stripe_webhook(request: Request):
                 if club:
                     user_id = club["user_id"]
                     sub_type = "club_subscription"
+                else:
+                    agent = await db.agents.find_one({"stripe_customer_id": customer_id}, {"_id": 0})
+                    if agent:
+                        user_id = agent["user_id"]
+                        sub_type = "agent_subscription"
         
         if user_id and sub_type == "club_subscription":
             status = sub.get("status")
@@ -6943,6 +6950,20 @@ async def stripe_webhook(request: Request):
                 await db.clubs.update_one(
                     {"user_id": user_id},
                     {"$set": {"club_sub_status": status if status != "canceled" else "cancelled"}}
+                )
+                await db.subscriptions.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"status": status}}
+                )
+        elif user_id and sub_type == "agent_subscription":
+            status = sub.get("status")
+            period_end = sub.get("current_period_end")
+            if status == "active":
+                await activate_agent_subscription(user_id, sub["id"], period_end)
+            elif status in ["canceled", "unpaid", "past_due"]:
+                await db.agents.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"agent_sub_status": status if status != "canceled" else "cancelled"}}
                 )
                 await db.subscriptions.update_one(
                     {"user_id": user_id},
@@ -7027,7 +7048,6 @@ async def stripe_webhook(request: Request):
                     sub = stripe.Subscription.retrieve(sub_id)
                     period_end = sub.get("current_period_end")
                     await activate_club_subscription(user_id, plan_id, sub_id, period_end)
-                    # Send welcome email
                     club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
                     if club:
                         email = club.get("rep_email") or club.get("email")
@@ -7035,6 +7055,20 @@ async def stripe_webhook(request: Request):
                             await send_org_approved(email, club.get("name", ""), "club")
                 except Exception as e:
                     print(f"Club subscription activation error: {e}")
+        
+        elif session_type == "agent_subscription":
+            sub_id = session.get("subscription")
+            if user_id and sub_id:
+                period_end = None
+                try:
+                    sub = stripe.Subscription.retrieve(sub_id)
+                    period_end = sub.get("current_period_end")
+                    await activate_agent_subscription(user_id, sub_id, period_end)
+                    agent = await db.agents.find_one({"user_id": user_id}, {"_id": 0})
+                    if agent and agent.get("email"):
+                        await send_org_approved(agent["email"], agent.get("name", ""), "agent")
+                except Exception as e:
+                    print(f"Agent subscription activation error: {e}")
         else:
             pack_id = metadata.get("pack_id")
             credits = int(metadata.get("credits", 0))
@@ -7326,6 +7360,98 @@ async def admin_update_club_subscription(club_id: str, data: dict, current_user:
         update["active_plan"] = data["active_plan"]
     if update:
         await db.clubs.update_one({"user_id": club_id}, {"$set": update})
+    return {"message": "Updated"}
+
+
+# ============ AGENT SUBSCRIPTION SYSTEM ============
+
+AGENT_PRICE_ID = os.environ.get("STRIPE_AGENT_PRICE_ID")
+
+@api_router.get("/agent/subscription-status")
+async def get_agent_subscription_status(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "agent":
+        raise HTTPException(status_code=403)
+    agent = await db.agents.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not agent:
+        raise HTTPException(status_code=404)
+    sub_status = agent.get("agent_sub_status", "pending_review")
+    return {
+        "sub_status": sub_status,
+        "has_access": sub_status == "active",
+    }
+
+@api_router.post("/stripe/create-agent-checkout")
+async def create_agent_checkout(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "agent":
+        raise HTTPException(status_code=403, detail="Agents only")
+    
+    agent = await db.agents.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    if agent.get("agent_sub_status") not in ["approved_awaiting_payment", "active", "past_due", "cancelled", "expired"]:
+        raise HTTPException(status_code=400, detail="Agent must be approved before subscribing")
+    
+    if not AGENT_PRICE_ID:
+        raise HTTPException(status_code=500, detail="Agent plan price not configured")
+    
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{"price": AGENT_PRICE_ID, "quantity": 1}],
+            mode="subscription",
+            success_url="https://www.soccermatch.app/agent/dashboard?subscription=success",
+            cancel_url="https://www.soccermatch.app/agent/subscribe?cancelled=true",
+            metadata={
+                "user_id": current_user["user_id"],
+                "type": "agent_subscription",
+                "plan_id": "agent_plan",
+            },
+            customer_email=agent.get("email")
+        )
+        return {"checkout_url": session.url, "session_id": session.id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+async def activate_agent_subscription(user_id: str, stripe_subscription_id: str, period_end: int = None):
+    from datetime import datetime, timezone
+    end_date = datetime.fromtimestamp(period_end, tz=timezone.utc).isoformat() if period_end else None
+    await db.agents.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "agent_sub_status": "active",
+            "stripe_subscription_id": stripe_subscription_id,
+            "subscription_started_at": datetime.now(timezone.utc).isoformat(),
+            "subscription_expires_at": end_date,
+            "badges": ["verified_licensed_agent"],
+        }}
+    )
+    await db.subscriptions.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "user_id": user_id,
+            "plan_id": "agent_plan",
+            "plan_name": "Agent Plan",
+            "status": "active",
+            "stripe_subscription_id": stripe_subscription_id,
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": end_date,
+            "billing_cycle": "yearly"
+        }},
+        upsert=True
+    )
+
+@api_router.put("/admin/agents/{agent_id}/subscription")
+async def admin_update_agent_subscription(agent_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    update = {}
+    if "agent_sub_status" in data:
+        update["agent_sub_status"] = data["agent_sub_status"]
+    if update:
+        await db.agents.update_one({"user_id": agent_id}, {"$set": update})
+        if data.get("agent_sub_status") == "active":
+            await db.agents.update_one({"user_id": agent_id}, {"$set": {"badges": ["verified_licensed_agent"]}})
     return {"message": "Updated"}
 
 fastapi_app.include_router(api_router)
