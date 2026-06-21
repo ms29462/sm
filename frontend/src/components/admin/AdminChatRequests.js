@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { MessageSquare, CheckCircle, XCircle, Clock, Plus, Building, Briefcase, Activity } from 'lucide-react';
+import { MessageSquare, CheckCircle, XCircle, Clock, Plus, Building, Briefcase, Activity, Trash2 } from 'lucide-react';
 
 const AdminChatRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -22,6 +22,17 @@ const AdminChatRequests = () => {
       toast.error('Failed to load chat requests');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (requestId) => {
+    if (!window.confirm('Delete this chat request permanently?')) return;
+    try {
+      await api.adminDeleteChatRequest(requestId);
+      toast.success('Chat request deleted');
+      setRequests(prev => prev.filter(r => r.id !== requestId));
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to delete chat request');
     }
   };
 
@@ -148,17 +159,28 @@ const AdminChatRequests = () => {
                   </p>
                 </div>
                 
-                {request.status === 'accepted' && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {request.status === 'accepted' && (
+                    <Button
+                      data-testid={`create-chat-${request.id}`}
+                      onClick={() => handleCreateChat(request)}
+                      disabled={creatingChat === request.id || createdChats.has(request.id)}
+                      className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      {creatingChat === request.id ? 'CREATING...' : createdChats.has(request.id) ? 'CHAT CREATED ✓' : 'CREATE CHAT ROOM'}
+                    </Button>
+                  )}
                   <Button
-                    data-testid={`create-chat-${request.id}`}
-                    onClick={() => handleCreateChat(request)}
-                    disabled={creatingChat === request.id || createdChats.has(request.id)}
-                    className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm"
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleDelete(request.id)}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    title="Delete chat request"
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {creatingChat === request.id ? 'CREATING...' : createdChats.has(request.id) ? 'CHAT CREATED ✓' : 'CREATE CHAT ROOM'}
+                    <Trash2 className="w-4 h-4" />
                   </Button>
-                )}
+                </div>
               </div>
             </div>
           ))}

@@ -275,6 +275,7 @@ export const api = {
   getSpecialistSubscriptionStatus: () => axios.get(`${API}/specialist/subscription-status`, { headers: getAuthHeaders() }),
   createSpecialistCheckout: () => axios.post(`${API}/stripe/create-specialist-checkout`, {}, { headers: getAuthHeaders() }),
   adminUpdateSpecialistSubscription: (id, data) => axios.put(`${API}/admin/specialists/${id}/subscription`, data, { headers: getAuthHeaders() }),
+  adminDeleteChatRequest: (id) => axios.delete(`${API}/admin/chat-requests/${id}`, { headers: getAuthHeaders() }),
   sendVerificationEmail: () => axios.post(`${API}/player/send-verification-email`, {}, { headers: getAuthHeaders() }),
   getMySubscription: () => axios.get(`${API}/subscription/my`, { headers: getAuthHeaders() }),
   getSubscriptionPlans: () => axios.get(`${API}/subscription/plans`, { headers: getAuthHeaders() }),

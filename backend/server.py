@@ -4036,14 +4036,25 @@ async def create_chat_request(
     if role not in ['club', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Only clubs, agents, and specialists can request chats")
     
-    # Check if there's already a pending request from this requester
+    # Check if there's already a pending or accepted request from this requester
     existing = await db.chat_requests.find_one({
         "requester_id": current_user['user_id'],
         "player_id": request_data.player_id,
-        "status": "pending"
+        "status": {"$in": ["pending", "accepted"]}
     }, {"_id": 0})
     if existing:
+        if existing["status"] == "accepted":
+            raise HTTPException(status_code=400, detail="You already have an active chat with this player")
         raise HTTPException(status_code=400, detail="A pending request already exists for this player")
+    
+    # Check if an active chat room already exists between requester and player
+    existing_room = await db.chat_rooms.find_one({
+        "club_id": current_user['user_id'],
+        "player_id": request_data.player_id,
+        "is_active": True
+    }, {"_id": 0})
+    if existing_room:
+        raise HTTPException(status_code=400, detail="You already have an active chat with this player")
     
     # Get player info
     player = await db.players.find_one({"user_id": request_data.player_id}, {"_id": 0})
@@ -7731,6 +7742,16 @@ async def admin_update_specialist_subscription(specialist_id: str, data: dict, c
         if data.get("specialist_sub_status") == "active":
             await db.specialists.update_one({"user_id": specialist_id}, {"$set": {"badges": ["verified_specialist"]}})
     return {"message": "Updated"}
+
+
+@api_router.delete("/admin/chat-requests/{request_id}")
+async def admin_delete_chat_request(request_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not an admin")
+    result = await db.chat_requests.delete_one({"id": request_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Chat request not found")
+    return {"message": "Chat request deleted"}
 
 fastapi_app.include_router(api_router)
 

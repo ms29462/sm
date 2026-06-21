@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { MessageCircle } from 'lucide-react';
 import { api } from '@/lib/api';
 
-const RequestChatDialog = ({ playerId, playerName }) => {
+const RequestChatDialog = ({ playerId, playerName, onSent }) => {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,7 +16,8 @@ const RequestChatDialog = ({ playerId, playerName }) => {
     setLoading(true);
     try {
       await api.requestChat(playerId, notes);
-      toast.success('Chat request sent to admin!');
+      toast.success('Chat request sent to the player!');
+      if (onSent) onSent();
       setOpen(false);
       setNotes('');
     } catch (error) {

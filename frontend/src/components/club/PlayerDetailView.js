@@ -27,6 +27,7 @@ const QUALITY_COLORS = {
 
 
 const PlayerDetailView = () => {
+  const [chatRequestStatus, setChatRequestStatus] = useState(null);
   const { playerId } = useParams();
   const navigate = useNavigate();
   const [player, setPlayer] = useState(null);
@@ -47,7 +48,16 @@ const PlayerDetailView = () => {
     checkPipelineStatus();
     checkTrackStatus();
     loadVerification();
+    checkChatRequestStatus();
   }, [playerId]);
+
+  const checkChatRequestStatus = async () => {
+    try {
+      const res = await api.getMyChatRequests();
+      const existing = (res.data || []).find(r => r.player_id === playerId && (r.status === "pending" || r.status === "accepted"));
+      setChatRequestStatus(existing ? existing.status : null);
+    } catch (e) { console.error("Chat request status error:", e); }
+  };
 
   const loadVerification = async () => {
     try {
@@ -266,7 +276,17 @@ const PlayerDetailView = () => {
               <Heart className="w-4 h-4 mr-2" />
               ADD TO FAVORITES
             </Button>
-            <RequestChatDialog playerId={player.user_id} playerName={player.name} />
+            {chatRequestStatus === "pending" ? (
+              <Button disabled className="bg-muted text-muted-foreground rounded-sm h-12 px-6 cursor-not-allowed">
+                Request Pending
+              </Button>
+            ) : chatRequestStatus === "accepted" ? (
+              <Button disabled className="bg-green-500/10 text-green-500 border border-green-500/20 rounded-sm h-12 px-6 cursor-not-allowed">
+                Chat Active
+              </Button>
+            ) : (
+              <RequestChatDialog playerId={player.user_id} playerName={player.name} onSent={() => setChatRequestStatus("pending")} />
+            )}
           </div>
         </div>
       </div>
