@@ -35,6 +35,13 @@ from player_matching import (
 )
 from subscription_plans import SUBSCRIPTION_PLANS, get_plan, get_plans_for_role, create_subscription, is_subscription_active, get_default_plan
 from email_service import send_player_welcome, send_org_application_received, send_org_approved, send_analyst_invitation, send_application_status_update, send_credit_purchase_confirmation
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+limiter = Limiter(key_func=get_remote_address)
+
 import stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', '')
 
@@ -67,6 +74,8 @@ db = client[os.environ['DB_NAME']]
 # Socket.IO Setup
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
 fastapi_app = FastAPI()
+fastapi_app.state.limiter = limiter
+fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
 
@@ -1160,7 +1169,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 # ============ AUTH ENDPOINTS ============
 @api_router.post("/auth/register", response_model=AuthResponse)
-async def register(user: UserRegister):
+@limiter.limit("5/minute")
+async def register(request: Request, user: UserRegister, background_tasks: BackgroundTasks):
     existing = await db.users.find_one({"email": user.email}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -1381,7 +1391,8 @@ async def register(user: UserRegister):
     return AuthResponse(token=token, role=user.role, user_id=user_id, email=user.email)
 
 @api_router.post("/auth/login", response_model=AuthResponse)
-async def login(credentials: UserLogin):
+@limiter.limit("10/minute")
+async def login(request: Request, credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
     if not user or not verify_password(credentials.password, user.get('password_hash', user.get('password', ''))):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -6928,7 +6939,8 @@ CREDIT_PACKS_STRIPE = {
 }
 
 @api_router.post("/stripe/create-checkout")
-async def create_checkout_session(data: dict, current_user: dict = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def create_checkout_session(request: Request, data: dict, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "player":
         raise HTTPException(status_code=403, detail="Players only")
     
@@ -7284,7 +7296,8 @@ async def send_verification_email_endpoint(current_user: dict = Depends(get_curr
 # ============ PLAYER PREMIUM SUBSCRIPTION ============
 
 @api_router.post("/stripe/create-premium-checkout")
-async def create_premium_checkout(current_user: dict = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def create_premium_checkout(request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "player":
         raise HTTPException(status_code=403, detail="Players only")
     
@@ -7412,7 +7425,8 @@ async def get_club_subscription_status(current_user: dict = Depends(get_current_
     }
 
 @api_router.post("/stripe/create-club-checkout")
-async def create_club_checkout(data: dict, current_user: dict = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def create_club_checkout(request: Request, data: dict, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "club":
         raise HTTPException(status_code=403, detail="Clubs only")
     
@@ -7508,7 +7522,8 @@ async def get_agent_subscription_status(current_user: dict = Depends(get_current
     }
 
 @api_router.post("/stripe/create-agent-checkout")
-async def create_agent_checkout(current_user: dict = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def create_agent_checkout(request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "agent":
         raise HTTPException(status_code=403, detail="Agents only")
     
@@ -7602,7 +7617,8 @@ async def get_college_subscription_status(current_user: dict = Depends(get_curre
     }
 
 @api_router.post("/stripe/create-college-checkout")
-async def create_college_checkout(current_user: dict = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def create_college_checkout(request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "college":
         raise HTTPException(status_code=403, detail="Colleges only")
     
@@ -7699,7 +7715,8 @@ async def get_specialist_subscription_status(current_user: dict = Depends(get_cu
     }
 
 @api_router.post("/stripe/create-specialist-checkout")
-async def create_specialist_checkout(current_user: dict = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def create_specialist_checkout(request: Request, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "specialist":
         raise HTTPException(status_code=403, detail="Specialists only")
     

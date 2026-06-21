@@ -49,6 +49,8 @@ const Login = ({ admin = false }) => {
     } catch (error) {
       if (error.response?.data?.detail === 'PENDING_REVIEW') {
         setShowPendingModal(true);
+      } else if (error.response?.status === 429) {
+        toast.error('Too many login attempts. Please wait a minute and try again.');
       } else {
         toast.error('Invalid email or password');
       }
