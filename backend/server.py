@@ -154,6 +154,7 @@ class UserRegister(BaseModel):
     team_gender: Optional[str] = None
     scholarship: Optional[str] = None
     referral_code: Optional[str] = None
+    parental_consent: Optional[bool] = False
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -216,13 +217,20 @@ class PlayerProfile(BaseModel):
     is_premium: Optional[bool] = False
     premium_status: Optional[str] = None
     credits: Optional[int] = 0
+    is_minor: Optional[bool] = False
+    parental_consent: Optional[bool] = None
+    parental_consent_form_received: Optional[bool] = False
 
 
 # Helper function to strip private info from player data
 def strip_player_private_info(player_dict: dict) -> dict:
-    """Remove private information (email) from player data for non-admin users"""
+    """Remove private information from player data for non-admin users.
+    Per child-safety policy: email, phone, full date of birth, minor status,
+    parental consent, and internal/admin notes must never be visible to
+    other roles (clubs, colleges, federations, agents, specialists, other players)."""
     sanitized = player_dict.copy()
-    sanitized.pop('email', None)
+    for field in ['email', 'phone', 'date_of_birth', 'is_minor', 'parental_consent', 'admin_notes', 'internal_notes']:
+        sanitized.pop(field, None)
     return sanitized
 
 
@@ -1170,12 +1178,33 @@ async def register(user: UserRegister):
     await db.users.insert_one(user_doc)
     
     if user.role == 'player':
+        # Minor detection based on date of birth
+        is_minor = False
+        if user.date_of_birth:
+            try:
+                from datetime import date
+                dob = datetime.strptime(user.date_of_birth, "%Y-%m-%d").date()
+                today = date.today()
+                computed_age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+                is_minor = computed_age < 18
+            except Exception:
+                is_minor = False
+        
+        if is_minor and not user.parental_consent:
+            await db.users.delete_one({"id": user_id})
+            raise HTTPException(
+                status_code=400,
+                detail="Players under 18 must confirm parental or legal guardian consent to register."
+            )
+        
         player_doc = {
             "user_id": user_id,
             "name": user.name,
             "email": user.email,
             "approved": False,
             "created_at": datetime.now(timezone.utc).isoformat(),
+            "is_minor": is_minor,
+            "parental_consent": user.parental_consent if is_minor else None,
             "date_of_birth": user.date_of_birth,
             "residence_country": user.residence_country,
             "gender": user.gender,
@@ -7752,6 +7781,33 @@ async def admin_delete_chat_request(request_id: str, current_user: dict = Depend
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Chat request not found")
     return {"message": "Chat request deleted"}
+
+
+@api_router.get("/player/minor-status")
+async def get_minor_status(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "player":
+        raise HTTPException(status_code=403)
+    player = await db.players.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404)
+    is_minor = player.get("is_minor", False)
+    form_received = player.get("parental_consent_form_received", False)
+    return {
+        "is_minor": is_minor,
+        "parental_consent_form_received": form_received,
+        "has_access": (not is_minor) or form_received,
+    }
+
+@api_router.put("/admin/players/{player_id}/parental-consent")
+async def admin_update_parental_consent(player_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    received = bool(data.get("parental_consent_form_received", False))
+    await db.players.update_one(
+        {"user_id": player_id},
+        {"$set": {"parental_consent_form_received": received}}
+    )
+    return {"message": "Updated"}
 
 fastapi_app.include_router(api_router)
 

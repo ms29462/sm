@@ -17,9 +17,11 @@ import MasterclassHome from '@/components/masterclass/MasterclassHome';
 import MasterclassDetail from '@/components/masterclass/MasterclassDetail';
 import MasterclassCategory from '@/components/masterclass/MasterclassCategory';
 import MasterclassBookmarks from '@/components/masterclass/MasterclassBookmarks';
+import MinorConsentGate from '@/components/player/MinorConsentGate';
 
 const PlayerDashboard = () => {
   return (
+    <MinorConsentGate>
     <PlayerLayout>
       <Routes>
         <Route path="dashboard" element={<PlayerHome />} />
@@ -43,6 +45,7 @@ const PlayerDashboard = () => {
         <Route path="news" element={<NewsFeed />} />
       </Routes>
     </PlayerLayout>
+    </MinorConsentGate>
   );
 };
 

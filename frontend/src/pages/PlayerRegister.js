@@ -21,6 +21,16 @@ const LEVELS = ["Amateur","Semi-Professional","Professional","NCAA Division I","
 const inputClass = "w-full bg-black/20 border border-white/15 focus:border-primary rounded-sm px-4 h-12 text-sm text-white outline-none transition-colors";
 const labelClass = "text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-2";
 
+const isMinor = (dob) => {
+  if (!dob) return false;
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) age--;
+  return age < 18;
+};
+
 const PlayerRegister = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -38,7 +48,7 @@ const PlayerRegister = () => {
 
   const [form, setForm] = useState({
     // Step 1 - Personal
-    first_name: "", last_name: "", date_of_birth: "",
+    first_name: "", last_name: "", date_of_birth: "", parental_consent: false,
     residence_country: "", gender: "",
     nationality: "", nationality_2: "",
     // Step 2 - Football
@@ -65,6 +75,9 @@ const PlayerRegister = () => {
       case 1:
         if (!form.first_name || !form.last_name || !form.date_of_birth || !form.residence_country || !form.gender || !form.nationality) {
           toast.error("Please fill in all required fields"); return false;
+        }
+        if (isMinor(form.date_of_birth) && !form.parental_consent) {
+          toast.error("Parental or legal guardian consent is required for players under 18"); return false;
         }
         return true;
       case 2:
@@ -129,6 +142,7 @@ const PlayerRegister = () => {
         email: form.email,
         password: form.password,
         role: "player",
+        parental_consent: form.parental_consent,
         // Profile data
         date_of_birth: form.date_of_birth,
         residence_country: form.residence_country,
@@ -219,6 +233,21 @@ const PlayerRegister = () => {
                 <input type="date" value={form.date_of_birth} onChange={e => set("date_of_birth", e.target.value)}
                   style={{colorScheme:"dark"}} className={inputClass} />
               </div>
+              {isMinor(form.date_of_birth) && (
+                <div className="col-span-1 sm:col-span-2 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-sm space-y-3">
+                  <p className="text-sm text-yellow-200">
+                    Players under the age of 18 must have the consent of a parent or legal guardian before creating an account and using Soccer Match.
+                  </p>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" checked={form.parental_consent}
+                      onChange={e => set("parental_consent", e.target.checked)}
+                      className="mt-1 accent-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      I confirm that I have obtained the consent of a parent or legal guardian to create this account and use Soccer Match.
+                    </span>
+                  </label>
+                </div>
+              )}
               <div>
                 <label className={labelClass}>Country of Residence *</label>
                 <select value={form.residence_country} onChange={e => set("residence_country", e.target.value)} className={inputClass + " cursor-pointer"}>

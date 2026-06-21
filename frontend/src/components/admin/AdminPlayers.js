@@ -8,6 +8,7 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 const AdminPlayers = () => {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [ageFilter, setAgeFilter] = useState('all');
 
   useEffect(() => {
     loadPlayers();
@@ -71,6 +72,12 @@ const AdminPlayers = () => {
     }
   };
 
+  const filteredPlayers = players.filter(p => {
+    if (ageFilter === 'minors') return p.is_minor === true;
+    if (ageFilter === 'adults') return !p.is_minor;
+    return true;
+  });
+
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
@@ -86,6 +93,19 @@ const AdminPlayers = () => {
         <p className="text-muted-foreground">Approve and manage player accounts</p>
       </div>
 
+      <div className="flex gap-2 mb-6">
+        {[
+          { id: 'all', label: 'All Players' },
+          { id: 'minors', label: 'Minors (Admin Only)' },
+          { id: 'adults', label: 'Adults' },
+        ].map(f => (
+          <button key={f.id} onClick={() => setAgeFilter(f.id)}
+            className={`px-4 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${ageFilter === f.id ? "bg-primary text-black border-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+            {f.label} {f.id === 'minors' ? `(${players.filter(p => p.is_minor).length})` : f.id === 'adults' ? `(${players.filter(p => !p.is_minor).length})` : `(${players.length})`}
+          </button>
+        ))}
+      </div>
+
       {players.length === 0 ? (
         <div data-testid="no-players" className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -93,7 +113,7 @@ const AdminPlayers = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {players.map((player) => (
+          {filteredPlayers.map((player) => (
             <div
               key={player.user_id}
               data-testid={`player-card-${player.user_id}`}
@@ -137,6 +157,11 @@ const AdminPlayers = () => {
                       {player.is_premium && (
                         <span className="inline-flex items-center px-2 py-1 text-[10px] uppercase tracking-wider border rounded-sm bg-primary/10 text-primary border-primary/20">
                           ⭐ PREMIUM
+                        </span>
+                      )}
+                      {player.is_minor && (
+                        <span className="inline-flex items-center px-2 py-1 text-[10px] uppercase tracking-wider border rounded-sm bg-orange-500/10 text-orange-400 border-orange-500/20">
+                          MINOR — ADMIN ONLY
                         </span>
                       )}
                     </div>
@@ -188,6 +213,27 @@ const AdminPlayers = () => {
                   >
                     {player.verified ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                   </Button>
+                  {player.is_minor && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          await api.adminUpdateParentalConsent(player.user_id, { parental_consent_form_received: !player.parental_consent_form_received });
+                          setPlayers(prev => prev.map(p => p.user_id === player.user_id ? { ...p, parental_consent_form_received: !p.parental_consent_form_received } : p));
+                          toast.success(player.parental_consent_form_received ? 'Consent form mark removed' : 'Consent form marked as received');
+                        } catch (error) {
+                          toast.error('Failed to update consent status');
+                        }
+                      }}
+                      className={player.parental_consent_form_received
+                        ? "border-green-500 text-green-400 hover:bg-green-500/10 text-xs"
+                        : "border-orange-500 text-orange-400 hover:bg-orange-500/10 text-xs"
+                      }
+                    >
+                      {player.parental_consent_form_received ? "Consent Form ✓ Received" : "Mark Consent Form Received"}
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"
