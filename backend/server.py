@@ -368,9 +368,9 @@ async def notify_federations_of_player(player: dict):
                 is_diaspora = nationality_1 and fed_country.lower() not in nationality_1.lower()
                 
                 if is_diaspora:
-                    message = f"🌍 Diaspora alert: {player_name} ({position}) holds {fed_country} nationality and plays at {player.get('playing_level', 'unknown level')}"
+                    message = f"🌍 Diaspora alert: A {position} player holds {fed_country} nationality and plays at {player.get('playing_level', 'unknown level')}"
                 else:
-                    message = f"⚡ Dual-national detected: {player_name} ({position}) holds {', '.join(nationalities)} nationalities"
+                    message = f"⚡ Dual-national detected: A {position} player holds {', '.join(nationalities)} nationalities"
                 
                 await create_notification(
                     fed_user_id,
@@ -4086,8 +4086,8 @@ async def create_chat_request(
         "id": str(uuid.uuid4()),
         "user_id": request_data.player_id,
         "type": "chat_request",
-        "title": f"New Chat Request from {role_label}",
-        "message": f"{requester_name} ({role_label}) wants to chat with you",
+        "title": f"New Chat Request",
+        "message": f"A {role_label} wants to chat with you",
         "reference_id": chat_request["id"],
         "read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -4099,7 +4099,7 @@ async def create_chat_request(
         "user_id": "admin-001",
         "type": "chat_request",
         "title": f"New Chat Request ({role_label})",
-        "message": f"{requester_name} ({role_label}) requests to chat with {player.get('name', 'Unknown Player')}",
+        "message": f"A {role_label} requests to chat with a player",
         "reference_id": chat_request["id"],
         "read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -4169,7 +4169,7 @@ async def respond_to_chat_request(
             "user_id": "admin-001",
             "type": "chat_request_accepted",
             "title": "Chat Request Accepted",
-            "message": f"{player_name} accepted chat request from {requester_name} ({requester_type}). Please create the chat room.",
+            "message": f"A player accepted a chat request from a {requester_type}. Please create the chat room.",
             "reference_id": request_id,
             "player_id": chat_request['player_id'],
             "requester_id": requester_id,
@@ -4187,7 +4187,7 @@ async def respond_to_chat_request(
             "user_id": "admin-001",
             "type": "chat_request_rejected",
             "title": "Chat Request Rejected",
-            "message": f"{player_name} rejected chat request from {requester_name} ({requester_type})",
+            "message": f"A player rejected a chat request from a {requester_type}",
             "reference_id": request_id,
             "read": False,
             "created_at": datetime.now(timezone.utc).isoformat()
@@ -4199,8 +4199,8 @@ async def respond_to_chat_request(
                 "id": str(uuid.uuid4()),
                 "user_id": requester_id,
                 "type": "chat_request_rejected",
-                "title": "Chat Request Rejected",
-                "message": f"{player_name} has declined your chat request",
+                "title": "Chat Request Update",
+                "message": "The player has declined your chat request",
                 "reference_id": request_id,
                 "read": False,
                 "created_at": datetime.now(timezone.utc).isoformat()
