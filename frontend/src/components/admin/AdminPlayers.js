@@ -44,6 +44,21 @@ const AdminPlayers = () => {
     }
   };
 
+  const handleTogglePremium = async (userId, currentPremium) => {
+    try {
+      if (currentPremium) {
+        await api.cancelSubscription({ user_id: userId });
+        toast.success('Premium removed');
+      } else {
+        await api.assignSubscription({ user_id: userId, plan_id: 'player_premium', billing: 'yearly' });
+        toast.success('Premium activated');
+      }
+      loadPlayers();
+    } catch (error) {
+      toast.error('Failed to update premium status');
+    }
+  };
+
   const handleDelete = async (userId) => {
     if (!window.confirm('Are you sure you want to delete this player?')) return;
 
@@ -119,6 +134,11 @@ const AdminPlayers = () => {
                           VERIFIED
                         </span>
                       )}
+                      {player.is_premium && (
+                        <span className="inline-flex items-center px-2 py-1 text-[10px] uppercase tracking-wider border rounded-sm bg-primary/10 text-primary border-primary/20">
+                          ⭐ PREMIUM
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">{player.email}</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -167,6 +187,17 @@ const AdminPlayers = () => {
                     title={player.verified ? 'Unverify' : 'Verify'}
                   >
                     {player.verified ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleTogglePremium(player.user_id, player.is_premium)}
+                    className={player.is_premium
+                      ? "border-red-500 text-red-400 hover:bg-red-500/10 text-xs"
+                      : "border-primary text-primary hover:bg-primary/10 text-xs"
+                    }
+                  >
+                    {player.is_premium ? "Remove Premium" : "Grant Premium"}
                   </Button>
                   <Button
                     data-testid={`delete-btn-${player.user_id}`}

@@ -213,6 +213,9 @@ class PlayerProfile(BaseModel):
     languages: Optional[list] = None
     profile_status: Optional[str] = None
     completion_score: Optional[int] = None
+    is_premium: Optional[bool] = False
+    premium_status: Optional[str] = None
+    credits: Optional[int] = 0
 
 
 # Helper function to strip private info from player data
