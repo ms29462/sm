@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play, Target, Kanban, CalendarCheck } from 'lucide-react';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import RequestChatDialog from './RequestChatDialog';
+import ReportUserDialog from '@/components/shared/ReportUserDialog';
 
 const BADGE_LABELS = {
   verified_profile: "Verified Profile", match_ready: "Match Ready", scout_approved: "Scout Approved",
@@ -287,6 +288,7 @@ const PlayerDetailView = () => {
             ) : (
               <RequestChatDialog playerId={player.user_id} playerName={player.name} onSent={() => setChatRequestStatus("pending")} />
             )}
+            <ReportUserDialog reportedUserId={player.user_id} />
           </div>
         </div>
       </div>

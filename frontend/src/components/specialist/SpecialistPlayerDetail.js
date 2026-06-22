@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
+import ReportUserDialog from '@/components/shared/ReportUserDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import RequestChatDialog from '@/components/shared/RequestChatDialog';
@@ -108,6 +109,7 @@ const SpecialistPlayerDetail = () => {
                   >
                     <Heart className={`w-6 h-6 ${isFavorite ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
                   </button>
+                  <ReportUserDialog reportedUserId={player.user_id} />
                 </div>
                 <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
                   {player.nationality && (

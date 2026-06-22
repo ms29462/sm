@@ -22,6 +22,7 @@ import AdminMasterclass from '@/components/admin/AdminMasterclass';
 import AdminClubApplications from '@/components/admin/AdminClubApplications';
 import AdminAnalystManagement from '@/components/admin/AdminAnalystManagement';
 import AdminSubscriptions from '@/components/admin/AdminSubscriptions';
+import AdminReports from '@/components/admin/AdminReports';
 
 const AdminDashboard = () => {
   return (
@@ -33,6 +34,7 @@ const AdminDashboard = () => {
         <Route path="club-applications" element={<AdminClubApplications />} />
         <Route path="analyst-management" element={<AdminAnalystManagement />} />
         <Route path="subscriptions" element={<AdminSubscriptions />} />
+        <Route path="reports" element={<AdminReports />} />
         <Route path="opportunities" element={<AdminOpportunities />} />
         <Route path="credits" element={<AdminCredits />} />
         <Route path="federations" element={<AdminFederations />} />

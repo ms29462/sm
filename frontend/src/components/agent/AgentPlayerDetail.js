@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
+import ReportUserDialog from '@/components/shared/ReportUserDialog';
 import RequestChatDialog from '@/components/club/RequestChatDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -109,6 +110,7 @@ const AgentPlayerDetail = () => {
                   >
                     <Heart className={`w-6 h-6 ${isFavorite ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
                   </button>
+                  <ReportUserDialog reportedUserId={player.user_id} />
                 </div>
                 <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
                   {player.nationality && (

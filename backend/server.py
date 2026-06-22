@@ -1399,6 +1399,12 @@ async def login(request: Request, credentials: UserLogin):
     
     user_id = user.get('user_id', user.get('id'))
     
+    account_status = user.get("account_status")
+    if account_status == "banned":
+        raise HTTPException(status_code=403, detail="This account has been permanently banned.")
+    if account_status == "suspended":
+        raise HTTPException(status_code=403, detail="This account has been suspended. Please contact contact@soccermatch.ca for assistance.")
+    
     # Check if club or college is pending review
     if user['role'] in ['club', 'college', 'agent', 'federation', 'specialist']:
         club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
@@ -7825,6 +7831,103 @@ async def admin_update_parental_consent(player_id: str, data: dict, current_user
         {"$set": {"parental_consent_form_received": received}}
     )
     return {"message": "Updated"}
+
+
+# ============ USER SAFETY REPORTING ============
+
+REPORT_CATEGORIES = ["suspicious_behavior", "harassment", "inappropriate_communication", "other"]
+
+@api_router.post("/reports")
+async def create_report(data: dict, current_user: dict = Depends(get_current_user)):
+    reported_user_id = data.get("reported_user_id")
+    category = data.get("category")
+    description = data.get("description", "")
+
+    if not reported_user_id or not category:
+        raise HTTPException(status_code=400, detail="reported_user_id and category are required")
+    if category not in REPORT_CATEGORIES:
+        raise HTTPException(status_code=400, detail="Invalid category")
+    if reported_user_id == current_user["user_id"]:
+        raise HTTPException(status_code=400, detail="You cannot report yourself")
+
+    reported_user = await db.users.find_one({"id": reported_user_id}, {"_id": 0})
+    if not reported_user:
+        raise HTTPException(status_code=404, detail="Reported user not found")
+
+    report_doc = {
+        "id": str(uuid.uuid4()),
+        "reporter_id": current_user["user_id"],
+        "reporter_role": current_user["role"],
+        "reported_user_id": reported_user_id,
+        "reported_role": reported_user.get("role"),
+        "category": category,
+        "description": description,
+        "status": "open",
+        "admin_notes": "",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.reports.insert_one(report_doc)
+
+    try:
+        await create_notification(
+            "admin-001",
+            "user_report",
+            f"New report filed: {category.replace('_', ' ')}",
+            {"report_id": report_doc["id"]}
+        )
+    except Exception:
+        pass
+
+    return {"message": "Report submitted. Our team will review it shortly."}
+
+@api_router.get("/admin/reports")
+async def get_all_reports(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    reports = await db.reports.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+
+    # Enrich with display names for admin context only
+    for r in reports:
+        reporter = await db.users.find_one({"id": r["reporter_id"]}, {"_id": 0, "email": 1})
+        reported = await db.users.find_one({"id": r["reported_user_id"]}, {"_id": 0, "email": 1})
+        r["reporter_email"] = reporter.get("email") if reporter else None
+        r["reported_email"] = reported.get("email") if reported else None
+
+        for coll in [db.players, db.clubs, db.agents, db.specialists]:
+            doc = await coll.find_one({"user_id": r["reported_user_id"]}, {"_id": 0, "name": 1})
+            if doc:
+                r["reported_name"] = doc.get("name")
+                break
+        for coll in [db.players, db.clubs, db.agents, db.specialists]:
+            doc = await coll.find_one({"user_id": r["reporter_id"]}, {"_id": 0, "name": 1})
+            if doc:
+                r["reporter_name"] = doc.get("name")
+                break
+
+    return reports
+
+@api_router.put("/admin/reports/{report_id}")
+async def update_report(report_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    update = {}
+    if "status" in data:
+        update["status"] = data["status"]
+    if "admin_notes" in data:
+        update["admin_notes"] = data["admin_notes"]
+    if update:
+        await db.reports.update_one({"id": report_id}, {"$set": update})
+    return {"message": "Updated"}
+
+@api_router.put("/admin/users/{user_id}/account-status")
+async def update_account_status(user_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    status_value = data.get("status")
+    if status_value not in ["active", "suspended", "banned"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    await db.users.update_one({"id": user_id}, {"$set": {"account_status": status_value}})
+    return {"message": f"Account status set to {status_value}"}
 
 fastapi_app.include_router(api_router)
 

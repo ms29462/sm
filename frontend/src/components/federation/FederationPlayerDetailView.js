@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
+import ReportUserDialog from '@/components/shared/ReportUserDialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -149,6 +150,7 @@ const FederationPlayerDetailView = () => {
                     VERIFIED
                   </span>
                 )}
+                <ReportUserDialog reportedUserId={player.user_id} />
               </div>
               <div className="flex flex-wrap gap-3 mt-4">
                 {player.position && (
