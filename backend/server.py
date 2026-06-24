@@ -2369,12 +2369,29 @@ async def update_opportunity(opportunity_id: str, update: dict, current_user: di
     opp = await db.opportunities.find_one({"id": opportunity_id, "club_id": current_user["user_id"]})
     if not opp:
         raise HTTPException(status_code=404, detail="Opportunity not found")
-    update.pop("id", None)
-    update.pop("club_id", None)
-    update.pop("created_at", None)
-    update["updated_at"] = datetime.now(timezone.utc).isoformat()
-    update["updated_by"] = current_user["user_id"]
-    await db.opportunities.update_one({"id": opportunity_id}, {"$set": update})
+
+    # Allow-list: organizations may only edit their own descriptive fields.
+    # Moderation fields (status, admin_status, credit_cost, admin_notes,
+    # public_feedback) are controlled exclusively by admin endpoints.
+    EDITABLE_FIELDS = {
+        "position", "positions", "country", "league_level", "salary_range",
+        "contract_duration", "description", "age_min", "age_max", "deadline",
+        "max_applicants", "requirements", "visibility",
+    }
+    safe_update = {k: v for k, v in update.items() if k in EDITABLE_FIELDS}
+    safe_update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    safe_update["updated_by"] = current_user["user_id"]
+
+    # Substantive fields change what players applied for or the approved
+    # credit cost basis - editing these on a published opportunity sends it
+    # back to review. Cosmetic fields (description, salary_range, etc.) can
+    # be edited freely without losing published status.
+    SUBSTANTIVE_FIELDS = {"position", "positions", "league_level", "requirements", "max_applicants", "deadline"}
+    if opp.get("status") == "published" and SUBSTANTIVE_FIELDS.intersection(safe_update.keys()):
+        safe_update["status"] = "pending_review"
+        safe_update["admin_status"] = "pending_review"
+
+    await db.opportunities.update_one({"id": opportunity_id}, {"$set": safe_update})
     # Log change for admin monitoring
     await db.opportunity_changes.insert_one({
         "id": str(__import__("uuid").uuid4()),
@@ -6330,11 +6347,16 @@ async def get_agent_representation(current_user: dict = Depends(get_current_user
 async def update_agent_representation(data: dict, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "player":
         raise HTTPException(status_code=403, detail="Player only")
-    data["user_id"] = current_user["user_id"]
-    data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    AGENT_REP_EDITABLE_FIELDS = {
+        "representation_status", "agent_id", "agent_name", "agency_name",
+        "mandate_status", "mandate_start_date", "mandate_end_date",
+    }
+    safe_data = {k: v for k, v in data.items() if k in AGENT_REP_EDITABLE_FIELDS}
+    safe_data["user_id"] = current_user["user_id"]
+    safe_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     await db.agent_representation.update_one(
         {"user_id": current_user["user_id"]},
-        {"$set": data},
+        {"$set": safe_data},
         upsert=True
     )
     # Also update player profile with representation_status
