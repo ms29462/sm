@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import DeleteAccountSection from "./DeleteAccountSection";
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -1108,6 +1109,8 @@ const PlayerProfile = () => {
           )}
         </div>
       </div>
+
+      <DeleteAccountSection />
     </div>
   );
 };

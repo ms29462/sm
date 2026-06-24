@@ -2905,14 +2905,25 @@ async def unverify_federation(user_id: str, current_user: dict = Depends(get_cur
 async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
-    
+
     await db.users.delete_one({"id": user_id})
     await db.players.delete_one({"user_id": user_id})
     await db.clubs.delete_one({"user_id": user_id})
     await db.federations.delete_one({"user_id": user_id})
     await db.agents.delete_one({"user_id": user_id})
     await db.specialists.delete_one({"user_id": user_id})
-    return {"message": "User deleted"}
+
+    # Cascade cleanup of associated data across the platform
+    await db.applications.delete_many({"$or": [{"player_id": user_id}, {"club_id": user_id}]})
+    await db.credit_transactions.delete_many({"user_id": user_id})
+    await db.favorites.delete_many({"$or": [{"player_id": user_id}, {"org_id": user_id}]})
+    await db.notifications.delete_many({"user_id": user_id})
+    await db.subscriptions.delete_many({"user_id": user_id})
+    await db.reports.delete_many({"$or": [{"reporter_id": user_id}, {"reported_user_id": user_id}]})
+    await db.chat_requests.delete_many({"$or": [{"player_id": user_id}, {"requester_id": user_id}]})
+    await db.account_deletion_requests.delete_many({"user_id": user_id})
+
+    return {"message": "User and all associated data deleted"}
 
 @api_router.get("/admin/opportunities")
 async def get_all_opportunities_admin(current_user: dict = Depends(get_current_user)):
@@ -7928,6 +7939,107 @@ async def update_account_status(user_id: str, data: dict, current_user: dict = D
         raise HTTPException(status_code=400, detail="Invalid status")
     await db.users.update_one({"id": user_id}, {"$set": {"account_status": status_value}})
     return {"message": f"Account status set to {status_value}"}
+
+
+# ============ SELF-SERVICE ACCOUNT DELETION ============
+
+@api_router.post("/account/request-deletion")
+async def request_account_deletion(data: dict, current_user: dict = Depends(get_current_user)):
+    existing = await db.account_deletion_requests.find_one({
+        "user_id": current_user["user_id"],
+        "status": "pending"
+    }, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="A deletion request is already pending for this account")
+
+    request_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": current_user["user_id"],
+        "role": current_user["role"],
+        "reason": data.get("reason", ""),
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.account_deletion_requests.insert_one(request_doc)
+
+    try:
+        await create_notification(
+            "admin-001",
+            "account_deletion_request",
+            f"A {current_user['role']} has requested account deletion",
+            {"request_id": request_doc["id"]}
+        )
+    except Exception:
+        pass
+
+    return {"message": "Your deletion request has been submitted and will be processed by our team."}
+
+@api_router.get("/account/deletion-status")
+async def get_deletion_status(current_user: dict = Depends(get_current_user)):
+    existing = await db.account_deletion_requests.find_one({
+        "user_id": current_user["user_id"],
+        "status": "pending"
+    }, {"_id": 0})
+    return {"has_pending_request": bool(existing), "request": existing}
+
+@api_router.delete("/account/deletion-request")
+async def cancel_deletion_request(current_user: dict = Depends(get_current_user)):
+    await db.account_deletion_requests.delete_many({
+        "user_id": current_user["user_id"],
+        "status": "pending"
+    })
+    return {"message": "Deletion request cancelled"}
+
+@api_router.get("/admin/account-deletion-requests")
+async def get_all_deletion_requests(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    requests = await db.account_deletion_requests.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    for r in requests:
+        user = await db.users.find_one({"id": r["user_id"]}, {"_id": 0, "email": 1})
+        r["email"] = user.get("email") if user else None
+        for coll in [db.players, db.clubs, db.agents, db.specialists, db.federations]:
+            doc = await coll.find_one({"user_id": r["user_id"]}, {"_id": 0, "name": 1})
+            if doc:
+                r["name"] = doc.get("name")
+                break
+    return requests
+
+@api_router.post("/admin/account-deletion-requests/{request_id}/approve")
+async def approve_deletion_request(request_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    req = await db.account_deletion_requests.find_one({"id": request_id}, {"_id": 0})
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    user_id = req["user_id"]
+    await db.users.delete_one({"id": user_id})
+    await db.players.delete_one({"user_id": user_id})
+    await db.clubs.delete_one({"user_id": user_id})
+    await db.federations.delete_one({"user_id": user_id})
+    await db.agents.delete_one({"user_id": user_id})
+    await db.specialists.delete_one({"user_id": user_id})
+    await db.applications.delete_many({"$or": [{"player_id": user_id}, {"club_id": user_id}]})
+    await db.credit_transactions.delete_many({"user_id": user_id})
+    await db.favorites.delete_many({"$or": [{"player_id": user_id}, {"org_id": user_id}]})
+    await db.notifications.delete_many({"user_id": user_id})
+    await db.subscriptions.delete_many({"user_id": user_id})
+    await db.reports.delete_many({"$or": [{"reporter_id": user_id}, {"reported_user_id": user_id}]})
+    await db.chat_requests.delete_many({"$or": [{"player_id": user_id}, {"requester_id": user_id}]})
+    await db.account_deletion_requests.delete_many({"user_id": user_id})
+
+    return {"message": "Account deleted"}
+
+@api_router.post("/admin/account-deletion-requests/{request_id}/dismiss")
+async def dismiss_deletion_request(request_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    await db.account_deletion_requests.update_one(
+        {"id": request_id},
+        {"$set": {"status": "dismissed"}}
+    )
+    return {"message": "Request dismissed"}
 
 fastapi_app.include_router(api_router)
 
