@@ -205,6 +205,15 @@ const AdminFederations = () => {
                   </Button>
                 </div>
               </div>
+              <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-sm">
+                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">Platform Access</p>
+                <p className="text-xs text-muted-foreground">
+                  Status: <span className="font-bold text-white">{federation.approved ? "Active" : "Pending Review"}</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Federations are invoiced manually and gain full access once approved above.
+                </p>
+              </div>
               {federation.description && (
                 <p className="mt-4 text-sm text-muted-foreground border-t border-border pt-4">
                   {federation.description}

@@ -16,6 +16,7 @@ const Login = ({ admin = false }) => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
+  const [pendingRole, setPendingRole] = useState("club");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +48,9 @@ const Login = ({ admin = false }) => {
         navigate("/college/dashboard");
       }
     } catch (error) {
-      if (error.response?.data?.detail === 'PENDING_REVIEW') {
+      if (error.response?.data?.detail?.startsWith('PENDING_REVIEW')) {
+        const roleFromDetail = error.response.data.detail.split(':')[1] || 'club';
+        setPendingRole(roleFromDetail);
         setShowPendingModal(true);
       } else if (error.response?.status === 429) {
         toast.error('Too many login attempts. Please wait a minute and try again.');
@@ -148,7 +151,7 @@ const Login = ({ admin = false }) => {
               <p className="text-xs font-bold text-yellow-400 uppercase tracking-wide">Pending Review</p>
             </div>
             <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-              Your club application is currently being reviewed by the Soccer Match team.
+              Your {pendingRole === 'federation' ? 'federation' : pendingRole === 'college' ? 'college' : pendingRole === 'agent' ? 'agent' : pendingRole === 'specialist' ? 'specialist' : 'club'} application is currently being reviewed by the Soccer Match team.
             </p>
             <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
               A member of our team will contact you within <strong className="text-white">48 hours</strong> to verify your club and finalize your account activation.

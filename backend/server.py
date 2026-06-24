@@ -1414,7 +1414,7 @@ async def login(request: Request, credentials: UserLogin):
         specialist = await db.specialists.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college and not agent and not federation else None
         org = club or college or agent or federation or specialist
         if org and org.get('status') == 'pending' and not org.get('approved', False):
-            raise HTTPException(status_code=403, detail="PENDING_REVIEW")
+            raise HTTPException(status_code=403, detail=f"PENDING_REVIEW:{user['role']}")
     
     token = create_token(user_id, user['email'], user['role'])
     return AuthResponse(token=token, role=user['role'], user_id=user_id, email=user['email'])
@@ -8040,6 +8040,19 @@ async def dismiss_deletion_request(request_id: str, current_user: dict = Depends
         {"$set": {"status": "dismissed"}}
     )
     return {"message": "Request dismissed"}
+
+
+# ============ FEDERATION ACCESS (manually approved, no Stripe) ============
+
+@api_router.get("/federation/access-status")
+async def get_federation_access_status(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "federation":
+        raise HTTPException(status_code=403)
+    fed = await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not fed:
+        raise HTTPException(status_code=404)
+    has_access = bool(fed.get("approved", False))
+    return {"has_access": has_access}
 
 fastapi_app.include_router(api_router)
 

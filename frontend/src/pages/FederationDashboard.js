@@ -16,6 +16,7 @@ import ClubApplications from '@/components/club/ClubApplications';
 import RecruitmentPipeline from '@/components/club/RecruitmentPipeline';
 import UnifiedChats from '@/components/chat/UnifiedChats';
 import ChatRoom from '@/components/chat/ChatRoom';
+import FederationAccessGate from '@/components/federation/FederationAccessGate';
 
 
 const FederationDashboard = () => {
@@ -24,21 +25,21 @@ const FederationDashboard = () => {
       <Routes>
         <Route path="dashboard" element={<FederationHome />} />
         <Route path="profile" element={<FederationProfile />} />
-        <Route path="players" element={<ClubPlayers />} />
-        <Route path="player/:playerId" element={<PlayerDetailView />} />
-        <Route path="recommended" element={<FederationRecommended />} />
-        <Route path="scouting" element={<ScoutingHub />} />
-        <Route path="scouting/:playerId" element={<TrackingOverview />} />
-        <Route path="scouting-old" element={<FederationScouting />} />
-        <Route path="teams" element={<FederationTeams />} />
+        <Route path="players" element={<FederationAccessGate><ClubPlayers /></FederationAccessGate>} />
+        <Route path="player/:playerId" element={<FederationAccessGate><PlayerDetailView /></FederationAccessGate>} />
+        <Route path="recommended" element={<FederationAccessGate><FederationRecommended /></FederationAccessGate>} />
+        <Route path="scouting" element={<FederationAccessGate><ScoutingHub /></FederationAccessGate>} />
+        <Route path="scouting/:playerId" element={<FederationAccessGate><TrackingOverview /></FederationAccessGate>} />
+        <Route path="scouting-old" element={<FederationAccessGate><FederationScouting /></FederationAccessGate>} />
+        <Route path="teams" element={<FederationAccessGate><FederationTeams /></FederationAccessGate>} />
         <Route path="*" element={<FederationHome />} />
         <Route path="news" element={<NewsFeed />} />
-        <Route path="favorites" element={<ClubFavorites />} />
-        <Route path="opportunities" element={<ClubOpportunities />} />
-        <Route path="applications" element={<ClubApplications />} />
-        <Route path="pipeline" element={<RecruitmentPipeline />} />
-        <Route path="chats" element={<UnifiedChats />} />
-        <Route path="chat/:roomId" element={<ChatRoom />} />
+        <Route path="favorites" element={<FederationAccessGate><ClubFavorites /></FederationAccessGate>} />
+        <Route path="opportunities" element={<FederationAccessGate><ClubOpportunities /></FederationAccessGate>} />
+        <Route path="applications" element={<FederationAccessGate><ClubApplications /></FederationAccessGate>} />
+        <Route path="pipeline" element={<FederationAccessGate><RecruitmentPipeline /></FederationAccessGate>} />
+        <Route path="chats" element={<FederationAccessGate><UnifiedChats /></FederationAccessGate>} />
+        <Route path="chat/:roomId" element={<FederationAccessGate><ChatRoom /></FederationAccessGate>} />
       </Routes>
     </FederationLayout>
   );
