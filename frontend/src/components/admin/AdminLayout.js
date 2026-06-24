@@ -3,7 +3,66 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Shield, Users, Building, Flag, Briefcase, LogOut, MessageCircle, Video, MessageSquare, Database, GraduationCap, Activity, ShieldCheck, Newspaper, Copy } from 'lucide-react';
+import {
+  Shield, Users, Building, Flag, Briefcase, LogOut, MessageCircle, Video,
+  MessageSquare, Database, GraduationCap, Activity, ShieldCheck, Newspaper,
+  Copy, UserCog, Wallet, ClipboardList, CreditCard, Trash2, AlertTriangle,
+} from 'lucide-react';
+
+const NAV_SECTIONS = [
+  {
+    label: 'Overview',
+    items: [
+      { to: '/admin/dashboard', label: 'Dashboard', icon: Shield, testId: 'nav-dashboard-btn' },
+    ],
+  },
+  {
+    label: 'People',
+    items: [
+      { to: '/admin/players', label: 'Players', icon: Users, testId: 'nav-players-btn' },
+      { to: '/admin/club-applications', label: 'Clubs', icon: Building, testId: 'nav-clubs-btn' },
+      { to: '/admin/colleges', label: 'Colleges', icon: GraduationCap },
+      { to: '/admin/federations', label: 'Federations', icon: Flag, testId: 'nav-federations-btn' },
+      { to: '/admin/agents', label: 'Agents', icon: Briefcase, testId: 'nav-agents-btn' },
+      { to: '/admin/specialists', label: 'Specialists', icon: Activity, testId: 'nav-specialists-btn' },
+      { to: '/admin/analyst-management', label: 'Analyst Management', icon: UserCog },
+      { to: '/admin/analysts', label: 'Analysts', icon: Activity },
+    ],
+  },
+  {
+    label: 'Recruitment',
+    items: [
+      { to: '/admin/opportunities', label: 'Opportunities', icon: Briefcase, testId: 'nav-opportunities-btn' },
+      { to: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
+      { to: '/admin/credits', label: 'Credits', icon: Wallet },
+    ],
+  },
+  {
+    label: 'Communication',
+    items: [
+      { to: '/admin/chat-requests', label: 'Chat Requests', icon: MessageSquare, testId: 'nav-chat-requests-btn' },
+      { to: '/admin/chats', label: 'Chat Rooms', icon: MessageCircle, testId: 'nav-chats-btn' },
+      { to: '/admin/videos', label: 'Video Sessions', icon: Video, testId: 'nav-videos-btn' },
+    ],
+  },
+  {
+    label: 'Trust & Safety',
+    items: [
+      { to: '/admin/reports', label: 'Reports', icon: AlertTriangle },
+      { to: '/admin/deletion-requests', label: 'Deletion Requests', icon: Trash2 },
+      { to: '/admin/verification', label: 'Verification', icon: ShieldCheck },
+      { to: '/admin/duplicates', label: 'Duplicates', icon: Copy },
+    ],
+  },
+  {
+    label: 'Content',
+    items: [
+      { to: '/admin/news', label: 'News Feed', icon: Newspaper },
+      { to: '/admin/benchmark', label: 'Benchmark Data', icon: Database, testId: 'nav-benchmark-btn' },
+      { to: '/admin/masterclass', label: 'Masterclass', icon: ClipboardList, testId: 'nav-masterclass-btn' },
+    ],
+  },
+];
 
 const AdminLayout = ({ children }) => {
   const { logout } = useAuth();
@@ -23,12 +82,13 @@ const AdminLayout = ({ children }) => {
       <MobileHeader title="ADMIN PANEL" />
 
       {/* Desktop Sidebar */}
-      <aside className="w-64 border-r border-border bg-background fixed h-full hidden md:block">
-        <div className="p-6 border-b border-border">
+      <aside className="w-64 border-r border-border bg-background fixed h-full hidden md:flex md:flex-col">
+        <div className="p-6 border-b border-border flex-shrink-0">
           <div className="flex items-center space-x-3">
-            
             <div>
-              <h1 className="text-xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-7 w-auto" /></h1>
+              <h1 className="text-xl font-heading font-bold tracking-tight">
+                <img src="/logo.png" alt="Soccer Match" className="h-7 w-auto" />
+              </h1>
               <p className="text-xs text-muted-foreground uppercase flex items-center">
                 <Shield className="w-3 h-3 mr-1" />
                 Admin Panel
@@ -37,197 +97,34 @@ const AdminLayout = ({ children }) => {
           </div>
         </div>
 
-        <nav className="p-4 space-y-2">
-          <Link to="/admin/dashboard">
-            <Button
-              data-testid="nav-dashboard-btn"
-              variant={isActive('/admin/dashboard') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Shield className="w-4 h-4 mr-3" />
-              Dashboard
-            </Button>
-          </Link>
-          <Link to="/admin/players">
-            <Button
-              data-testid="nav-players-btn"
-              variant={isActive('/admin/players') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Users className="w-4 h-4 mr-3" />
-              Players
-            </Button>
-          </Link>
-          <Link to="/admin/club-applications">
-            <Button
-              data-testid="nav-clubs-btn"
-              variant={isActive('/admin/club-applications') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Building className="w-4 h-4 mr-3" />
-              Clubs
-            </Button>
-          </Link>
-          <Link to="/admin/federations">
-            <Button
-              data-testid="nav-federations-btn"
-              variant={isActive('/admin/federations') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Flag className="w-4 h-4 mr-3" />
-              Federations
-            </Button>
-          </Link>
-          <Link to="/admin/credits">
-            <Button variant={isActive('/admin/credits') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              Credits
-            </Button>
-          </Link>
-          <Link to="/admin/opportunities">
-            <Button variant={isActive('/admin/opportunities') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              Opportunities
-            </Button>
-          </Link>
-          <Link to="/admin/deletion-requests">
-            <Button variant={isActive('/admin/deletion-requests') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              Deletion Requests
-            </Button>
-          </Link>
-          <Link to="/admin/reports">
-            <Button variant={isActive('/admin/reports') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              Reports
-            </Button>
-          </Link>
-          <Link to="/admin/subscriptions">
-            <Button variant={isActive('/admin/subscriptions') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              Subscriptions
-            </Button>
-          </Link>
-          <Link to="/admin/analyst-management">
-            <Button variant={isActive('/admin/analyst-management') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              Analyst Management
-            </Button>
-          </Link>
-          <Link to="/admin/analysts">
-            <Button variant={isActive('/admin/analysts') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              <Activity className="w-4 h-4 mr-3" />
-              Analysts
-            </Button>
-          </Link>
-          <Link to="/admin/agents">
-            <Button
-              data-testid="nav-agents-btn"
-              variant={isActive('/admin/agents') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Briefcase className="w-4 h-4 mr-3" />
-              Agents
-            </Button>
-          </Link>
-          <Link to="/admin/specialists">
-            <Button
-              data-testid="nav-specialists-btn"
-              variant={isActive('/admin/specialists') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Activity className="w-4 h-4 mr-3" />
-              Specialists
-            </Button>
-          </Link>
-          <Link to="/admin/credits">
-            <Button variant={isActive('/admin/credits') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              Credits
-            </Button>
-          </Link>
-          <Link to="/admin/opportunities">
-            <Button
-              data-testid="nav-opportunities-btn"
-              variant={isActive('/admin/opportunities') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Briefcase className="w-4 h-4 mr-3" />
-              Opportunities
-            </Button>
-          </Link>
-          <Link to="/admin/chat-requests">
-            <Button
-              data-testid="nav-chat-requests-btn"
-              variant={isActive('/admin/chat-requests') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <MessageSquare className="w-4 h-4 mr-3" />
-              Chat Requests
-            </Button>
-          </Link>
-          <Link to="/admin/chats">
-            <Button
-              data-testid="nav-chats-btn"
-              variant={isActive('/admin/chats') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <MessageCircle className="w-4 h-4 mr-3" />
-              Chat Rooms
-            </Button>
-          </Link>
-          <Link to="/admin/videos">
-            <Button
-              data-testid="nav-videos-btn"
-              variant={isActive('/admin/videos') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Video className="w-4 h-4 mr-3" />
-              Video Sessions
-            </Button>
-          </Link>
-          <Link to="/admin/colleges">
-            <Button variant={isActive('/admin/colleges') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              <GraduationCap className="w-4 h-4 mr-3" />
-              Colleges
-            </Button>
-          </Link>
-          
-
-          <Link to="/admin/duplicates">
-            <Button variant={isActive('/admin/duplicates') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              <Copy className="w-4 h-4 mr-3" />
-              Duplicates
-            </Button>
-          </Link>
-          <Link to="/admin/news">
-            <Button variant={isActive('/admin/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              <Newspaper className="w-4 h-4 mr-3" />
-              News Feed
-            </Button>
-          </Link>
-          <Link to="/admin/verification">
-            <Button variant={isActive('/admin/verification') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              <ShieldCheck className="w-4 h-4 mr-3" />
-              Verification
-            </Button>
-          </Link>
-          <Link to="/admin/benchmark">
-            <Button
-              data-testid="nav-benchmark-btn"
-              variant={isActive('/admin/benchmark') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <Database className="w-4 h-4 mr-3" />
-              Benchmark Data
-            </Button>
-          </Link>
-          <Link to="/admin/masterclass">
-            <Button
-              data-testid="nav-masterclass-btn"
-              variant={isActive('/admin/masterclass') ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-            >
-              <GraduationCap className="w-4 h-4 mr-3" />
-              Masterclass
-            </Button>
-          </Link>
+        <nav className="p-4 space-y-5 flex-1 overflow-y-auto">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.label}>
+              <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+                {section.label}
+              </p>
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link key={item.to} to={item.to}>
+                      <Button
+                        data-testid={item.testId}
+                        variant={isActive(item.to) ? 'secondary' : 'ghost'}
+                        className="w-full justify-start"
+                      >
+                        <Icon className="w-4 h-4 mr-3" />
+                        {item.label}
+                      </Button>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+        <div className="p-4 border-t border-border flex-shrink-0">
           <Button
             data-testid="logout-btn"
             variant="ghost"
