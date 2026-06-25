@@ -6,6 +6,7 @@ import ClubHome from "@/components/club/ClubHome";
 import ClubProfile from "@/components/club/ClubProfile";
 import CollegeProfile from "@/components/college/CollegeProfile";
 import ClubOpportunities from "@/components/club/ClubOpportunities";
+import ClubOpportunityAnalytics from "@/components/club/ClubOpportunityAnalytics";
 import ClubPlayers from "@/components/club/ClubPlayers";
 import ClubApplications from "@/components/club/ClubApplications";
 import ClubFavorites from "@/components/club/ClubFavorites";
@@ -41,6 +42,7 @@ const ClubDashboard = () => {
         <Route path="profile" element={isCollege ? <CollegeProfile /> : <ClubProfile />} />
         <Route path="subscribe" element={isCollege ? <CollegeSubscribe /> : <ClubSubscribe />} />
         <Route path="opportunities" element={<Gate><ClubOpportunities /></Gate>} />
+        <Route path="opportunities/analytics" element={<Gate><ClubOpportunityAnalytics /></Gate>} />
         <Route path="players" element={<Gate><ClubPlayers /></Gate>} />
         <Route path="player/:playerId" element={<Gate><PlayerDetailView /></Gate>} />
         <Route path="applications" element={<Gate><ClubApplications /></Gate>} />

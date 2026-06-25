@@ -8128,6 +8128,66 @@ async def get_player_analytics(current_user: dict = Depends(get_current_user)):
         "profile_completion": player.get("completion_score", 0),
     }
 
+
+@api_router.get("/opportunities/{opportunity_id}/detail")
+async def get_opportunity_detail(opportunity_id: str, current_user: dict = Depends(get_current_user)):
+    opp = await db.opportunities.find_one({"id": opportunity_id}, {"_id": 0})
+    if not opp:
+        raise HTTPException(status_code=404, detail="Opportunity not found")
+
+    # Track view when a player opens the detail page (not on list browsing)
+    if current_user["role"] == "player":
+        await db.opportunity_views.insert_one({
+            "id": str(uuid.uuid4()),
+            "opportunity_id": opportunity_id,
+            "player_id": current_user["user_id"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+
+    if current_user["role"] == "player":
+        anonymized = await anonymize_opportunities([opp], db)
+        return anonymized[0] if anonymized else opp
+
+    return opp
+
+
+@api_router.get("/club/opportunities/analytics")
+async def get_org_opportunity_analytics(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["club", "federation", "college", "agent"]:
+        raise HTTPException(status_code=403)
+
+    opportunities = await db.opportunities.find(
+        {"club_id": current_user["user_id"]}, {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+
+    results = []
+    for opp in opportunities:
+        views = await db.opportunity_views.count_documents({"opportunity_id": opp["id"]})
+        applications = await db.applications.count_documents({"opportunity_id": opp["id"]})
+        conversion_rate = round((applications / views) * 100, 1) if views > 0 else 0
+
+        results.append({
+            "opportunity_id": opp["id"],
+            "position": opp.get("position"),
+            "league_level": opp.get("league_level"),
+            "status": opp.get("status"),
+            "credit_cost": opp.get("credit_cost"),
+            "created_at": opp.get("created_at"),
+            "views": views,
+            "applications": applications,
+            "conversion_rate": conversion_rate,
+        })
+
+    total_views = sum(r["views"] for r in results)
+    total_applications = sum(r["applications"] for r in results)
+
+    return {
+        "opportunities": results,
+        "total_views": total_views,
+        "total_applications": total_applications,
+        "overall_conversion_rate": round((total_applications / total_views) * 100, 1) if total_views > 0 else 0,
+    }
+
 fastapi_app.include_router(api_router)
 
 fastapi_app.add_middleware(

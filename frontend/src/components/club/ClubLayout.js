@@ -8,7 +8,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video, Sparkles , Target , Kanban, CalendarCheck , Newspaper } from 'lucide-react';
+import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video, Sparkles , Target , Kanban, CalendarCheck , Newspaper, TrendingUp } from 'lucide-react';
 
 const ClubLayout = ({ children, isCollege = false }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -83,6 +83,15 @@ const ClubLayout = ({ children, isCollege = false }) => {
             >
               <Briefcase className="w-4 h-4 mr-3" />
               Opportunities
+            </Button>
+          </Link>
+          <Link to={isCollege ? "/college/opportunities/analytics" : "/club/opportunities/analytics"}>
+            <Button
+              variant={isActive('/opportunities/analytics') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <TrendingUp className="w-4 h-4 mr-3" />
+              Analytics
             </Button>
           </Link>
           <Link to={isCollege ? "/college/players" : "/club/players"}>

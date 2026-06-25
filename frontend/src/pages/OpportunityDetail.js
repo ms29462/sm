@@ -28,8 +28,8 @@ const OpportunityDetail = () => {
     } catch (e) {}
     setLoading(true);
     try {
-      const res = await api.getOpportunities();
-      const opp = (res.data || []).find(o => o.id === opportunityId);
+      const res = await api.getOpportunityDetail(opportunityId);
+      const opp = res.data;
       if (opp) {
         setOpportunity(opp);
         // Try to get match score
