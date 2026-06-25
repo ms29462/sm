@@ -18,6 +18,7 @@ import MasterclassDetail from '@/components/masterclass/MasterclassDetail';
 import MasterclassCategory from '@/components/masterclass/MasterclassCategory';
 import MasterclassBookmarks from '@/components/masterclass/MasterclassBookmarks';
 import MinorConsentGate from '@/components/player/MinorConsentGate';
+import PlayerAnalytics from '@/components/player/PlayerAnalytics';
 
 const PlayerDashboard = () => {
   return (
@@ -27,6 +28,7 @@ const PlayerDashboard = () => {
         <Route path="dashboard" element={<PlayerHome />} />
         <Route path="profile" element={<PlayerProfile />} />
         <Route path="opportunities" element={<PlayerOpportunities />} />
+        <Route path="analytics" element={<PlayerAnalytics />} />
         <Route path="kato" element={<KatoPage />} />
         <Route path="match-scores" element={<MatchScores />} />
         <Route path="masterclass" element={<MasterclassHome />} />

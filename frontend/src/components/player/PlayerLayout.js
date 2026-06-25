@@ -9,7 +9,7 @@ import Badge from '@/components/ui/badge';
 import { api } from '@/lib/api';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Star, Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap, CalendarCheck , Newspaper } from 'lucide-react';
+import { Star, Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap, CalendarCheck , Newspaper, TrendingUp } from 'lucide-react';
 
 const PlayerLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -153,6 +153,11 @@ const PlayerLayout = ({ children }) => {
               {creditBalance !== null && (
                 <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-sm">{creditBalance}</span>
               )}
+            </Button>
+          </Link>
+          <Link to="/player/analytics">
+            <Button variant={location.pathname === "/player/analytics" ? "secondary" : "ghost"} className="w-full justify-start">
+              <TrendingUp className="w-4 h-4 mr-3" /> Analytics
             </Button>
           </Link>
           <Link to="/player/chats">

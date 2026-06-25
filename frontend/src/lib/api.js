@@ -288,6 +288,7 @@ export const api = {
   dismissDeletionRequest: (id) => axios.post(`${API}/admin/account-deletion-requests/${id}/dismiss`, {}, { headers: getAuthHeaders() }),
   getFederationAccessStatus: () => axios.get(`${API}/federation/access-status`, { headers: getAuthHeaders() }),
   adminUpdateFederationAccess: (id, data) => axios.put(`${API}/admin/federations/${id}/access`, data, { headers: getAuthHeaders() }),
+  getPlayerAnalytics: () => axios.get(`${API}/player/analytics`, { headers: getAuthHeaders() }),
   getMinorStatus: () => axios.get(`${API}/player/minor-status`, { headers: getAuthHeaders() }),
   adminUpdateParentalConsent: (playerId, data) => axios.put(`${API}/admin/players/${playerId}/parental-consent`, data, { headers: getAuthHeaders() }),
   sendVerificationEmail: () => axios.post(`${API}/player/send-verification-email`, {}, { headers: getAuthHeaders() }),

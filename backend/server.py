@@ -8076,6 +8076,58 @@ async def get_federation_access_status(current_user: dict = Depends(get_current_
     has_access = bool(fed.get("approved", False))
     return {"has_access": has_access}
 
+
+@api_router.get("/player/analytics")
+async def get_player_analytics(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "player":
+        raise HTTPException(status_code=403)
+
+    player = await db.players.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404)
+
+    if not player.get("is_premium"):
+        raise HTTPException(status_code=403, detail="Advanced analytics requires Player Premium")
+
+    from datetime import datetime, timezone, timedelta
+
+    # Total profile views (all-time)
+    total_views = await db.notifications.count_documents({
+        "user_id": current_user["user_id"],
+        "type": "profile_viewed"
+    })
+
+    # Views in the last 30 days, bucketed by day for a simple trend
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    recent_views = await db.notifications.find({
+        "user_id": current_user["user_id"],
+        "type": "profile_viewed",
+        "created_at": {"$gte": thirty_days_ago}
+    }, {"_id": 0, "created_at": 1}).to_list(1000)
+
+    views_by_day = {}
+    for v in recent_views:
+        day = v["created_at"][:10]
+        views_by_day[day] = views_by_day.get(day, 0) + 1
+
+    # Favorites count - how many orgs have favorited this player
+    favorites_count = await db.favorites.count_documents({"player_id": current_user["user_id"]})
+
+    # Opportunity matches - published opportunities matching this player's position
+    matching_opportunities = await db.opportunities.count_documents({
+        "status": "published",
+        "position": player.get("position")
+    }) if player.get("position") else 0
+
+    return {
+        "total_views": total_views,
+        "views_last_30_days": len(recent_views),
+        "views_by_day": views_by_day,
+        "favorites_count": favorites_count,
+        "matching_opportunities": matching_opportunities,
+        "profile_completion": player.get("completion_score", 0),
+    }
+
 fastapi_app.include_router(api_router)
 
 fastapi_app.add_middleware(
