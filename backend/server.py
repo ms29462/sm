@@ -8236,6 +8236,60 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+@fastapi_app.on_event("startup")
+async def create_db_indexes():
+    """Create MongoDB indexes matching the application's actual query patterns.
+    Run on every startup - create_index is idempotent if the index already exists."""
+    try:
+        await db.users.create_index("email", unique=True)
+        await db.users.create_index("id")
+
+        await db.players.create_index("user_id", unique=True)
+        await db.players.create_index("approved")
+        await db.players.create_index("is_minor")
+        await db.players.create_index("is_premium")
+
+        await db.clubs.create_index("user_id", unique=True)
+        await db.clubs.create_index("status")
+        await db.clubs.create_index("approved")
+
+        await db.agents.create_index("user_id", unique=True)
+        await db.specialists.create_index("user_id", unique=True)
+        await db.federations.create_index("user_id", unique=True)
+
+        await db.opportunities.create_index("club_id")
+        await db.opportunities.create_index("status")
+        await db.opportunities.create_index("deadline")
+
+        await db.applications.create_index("opportunity_id")
+        await db.applications.create_index("player_id")
+        await db.applications.create_index("club_id")
+
+        await db.credit_transactions.create_index("user_id")
+        await db.credit_transactions.create_index("reference")
+
+        await db.subscriptions.create_index("user_id", unique=True)
+
+        await db.notifications.create_index("user_id")
+        await db.notifications.create_index([("user_id", 1), ("type", 1)])
+
+        await db.favorites.create_index("player_id")
+        await db.favorites.create_index("org_id")
+
+        await db.reports.create_index("reported_user_id")
+        await db.reports.create_index("status")
+
+        await db.account_deletion_requests.create_index("user_id")
+        await db.account_deletion_requests.create_index("status")
+
+        await db.opportunity_views.create_index("opportunity_id")
+
+        logger.info("MongoDB indexes verified/created successfully")
+    except Exception as e:
+        logger.error(f"Index creation error: {e}")
+
+
 @fastapi_app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
