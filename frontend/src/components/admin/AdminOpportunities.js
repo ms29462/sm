@@ -30,6 +30,9 @@ const AdminOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [editMaxApplicants, setEditMaxApplicants] = useState("");
+  const [editDeadline, setEditDeadline] = useState("");
+  const [editStatus, setEditStatus] = useState("");
   const [tab, setTab] = useState("pending_review");
   const [tier, setTier] = useState('amateur');
   const [adminNotes, setAdminNotes] = useState("");
@@ -53,6 +56,9 @@ const AdminOpportunities = () => {
 
   const selectOpp = (opp) => {
     setSelected(opp);
+    setEditMaxApplicants(opp.max_applicants ?? "");
+    setEditDeadline(opp.deadline ?? "");
+    setEditStatus(opp.status ?? "");
     setTier(opp.tier || 'amateur');
     setAdminNotes(opp.admin_notes || "");
     setPublicFeedback(opp.public_feedback || "");
@@ -90,6 +96,21 @@ const AdminOpportunities = () => {
       setSelected(prev => ({ ...prev, status: "changes_requested" }));
     } catch (e) {
       toast.error("Failed to request changes");
+    }
+  };
+
+  const handleSaveOpportunityFields = async () => {
+    try {
+      await api.updateAdminOpportunity(selected.id, {
+        max_applicants: editMaxApplicants === "" ? null : Number(editMaxApplicants),
+        deadline: editDeadline || null,
+        status: editStatus,
+      });
+      toast.success("Opportunity updated");
+      loadOpportunities();
+      setSelected(prev => prev ? { ...prev, max_applicants: editMaxApplicants === "" ? null : Number(editMaxApplicants), deadline: editDeadline, status: editStatus } : null);
+    } catch (e) {
+      toast.error("Failed to update opportunity");
     }
   };
 
@@ -177,6 +198,36 @@ const AdminOpportunities = () => {
                 <Field label="Contract Type" value={selected.contract_type} />
                 <Field label="Deadline" value={selected.deadline} />
                 <Field label="Max Applicants" value={selected.max_applicants} />
+                <Field label="Spots Remaining" value={selected.max_applicants ? Math.max(selected.max_applicants - (selected.applicants_count ?? 0), 0) + "/" + selected.max_applicants : "—"} />
+              </div>
+
+              <div className="bg-black/20 rounded-sm p-3 space-y-3">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Admin Edit — Capacity & Status</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-1">Max Applicants</p>
+                    <input type="number" value={editMaxApplicants} onChange={e => setEditMaxApplicants(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-sm px-2 h-9 text-sm text-white outline-none focus:border-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-1">Deadline</p>
+                    <input type="date" value={editDeadline} onChange={e => setEditDeadline(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-sm px-2 h-9 text-sm text-white outline-none focus:border-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-1">Status</p>
+                    <select value={editStatus} onChange={e => setEditStatus(e.target.value)}
+                      className="w-full bg-black/20 border border-white/10 rounded-sm px-2 h-9 text-sm text-white outline-none focus:border-primary cursor-pointer">
+                      {["pending_review", "published", "changes_requested", "rejected", "filled", "closed"].map(s => (
+                        <option key={s} value={s}>{s.replace("_", " ")}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <button onClick={handleSaveOpportunityFields}
+                  className="text-xs border border-primary/30 text-primary rounded-sm px-3 py-1.5 hover:bg-primary/10 transition-colors">
+                  Save Changes
+                </button>
               </div>
 
               {selected.description && (

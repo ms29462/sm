@@ -135,6 +135,14 @@ const OpportunityDetail = () => {
                 <p className="text-2xl font-heading font-bold text-primary">{opportunity.credit_cost} cr.</p>
               </div>
             )}
+            {opportunity.max_applicants && (
+              <div className="p-3 bg-card border border-border/50 rounded-sm mb-3 flex items-center justify-between">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Spots Remaining</p>
+                <p className={`text-lg font-heading font-bold ${(opportunity.max_applicants - (opportunity.applicants_count ?? 0)) <= 0 ? "text-red-400" : "text-green-400"}`}>
+                  {Math.max(opportunity.max_applicants - (opportunity.applicants_count ?? 0), 0)}/{opportunity.max_applicants}
+                </p>
+              </div>
+            )}
           <Button
             onClick={() => setShowConfirm(true)}
             className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"

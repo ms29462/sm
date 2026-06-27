@@ -232,6 +232,12 @@ class PlayerProfile(BaseModel):
 
 
 # Helper function to strip private info from player data
+
+async def attach_applicant_counts(opportunities: list) -> list:
+    for opp in opportunities:
+        opp["applicants_count"] = await db.applications.count_documents({"opportunity_id": opp["id"]})
+    return opportunities
+
 def strip_player_private_info(player_dict: dict) -> dict:
     """Remove private information from player data for non-admin users.
     Per child-safety policy: email, phone, full date of birth, minor status,
@@ -1022,6 +1028,7 @@ class Opportunity(BaseModel):
     age_max: Optional[int] = None
     deadline: Optional[str] = None
     max_applicants: Optional[int] = None
+    applicants_count: Optional[int] = 0
     requirements: Optional[list] = None
     visibility: str = 'anonymous'
     status: Optional[str] = None
@@ -2162,20 +2169,36 @@ async def delete_comment(masterclass_id: str, comment_id: str, current_user: dic
 
 async def auto_close_expired_opportunities(db):
     now = datetime.now(timezone.utc).isoformat()[:10]  # YYYY-MM-DD
+
+    # Close opportunities past their deadline
     await db.opportunities.update_many(
-        {"deadline": {"$lt": now, "$ne": None}, "status": "open"},
+        {"deadline": {"$lt": now, "$ne": None}, "status": "published"},
         {"$set": {"status": "closed"}}
     )
+
+    # Close opportunities that have reached their applicant cap
+    published = await db.opportunities.find(
+        {"status": "published", "max_applicants": {"$ne": None}},
+        {"_id": 0, "id": 1, "max_applicants": 1}
+    ).to_list(1000)
+    for opp in published:
+        count = await db.applications.count_documents({"opportunity_id": opp["id"]})
+        if count >= opp["max_applicants"]:
+            await db.opportunities.update_one(
+                {"id": opp["id"]},
+                {"$set": {"status": "filled"}}
+            )
 
 @api_router.get("/opportunities", response_model=List[Opportunity])
 async def get_opportunities(current_user: dict = Depends(get_current_user)):
     await auto_close_expired_opportunities(db)
     opportunities = await db.opportunities.find({"status": "published"}, {"_id": 0}).to_list(1000)
-    
+    opportunities = await attach_applicant_counts(opportunities)
+
     # Anonymize opportunities for players
     if current_user["role"] == "player":
         opportunities = await anonymize_opportunities(opportunities, db)
-    
+
     return [Opportunity(**opp) for opp in opportunities]
 
 @api_router.get("/opportunities/recommended", response_model=List[Opportunity])
@@ -2347,6 +2370,7 @@ async def get_club_opportunities(current_user: dict = Depends(get_current_user))
         raise HTTPException(status_code=403, detail="Not authorized")
     await auto_close_expired_opportunities(db)
     opportunities = await db.opportunities.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
+    opportunities = await attach_applicant_counts(opportunities)
     return [Opportunity(**opp) for opp in opportunities]
 
 @api_router.put("/opportunities/{opportunity_id}/status")
@@ -2431,6 +2455,7 @@ async def get_club_applications(current_user: dict = Depends(get_current_user)):
         player = await db.players.find_one({"user_id": app['player_id']}, {"_id": 0})
         opp = await db.opportunities.find_one({"id": app['opportunity_id']}, {"_id": 0})
         if player and opp:
+            opp["applicants_count"] = await db.applications.count_documents({"opportunity_id": opp["id"]})
             # Calculate the same match score shown to the player for this opportunity
             match_score = None
             try:
@@ -2947,7 +2972,8 @@ async def get_all_opportunities_admin(current_user: dict = Depends(get_current_u
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403)
     opportunities = await db.opportunities.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    
+    opportunities = await attach_applicant_counts(opportunities)
+
     # Anonymize opportunities for players
     if current_user["role"] == "player":
         result = []
@@ -8134,6 +8160,7 @@ async def get_opportunity_detail(opportunity_id: str, current_user: dict = Depen
     opp = await db.opportunities.find_one({"id": opportunity_id}, {"_id": 0})
     if not opp:
         raise HTTPException(status_code=404, detail="Opportunity not found")
+    opp["applicants_count"] = await db.applications.count_documents({"opportunity_id": opportunity_id})
 
     # Track view when a player opens the detail page (not on list browsing)
     if current_user["role"] == "player":

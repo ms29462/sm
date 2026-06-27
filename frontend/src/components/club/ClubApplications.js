@@ -440,6 +440,15 @@ const ClubApplications = () => {
                       }>{Math.round(app.match_score)}/100</span>
                     </div>
                   )}
+                  {app.opportunity.max_applicants && (
+                    <div className="flex items-center gap-1.5 bg-black/20 border border-border/50 rounded-sm px-2.5 py-1">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Spots</span>
+                      <span className={
+                        "text-sm font-bold " +
+                        ((app.opportunity.max_applicants - (app.opportunity.applicants_count ?? 0)) <= 0 ? "text-red-500" : "text-green-500")
+                      }>{Math.max(app.opportunity.max_applicants - (app.opportunity.applicants_count ?? 0), 0)}/{app.opportunity.max_applicants}</span>
+                    </div>
+                  )}
                   <span data-testid={"status-" + app.id} className={"px-3 py-1 text-[10px] uppercase tracking-wider border rounded-sm " + STATUS_COLORS[app.status]}>{app.status}</span>
                 </div>
               </div>

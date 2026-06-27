@@ -112,6 +112,14 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
               <span className="font-bold text-primary">⭐ {opp.credit_cost} credit{opp.credit_cost > 1 ? "s" : ""}</span>
             </div>
           )}
+          {opp.max_applicants && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Spots Remaining:</span>
+              <span className={`font-bold ${(opp.max_applicants - (opp.applicants_count ?? 0)) <= 0 ? "text-red-400" : "text-green-400"}`}>
+                {Math.max(opp.max_applicants - (opp.applicants_count ?? 0), 0)}/{opp.max_applicants}
+              </span>
+            </div>
+          )}
         {opp.salary_range && (
           <div className="flex justify-between">
             <span className="text-muted-foreground">Salary:</span>

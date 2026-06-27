@@ -403,6 +403,11 @@ const ClubOpportunities = () => {
                 {opp.credit_cost && (
                   <span className="text-xs font-bold text-primary">⭐ {opp.credit_cost} credit{opp.credit_cost > 1 ? "s" : ""}</span>
                 )}
+                {opp.max_applicants && (
+                  <span className={`text-xs font-bold ${(opp.max_applicants - (opp.applicants_count ?? 0)) <= 0 ? "text-red-400" : "text-green-400"}`}>
+                    {Math.max(opp.max_applicants - (opp.applicants_count ?? 0), 0)}/{opp.max_applicants} spots left
+                  </span>
+                )}
                   {opp.status === "pending_review" && (
                     <p className="text-xs text-yellow-400 mt-1">⏳ Under review by Soccer Match</p>
                   )}
