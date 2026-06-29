@@ -14,7 +14,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import logging
 import socketio
 import shutil
-from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 from typing import List, Optional, Literal, Dict
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -1029,6 +1029,13 @@ class Opportunity(BaseModel):
     deadline: Optional[str] = None
     max_applicants: Optional[int] = None
     applicants_count: Optional[int] = 0
+
+    @field_validator("age_min", "age_max", "max_applicants", mode="before")
+    @classmethod
+    def empty_string_to_none(cls, v):
+        if v == "" or v is None:
+            return None
+        return v
     requirements: Optional[list] = None
     visibility: str = 'anonymous'
     status: Optional[str] = None
