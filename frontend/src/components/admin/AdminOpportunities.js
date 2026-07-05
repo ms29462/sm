@@ -69,7 +69,7 @@ const AdminOpportunities = () => {
       await api.approveOpportunity(selected.id, { tier });
       toast.success("Opportunity approved and published!");
       loadOpportunities();
-      setSelected(prev => ({ ...prev, status: "published", credit_cost: creditCost }));
+      setSelected(null);
     } catch (e) {
       toast.error("Failed to approve");
     }

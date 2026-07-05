@@ -1301,6 +1301,10 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             "discovery_call_status": "Not Contacted",
         }
         await db.federations.insert_one(federation_doc)
+        try:
+            await send_org_application_received(user.email, user.name, "federation")
+        except Exception as e:
+            print(f"Email error: {e}")
     elif user.role == 'agent':
         agent_doc = {
             "user_id": user_id,
@@ -1327,6 +1331,10 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             "discovery_call_status": "Not Contacted",
         }
         await db.agents.insert_one(agent_doc)
+        try:
+            await send_org_application_received(user.email, user.name, "agent")
+        except Exception as e:
+            print(f"Email error: {e}")
     elif user.role == 'analyst':
         analyst_doc = {
             "user_id": user_id,
@@ -2217,11 +2225,12 @@ async def get_recommended_opportunities(current_user: dict = Depends(get_current
     if not player:
         return []
     
-    query = {}
-    if player.get('position'):
-        query['position'] = player['position']
-    
+    query = {"status": "published"}
+    if player.get("position"):
+        query["position"] = player["position"]
+
     opportunities = await db.opportunities.find(query, {"_id": 0}).to_list(100)
+    opportunities = await attach_applicant_counts(opportunities)
     opportunities = await anonymize_opportunities(opportunities, db)
     return [Opportunity(**opp) for opp in opportunities]
 

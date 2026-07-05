@@ -18,18 +18,18 @@ const FederationHome = () => {
 
   const loadData = async () => {
     try {
-      const [profileRes, recommendedRes, favoritesRes, teamsRes] = await Promise.all([
+      const [profileRes, recommendedRes, favoritesRes, teamsRes] = await Promise.allSettled([
         api.getFederationProfile(),
         api.getRecommendedPlayersForFederation(),
         api.getFederationFavorites(),
         api.getFederationTeams()
       ]);
       
-      setProfile(profileRes.data);
+      if (profileRes.status === "fulfilled") setProfile(profileRes.value.data);
       setStats({
-        recommendedPlayers: recommendedRes.data.length,
-        scoutingList: favoritesRes.data.length,
-        teams: teamsRes.data.length
+        recommendedPlayers: recommendedRes.status === "fulfilled" ? recommendedRes.value.data.length : 0,
+        scoutingList: favoritesRes.status === "fulfilled" ? favoritesRes.value.data.length : 0,
+        teams: teamsRes.status === "fulfilled" ? teamsRes.value.data.length : 0,
       });
     } catch (error) {
       toast.error('Failed to load dashboard data');

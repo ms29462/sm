@@ -54,6 +54,10 @@ const Login = ({ admin = false }) => {
         setShowPendingModal(true);
       } else if (error.response?.status === 429) {
         toast.error('Too many login attempts. Please wait a minute and try again.');
+      } else if (error.response?.data?.detail?.includes('suspended')) {
+        toast.error('This account has been suspended. Please contact contact@soccermatch.ca for assistance.', { duration: 8000 });
+      } else if (error.response?.data?.detail?.includes('banned')) {
+        toast.error('This account has been permanently banned.', { duration: 8000 });
       } else {
         toast.error('Invalid email or password');
       }

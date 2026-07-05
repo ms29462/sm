@@ -12,6 +12,7 @@ const LEVELS = ['Professional', 'Semi-Professional', 'Amateur', 'Youth Academy',
 
 const AgentPlayers = () => {
   const [players, setPlayers] = useState([]);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState(new Set());
   const [filters, setFilters] = useState({
@@ -26,6 +27,8 @@ const AgentPlayers = () => {
     loadFavorites();
   }, []);
 
+  useEffect(() => { loadPlayers(); }, [page]);
+
   const loadPlayers = async () => {
     setLoading(true);
     try {
@@ -35,6 +38,8 @@ const AgentPlayers = () => {
       if (filters.nationality) params.nationality = filters.nationality;
       if (filters.level && filters.level !== 'all') params.level = filters.level;
 
+      params.page = page;
+      params.limit = 20;
       const response = await api.getAgentPlayers(params);
       setPlayers(response.data || []);
     } catch (error) {
@@ -54,6 +59,7 @@ const AgentPlayers = () => {
   };
 
   const handleSearch = () => {
+    setPage(1);
     loadPlayers();
   };
 
@@ -223,6 +229,17 @@ const AgentPlayers = () => {
           ))}
         </div>
       )}
+      <div className="flex items-center justify-center gap-3 mt-6">
+        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+          className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
+          Previous
+        </button>
+        <span className="text-sm text-muted-foreground">Page {page}</span>
+        <button onClick={() => setPage(p => p + 1)} disabled={players.length < 20}
+          className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
+          Next
+        </button>
+      </div>
     </div>
   );
 };
