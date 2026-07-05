@@ -1253,6 +1253,7 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             "is_minor": is_minor,
             "parental_consent": user.parental_consent if is_minor else None,
             "date_of_birth": user.date_of_birth,
+            "age": computed_age if user.date_of_birth else None,
             "residence_country": user.residence_country,
             "gender": user.gender,
             "nationality": user.nationality,
@@ -1511,6 +1512,17 @@ async def get_player_profile(current_user: dict = Depends(get_current_user)):
     player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     if not player:
         raise HTTPException(status_code=404, detail="Profile not found")
+    # Auto-compute age from DOB if not stored or if stale
+    if player.get("date_of_birth") and not player.get("age"):
+        try:
+            from datetime import date
+            dob = datetime.strptime(player["date_of_birth"], "%Y-%m-%d").date()
+            today = date.today()
+            computed = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            player["age"] = computed
+            await db.players.update_one({"user_id": current_user['user_id']}, {"$set": {"age": computed}})
+        except Exception:
+            pass
     return PlayerProfile(**player)
 
 @api_router.put("/player/profile", response_model=PlayerProfile)
@@ -8134,7 +8146,11 @@ async def get_federation_access_status(current_user: dict = Depends(get_current_
         raise HTTPException(status_code=403)
     fed = await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
     if not fed:
-        raise HTTPException(status_code=404)
+        # Federation doc missing - check users collection as fallback
+        user = await db.users.find_one({"id": current_user["user_id"]}, {"_id": 0})
+        if user and user.get("approved"):
+            return {"has_access": True}
+        return {"has_access": False}
     has_access = bool(fed.get("approved", False))
     return {"has_access": has_access}
 

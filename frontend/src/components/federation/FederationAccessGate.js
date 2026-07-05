@@ -8,7 +8,12 @@ const FederationAccessGate = ({ children }) => {
   useEffect(() => {
     api.getFederationAccessStatus()
       .then(res => setStatus(res.data))
-      .catch(() => setStatus({ has_access: false }))
+      .catch((err) => {
+        // If 404 - no federation doc found, still show access pending
+        // If 403 - not a federation role, let parent handle
+        // Default to no access on any error
+        setStatus({ has_access: false, error: err?.response?.status });
+      })
       .finally(() => setLoading(false));
   }, []);
 
