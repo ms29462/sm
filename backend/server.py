@@ -757,6 +757,21 @@ class FederationProfile(BaseModel):
     country: str  # The country this federation represents
     logo: Optional[str] = None
     description: Optional[str] = None
+    federation_type: Optional[str] = None
+    primary_objective: Optional[str] = None
+    age_categories: Optional[list] = []
+    eligible_nationalities: Optional[list] = []
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+    rep_first_name: Optional[str] = None
+    rep_last_name: Optional[str] = None
+    rep_role: Optional[str] = None
+    rep_email: Optional[str] = None
+    rep_phone: Optional[str] = None
+    status: Optional[str] = None
+    federation_approved_access: Optional[bool] = False
     approved: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -847,6 +862,14 @@ class AgentProfile(BaseModel):
     successful_transfers: Optional[int] = 0
     website: Optional[str] = None
     linkedin: Optional[str] = None
+    license_type: Optional[str] = None
+    licensing_authority: Optional[str] = None
+    license_document: Optional[str] = None
+    agency_logo: Optional[str] = None
+    experience: Optional[str] = None
+    primary_market: Optional[str] = None
+    secondary_markets: Optional[list] = []
+    agent_sub_status: Optional[str] = None
     approved: bool = False
     verified: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())

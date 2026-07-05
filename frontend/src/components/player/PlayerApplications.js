@@ -1,7 +1,8 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { FileText } from 'lucide-react';
+import useSocket from '@/hooks/useSocket';
 
 const STATUS_COLORS = {
   submitted: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
@@ -31,6 +32,7 @@ const STATUS_LABELS = {
 };
 
 const PlayerApplications = () => {
+  const { socket, on, off } = useSocket();
   const [applications, setApplications] = useState([]);
   const [matchScores, setMatchScores] = useState({});
   const [filterPosition, setFilterPosition] = useState('');
@@ -41,6 +43,18 @@ const PlayerApplications = () => {
   useEffect(() => {
     loadApplications();
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleNotification = (data) => {
+      if (data.type === "application_update") {
+        loadApplications();
+        toast.info("Your application status has been updated");
+      }
+    };
+    on("notification", handleNotification);
+    return () => off("notification", handleNotification);
+  }, [socket, on, off]);
 
   const loadApplications = async () => {
     try {
