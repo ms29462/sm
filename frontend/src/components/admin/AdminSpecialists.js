@@ -182,6 +182,41 @@ const AdminSpecialists = () => {
                   )}
                 </div>
               </div>
+              <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-sm">
+                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Subscription Access</p>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Status: <span className="font-bold text-white">{specialist.specialist_sub_status || "pending_review"}</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline"
+                    onClick={async () => {
+                      await api.adminUpdateSpecialistSubscription(specialist.user_id, { specialist_sub_status: "approved_awaiting_payment" });
+                      setSpecialists(specialists.map(s => s.user_id === specialist.user_id ? { ...s, specialist_sub_status: "approved_awaiting_payment" } : s));
+                      toast.success("Payment allowed");
+                    }}
+                    className="border-blue-500 text-blue-500 hover:bg-blue-500/10 text-xs">
+                    Allow Payment
+                  </Button>
+                  <Button size="sm" variant="outline"
+                    onClick={async () => {
+                      await api.adminUpdateSpecialistSubscription(specialist.user_id, { specialist_sub_status: "active" });
+                      setSpecialists(specialists.map(s => s.user_id === specialist.user_id ? { ...s, specialist_sub_status: "active" } : s));
+                      toast.success("Subscription activated");
+                    }}
+                    className="border-green-500 text-green-500 hover:bg-green-500/10 text-xs">
+                    Manually Activate
+                  </Button>
+                  <Button size="sm" variant="outline"
+                    onClick={async () => {
+                      await api.adminUpdateSpecialistSubscription(specialist.user_id, { specialist_sub_status: "cancelled" });
+                      setSpecialists(specialists.map(s => s.user_id === specialist.user_id ? { ...s, specialist_sub_status: "cancelled" } : s));
+                      toast.success("Access suspended");
+                    }}
+                    className="border-red-500 text-red-500 hover:bg-red-500/10 text-xs">
+                    Suspend Access
+                  </Button>
+                </div>
+              </div>
             </div>
           ))}
         </div>

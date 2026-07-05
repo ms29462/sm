@@ -24,6 +24,10 @@ const ReportUserDialog = ({ reportedUserId, triggerLabel = "Report" }) => {
       toast.error("Please select a category");
       return;
     }
+    if (!description.trim()) {
+      toast.error("Please describe what happened");
+      return;
+    }
     setLoading(true);
     try {
       await api.createReport({ reported_user_id: reportedUserId, category, description });
@@ -77,7 +81,7 @@ const ReportUserDialog = ({ reportedUserId, triggerLabel = "Report" }) => {
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe what happened..."
+              placeholder="Describe what happened... (required)"
               rows={4}
             />
           </div>

@@ -1089,7 +1089,7 @@ class AdminStats(BaseModel):
     pending_approvals: int
 
 class UserApproval(BaseModel):
-    user_id: str
+    user_id: Optional[str] = None
     approved: bool
 
 
@@ -2422,12 +2422,9 @@ async def update_opportunity(opportunity_id: str, update: dict, current_user: di
     safe_update["updated_at"] = datetime.now(timezone.utc).isoformat()
     safe_update["updated_by"] = current_user["user_id"]
 
-    # Substantive fields change what players applied for or the approved
-    # credit cost basis - editing these on a published opportunity sends it
-    # back to review. Cosmetic fields (description, salary_range, etc.) can
-    # be edited freely without losing published status.
-    SUBSTANTIVE_FIELDS = {"position", "positions", "league_level", "requirements", "max_applicants", "deadline"}
-    if opp.get("status") == "published" and SUBSTANTIVE_FIELDS.intersection(safe_update.keys()):
+    # Any edit to a published opportunity sends it back to pending review.
+    # Admin must re-approve before it becomes visible to players again.
+    if opp.get("status") == "published":
         safe_update["status"] = "pending_review"
         safe_update["admin_status"] = "pending_review"
 
@@ -8230,6 +8227,57 @@ async def get_org_opportunity_analytics(current_user: dict = Depends(get_current
         "total_applications": total_applications,
         "overall_conversion_rate": round((total_applications / total_views) * 100, 1) if total_views > 0 else 0,
     }
+
+
+@api_router.post("/club/request-deletion")
+async def club_request_deletion(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["club", "college", "agent", "specialist", "federation"]:
+        raise HTTPException(status_code=403)
+    existing = await db.account_deletion_requests.find_one({
+        "user_id": current_user["user_id"],
+        "status": "pending"
+    }, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="A deletion request is already pending")
+    request_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": current_user["user_id"],
+        "role": current_user["role"],
+        "reason": data.get("reason", ""),
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.account_deletion_requests.insert_one(request_doc)
+    try:
+        await create_notification(
+            "admin-001",
+            "account_deletion_request",
+            f"A {current_user['role']} has requested account deletion",
+            {"request_id": request_doc["id"]}
+        )
+    except Exception:
+        pass
+    return {"message": "Your deletion request has been submitted and will be processed by our team."}
+
+@api_router.get("/club/deletion-status")
+async def club_deletion_status(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["club", "college", "agent", "specialist", "federation"]:
+        raise HTTPException(status_code=403)
+    existing = await db.account_deletion_requests.find_one({
+        "user_id": current_user["user_id"],
+        "status": "pending"
+    }, {"_id": 0})
+    return {"has_pending_request": bool(existing)}
+
+@api_router.delete("/club/deletion-request")
+async def cancel_club_deletion_request(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] not in ["club", "college", "agent", "specialist", "federation"]:
+        raise HTTPException(status_code=403)
+    await db.account_deletion_requests.delete_many({
+        "user_id": current_user["user_id"],
+        "status": "pending"
+    })
+    return {"message": "Deletion request cancelled"}
 
 fastapi_app.include_router(api_router)
 
