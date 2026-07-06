@@ -8370,6 +8370,81 @@ async def get_deleted_accounts_log(current_user: dict = Depends(get_current_user
     logs = await db.deleted_accounts_log.find({}, {"_id": 0}).sort("deleted_at", -1).to_list(1000)
     return logs
 
+
+# ============ PASSWORD RESET ============
+
+@api_router.post("/auth/forgot-password")
+@limiter.limit("5/minute")
+async def forgot_password(request: Request, data: dict):
+    email = data.get("email", "").lower().strip()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    # Always return success even if email not found (security best practice)
+    if not user:
+        return {"message": "If this email exists, a reset link has been sent."}
+
+    token = str(uuid.uuid4())
+    expires_at = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+
+    await db.users.update_one(
+        {"email": email},
+        {"$set": {"reset_token": token, "reset_token_expires": expires_at}}
+    )
+
+    reset_link = f"https://www.soccermatch.app/reset-password/{token}"
+    try:
+        import resend as resend_module
+        resend_module.api_key = os.environ.get("RESEND_API_KEY", "")
+        resend_module.Emails.send({
+            "from": "noreply@soccer-match.org",
+            "to": email,
+            "subject": "Reset your Soccer Match password",
+            "html": f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #c8f65a;">Soccer Match — Password Reset</h2>
+                <p>You requested a password reset. Click the button below to set a new password.</p>
+                <p>This link expires in <strong>1 hour</strong>.</p>
+                <a href="{reset_link}" style="display: inline-block; background: #c8f65a; color: #000; font-weight: bold; padding: 12px 24px; border-radius: 4px; text-decoration: none; margin: 16px 0;">
+                    Reset Password
+                </a>
+                <p style="color: #888; font-size: 12px;">If you did not request this, you can safely ignore this email.</p>
+                <p style="color: #888; font-size: 12px;">Or copy this link: {reset_link}</p>
+            </div>
+            """
+        })
+    except Exception as e:
+        print(f"Password reset email error: {e}")
+
+    return {"message": "If this email exists, a reset link has been sent."}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: dict):
+    token = data.get("token", "")
+    new_password = data.get("password", "")
+
+    if not token or not new_password:
+        raise HTTPException(status_code=400, detail="Token and password are required")
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    user = await db.users.find_one({"reset_token": token}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset link")
+
+    expires_at = user.get("reset_token_expires")
+    if expires_at and datetime.fromisoformat(expires_at) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Reset link has expired. Please request a new one.")
+
+    hashed = hash_password(new_password)
+    await db.users.update_one(
+        {"reset_token": token},
+        {"$set": {"password": hashed, "password_hash": hashed}, "$unset": {"reset_token": "", "reset_token_expires": ""}}
+    )
+
+    return {"message": "Password updated successfully. You can now log in."}
+
 fastapi_app.include_router(api_router)
 
 fastapi_app.add_middleware(

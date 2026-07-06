@@ -119,6 +119,14 @@ const Login = ({ admin = false }) => {
             >
               {loading ? t("login.loading") : t("login.submit")}
             </Button>
+            {!admin && (
+              <div className="mt-4 text-center">
+                <button onClick={() => navigate("/forgot-password")}
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                  Forgot password?
+                </button>
+              </div>
+            )}
           </form>
 
           {!admin && (

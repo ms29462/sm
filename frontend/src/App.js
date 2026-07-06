@@ -4,6 +4,8 @@ import { PermissionsProvider } from '@/context/PermissionsContext';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import Landing from '@/pages/Landing';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import PlayerDashboard from '@/pages/PlayerDashboard';
@@ -49,6 +51,8 @@ function App() {
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
                 <Route path="/register" element={<Register />} />
         <Route path="/player-register" element={<PlayerRegister />} />
         <Route path="/club-register" element={<ClubRegister />} />
