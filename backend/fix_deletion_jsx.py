@@ -1,62 +1,11 @@
-import { useState, useEffect } from "react";
-import { api } from "@/lib/api";
-import { toast } from "sonner";
-import { Trash2, CheckCircle, XCircle } from "lucide-react";
+with open(r"C:\Users\Lenovo\sm\frontend\src\components\admin\AdminDeletionRequests.js", "r", encoding="utf-8") as f:
+    content = f.read()
 
-const AdminDeletionRequests = () => {
-  const [requests, setRequests] = useState([]);
-  const [log, setLog] = useState([]);
-  const [tab, setTab] = useState('pending');
-  const [loading, setLoading] = useState(true);
+# Find the start of the tab buttons section and rewrite everything from there
+idx = content.find("      <div className=\"flex gap-2 mb-4\">")
+header = content[:idx]
 
-  useEffect(() => { loadRequests(); }, []);
-
-  const loadRequests = async () => {
-    try {
-      const res = await api.getAllDeletionRequests();
-      setRequests(res.data);
-    } catch (e) {
-      toast.error("Failed to load deletion requests");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleApprove = async (id) => {
-    if (!window.confirm("This will permanently delete the account and all associated data. Continue?")) return;
-    try {
-      await api.approveDeletionRequest(id);
-      toast.success("Account deleted");
-      loadRequests();
-    } catch (e) {
-      toast.error(e.response?.data?.detail || "Failed to delete account");
-    }
-  };
-
-  const handleDismiss = async (id) => {
-    try {
-      await api.dismissDeletionRequest(id);
-      toast.success("Request dismissed");
-      loadRequests();
-    } catch (e) {
-      toast.error("Failed to dismiss request");
-    }
-  };
-
-  const pending = requests.filter(r => r.status === "pending");
-
-  if (loading) return <div className="p-8 text-primary font-heading">LOADING...</div>;
-
-  return (
-    <div className="p-4 md:p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1 flex items-center gap-2">
-          <Trash2 className="w-6 h-6 text-primary" /> Account Deletion Requests
-        </h1>
-        <p className="text-muted-foreground text-sm">{pending.length} pending request{pending.length !== 1 ? "s" : ""}</p>
-      </div>
-
-      <div className="flex gap-2 mb-4">
+new_end = """      <div className="flex gap-2 mb-4">
         <button onClick={() => setTab('pending')}
           className={`px-4 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${tab === 'pending' ? "bg-primary text-black border-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
           Pending ({requests.filter(r => r.status === "pending").length})
@@ -73,7 +22,7 @@ const AdminDeletionRequests = () => {
           {log.map(entry => (
             <div key={entry.id} className="bg-card border border-border/50 rounded-sm p-4">
               <p className="font-bold text-sm">{entry.name || entry.email || entry.user_id}</p>
-              <p className="text-xs text-muted-foreground capitalize">{entry.role} • Deleted {entry.deleted_at?.slice(0,10)}</p>
+              <p className="text-xs text-muted-foreground capitalize">{entry.role} \u2022 Deleted {entry.deleted_at?.slice(0,10)}</p>
               {entry.reason && <p className="text-xs text-muted-foreground mt-1">Reason: "{entry.reason}"</p>}
             </div>
           ))}
@@ -89,7 +38,7 @@ const AdminDeletionRequests = () => {
             <div key={r.id} className="bg-card border border-border/50 rounded-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <p className="font-bold text-sm">{r.name || r.email || r.user_id}</p>
-                <p className="text-xs text-muted-foreground capitalize">{r.role} • {r.created_at?.slice(0,10)}</p>
+                <p className="text-xs text-muted-foreground capitalize">{r.role} \u2022 {r.created_at?.slice(0,10)}</p>
                 {r.reason && <p className="text-xs text-muted-foreground mt-1">"{r.reason}"</p>}
                 <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-sm border ${
                   r.status === "pending" ? "text-yellow-400 bg-yellow-500/10 border-yellow-500/20" : "text-gray-400 bg-gray-500/10 border-gray-500/20"
@@ -118,3 +67,8 @@ const AdminDeletionRequests = () => {
 };
 
 export default AdminDeletionRequests;
+"""
+
+with open(r"C:\Users\Lenovo\sm\frontend\src\components\admin\AdminDeletionRequests.js", "w", encoding="utf-8") as f:
+    f.write(header + new_end)
+print("Done!")
