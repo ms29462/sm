@@ -119,7 +119,7 @@ const PlayerOnboarding = () => {
             <div className="space-y-4">
               <div>
                 <label className={labelClass}>Date of Birth *</label>
-                <input type="date" value={form.date_of_birth} onChange={e => set("date_of_birth", e.target.value)}
+                <input type="date" style={{colorScheme: "dark"}} value={form.date_of_birth} onChange={e => set("date_of_birth", e.target.value)}
                   style={{colorScheme:"dark"}} className={inputClass} />
               </div>
               <div>

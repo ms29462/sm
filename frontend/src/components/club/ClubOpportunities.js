@@ -200,7 +200,7 @@ const ClubOpportunities = () => {
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Deadline *</Label>
                 {errors.deadline && <p className="text-xs text-red-400 mt-1">⚠ {errors.deadline}</p>}
-                  <Input type="date" value={editForm.deadline} onChange={(e) => setEditForm(f => ({...f, deadline: e.target.value}))}
+                  <Input type="date" style={{colorScheme: "dark"}} value={editForm.deadline} onChange={(e) => setEditForm(f => ({...f, deadline: e.target.value}))}
                     style={{colorScheme: "dark"}} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
                 </div>
               </div>
@@ -313,7 +313,7 @@ const ClubOpportunities = () => {
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Deadline *</Label>
                 {errors.deadline && <p className="text-xs text-red-400 mt-1">⚠ {errors.deadline}</p>}
-                  <Input type="date" value={formData.deadline} onChange={(e) => handleChange("deadline", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
+                  <Input type="date" style={{colorScheme: "dark"}} value={formData.deadline} onChange={(e) => handleChange("deadline", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
                 </div>
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Max Applicants *</Label>

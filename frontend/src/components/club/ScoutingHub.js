@@ -603,7 +603,7 @@ const ScoutingHub = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Match Date</label>
-                  <input type="date" value={editingReport.match_date} onChange={e => setEditingReport(r => ({...r, match_date: e.target.value}))}
+                  <input type="date" style={{colorScheme: "dark"}} value={editingReport.match_date} onChange={e => setEditingReport(r => ({...r, match_date: e.target.value}))}
                     className={inputClass + " mt-1"} />
                 </div>
                 <div>
@@ -751,7 +751,7 @@ const ScoutingHub = () => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Match Date</label>
-                <input type="date" value={reportForm.match_date} onChange={e => setReportForm(f => ({...f, match_date: e.target.value}))}
+                <input type="date" style={{colorScheme: "dark"}} value={reportForm.match_date} onChange={e => setReportForm(f => ({...f, match_date: e.target.value}))}
                   className={inputClass + " mt-1"} />
               </div>
               <div>

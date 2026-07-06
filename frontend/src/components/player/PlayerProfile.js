@@ -608,7 +608,7 @@ const PlayerProfile = () => {
   </Label>
   <Input
     id="contract_until"
-    type="date"
+    type="date" style={{colorScheme: "dark"}}
     value={formData.contract_until || ''}
     onChange={(e) => handleChange('contract_until', e.target.value)}
     style={{colorScheme: "dark"}}
@@ -879,7 +879,7 @@ const PlayerProfile = () => {
                       <Label className="text-sm font-medium uppercase tracking-wide">Match Date *</Label>
                       <Input
                         data-testid="match-date"
-                        type="date"
+                        type="date" style={{colorScheme: "dark"}}
                         value={newMatch.match_date}
                         onChange={(e) => handleNewMatchChange('match_date', e.target.value)}
                         className="mt-1 bg-black/20 border-white/10 h-10"
@@ -1038,7 +1038,7 @@ const PlayerProfile = () => {
                       <Label className="text-sm font-medium uppercase tracking-wide">Match Date *</Label>
                       <Input
                         data-testid="calendar-match-date"
-                        type="date"
+                        type="date" style={{colorScheme: "dark"}}
                         value={newCalendarMatch.match_date}
                         onChange={(e) => handleNewCalendarMatchChange('match_date', e.target.value)}
                         className="mt-1 bg-black/20 border-white/10 h-10"

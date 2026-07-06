@@ -476,7 +476,7 @@ const PlayerDetailView = () => {
             <div className="space-y-3">
               <div>
                 <label className="text-xs text-muted-foreground uppercase tracking-wide">Trial Date *</label>
-                <input type="date" value={trialForm.trial_date} onChange={e => setTrialForm(f => ({...f, trial_date: e.target.value}))}
+                <input type="date" style={{colorScheme: "dark"}} value={trialForm.trial_date} onChange={e => setTrialForm(f => ({...f, trial_date: e.target.value}))}
                   style={{colorScheme: "dark"}} className="w-full mt-1 bg-black/20 border border-white/10 focus:border-primary rounded-sm h-10 px-3 text-sm text-white outline-none" />
               </div>
               <div>

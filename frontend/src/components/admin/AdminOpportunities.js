@@ -212,7 +212,7 @@ const AdminOpportunities = () => {
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-foreground mb-1">Deadline</p>
-                    <input type="date" value={editDeadline} onChange={e => setEditDeadline(e.target.value)}
+                    <input type="date" style={{colorScheme: "dark"}} value={editDeadline} onChange={e => setEditDeadline(e.target.value)}
                       className="w-full bg-black/20 border border-white/10 rounded-sm px-2 h-9 text-sm text-white outline-none focus:border-primary" />
                   </div>
                   <div>

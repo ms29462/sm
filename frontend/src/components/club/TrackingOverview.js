@@ -320,7 +320,7 @@ const TrackingOverview = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Match Date</label>
-                  <input type="date" value={editingReport.match_date} onChange={e => setEditingReport(r => ({...r, match_date: e.target.value}))}
+                  <input type="date" style={{colorScheme: "dark"}} value={editingReport.match_date} onChange={e => setEditingReport(r => ({...r, match_date: e.target.value}))}
                     className={inputClass + " mt-1"} />
                 </div>
                 <div>

@@ -362,7 +362,7 @@ const EvaluationForm = () => {
                 <div>
                   <Label className="text-sm">Match Date</Label>
                   <Input
-                    type="date"
+                    type="date" style={{colorScheme: "dark"}}
                     value={matchInfo.match_date}
                     onChange={(e) => setMatchInfo({ ...matchInfo, match_date: e.target.value })}
                     className="mt-1.5 bg-zinc-800/50 border-zinc-700"
