@@ -7,8 +7,11 @@ import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Trophy, ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher";;
 
 const Login = ({ admin = false }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -74,7 +77,8 @@ const Login = ({ admin = false }) => {
             
             <h1 className="text-2xl md:text-3xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-10 w-auto" /></h1>
           </div>
-          <h2 className="text-2xl font-heading uppercase text-muted-foreground">
+          <div className="flex justify-end mb-4"><LanguageSwitcher /></div>
+        <h2 className="text-2xl font-heading uppercase text-muted-foreground">
             {admin ? "ADMIN LOGIN" : "LOGIN"}
           </h2>
         </div>
@@ -113,7 +117,7 @@ const Login = ({ admin = false }) => {
               disabled={loading}
               className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
             >
-              {loading ? "LOGGING IN..." : "LOGIN"}
+              {loading ? t("login.loading") : t("login.submit")}
             </Button>
           </form>
 

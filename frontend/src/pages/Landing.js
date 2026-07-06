@@ -1,9 +1,12 @@
 import { useNavigate } from 'react-router-dom';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Users, Trophy, ChevronRight } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen relative">
@@ -16,13 +19,14 @@ const Landing = () => {
         }}
       />
 
-      <nav className="relative z-10 bg-black/40 backdrop-blur-xl border-b border-white/10">
+      <nav className="relative z-50 bg-black/40 backdrop-blur-xl border-b border-white/10 overflow-visible">
         <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             
             <h1 className="text-2xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-10 w-auto" /></h1>
           </div>
           <div className="flex items-center space-x-4">
+            <LanguageSwitcher />
             <Button
               data-testid="landing-login-btn"
               variant="ghost"
@@ -35,12 +39,12 @@ const Landing = () => {
         </div>
       </nav>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 py-20">
+      <main className="relative z-0 max-w-7xl mx-auto px-6 md:px-12 py-20">
         <div className="text-center mb-20">
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold uppercase mb-6 leading-tight">
-            YOUR NEXT MOVE
+            {t("landing.hero_line1")}
             <br />
-            <span className="text-primary">STARTS HERE</span>
+            <span className="text-primary">{t("landing.hero_line2")}</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
             SoccerMatch connects players with clubs, universities, federations and agents worldwide. Build your profile, showcase your talent, get discovered — and use College Fit to find your path to US college soccer.
@@ -50,34 +54,34 @@ const Landing = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
           {[
             {
-              role: "player", label: "For Players", icon: "👤", btn: "Join as Player", path: "/player-register",
-              desc: "Create your profile, showcase your skills and get discovered by clubs worldwide.",
-              points: ["Build a professional profile", "Upload highlight videos", "Apply to opportunities", "Track your applications"]
+              role: "player", label: t("landing.for_players"), icon: "👤", btn: t("landing.btn_player"), path: "/player-register",
+              desc: t("landing.desc_player"),
+              points: [t("landing.pt_player_1"), t("landing.pt_player_2"), t("landing.pt_player_3"), t("landing.pt_player_4")]
             },
             {
-              role: "club", label: "For Clubs", icon: "🏟️", btn: "Join as Club", path: "/club-register",
-              desc: "Find the right talent for your squad. Post opportunities and manage your recruitment.",
-              points: ["Post recruitment opportunities", "Browse & filter players", "Manage applications", "Build your pipeline"]
+              role: "club", label: t("landing.for_clubs"), icon: "🏟️", btn: t("landing.btn_club"), path: "/club-register",
+              desc: t("landing.desc_club"),
+              points: [t("landing.pt_club_1"), t("landing.pt_club_2"), t("landing.pt_club_3"), t("landing.pt_club_4")]
             },
             {
-              role: "college", label: "For Colleges", icon: "🎓", btn: "Join as College", path: "/college-register",
-              desc: "Identify international student-athletes that match your program's academic and athletic standards.",
-              points: ["Search eligible players", "Post scholarships", "Filter by NCAA eligibility", "Manage recruitment"]
+              role: "college", label: t("landing.for_colleges"), icon: "🎓", btn: t("landing.btn_college"), path: "/college-register",
+              desc: t("landing.desc_college"),
+              points: [t("landing.pt_college_1"), t("landing.pt_college_2"), t("landing.pt_college_3"), t("landing.pt_college_4")]
             },
             {
-              role: "federation", label: "For Federations", icon: "🌍", btn: "Join as Federation", path: "/federation-register",
-              desc: "Identify and track talent for your national teams across all age categories.",
-              points: ["Scout national team talent", "Manage team groups", "Track player development", "Collaborate with clubs"]
+              role: "federation", label: t("landing.for_federations"), icon: "🌍", btn: t("landing.btn_federation"), path: "/federation-register",
+              desc: t("landing.desc_federation"),
+              points: [t("landing.pt_fed_1"), t("landing.pt_fed_2"), t("landing.pt_fed_3"), t("landing.pt_fed_4")]
             },
             {
-              role: "agent", label: "For Agents", icon: "🤝", btn: "Join as Agent", path: "/agent-register",
-              desc: "Represent your players and connect them with the right opportunities worldwide.",
-              points: ["Manage player portfolios", "Browse opportunities", "Connect with clubs", "Track player careers"]
+              role: "agent", label: t("landing.for_agents"), icon: "🤝", btn: t("landing.btn_agent"), path: "/agent-register",
+              desc: t("landing.desc_agent"),
+              points: [t("landing.pt_agent_1"), t("landing.pt_agent_2"), t("landing.pt_agent_3"), t("landing.pt_agent_4")]
             },
             {
-              role: "specialist", label: "For Specialists", icon: "📊", btn: "Join as Specialist", path: "/specialist-register",
-              desc: "Offer your expertise to players and organizations looking to improve performance.",
-              points: ["Connect with players", "Offer specialized services", "Build your network", "Grow your practice"]
+              role: "specialist", label: t("landing.for_specialists"), icon: "📊", btn: t("landing.btn_specialist"), path: "/specialist-register",
+              desc: t("landing.desc_specialist"),
+              points: [t("landing.pt_spec_1"), t("landing.pt_spec_2"), t("landing.pt_spec_3"), t("landing.pt_spec_4")]
             },
           ].map(card => (
             <div key={card.role}
@@ -97,7 +101,7 @@ const Landing = () => {
               </ul>
               <Button
                 onClick={e => { e.stopPropagation(); navigate(card.path); }}
-                className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10 text-sm"
+                className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm min-h-10 text-sm py-2 px-3"
               >
                 {card.btn}
               </Button>
@@ -110,11 +114,11 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-8 text-center text-muted-foreground text-sm">
           <div className="flex items-center justify-center gap-6 mb-4 flex-wrap">
             <button onClick={() => navigate('/cgu')} className="hover:text-primary transition-colors">Terms of Use</button>
-            <button onClick={() => navigate('/mentions-legales')} className="hover:text-primary transition-colors">Legal Notice</button>
-            <button onClick={() => navigate('/privacy-policy')} className="hover:text-primary transition-colors">Privacy Policy</button>
+            <button onClick={() => navigate('/mentions-legales')} className="hover:text-primary transition-colors">{t("landing.legal")}</button>
+            <button onClick={() => navigate('/privacy-policy')} className="hover:text-primary transition-colors">{t("landing.privacy_policy")}</button>
             <a href="mailto:contact@soccermatch.ca" className="hover:text-primary transition-colors">Contact</a>
           </div>
-          <p>&copy; 2026 Soccer Match Inc. — Montréal, Québec, Canada. All rights reserved.</p>
+          <p>&copy; 2026 Soccer Match Inc. — Montréal, Québec, Canada. {t("landing.all_rights")}</p>
         </div>
       </footer>
     </div>

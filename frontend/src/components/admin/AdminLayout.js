@@ -1,4 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
