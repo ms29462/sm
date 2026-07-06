@@ -196,6 +196,15 @@ class PlayerProfile(BaseModel):
     games: Optional[int] = 0
     goals: Optional[int] = 0
     assists: Optional[int] = 0
+    # Current season stats
+    season_games: Optional[int] = None
+    season_goals: Optional[int] = None
+    season_assists: Optional[int] = None
+    season_clean_sheets: Optional[int] = None
+    season_yellow_cards: Optional[int] = None
+    season_red_cards: Optional[int] = None
+    season_minutes_played: Optional[int] = None
+    season_label: Optional[str] = None
     highlight_video: Optional[str] = None
     cv: Optional[str] = None
     transfermarkt_url: Optional[str] = None  # Transfermarkt profile link
@@ -278,6 +287,15 @@ class PlayerUpdate(BaseModel):
     games: Optional[int] = None
     goals: Optional[int] = None
     assists: Optional[int] = None
+    # Current season stats
+    season_games: Optional[int] = None
+    season_goals: Optional[int] = None
+    season_assists: Optional[int] = None
+    season_clean_sheets: Optional[int] = None
+    season_yellow_cards: Optional[int] = None
+    season_red_cards: Optional[int] = None
+    season_minutes_played: Optional[int] = None
+    season_label: Optional[str] = None
     highlight_video: Optional[str] = None
     cv: Optional[str] = None
     transfermarkt_url: Optional[str] = None

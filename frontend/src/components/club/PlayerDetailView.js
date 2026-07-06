@@ -351,6 +351,31 @@ const PlayerDetailView = () => {
         </div>
       </div>
 
+      {/* Current Season Stats */}
+      {player.season_label && (
+        <div className="bg-card border border-border/50 p-6 rounded-sm mb-6">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-4">
+            Current Season — {player.season_label}
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: "Games", value: player.season_games },
+              { label: "Goals", value: player.season_goals },
+              { label: "Assists", value: player.season_assists },
+              { label: "Minutes", value: player.season_minutes_played },
+              { label: "Clean Sheets", value: player.season_clean_sheets },
+              { label: "Yellow Cards", value: player.season_yellow_cards },
+              { label: "Red Cards", value: player.season_red_cards },
+            ].filter(s => s.value !== null && s.value !== undefined).map(({ label, value }) => (
+              <div key={label} className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">{label}</p>
+                <p className="text-2xl font-heading font-bold">{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Media */}
       {(player.highlight_video || player.cv || player.transfermarkt_url) && (
         <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">

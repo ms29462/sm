@@ -725,6 +725,61 @@ const PlayerProfile = () => {
               />
             </div>
 
+            <div className="md:col-span-2 border-t border-border/30 pt-4">
+              <p className="text-sm font-bold uppercase tracking-wide text-primary mb-3">Current Season Stats</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <Label className="text-xs uppercase tracking-wide">Season Label</Label>
+                  <Input type="text" placeholder="e.g. 2024/25"
+                    value={formData.season_label || ""}
+                    onChange={e => handleChange("season_label", e.target.value)}
+                    className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide">Games</Label>
+                  <Input type="number" value={formData.season_games || ""}
+                    onChange={e => handleChange("season_games", parseInt(e.target.value) || null)}
+                    className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide">Goals</Label>
+                  <Input type="number" value={formData.season_goals || ""}
+                    onChange={e => handleChange("season_goals", parseInt(e.target.value) || null)}
+                    className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide">Assists</Label>
+                  <Input type="number" value={formData.season_assists || ""}
+                    onChange={e => handleChange("season_assists", parseInt(e.target.value) || null)}
+                    className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide">Minutes Played</Label>
+                  <Input type="number" value={formData.season_minutes_played || ""}
+                    onChange={e => handleChange("season_minutes_played", parseInt(e.target.value) || null)}
+                    className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide">Clean Sheets</Label>
+                  <Input type="number" value={formData.season_clean_sheets || ""}
+                    onChange={e => handleChange("season_clean_sheets", parseInt(e.target.value) || null)}
+                    className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide">Yellow Cards</Label>
+                  <Input type="number" value={formData.season_yellow_cards || ""}
+                    onChange={e => handleChange("season_yellow_cards", parseInt(e.target.value) || null)}
+                    className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide">Red Cards</Label>
+                  <Input type="number" value={formData.season_red_cards || ""}
+                    onChange={e => handleChange("season_red_cards", parseInt(e.target.value) || null)}
+                    className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
+                </div>
+              </div>
+            </div>
+
             <div className="md:col-span-2">
               <Label htmlFor="cv" className="text-sm font-medium uppercase tracking-wide">
                 CV / Resume (Base64 or URL)
