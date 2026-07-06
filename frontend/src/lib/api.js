@@ -286,6 +286,7 @@ export const api = {
   getAllDeletionRequests: () => axios.get(`${API}/admin/account-deletion-requests`, { headers: getAuthHeaders() }),
   approveDeletionRequest: (id) => axios.post(`${API}/admin/account-deletion-requests/${id}/approve`, {}, { headers: getAuthHeaders() }),
   dismissDeletionRequest: (id) => axios.post(`${API}/admin/account-deletion-requests/${id}/dismiss`, {}, { headers: getAuthHeaders() }),
+  getDeletedAccountsLog: () => axios.get(`${API}/admin/deleted-accounts-log`, { headers: getAuthHeaders() }),
   getFederationAccessStatus: () => axios.get(`${API}/federation/access-status`, { headers: getAuthHeaders() }),
   adminUpdateFederationAccess: (id, data) => axios.put(`${API}/admin/federations/${id}/access`, data, { headers: getAuthHeaders() }),
   getPlayerAnalytics: () => axios.get(`${API}/player/analytics`, { headers: getAuthHeaders() }),

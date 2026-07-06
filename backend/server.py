@@ -8110,6 +8110,27 @@ async def approve_deletion_request(request_id: str, current_user: dict = Depends
         raise HTTPException(status_code=404, detail="Request not found")
 
     user_id = req["user_id"]
+
+    # Log deletion before removing data
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    role = req.get("role", "unknown")
+    profile = None
+    for coll in [db.players, db.clubs, db.agents, db.specialists, db.federations]:
+        profile = await coll.find_one({"user_id": user_id}, {"_id": 0, "name": 1, "email": 1})
+        if profile:
+            break
+    await db.deleted_accounts_log.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "role": role,
+        "name": profile.get("name") if profile else None,
+        "email": user.get("email") if user else None,
+        "reason": req.get("reason", ""),
+        "deleted_at": datetime.now(timezone.utc).isoformat(),
+        "deleted_by": current_user["user_id"],
+        "request_id": request_id,
+    })
+
     await db.users.delete_one({"id": user_id})
     await db.players.delete_one({"user_id": user_id})
     await db.clubs.delete_one({"user_id": user_id})
@@ -8317,6 +8338,14 @@ async def cancel_club_deletion_request(current_user: dict = Depends(get_current_
         "status": "pending"
     })
     return {"message": "Deletion request cancelled"}
+
+
+@api_router.get("/admin/deleted-accounts-log")
+async def get_deleted_accounts_log(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    logs = await db.deleted_accounts_log.find({}, {"_id": 0}).sort("deleted_at", -1).to_list(1000)
+    return logs
 
 fastapi_app.include_router(api_router)
 

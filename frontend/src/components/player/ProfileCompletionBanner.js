@@ -53,6 +53,7 @@ const ProfileCompletionBanner = () => {
             </p>
             <p className="text-xs mt-1 opacity-80">
               Complete your profile to increase your visibility with clubs, federations and universities.
+              {score >= 90 && <span className="font-bold"> Reach 100% to earn +1 free credit!</span>}
             </p>
             {missing.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">

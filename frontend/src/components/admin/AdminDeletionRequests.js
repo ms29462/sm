@@ -5,6 +5,8 @@ import { Trash2, CheckCircle, XCircle } from "lucide-react";
 
 const AdminDeletionRequests = () => {
   const [requests, setRequests] = useState([]);
+  const [log, setLog] = useState([]);
+  const [tab, setTab] = useState('pending');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadRequests(); }, []);
@@ -54,7 +56,31 @@ const AdminDeletionRequests = () => {
         <p className="text-muted-foreground text-sm">{pending.length} pending request{pending.length !== 1 ? "s" : ""}</p>
       </div>
 
-      <div className="space-y-2">
+      <div className="flex gap-2 mb-4">
+        <button onClick={() => setTab('pending')}
+          className={`px-4 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${tab === 'pending' ? "bg-primary text-black border-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+          Pending ({requests.filter(r => r.status === "pending").length})
+        </button>
+        <button onClick={() => setTab('history')}
+          className={`px-4 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${tab === 'history' ? "bg-primary text-black border-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+          Deletion History ({log.length})
+        </button>
+      </div>
+
+      {tab === 'history' && (
+        <div className="space-y-2">
+          {log.length === 0 && <div className="bg-card border border-border/50 rounded-sm p-8 text-center text-muted-foreground text-sm">No deleted accounts yet</div>}
+          {log.map(entry => (
+            <div key={entry.id} className="bg-card border border-border/50 rounded-sm p-4">
+              <p className="font-bold text-sm">{entry.name || entry.email || entry.user_id}</p>
+              <p className="text-xs text-muted-foreground capitalize">{entry.role} • Deleted {entry.deleted_at?.slice(0,10)}</p>
+              {entry.reason && <p className="text-xs text-muted-foreground mt-1">Reason: "{entry.reason}"</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'pending' && <div className="space-y-2">
         {requests.length === 0 && (
           <div className="bg-card border border-border/50 rounded-sm p-8 text-center text-muted-foreground text-sm">
             No deletion requests

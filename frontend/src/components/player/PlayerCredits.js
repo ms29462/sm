@@ -6,7 +6,7 @@ import PremiumUpgrade from "@/components/player/PremiumUpgrade";
 
 const REWARDS = [
   { type: "email_verification", label: "Verify Email", credits: 1, description: "Verify your email address in your profile settings" },
-  { type: "profile_completion", label: "Complete Profile", credits: 1, description: "Fill all required fields in your profile. Credit is automatically granted when your profile reaches 100%.", auto: true },
+  { type: "profile_completion", label: "Complete Profile", credits: 1, description: "Reach 100% profile completion. Required: Date of Birth, Nationality, Profile Photo, Position, Preferred Foot, Competition Level, Height, Weight, Current Club, Current Country, Residence Country, Highlight Video, Contract Status, Looking For, and Bio.", auto: true },
   { type: "highlights_uploaded", label: "Upload Highlights", credits: 1, description: "Add a highlight video to your profile. Credit is automatically granted when you save your video.", auto: true },
 ];
 
