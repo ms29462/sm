@@ -428,9 +428,7 @@ const ClubOpportunities = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Button variant="ghost" size="icon" onClick={() => openEdit(opp)} className="text-muted-foreground hover:text-primary hover:bg-primary/10">
-                    <Pencil className="w-4 h-4" />
-                  </Button>
+
                   <Button data-testid={`delete-btn-${opp.id}`} variant="ghost" size="icon" onClick={() => setDeleteId(opp.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                     <Trash2 className="w-4 h-4" />
                   </Button>

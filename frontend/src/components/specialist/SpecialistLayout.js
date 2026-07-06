@@ -75,6 +75,14 @@ const SpecialistLayout = ({ children }) => {
               My Profile
             </Button>
           </Link>
+          <Link to="/specialist/players">
+            <Button
+              variant={isActive('/specialist/players') ? 'secondary' : 'ghost'}
+              className="w-full justify-start"
+            >
+              <Users className="w-4 h-4 mr-3" /> Find Players
+            </Button>
+          </Link>
           <Link to="/specialist/clients">
             <Button
               data-testid="nav-clients-btn"

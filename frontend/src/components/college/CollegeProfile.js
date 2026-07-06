@@ -7,7 +7,29 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { GraduationCap, Camera, Globe, MapPin, CheckCircle } from "lucide-react";
 
-const DIVISIONS = ["NCAA Division I", "NCAA Division II", "NAIA", "NJCAA"];
+const DIVISIONS = [
+  // USA
+  "NCAA Division I",
+  "NCAA Division II",
+  "NCAA Division III",
+  "NAIA",
+  "NJCAA",
+  "USCAA",
+  // Canada
+  "U SPORTS",
+  "CCAA",
+  // UK
+  "BUCS Premier",
+  "BUCS Championship",
+  "BUCS Trophy",
+  // Europe
+  "EUSA",
+  "French University Sports (FFSU)",
+  "German University Sports (adh)",
+  // Other
+  "University Sport Australia",
+  "Other"
+];
 
 const CollegeProfile = () => {
   const [profile, setProfile] = useState(null);

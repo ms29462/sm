@@ -160,6 +160,7 @@ const AdminOpportunities = () => {
               className={`bg-card border rounded-sm p-4 cursor-pointer transition-colors ${selected?.id === opp.id ? "border-primary" : "border-border/50 hover:border-white/30"}`}>
               <div className="flex items-start justify-between mb-2">
                 <p className="font-bold text-sm">{opp.title || opp.position}</p>
+                <p className="text-xs text-primary">{opp.club_name}</p>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ${STATUS_COLORS[getStatus(opp)] || STATUS_COLORS.draft}`}>
                   {getStatus(opp).replace("_", " ")}
                 </span>

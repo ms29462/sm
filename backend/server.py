@@ -2583,11 +2583,14 @@ async def update_application_status(
                 "rejected": "Your application status has been updated"
             }
             msg = status_messages.get(status_update.status, f"Your application status changed to {status_update.status}")
+            # Get opportunity name for context
+            opp = await db.opportunities.find_one({"id": application.get("opportunity_id")}, {"_id": 0, "position": 1, "league_level": 1})
+            opp_label = f"{opp.get('position', '')} — {opp.get('league_level', '')}" if opp else "your application"
             await create_notification(
                 application.get("player_id"),
                 "application_update",
-                f"📋 {msg}",
-                {"application_id": application_id, "status": status_update.status}
+                f"📋 {msg} — {opp_label}",
+                {"application_id": application_id, "status": status_update.status, "opportunity_label": opp_label}
             )
     except Exception as e:
         print(f"Notification error: {e}")
@@ -7970,6 +7973,8 @@ async def create_report(data: dict, current_user: dict = Depends(get_current_use
 
     if not reported_user_id or not category:
         raise HTTPException(status_code=400, detail="reported_user_id and category are required")
+    if not description or not description.strip():
+        raise HTTPException(status_code=400, detail="Please describe what happened")
     if category not in REPORT_CATEGORIES:
         raise HTTPException(status_code=400, detail="Invalid category")
     if reported_user_id == current_user["user_id"]:

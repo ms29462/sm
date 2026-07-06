@@ -56,6 +56,24 @@ const NotificationBell = () => {
     } catch (e) {}
   };
 
+  const getNotificationRoute = (notif) => {
+    const data = notif.data || {};
+    switch (notif.type) {
+      case "application_update":
+        return "/player/applications";
+      case "chat_request":
+        return "/player/chat-requests";
+      case "chat_request_rejected":
+        return null;
+      case "profile_viewed":
+        return "/player/analytics";
+      case "trial_invitation":
+        return "/player/trials";
+      default:
+        return null;
+    }
+  };
+
   const markRead = async (notif) => {
     if (!notif.read) {
       try {
@@ -63,6 +81,11 @@ const NotificationBell = () => {
         setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n));
         setUnread(prev => Math.max(0, prev - 1));
       } catch (e) {}
+    }
+    const route = getNotificationRoute(notif);
+    if (route) {
+      setOpen(false);
+      navigate(route);
     }
   };
 

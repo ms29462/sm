@@ -321,6 +321,7 @@ const ClubProfile = () => {
           </div>
         </div>
       </div>
+    <DeleteOrgAccountSection />
     </div>
   );
 };

@@ -321,6 +321,7 @@ const AgentProfile = () => {
           {saving ? 'SAVING...' : 'SAVE PROFILE'}
         </Button>
       </form>
+    <DeleteOrgAccountSection />
     </div>
   );
 };

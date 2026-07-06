@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { FileText, Building, MapPin, DollarSign, Clock } from 'lucide-react';
+import { FileText, Building, MapPin, DollarSign, Clock, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const AgentOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
@@ -94,6 +95,12 @@ const AgentOpportunities = () => {
               </div>
 
               <p className="text-muted-foreground text-sm">{opp.description}</p>
+              <div className="mt-4 flex justify-end">
+                <Link to={`/agent/opportunity/${opp.id}`}
+                  className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 transition-colors">
+                  <ExternalLink className="w-3.5 h-3.5" /> View Details
+                </Link>
+              </div>
             </div>
           ))}
         </div>
