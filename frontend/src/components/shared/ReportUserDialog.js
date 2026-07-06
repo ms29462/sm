@@ -76,12 +76,12 @@ const ReportUserDialog = ({ reportedUserId, triggerLabel = "Report" }) => {
           </div>
           <div>
             <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground mb-2">
-              Additional details (optional)
+              Additional details
             </p>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe what happened... (required)"
+              placeholder="Describe what happened..."
               rows={4}
             />
           </div>

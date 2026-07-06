@@ -36,8 +36,6 @@ const ClubOpportunities = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [errors, setErrors] = useState({});
   const [deleteId, setDeleteId] = useState(null);
-  const [editingOpp, setEditingOpp] = useState(null);
-  const [editForm, setEditForm] = useState({});
   const [formData, setFormData] = useState({
     position: "", league_level: "", salary_range: "",
     contract_duration: "", description: "",
@@ -129,22 +127,6 @@ const ClubOpportunities = () => {
       deadline: opp.deadline || "",
       max_applicants: opp.max_applicants || "",
     });
-  };
-
-  const handleEditSave = async () => {
-    try {
-      const data = {
-        ...editForm,
-        position: editForm.positions?.length ? editForm.positions.join(", ") : "",
-        league_level: editForm.league_level === "Other" ? editForm.custom_league : editForm.league_level,
-      };
-      await api.updateOpportunity(editingOpp.id, data);
-      toast.success("Opportunity updated!");
-      setEditingOpp(null);
-      loadOpportunities();
-    } catch (e) {
-      toast.error("Failed to update opportunity");
-    }
   };
 
   const handleDeleteConfirmed = async () => {
@@ -410,6 +392,9 @@ const ClubOpportunities = () => {
                 )}
                   {opp.status === "pending_review" && (
                     <p className="text-xs text-yellow-400 mt-1">⏳ Under review by Soccer Match</p>
+                  )}
+                  {opp.status === "published" && (
+                    <p className="text-xs text-muted-foreground mt-1">To edit this opportunity, email <a href="mailto:contact@soccermatch.ca" className="text-primary">contact@soccermatch.ca</a></p>
                   )}
                   {opp.status === "changes_requested" && opp.public_feedback && (
                     <p className="text-xs text-orange-400 mt-1">📝 {opp.public_feedback}</p>
