@@ -4,9 +4,10 @@ import AgentLayout from '@/components/agent/AgentLayout';
 import AgentHome from '@/components/agent/AgentHome';
 import AgentProfile from '@/components/agent/AgentProfile';
 import AgentPlayers from '@/components/agent/AgentPlayers';
-import AgentPlayerDetail from '@/components/agent/AgentPlayerDetail';
+import PlayerDetailView from '@/components/club/PlayerDetailView';
 import AgentWatchlist from '@/components/agent/AgentWatchlist';
 import AgentOpportunities from '@/components/agent/AgentOpportunities';
+import OpportunityDetail from '@/pages/OpportunityDetail';
 import AgentSubscribe from '@/components/agent/AgentSubscribe';
 import AgentSubscriptionGate from '@/components/agent/AgentSubscriptionGate';
 
@@ -18,9 +19,10 @@ const AgentDashboard = () => {
         <Route path="profile" element={<AgentProfile />} />
         <Route path="subscribe" element={<AgentSubscribe />} />
         <Route path="players" element={<AgentSubscriptionGate><AgentPlayers /></AgentSubscriptionGate>} />
-        <Route path="player/:playerId" element={<AgentSubscriptionGate><AgentPlayerDetail /></AgentSubscriptionGate>} />
+        <Route path="player/:playerId" element={<AgentSubscriptionGate><PlayerDetailView /></AgentSubscriptionGate>} />
         <Route path="watchlist" element={<AgentSubscriptionGate><AgentWatchlist /></AgentSubscriptionGate>} />
         <Route path="opportunities" element={<AgentSubscriptionGate><AgentOpportunities /></AgentSubscriptionGate>} />
+        <Route path="opportunity/:opportunityId" element={<AgentSubscriptionGate><OpportunityDetail /></AgentSubscriptionGate>} />
         <Route path="*" element={<Navigate to="/agent/dashboard" replace />} />
         <Route path="news" element={<NewsFeed />} />
       </Routes>

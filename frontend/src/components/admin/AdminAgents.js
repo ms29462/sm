@@ -124,7 +124,22 @@ const AdminAgents = () => {
                       </p>
                     )}
                     {agent.license_number && (
-                      <p className="text-sm text-muted-foreground">License: {agent.license_number}</p>
+                      <p className="text-sm text-muted-foreground">License #: {agent.license_number}</p>
+                    )}
+                    {agent.license_type && (
+                      <p className="text-sm text-muted-foreground">License Type: <span className="text-white">{agent.license_type}</span></p>
+                    )}
+                    {agent.licensing_authority && (
+                      <p className="text-sm text-muted-foreground">Issuing Body: <span className="text-white">{agent.licensing_authority}</span></p>
+                    )}
+                    {agent.license_document && (
+                      <p className="text-sm text-muted-foreground">License Doc: <a href={agent.license_document} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Document</a></p>
+                    )}
+                    {agent.experience && (
+                      <p className="text-sm text-muted-foreground">Experience: <span className="text-white">{agent.experience}</span></p>
+                    )}
+                    {agent.primary_market && (
+                      <p className="text-sm text-muted-foreground">Primary Market: <span className="text-white">{agent.primary_market}</span></p>
                     )}
                     <div className="flex gap-2 mt-2 flex-wrap">
                       {agent.specializations?.map(spec => (

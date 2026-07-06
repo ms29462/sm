@@ -193,11 +193,11 @@ const AgentRegister = () => {
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Licensing Authority *</label>
-                <select value={form.licensing_authority} onChange={e => set("licensing_authority", e.target.value)} className={inputClass + " cursor-pointer"}>
-                  <option value="">Select authority...</option>
-                  {LICENSING_AUTHORITIES.map(a => <option key={a}>{a}</option>)}
-                </select>
+                <label className={labelClass}>Issuing Body *</label>
+                <input type="text" value={form.licensing_authority}
+                  onChange={e => set("licensing_authority", e.target.value)}
+                  placeholder="e.g. French Football Federation, CAF, CONCACAF..."
+                  className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>License Number *</label>

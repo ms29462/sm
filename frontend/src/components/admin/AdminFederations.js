@@ -219,6 +219,14 @@ const AdminFederations = () => {
                   {federation.description}
                 </p>
               )}
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs border-t border-border/30 pt-3">
+                {federation.federation_type && <p className="text-muted-foreground">Type: <span className="text-white">{federation.federation_type}</span></p>}
+                {federation.primary_objective && <p className="text-muted-foreground">Objective: <span className="text-white">{federation.primary_objective}</span></p>}
+                {federation.rep_first_name && <p className="text-muted-foreground">Rep: <span className="text-white">{federation.rep_first_name} {federation.rep_last_name} — {federation.rep_role}</span></p>}
+                {federation.rep_email && <p className="text-muted-foreground">Rep Email: <span className="text-white">{federation.rep_email}</span></p>}
+                {federation.eligible_nationalities?.length > 0 && <p className="text-muted-foreground col-span-2">Eligible Nationalities: <span className="text-white">{federation.eligible_nationalities.join(", ")}</span></p>}
+                {federation.website && <p className="text-muted-foreground">Website: <a href={federation.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{federation.website}</a></p>}
+              </div>
             </div>
           ))}
         </div>
