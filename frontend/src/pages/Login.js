@@ -86,7 +86,7 @@ const Login = ({ admin = false }) => {
         <div className="bg-card border border-border/50 p-8 rounded-sm">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="email" className="text-sm font-medium uppercase tracking-wide">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium uppercase tracking-wide">{t("login.email_label")}</Label>
               <Input
                 id="email"
                 data-testid="login-email-input"
@@ -94,12 +94,12 @@ const Login = ({ admin = false }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                placeholder="Enter your email"
+                placeholder={t("login.placeholder_email")}
                 required
               />
             </div>
             <div>
-              <Label htmlFor="password" className="text-sm font-medium uppercase tracking-wide">Password</Label>
+              <Label htmlFor="password" className="text-sm font-medium uppercase tracking-wide">{t("login.password_label")}</Label>
               <Input
                 id="password"
                 data-testid="login-password-input"
@@ -107,7 +107,7 @@ const Login = ({ admin = false }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                placeholder="Enter your password"
+                placeholder={t("login.placeholder_password")}
                 required
               />
             </div>
@@ -144,7 +144,7 @@ const Login = ({ admin = false }) => {
             className="text-muted-foreground hover:text-primary inline-flex items-center space-x-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to home</span>
+            <span>{t("login.back_home")}</span>
           </button>
         </div>
       </div>
@@ -154,15 +154,15 @@ const Login = ({ admin = false }) => {
             <div className="w-16 h-16 bg-yellow-500/10 border border-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">⏳</span>
             </div>
-            <h3 className="font-heading font-bold uppercase text-lg mb-3">Application Under Review</h3>
+            <h3 className="font-heading font-bold uppercase text-lg mb-3">{t("login.pending_title")}</h3>
             <div className="inline-block px-3 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded-sm mb-4">
-              <p className="text-xs font-bold text-yellow-400 uppercase tracking-wide">Pending Review</p>
+              <p className="text-xs font-bold text-yellow-400 uppercase tracking-wide">{t("login.pending_badge")}</p>
             </div>
             <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-              Your {pendingRole === 'federation' ? 'federation' : pendingRole === 'college' ? 'college' : pendingRole === 'agent' ? 'agent' : pendingRole === 'specialist' ? 'specialist' : 'club'} application is currently being reviewed by the Soccer Match team.
+              {t("login.your")} {pendingRole} {t("login.pending_body_1")}
             </p>
             <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-              A member of our team will contact you within <strong className="text-white">48 hours</strong> to verify your club and finalize your account activation.
+              {t("login.pending_body_2")} <strong className="text-white">{t("login.pending_hours")}</strong> {t("login.pending_body_3")}
             </p>
             <p className="text-sm text-muted-foreground mb-5">
               Questions? <a href="mailto:contact@soccermatch.ca" className="text-primary hover:underline">contact@soccermatch.ca</a>

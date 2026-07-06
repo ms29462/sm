@@ -87,7 +87,22 @@
     "suspended": "Ce compte a été suspendu. Veuillez contacter contact@soccermatch.ca pour obtenir de l'aide.",
     "banned": "Ce compte a été définitivement banni.",
     "pending_review": "Votre dossier {{role}} est actuellement en cours d'examen par l'équipe Soccer Match.",
-    "forgot_password": "Mot de passe oublié ?"
+    "forgot_password": "Mot de passe oublié ?",
+    "email_label": "Adresse e-mail",
+    "password_label": "Mot de passe",
+    "back_home": "Retour à l'accueil",
+    "placeholder_email": "Entrez votre adresse e-mail",
+    "placeholder_password": "Entrez votre mot de passe",
+    "pending_title": "Dossier en cours d'examen",
+    "pending_badge": "En cours d'examen",
+    "pending_body_1": "est actuellement en cours d'examen par l'équipe Soccer Match.",
+    "pending_body_2": "Un membre de notre équipe vous contactera dans un délai de",
+    "pending_hours": "48 heures",
+    "pending_body_3": "pour vérifier votre dossier et finaliser l'activation de votre compte.",
+    "pending_questions": "Des questions ?",
+    "close": "Fermer",
+    "login_success": "Connexion réussie !",
+    "your": "Votre"
   },
   "opportunities": {
     "title": "OPPORTUNITÉS",

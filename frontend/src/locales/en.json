@@ -87,7 +87,22 @@
     "suspended": "This account has been suspended. Please contact contact@soccermatch.ca for assistance.",
     "banned": "This account has been permanently banned.",
     "pending_review": "Your {{role}} application is currently being reviewed by the Soccer Match team.",
-    "forgot_password": "Forgot password?"
+    "forgot_password": "Forgot password?",
+    "email_label": "Email",
+    "password_label": "Password",
+    "back_home": "Back to home",
+    "placeholder_email": "Enter your email",
+    "placeholder_password": "Enter your password",
+    "pending_title": "Application Under Review",
+    "pending_badge": "Pending Review",
+    "pending_body_1": "application is currently being reviewed by the Soccer Match team.",
+    "pending_body_2": "A member of our team will contact you within",
+    "pending_hours": "48 hours",
+    "pending_body_3": "to verify your club and finalize your account activation.",
+    "pending_questions": "Questions?",
+    "close": "Close",
+    "login_success": "Login successful!",
+    "your": "Your"
   },
   "opportunities": {
     "title": "OPPORTUNITIES",
