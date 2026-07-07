@@ -41,7 +41,7 @@ const ClubOpportunities = () => {
   const [formData, setFormData] = useState({
     position: "", league_level: "", salary_range: "",
     contract_duration: "", description: "",
-    deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: [], visibility: "anonymous"
+    deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: [], visibility: "anonymous", country: ""
   });
 
   useEffect(() => {
@@ -277,6 +277,11 @@ const ClubOpportunities = () => {
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Salary Range</Label>
                   <Input data-testid="salary-range-input" value={formData.salary_range} onChange={(e) => handleChange("salary_range", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., $50k - $100k" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium uppercase tracking-wide">Country</Label>
+                  <Input value={formData.country} onChange={(e) => handleChange("country", e.target.value)}
+                    className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. Romania, France, USA" />
                 </div>
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Contract Duration</Label>
