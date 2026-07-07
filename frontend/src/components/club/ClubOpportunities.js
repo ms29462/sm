@@ -33,6 +33,8 @@ const ClubOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
+  const [editingOpp, setEditingOpp] = useState(null);
+  const [editForm, setEditForm] = useState({});
   const [showDialog, setShowDialog] = useState(false);
   const [errors, setErrors] = useState({});
   const [deleteId, setDeleteId] = useState(null);
