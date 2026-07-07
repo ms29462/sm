@@ -3043,6 +3043,17 @@ async def get_all_opportunities_admin(current_user: dict = Depends(get_current_u
     opportunities = await db.opportunities.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     opportunities = await attach_applicant_counts(opportunities)
 
+    # Fill in missing club_name from clubs/colleges/federations collections
+    for opp in opportunities:
+        if not opp.get("club_name") and opp.get("club_id"):
+            org = await db.clubs.find_one({"user_id": opp["club_id"]}, {"_id": 0, "name": 1, "club_name": 1})
+            if not org:
+                org = await db.federations.find_one({"user_id": opp["club_id"]}, {"_id": 0, "name": 1})
+            if not org:
+                org = await db.agents.find_one({"user_id": opp["club_id"]}, {"_id": 0, "name": 1, "agency_name": 1})
+            if org:
+                opp["club_name"] = org.get("club_name") or org.get("agency_name") or org.get("name") or "Unknown"
+
     # Anonymize opportunities for players
     if current_user["role"] == "player":
         result = []
