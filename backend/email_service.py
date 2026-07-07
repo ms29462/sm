@@ -193,6 +193,6 @@ async def send_credit_purchase_confirmation(email: str, name: str, credits: int,
           </td>
         </tr>
       </table>
-      <p style="color:#555;font-size:13px;">Questions? Contact us at <a href="mailto:contact@soccer-match.org" style="color:#c8f135;">contact@soccer-match.org</a></p>
+      <p style="color:#555;font-size:13px;">Questions? Contact us at <a href="mailto:contact@soccermatch.ca" style="color:#c8f135;">contact@soccermatch.ca</a></p>
     """
     await send_email(email, f"Payment Confirmed - {pack_name} — Soccer Match", get_base_template(content))
