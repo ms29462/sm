@@ -1055,13 +1055,13 @@ class OpportunityCreate(BaseModel):
 class Opportunity(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    club_id: str
-    club_name: str
+    club_id: Optional[str] = None
+    club_name: Optional[str] = None
     club_country: Optional[str] = None
     position: Optional[str] = None
     positions: Optional[List[str]] = None
     country: Optional[str] = None
-    league_level: str
+    league_level: Optional[str] = None
     salary_range: Optional[str] = None
     contract_duration: Optional[str] = None
     description: str
