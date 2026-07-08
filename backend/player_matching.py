@@ -531,6 +531,53 @@ session.headers.update(HEADERS)
 _scrape_cache: Dict[str, Any] = {}
 CACHE_TTL_SECONDS = 3600  # 1 hour
 
+
+def map_league_level_to_benchmark(league_level: str) -> str:
+    """Maps new league level format (Professional / 1st Tier) to benchmark keys."""
+    if not league_level:
+        return "USL Championship"
+    
+    ll = league_level.strip()
+    
+    # Already a known benchmark key
+    known_keys = [
+        "Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1",
+        "MLS", "USL Championship", "USL League One", "CPL", "Liga MX",
+        "Brasileirao", "Eredivisie", "Primeira Liga", "NCAA Division I",
+        "NCAA Division II", "NAIA", "NJCAA"
+    ]
+    if ll in known_keys:
+        return ll
+
+    # Map new format to closest benchmark
+    if "/" in ll:
+        parts = [p.strip() for p in ll.split("/")]
+        level = parts[0] if parts else ""
+        tier = parts[1] if len(parts) > 1 else ""
+
+        if "College" in level or "University" in level:
+            if "NCAA Division I" in tier: return "NCAA Division I"
+            if "NCAA Division II" in tier: return "NCAA Division II"
+            if "NAIA" in tier: return "NAIA"
+            if "NJCAA" in tier: return "NJCAA"
+            return "NCAA Division II"
+
+        if "Professional" in level:
+            if "1st" in tier: return "USL Championship"
+            if "2nd" in tier: return "USL Championship"
+            if "3rd" in tier: return "USL League One"
+            return "USL Championship"
+
+        if "Semi-Professional" in level:
+            if "1st" in tier: return "USL League One"
+            return "USL League One"
+
+        if "Amateur" in level:
+            return "USL League One"
+
+    return "USL Championship"
+
+
 def get_soup_cached(url: str, timeout: int = 30) -> Optional[BeautifulSoup]:
     """Cached version of get_soup â€” avoids hitting the same URL twice"""
     import time
@@ -1321,8 +1368,8 @@ def calculate_match_score_for_opportunity(
             "level_score": None,
             "fit_label": "No benchmark data",
             "level_label": "No benchmark data",
-            "position_match": position_group_val == opp_position_group,
-            "position_match_bonus": 10 if position_group_val == opp_position_group else 0
+            "position_match": position_group_val == opp_position_group or position_group(player.get("secondary_position", "")) == opp_position_group,
+            "position_match_bonus": 10 if position_group_val == opp_position_group else (5 if position_group(player.get("secondary_position", "")) == opp_position_group else 0)
         }
 
     # Compute production score
@@ -1472,17 +1519,33 @@ async def get_player_match_scores(
     # If Transfermarkt failed or no URL, build player dict from their profile stats
     if not player_dict and player_profile:
         position_val = player_profile.get("position", "")
+        # Prefer current season stats over career stats when available
+        season_games = player_profile.get("season_games")
+        season_goals = player_profile.get("season_goals")
+        season_assists = player_profile.get("season_assists")
+        season_minutes = player_profile.get("season_minutes_played")
+
+        appearances = season_games if season_games is not None else player_profile.get("games", 0)
+        goals = season_goals if season_goals is not None else player_profile.get("goals", 0)
+        assists = season_assists if season_assists is not None else player_profile.get("assists", 0)
+        minutes = season_minutes if season_minutes is not None else (appearances or 0) * 80
+
+        # Use primary position, fall back to secondary position for matching
+        secondary_val = player_profile.get("secondary_position", "")
+        position_val = position_val or secondary_val
+
         player_dict = {
             "age": player_profile.get("age", 25),
             "market_value_eur": None,
-            "appearances": player_profile.get("games", 0),
-            "minutes": (player_profile.get("games", 0) or 0) * 80,
-            "goals": player_profile.get("goals", 0),
-            "assists": player_profile.get("assists", 0),
+            "appearances": appearances or 0,
+            "minutes": minutes or 0,
+            "goals": goals or 0,
+            "assists": assists or 0,
             "position_clean": position_val,
             "position_group": position_group(position_val),
             "position_role": position_role_from_text(position_val),
-            "league": player_profile.get("playing_level", "Amateur"),
+            "secondary_position": secondary_val,
+            "league": map_league_level_to_benchmark(player_profile.get("playing_level", "Amateur")),
         }
     
     if not player_dict:
@@ -1490,7 +1553,7 @@ async def get_player_match_scores(
 
     results = []
     for opp in opportunities:
-        opp_league = opp.get("league_level", "USL Championship")  # Default league
+        opp_league = map_league_level_to_benchmark(opp.get("league_level", "USL Championship"))  # Map to benchmark key
         opp_position = opp.get("position", "")
 
         match_score = calculate_match_score_for_opportunity(

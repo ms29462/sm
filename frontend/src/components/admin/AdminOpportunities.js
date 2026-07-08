@@ -161,6 +161,9 @@ const AdminOpportunities = () => {
               <div className="flex items-start justify-between mb-2">
                 <p className="font-bold text-sm">{opp.title || opp.position}</p>
                 <p className="text-xs text-primary">{opp.club_name}</p>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ${opp.visibility === "public" ? "text-green-400 border-green-500/30 bg-green-500/10" : "text-gray-400 border-gray-500/30 bg-gray-500/10"}`}>
+                  {opp.visibility === "public" ? "PUBLIC" : "ANONYMOUS"}
+                </span>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ${STATUS_COLORS[getStatus(opp)] || STATUS_COLORS.draft}`}>
                   {getStatus(opp).replace("_", " ")}
                 </span>

@@ -33,6 +33,7 @@ const ClubPlayers = () => {
   const [filterMinScore, setFilterMinScore] = useState('');
   const [filterTeam, setFilterTeam] = useState('');
   const [filterResidence, setFilterResidence] = useState('');
+  const [filterNationality2, setFilterNationality2] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [filterMandate, setFilterMandate] = useState('');
@@ -46,7 +47,7 @@ const ClubPlayers = () => {
 
   useEffect(() => {
     loadPlayers();
-  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence]);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2]);
 
   const loadPlayers = async () => {
     try {
@@ -64,6 +65,7 @@ const ClubPlayers = () => {
       if (filterMinScore) queryFilters.min_quality_score = parseInt(filterMinScore);
       if (filterTeam) queryFilters.national_team = filterTeam;
       if (filterResidence) queryFilters.residence_country = filterResidence;
+      if (filterNationality2) queryFilters.nationality_2 = filterNationality2;
       queryFilters.page = page;
       queryFilters.limit = 20;
       queryFilters.page = page;
@@ -176,6 +178,18 @@ const ClubPlayers = () => {
                 ))}
               </SelectContent>
             </Select>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">2nd Nationality</label>
+            <Select value={filterNationality2 || "All"} onValueChange={(value) => setFilterNationality2(value === "All" ? "" : value)}>
+              <SelectTrigger className="bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12">
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px]">
+                <SelectItem value="All">All</SelectItem>
+                {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
           </div>
           <div className="col-span-1 md:col-span-2 lg:col-span-4 flex items-center gap-6 pt-3 border-t border-border/30 mt-2">
             <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Video:</label>
@@ -226,14 +240,7 @@ const ClubPlayers = () => {
               <select value={filterResidence} onChange={e => setFilterResidence(e.target.value)}
                 className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
                 <option value="">Any Country</option>
-                <option>France</option><option>England</option><option>Spain</option><option>Germany</option><option>Italy</option>
-                <option>Portugal</option><option>Belgium</option><option>Netherlands</option><option>Brazil</option><option>Argentina</option>
-                <option>USA</option><option>Canada</option><option>Morocco</option><option>Senegal</option><option>Nigeria</option>
-                <option>Ghana</option><option>Cameroon</option><option>Ivory Coast</option><option>Algeria</option><option>Tunisia</option>
-                <option>Egypt</option><option>South Africa</option><option>Japan</option><option>South Korea</option><option>Australia</option>
-                <option>Mexico</option><option>Colombia</option><option>Chile</option><option>Uruguay</option><option>Turkey</option>
-                <option>Sweden</option><option>Norway</option><option>Denmark</option><option>Switzerland</option><option>Poland</option>
-                <option>Ukraine</option><option>Serbia</option><option>Croatia</option><option>Scotland</option><option>Ireland</option>
+                {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
 

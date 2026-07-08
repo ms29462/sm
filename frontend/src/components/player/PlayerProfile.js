@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
 import DeleteAccountSection from "./DeleteAccountSection";
 import { api } from '@/lib/api';
+import LeagueLevelPicker from '@/components/shared/LeagueLevelPicker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -457,84 +458,7 @@ const PlayerProfile = () => {
                 className="mt-2 w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white outline-none cursor-pointer"
               >
                 <option value="">Select country of residence...</option>
-              <option value="Afghanistan">Afghanistan</option>
-              <option value="Albania">Albania</option>
-              <option value="Algeria">Algeria</option>
-              <option value="Angola">Angola</option>
-              <option value="Argentina">Argentina</option>
-              <option value="Australia">Australia</option>
-              <option value="Austria">Austria</option>
-              <option value="Belgium">Belgium</option>
-              <option value="Bolivia">Bolivia</option>
-              <option value="Brazil">Brazil</option>
-              <option value="Cameroon">Cameroon</option>
-              <option value="Canada">Canada</option>
-              <option value="Chile">Chile</option>
-              <option value="China">China</option>
-              <option value="Colombia">Colombia</option>
-              <option value="Congo">Congo</option>
-              <option value="Costa Rica">Costa Rica</option>
-              <option value="Croatia">Croatia</option>
-              <option value="Czech Republic">Czech Republic</option>
-              <option value="Denmark">Denmark</option>
-              <option value="DR Congo">DR Congo</option>
-              <option value="Ecuador">Ecuador</option>
-              <option value="Egypt">Egypt</option>
-              <option value="England">England</option>
-              <option value="Ethiopia">Ethiopia</option>
-              <option value="Finland">Finland</option>
-              <option value="France">France</option>
-              <option value="Germany">Germany</option>
-              <option value="Ghana">Ghana</option>
-              <option value="Greece">Greece</option>
-              <option value="Guinea">Guinea</option>
-              <option value="Honduras">Honduras</option>
-              <option value="Hungary">Hungary</option>
-              <option value="India">India</option>
-              <option value="Indonesia">Indonesia</option>
-              <option value="Iran">Iran</option>
-              <option value="Ireland">Ireland</option>
-              <option value="Israel">Israel</option>
-              <option value="Italy">Italy</option>
-              <option value="Ivory Coast">Ivory Coast</option>
-              <option value="Jamaica">Jamaica</option>
-              <option value="Japan">Japan</option>
-              <option value="Jordan">Jordan</option>
-              <option value="Kenya">Kenya</option>
-              <option value="Mali">Mali</option>
-              <option value="Mexico">Mexico</option>
-              <option value="Morocco">Morocco</option>
-              <option value="Netherlands">Netherlands</option>
-              <option value="New Zealand">New Zealand</option>
-              <option value="Nigeria">Nigeria</option>
-              <option value="Norway">Norway</option>
-              <option value="Panama">Panama</option>
-              <option value="Paraguay">Paraguay</option>
-              <option value="Peru">Peru</option>
-              <option value="Poland">Poland</option>
-              <option value="Portugal">Portugal</option>
-              <option value="Romania">Romania</option>
-              <option value="Russia">Russia</option>
-              <option value="Saudi Arabia">Saudi Arabia</option>
-              <option value="Scotland">Scotland</option>
-              <option value="Senegal">Senegal</option>
-              <option value="Serbia">Serbia</option>
-              <option value="South Africa">South Africa</option>
-              <option value="South Korea">South Korea</option>
-              <option value="Spain">Spain</option>
-              <option value="Sweden">Sweden</option>
-              <option value="Switzerland">Switzerland</option>
-              <option value="Tunisia">Tunisia</option>
-              <option value="Turkey">Turkey</option>
-              <option value="Uganda">Uganda</option>
-              <option value="Ukraine">Ukraine</option>
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="United States">United States</option>
-              <option value="Uruguay">Uruguay</option>
-              <option value="Venezuela">Venezuela</option>
-              <option value="Wales">Wales</option>
-              <option value="Zambia">Zambia</option>
-              <option value="Zimbabwe">Zimbabwe</option>
+              {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
 
@@ -603,14 +527,14 @@ const PlayerProfile = () => {
               />
             </div>
 <div>
-  <Label htmlFor="contract_until" className="text-sm font-medium uppercase tracking-wide">
+  <Label htmlFor="contract_end_date" className="text-sm font-medium uppercase tracking-wide">
     Contract Until
   </Label>
   <Input
-    id="contract_until"
+    id="contract_end_date"
     type="date" style={{colorScheme: "dark"}}
-    value={formData.contract_until || ''}
-    onChange={(e) => handleChange('contract_until', e.target.value)}
+    value={formData.contract_end_date || ''}
+    onChange={(e) => handleChange('contract_end_date', e.target.value)}
     style={{colorScheme: "dark"}}
     className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
   />
@@ -650,27 +574,17 @@ const PlayerProfile = () => {
               <Label htmlFor="playing_level" className="text-sm font-medium uppercase tracking-wide">
                 Playing Level
               </Label>
-              <Select value={formData.playing_level || ''} onValueChange={(value) => handleChange('playing_level', value)}>
-                <SelectTrigger
-                  id="playing_level"
-                  data-testid="playing-level-select"
-                  className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                >
-                  <SelectValue placeholder="Select level" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LEVELS.map((level) => (
-                    <SelectItem key={level} value={level}>
-                      {level}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="mt-2">
+                <LeagueLevelPicker
+                  value={formData.playing_level || ""}
+                  onChange={(val) => handleChange("playing_level", val)}
+                />
+              </div>
             </div>
 
             <div>
               <Label htmlFor="games" className="text-sm font-medium uppercase tracking-wide">
-                Games Played
+                Career Games Played
               </Label>
               <Input
                 id="games"
@@ -684,7 +598,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="goals" className="text-sm font-medium uppercase tracking-wide">
-                Goals
+                Career Goals
               </Label>
               <Input
                 id="goals"
@@ -698,7 +612,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="assists" className="text-sm font-medium uppercase tracking-wide">
-                Assists
+                Career Assists
               </Label>
               <Input
                 id="assists"

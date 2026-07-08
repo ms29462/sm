@@ -67,7 +67,7 @@ const PlayerAnalytics = () => {
       </div>
 
       <div className="bg-card border border-border/50 rounded-sm p-5">
-        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Views — Last 30 Days</p>
+        <p className="text-xs font-bold uppercase tracking-widests text-muted-foreground mb-4">Views — Last 30 Days</p>
         {sortedDays.length === 0 ? (
           <p className="text-sm text-muted-foreground">No views recorded yet in this period.</p>
         ) : (
@@ -84,6 +84,39 @@ const PlayerAnalytics = () => {
           </div>
         )}
       </div>
+
+      {data?.viewer_breakdown && Object.keys(data.viewer_breakdown).length > 0 && (
+        <div className="bg-card border border-border/50 rounded-sm p-5">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Who Viewed Your Profile</p>
+          <div className="space-y-3">
+            {Object.entries(data.viewer_breakdown)
+              .sort((a, b) => b[1] - a[1])
+              .map(([level, count]) => {
+                const maxCount = Math.max(...Object.values(data.viewer_breakdown));
+                return (
+                  <div key={level}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-white font-medium">{level}</span>
+                      <span className="text-muted-foreground">{count} view{count !== 1 ? "s" : ""}</span>
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full transition-all"
+                        style={{ width: `${(count / maxCount) * 100}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
+      {data?.playing_level && (
+        <div className="mt-6 bg-card border border-border/50 rounded-sm p-5">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Your Playing Level</p>
+          <p className="text-lg font-heading font-bold text-primary">{data.playing_level}</p>
+          <p className="text-xs text-muted-foreground mt-1">This is the level organizations see when browsing your profile</p>
+        </div>
+      )}
 
       <div className="mt-6 bg-card border border-border/50 rounded-sm p-5">
         <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Profile Completion</p>

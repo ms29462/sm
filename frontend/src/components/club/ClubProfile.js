@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import LeagueLevelPicker from '@/components/shared/LeagueLevelPicker';
 import DeleteOrgAccountSection from "@/components/shared/DeleteOrgAccountSection";
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -277,18 +278,12 @@ const ClubProfile = () => {
               <Label htmlFor="playing_level" className="text-sm font-medium uppercase tracking-wide">
                 Playing Level
               </Label>
-              <select
-                id="playing_level"
-                data-testid="playing-level-input"
-                value={formData.playing_level || ''}
-                onChange={(e) => handleChange('playing_level', e.target.value)}
-                className={selectClass}
-              >
-                <option value="">Select a level...</option>
-                {PLAYING_LEVELS.map(l => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
-              </select>
+              <div className="mt-2">
+                <LeagueLevelPicker
+                  value={formData.playing_level || ""}
+                  onChange={(val) => handleChange("playing_level", val)}
+                />
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Used by the player matching algorithm to find suitable candidates
               </p>

@@ -12,6 +12,8 @@ const PlayerOpportunities = () => {
   const [matchScores, setMatchScores] = useState({});
   const [appliedIds, setAppliedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPosition, setFilterPosition] = useState('');
   const [filterCountry, setFilterCountry] = useState('');
@@ -78,7 +80,8 @@ const PlayerOpportunities = () => {
 
   const loadOpportunities = async () => {
     try {
-      const response = await api.getOpportunities();
+      const response = await api.getOpportunities(page);
+      setHasMore((response.data || []).length === 12);
       setOpportunities(response.data);
       setFilteredOpportunities(response.data);
     } catch (error) {
@@ -103,13 +106,9 @@ const PlayerOpportunities = () => {
     }
   };
 
-  const handleApply = async (opportunityId) => {
-    try {
-      await api.createApplication({ opportunity_id: opportunityId });
-      toast.success('Application submitted!');
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to apply');
-    }
+  const handleApply = (opportunityId) => {
+    // Card already handles the API call and toast - just update local state
+    setAppliedIds(prev => new Set([...prev, opportunityId]));
   };
 
   const getFitScoreColor = (score) => {
@@ -236,13 +235,24 @@ const PlayerOpportunities = () => {
                 opp={opp}
                 score={score}
                 testId={`opportunity-card-${opp.id}`}
-                onApply={(id) => { handleApply(id); setAppliedIds(prev => new Set([...prev, id])); }}
+                onApply={(id) => handleApply(id)}
                 hasApplied={appliedIds.has(opp.id)}
               />
             );
           })}
         </div>
       )}
+      <div className="flex items-center justify-center gap-3 mt-8">
+        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+          className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
+          Previous
+        </button>
+        <span className="text-sm text-muted-foreground">Page {page}</span>
+        <button onClick={() => setPage(p => p + 1)} disabled={!hasMore}
+          className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
+          Next
+        </button>
+      </div>
     </div>
   );
 };

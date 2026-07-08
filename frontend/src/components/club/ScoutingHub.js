@@ -800,15 +800,6 @@ const ScoutingHub = () => {
                   <option value="reject">❌ Reject</option>
                 </select>
               </div>
-              <div>
-                <label className={labelClass}>Visibility</label>
-                <select value={reportForm.visibility} onChange={e => setReportForm(f => ({...f, visibility: e.target.value}))}
-                  className={inputClass + " mt-1 appearance-none cursor-pointer"}>
-                  <option value="private">Private</option>
-                  <option value="group">Groups</option>
-                  <option value="org">Organization</option>
-                </select>
-              </div>
             </div>
 
             <Button onClick={handleCreateReport} className="w-full bg-primary text-black font-bold rounded-sm">

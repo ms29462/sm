@@ -51,8 +51,10 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-xl font-heading font-bold uppercase mb-1">{opp.club_name}</h3>
-          <p className="text-sm text-muted-foreground">{opp.club_country || "International"}</p>
+          <h3 className="text-xl font-heading font-bold uppercase mb-1">{opp.country || opp.club_country || "International"}</h3>
+          {opp.club_id !== "anonymous" && opp.club_name && (
+            <p className="text-sm text-primary font-medium">{opp.club_name}</p>
+          )}
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">
@@ -157,7 +159,7 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
       {/* Apply Button */}
       <div className="flex gap-2 mt-auto">
         <Button
-          onClick={() => navigate(`/player/opportunity/${opp.id}`)}
+          onClick={() => navigate(`/player/opportunity/${opp.id}`, { state: { matchScore: score || matchScore, displayScore: score?.fit_score ?? (typeof matchScore === "number" ? matchScore : null), scoreLabel: score?.fit_label } })}
           variant="outline"
           className="flex-1 border-white/20 text-white hover:bg-white/10 rounded-sm h-12 font-bold uppercase tracking-wide"
         >

@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import LeagueLevelPicker from "@/components/shared/LeagueLevelPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,30 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "sonner";
 import { Briefcase, Plus, Trash2, Pencil } from "lucide-react";
 import { POSITIONS } from "@/lib/constants";
+
+
+const COUNTRIES = [
+  "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
+  "Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia",
+  "Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia",
+  "Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica",
+  "Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt",
+  "El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon",
+  "Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti",
+  "Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan",
+  "Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia",
+  "Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta",
+  "Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro",
+  "Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger",
+  "Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea",
+  "Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis",
+  "Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia",
+  "Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia",
+  "South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria",
+  "Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey",
+  "Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay",
+  "Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
+];
 
 const LEAGUES = [
   "Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1",
@@ -41,7 +66,7 @@ const ClubOpportunities = () => {
   const [formData, setFormData] = useState({
     position: "", league_level: "", salary_range: "",
     contract_duration: "", description: "",
-    deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: [], visibility: "anonymous", country: ""
+    deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: [], visibility: "public", country: ""
   });
 
   useEffect(() => {
@@ -90,7 +115,7 @@ const ClubOpportunities = () => {
       setFormData({
         position: "", league_level: "", salary_range: "",
         contract_duration: "", description: "",
-        deadline: "", max_applicants: "", age_min: "", age_max: ""
+        deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: [], visibility: "public", country: ""
       });
       loadOpportunities();
     } catch (error) {
@@ -268,10 +293,13 @@ const ClubOpportunities = () => {
               <div>
                 <Label className="text-sm font-medium uppercase tracking-wide">League Level *</Label>
                 {errors.league_level && <p className="text-xs text-red-400 mt-1">⚠ {errors.league_level}</p>}
-                <select value={formData.league_level} onChange={(e) => handleChange("league_level", e.target.value)} className="mt-2 w-full bg-black/20 border border-white/10 rounded-sm h-12 px-3 text-sm text-white outline-none cursor-pointer">
-                  <option value="">Select league level</option>
-                  {LEAGUES.map((l) => <option key={l} value={l}>{l}</option>)}
-                </select>
+                <div className="mt-2">
+                  <LeagueLevelPicker
+                    value={formData.league_level}
+                    onChange={(val) => handleChange("league_level", val)}
+                    country={formData.country}
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -280,8 +308,11 @@ const ClubOpportunities = () => {
                 </div>
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Country</Label>
-                  <Input value={formData.country} onChange={(e) => handleChange("country", e.target.value)}
-                    className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. Romania, France, USA" />
+                  <select value={formData.country} onChange={(e) => handleChange("country", e.target.value)}
+                    className="mt-2 w-full bg-black/20 border border-white/10 rounded-sm h-12 px-3 text-sm text-white outline-none cursor-pointer">
+                    <option value="">Select country...</option>
+                    {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
                 </div>
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">Contract Duration</Label>
@@ -354,6 +385,21 @@ const ClubOpportunities = () => {
                 <Label className="text-sm font-medium uppercase tracking-wide">Description *</Label>
                 {errors.description && <p className="text-xs text-red-400 mt-1">⚠ {errors.description}</p>}
                 <Textarea data-testid="description-input" value={formData.description} onChange={(e) => handleChange("description", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" placeholder="Describe the opportunity..." />
+              </div>
+              <div className="bg-black/20 border border-white/10 rounded-sm p-4">
+                <p className="text-sm font-bold uppercase tracking-wide mb-3">Organization Visibility</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => handleChange("visibility", "public")}
+                    className={`px-3 py-3 text-sm rounded-sm border-2 transition-all text-left ${formData.visibility === "public" ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+                    <p className="font-bold">Public</p>
+                    <p className="text-xs opacity-70">Club name visible to players</p>
+                  </button>
+                  <button type="button" onClick={() => handleChange("visibility", "anonymous")}
+                    className={`px-3 py-3 text-sm rounded-sm border-2 transition-all text-left ${formData.visibility === "anonymous" ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+                    <p className="font-bold">Anonymous</p>
+                    <p className="text-xs opacity-70">Club identity hidden from players</p>
+                  </button>
+                </div>
               </div>
               <Button data-testid="submit-opportunity-btn" onClick={handleCreate} className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12">
                 POST OPPORTUNITY

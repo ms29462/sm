@@ -706,10 +706,23 @@ class ClubProfile(BaseModel):
     name: str
     email: Optional[str] = None
     country: Optional[str] = None
+    city: Optional[str] = None
+    stadium: Optional[str] = None
+    founded_year: Optional[int] = None
     league: Optional[str] = None
     league_level: Optional[str] = None
-    playing_level: Optional[Literal['Amateur', 'Semi-Professional', 'Professional']] = None
+    playing_level: Optional[str] = None
     logo: Optional[str] = None
+    website: Optional[str] = None
+    description: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    twitter: Optional[str] = None
+    rep_first_name: Optional[str] = None
+    rep_last_name: Optional[str] = None
+    rep_email: Optional[str] = None
+    rep_phone: Optional[str] = None
+    club_sub_status: Optional[str] = None
     approved: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -724,10 +737,18 @@ def strip_club_private_info(club_dict: dict) -> dict:
 class ClubUpdate(BaseModel):
     name: Optional[str] = None
     country: Optional[str] = None
+    city: Optional[str] = None
+    stadium: Optional[str] = None
+    founded_year: Optional[int] = None
     league: Optional[str] = None
     league_level: Optional[str] = None
-    playing_level: Optional[Literal['Amateur', 'Semi-Professional', 'Professional']] = None
+    playing_level: Optional[str] = None
     logo: Optional[str] = None
+    website: Optional[str] = None
+    description: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    twitter: Optional[str] = None
 
 
 # ============ COLLEGE MODELS ============
@@ -1051,6 +1072,7 @@ class OpportunityCreate(BaseModel):
     deadline: Optional[str] = None
     max_applicants: Optional[int] = None
     requirements: Optional[list] = None
+    visibility: Optional[str] = "anonymous"
 
 class Opportunity(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -2258,9 +2280,10 @@ async def auto_close_expired_opportunities(db):
             )
 
 @api_router.get("/opportunities", response_model=List[Opportunity])
-async def get_opportunities(current_user: dict = Depends(get_current_user)):
+async def get_opportunities(current_user: dict = Depends(get_current_user), page: int = 1, limit: int = 12):
     await auto_close_expired_opportunities(db)
-    opportunities = await db.opportunities.find({"status": "published"}, {"_id": 0}).to_list(1000)
+    skip = (page - 1) * limit
+    opportunities = await db.opportunities.find({"status": "published"}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     opportunities = await attach_applicant_counts(opportunities)
 
     # Anonymize opportunities for players
@@ -2380,6 +2403,10 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
     for app in applications:
         opp = await db.opportunities.find_one({"id": app['opportunity_id']}, {"_id": 0})
         if opp:
+            # Anonymize if needed
+            if opp.get("visibility", "anonymous") != "public":
+                opp["club_name"] = "Club"
+                opp["club_id"] = "anonymous"
             result.append({
                 **app,
                 "opportunity": opp,
@@ -2708,6 +2735,7 @@ async def get_players(
     min_quality_score: Optional[int] = None,
     national_team: Optional[str] = None,
     residence_country: Optional[str] = None,
+    nationality_2: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
@@ -2746,6 +2774,8 @@ async def get_players(
         query["national_team"] = national_team
     if residence_country:
         query["residence_country"] = residence_country
+    if nationality_2:
+        query["nationality_2"] = nationality_2
 
     # Min quality score filter
     if min_quality_score:
@@ -3065,7 +3095,7 @@ async def get_all_opportunities_admin(current_user: dict = Depends(get_current_u
                 college_profile = await db.colleges.find_one({"user_id": org_id}, {"_id": 0}) if (org_id and not club_profile) else None
                 country = opp.get("club_country", "")
                 if college_profile:
-                    anon_label = f"College{(' (' + country + ')') if country else ''}"
+                    anon_label = "Club"
                 elif club_profile:
                     level = club_profile.get("playing_level", "") or club_profile.get("league_level", "")
                     level_map = {
@@ -3076,9 +3106,9 @@ async def get_all_opportunities_admin(current_user: dict = Depends(get_current_u
                     }
                     clean_level = level_map.get(level, level)
                     level_label = f"{clean_level} Club" if clean_level else "Club"
-                    anon_label = f"{level_label}{(' (' + country + ')') if country else ''}"
+                    anon_label = level_label
                 else:
-                    anon_label = f"Club{(' (' + country + ')') if country else ''}"
+                    anon_label = "Club"
                 opp["club_name"] = anon_label
                 opp["club_id"] = "anonymous"
                 opp.pop("club_logo", None)
@@ -3590,7 +3620,7 @@ async def get_agent_opportunities(current_user: dict = Depends(get_current_user)
                 college_profile = await db.colleges.find_one({"user_id": org_id}, {"_id": 0}) if (org_id and not club_profile) else None
                 country = opp.get("club_country", "")
                 if college_profile:
-                    anon_label = f"College{(' (' + country + ')') if country else ''}"
+                    anon_label = "Club"
                 elif club_profile:
                     level = club_profile.get("playing_level", "") or club_profile.get("league_level", "")
                     level_map = {
@@ -3601,9 +3631,9 @@ async def get_agent_opportunities(current_user: dict = Depends(get_current_user)
                     }
                     clean_level = level_map.get(level, level)
                     level_label = f"{clean_level} Club" if clean_level else "Club"
-                    anon_label = f"{level_label}{(' (' + country + ')') if country else ''}"
+                    anon_label = level_label
                 else:
-                    anon_label = f"Club{(' (' + country + ')') if country else ''}"
+                    anon_label = "Club"
                 opp["club_name"] = anon_label
                 opp["club_id"] = "anonymous"
                 opp.pop("club_logo", None)
@@ -6418,7 +6448,7 @@ async def anonymize_opportunities(opportunities: list, db) -> list:
             college_profile = await db.colleges.find_one({"user_id": org_id}, {"_id": 0}) if (org_id and not club_profile) else None
             country = opp.get("club_country", "")
             if college_profile:
-                anon_label = f"College{(' (' + country + ')') if country else ''}"
+                anon_label = "Club"
             elif club_profile:
                 level = club_profile.get("playing_level", "") or club_profile.get("league_level", "")
                 league_level = opp.get("league_level", "")
@@ -6432,9 +6462,9 @@ async def anonymize_opportunities(opportunities: list, db) -> list:
                     level_label = f"{category} Club"
                 else:
                     level_label = "Club"
-                anon_label = f"{level_label}{(' (' + country + ')') if country else ''}"
+                anon_label = level_label
             else:
-                anon_label = f"Club{(' (' + country + ')') if country else ''}"
+                anon_label = "Club"
             opp["club_name"] = anon_label
             opp["club_id"] = "anonymous"
         result.append(opp)
@@ -8231,17 +8261,49 @@ async def get_player_analytics(current_user: dict = Depends(get_current_user)):
     })
 
     # Views in the last 30 days, bucketed by day for a simple trend
-    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%S")
     recent_views = await db.notifications.find({
         "user_id": current_user["user_id"],
         "type": "profile_viewed",
         "created_at": {"$gte": thirty_days_ago}
-    }, {"_id": 0, "created_at": 1}).to_list(1000)
+    }, {"_id": 0, "created_at": 1, "data": 1}).to_list(1000)
 
     views_by_day = {}
     for v in recent_views:
         day = v["created_at"][:10]
         views_by_day[day] = views_by_day.get(day, 0) + 1
+
+    # All-time viewer breakdown by org level
+    all_views = await db.notifications.find({
+        "user_id": current_user["user_id"],
+        "type": "profile_viewed"
+    }, {"_id": 0, "data": 1}).to_list(1000)
+
+    viewer_breakdown = {}
+    for v in all_views:
+        viewer_id = v.get("data", {}).get("viewer_id")
+        viewer_role = v.get("data", {}).get("viewer_role", "unknown")
+        if viewer_id:
+            # Look up the org level
+            org = None
+            if viewer_role == "club":
+                org = await db.clubs.find_one({"user_id": viewer_id}, {"_id": 0, "playing_level": 1})
+            elif viewer_role == "college":
+                org = await db.clubs.find_one({"user_id": viewer_id}, {"_id": 0, "playing_level": 1})
+            elif viewer_role == "federation":
+                level_label = "Federation"
+                viewer_breakdown[level_label] = viewer_breakdown.get(level_label, 0) + 1
+                continue
+            elif viewer_role == "agent":
+                level_label = "Agent"
+                viewer_breakdown[level_label] = viewer_breakdown.get(level_label, 0) + 1
+                continue
+
+            if org and org.get("playing_level"):
+                level_label = org["playing_level"]
+            else:
+                level_label = viewer_role.capitalize()
+            viewer_breakdown[level_label] = viewer_breakdown.get(level_label, 0) + 1
 
     # Favorites count - how many orgs have favorited this player
     favorites_count = await db.favorites.count_documents({"player_id": current_user["user_id"]})
@@ -8256,9 +8318,11 @@ async def get_player_analytics(current_user: dict = Depends(get_current_user)):
         "total_views": total_views,
         "views_last_30_days": len(recent_views),
         "views_by_day": views_by_day,
+        "viewer_breakdown": viewer_breakdown,
         "favorites_count": favorites_count,
         "matching_opportunities": matching_opportunities,
         "profile_completion": player.get("completion_score", 0),
+        "playing_level": player.get("playing_level", None),
     }
 
 

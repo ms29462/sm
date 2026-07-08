@@ -38,6 +38,7 @@ const PlayerApplications = () => {
   const [filterPosition, setFilterPosition] = useState('');
   const [filterLeague, setFilterLeague] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [filterCountry, setFilterCountry] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -80,11 +81,13 @@ const PlayerApplications = () => {
     if (filterPosition && app.opportunity?.position !== filterPosition) return false;
     if (filterLeague && app.opportunity?.league_level !== filterLeague) return false;
     if (filterStatus && app.status !== filterStatus) return false;
+    if (filterCountry && (app.opportunity?.country || app.opportunity?.club_country) !== filterCountry) return false;
     return true;
   });
 
   // Get unique values for filters
   const positions = [...new Set(applications.map(a => a.opportunity?.position).filter(Boolean))];
+  const countries = [...new Set(applications.map(a => a.opportunity?.country || a.opportunity?.club_country).filter(Boolean))];
   const leagues = [...new Set(applications.map(a => a.opportunity?.league_level).filter(Boolean))];
 
   if (loading) {
@@ -114,6 +117,11 @@ const PlayerApplications = () => {
             className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
             <option value="">All Leagues</option>
             {leagues.map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
+          <select value={filterCountry} onChange={e => setFilterCountry(e.target.value)}
+            className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+            <option value="">All Countries</option>
+            {countries.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
             className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
@@ -147,8 +155,17 @@ const PlayerApplications = () => {
             >
               <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg sm:text-xl font-heading font-bold uppercase mb-1 truncate">{app.opportunity.club_name}</h3>
-                  <p className="text-sm text-muted-foreground">{app.opportunity.position} · {app.opportunity.league_level}</p>
+                  <h3 className="text-lg sm:text-xl font-heading font-bold uppercase mb-1 truncate">
+                    {app.opportunity.country || app.opportunity.club_country || "International"} — {app.opportunity.position}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{app.opportunity.league_level}</p>
+                  {app.opportunity.club_id !== "anonymous" && app.opportunity.club_name && (
+                    <p className="text-xs text-primary mt-0.5">{app.opportunity.club_name}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Applied: {app.created_at?.slice(0,10)}
+                    {app.opportunity.deadline && ` · Deadline: ${app.opportunity.deadline}`}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {(matchScores[app.opportunity_id] != null) && (

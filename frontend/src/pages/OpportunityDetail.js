@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -10,6 +10,9 @@ const OpportunityDetail = () => {
   const { opportunityId } = useParams();
   const navigate = useNavigate();
   const [opportunity, setOpportunity] = useState(null);
+  const location = useLocation();
+  const passedScore = location.state?.displayScore ?? null;
+  const passedLabel = location.state?.scoreLabel || null;
   const [matchScore, setMatchScore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -81,7 +84,9 @@ const OpportunityDetail = () => {
     </div>
   );
 
-  const scoreColor = matchScore?.fit_score >= 80 ? "#22c55e" : matchScore?.fit_score >= 65 ? "#eab308" : matchScore?.fit_score >= 50 ? "#f97316" : "#ef4444";
+  const displayScore = matchScore?.fit_score ?? passedScore;
+  const displayLabel = matchScore?.fit_label ?? passedLabel;
+  const scoreColor = displayScore >= 80 ? "#22c55e" : displayScore >= 65 ? "#eab308" : displayScore >= 50 ? "#f97316" : "#ef4444";
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -93,11 +98,10 @@ const OpportunityDetail = () => {
       <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1">{opportunity.club_name}</h1>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <MapPin className="w-4 h-4" />
-              <span>{opportunity.club_country || "International"}</span>
-            </div>
+            <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1">{opportunity.country || opportunity.club_country || "International"}</h1>
+            {opportunity.club_id !== "anonymous" && opportunity.club_name && (
+              <p className="text-lg text-primary font-medium mt-1">{opportunity.club_name}</p>
+            )}
           </div>
           <span className="bg-primary/10 text-primary border border-primary/20 uppercase text-sm tracking-wider px-4 py-2 rounded-sm font-bold">
             {opportunity.position}
@@ -105,18 +109,18 @@ const OpportunityDetail = () => {
         </div>
 
         {/* Match Score */}
-        {matchScore?.fit_score !== undefined && (
+        {(displayScore !== null && displayScore !== undefined) && (
           <div className="bg-black/20 border border-white/10 rounded-sm p-4 mb-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted-foreground uppercase tracking-wide">Your Match Score</span>
               <span className="text-2xl font-heading font-bold" style={{ color: scoreColor }}>
-                {Math.round(matchScore.fit_score)}<span className="text-sm text-muted-foreground font-normal">/100</span>
+                {Math.round(displayScore)}<span className="text-sm text-muted-foreground font-normal">/100</span>
               </span>
             </div>
             <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-2">
-              <div className="h-full rounded-full" style={{ width: `${matchScore.fit_score}%`, backgroundColor: scoreColor }} />
+              <div className="h-full rounded-full" style={{ width: `${displayScore}%`, backgroundColor: scoreColor }} />
             </div>
-            <p className="text-sm text-muted-foreground">{matchScore.fit_label}</p>
+            <p className="text-sm text-muted-foreground">{displayLabel}</p>
           </div>
         )}
 
@@ -182,13 +186,6 @@ const OpportunityDetail = () => {
               <p className="font-medium">{opportunity.contract_duration}</p>
             </div>
           )}
-          <div className="bg-background border border-border/50 rounded-sm p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Building className="w-4 h-4 text-primary" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wide">Organization</span>
-            </div>
-            <p className="font-medium">{opportunity.club_name}</p>
-          </div>
         </div>
       </div>
 
