@@ -140,13 +140,20 @@ const AdminChatRequests = () => {
                   <div className="grid grid-cols-2 gap-4 mb-3">
                     <div>
                       <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Requester</p>
-                      <p className="font-medium">{request.requester_name || request.club_name}</p>
+                      <p className="font-medium">{request.org_name || request.requester_name || request.club_name}</p>
+                      {request.org_playing_level && <p className="text-xs text-primary mt-0.5">{request.org_playing_level}</p>}
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Player</p>
                       <p className="font-medium">{request.player_name}</p>
                     </div>
                   </div>
+                  {request.opportunity_label && (
+                    <div className="mb-3 p-2 bg-primary/5 border border-primary/20 rounded-sm">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-0.5">Related Opportunity</p>
+                      <p className="text-sm font-medium text-primary">{request.opportunity_label}</p>
+                    </div>
+                  )}
                   {request.message && (
                     <div className="mb-3">
                       <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">Message</p>

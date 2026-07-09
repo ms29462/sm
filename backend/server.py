@@ -4243,8 +4243,8 @@ async def create_chat_request(
 ):
     """Club, Agent, or Specialist creates a chat request to connect with a player"""
     role = current_user['role']
-    if role not in ['club', 'agent', 'specialist']:
-        raise HTTPException(status_code=403, detail="Only clubs, agents, and specialists can request chats")
+    if role not in ['club', 'agent', 'specialist', 'college']:
+        raise HTTPException(status_code=403, detail="Only clubs, colleges, agents, and specialists can request chats")
     
     # Check if there's already a pending or accepted request from this requester
     existing = await db.chat_requests.find_one({
@@ -4337,7 +4337,21 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
     
     if role == 'player':
         requests = await db.chat_requests.find({"player_id": user_id}, {"_id": 0}).to_list(100)
-    elif role in ['club', 'agent', 'specialist']:
+        # Enrich with requester org info (playing level/league)
+        enriched = []
+        for req in requests:
+            requester_id = req.get("requester_id")
+            org = None
+            for coll in [db.clubs, db.agents, db.specialists, db.federations]:
+                org = await coll.find_one({"user_id": requester_id}, {"_id": 0, "name": 1, "playing_level": 1, "league_level": 1, "agency_name": 1})
+                if org:
+                    break
+            if org:
+                req["org_playing_level"] = org.get("playing_level") or org.get("league_level")
+                req["org_name"] = org.get("name") or org.get("agency_name")
+            enriched.append(req)
+        return enriched
+    elif role in ['club', 'agent', 'specialist', 'college']:
         requests = await db.chat_requests.find({"requester_id": user_id}, {"_id": 0}).to_list(100)
     else:
         return []
@@ -4435,8 +4449,34 @@ async def get_all_chat_requests(current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
     
-    requests = await db.chat_requests.find({}, {"_id": 0}).to_list(1000)
-    return requests
+    requests = await db.chat_requests.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    enriched = []
+    for req in requests:
+        # Always show real org name for admin (bypass anonymization)
+        requester_id = req.get("requester_id")
+        org = None
+        for coll in [db.clubs, db.agents, db.specialists, db.federations, db.colleges]:
+            org = await coll.find_one({"user_id": requester_id}, {"_id": 0, "name": 1, "playing_level": 1, "agency_name": 1})
+            if org:
+                break
+        if org:
+            req["org_name"] = org.get("name") or org.get("agency_name", "Unknown")
+            req["org_playing_level"] = org.get("playing_level")
+
+        # Get player name
+        player = await db.players.find_one({"user_id": req.get("player_id")}, {"_id": 0, "name": 1})
+        if player:
+            req["player_name"] = player.get("name")
+
+        # Get related opportunity if any
+        opp_id = req.get("opportunity_id")
+        if opp_id:
+            opp = await db.opportunities.find_one({"id": opp_id}, {"_id": 0, "position": 1, "league_level": 1, "country": 1, "club_name": 1})
+            if opp:
+                req["opportunity_label"] = f"{opp.get('position', '')} — {opp.get('league_level', '')} ({opp.get('country', '')})"
+
+        enriched.append(req)
+    return enriched
 
 
 @api_router.get("/notifications", response_model=List[dict])

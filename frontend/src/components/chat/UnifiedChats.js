@@ -121,7 +121,7 @@ const UnifiedChats = () => {
                     <MessageCircle className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm truncate">{user?.role === "player" ? "Scout / Organization" : chat.other_party || "Chat Room"}</p>
+                    <p className="font-bold text-sm truncate">{user?.role === "player" ? (chat.org_playing_level || chat.org_name || "Scout / Organization") : chat.other_party || "Chat Room"}</p>
                     <p className="text-xs text-muted-foreground truncate">{chat.last_message?.message || "No messages yet"}</p>
                   </div>
                   {unread > 0 && (
