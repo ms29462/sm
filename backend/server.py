@@ -796,6 +796,8 @@ class FederationProfile(BaseModel):
     country: str  # The country this federation represents
     logo: Optional[str] = None
     description: Optional[str] = None
+    city: Optional[str] = None
+    founded_year: Optional[int] = None
     federation_type: Optional[str] = None
     primary_objective: Optional[str] = None
     age_categories: Optional[list] = []
@@ -827,6 +829,19 @@ class FederationUpdate(BaseModel):
     country: Optional[str] = None
     logo: Optional[str] = None
     description: Optional[str] = None
+    city: Optional[str] = None
+    founded_year: Optional[int] = None
+    federation_type: Optional[str] = None
+    primary_objective: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+    rep_first_name: Optional[str] = None
+    rep_last_name: Optional[str] = None
+    rep_role: Optional[str] = None
+    rep_email: Optional[str] = None
+    rep_phone: Optional[str] = None
 
 
 # Federation Team Groups (Senior, U23, U20, U17, U15)
@@ -2735,6 +2750,8 @@ async def get_players(
     national_team: Optional[str] = None,
     residence_country: Optional[str] = None,
     nationality_2: Optional[str] = None,
+    min_age: Optional[int] = None,
+    max_age: Optional[int] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
@@ -2775,6 +2792,12 @@ async def get_players(
         query["residence_country"] = residence_country
     if nationality_2:
         query["nationality_2"] = nationality_2
+    if min_age:
+        query["age"] = query.get("age", {})
+        query["age"]["$gte"] = min_age
+    if max_age:
+        query.setdefault("age", {})
+        query["age"]["$lte"] = max_age
 
     # Min quality score filter
     if min_quality_score:
@@ -3262,7 +3285,7 @@ async def get_federation_players(
 
 
 @api_router.get("/federation/recommended-players", response_model=List[PlayerProfile])
-async def get_recommended_players_for_federation(current_user: dict = Depends(get_current_user)):
+async def get_recommended_players_for_federation(current_user: dict = Depends(get_current_user), page: int = 1, limit: int = 20):
     """Get players recommended for this federation based on nationality match"""
     if current_user['role'] != 'federation':
         raise HTTPException(status_code=403, detail="Not a federation")
@@ -4242,7 +4265,7 @@ async def create_chat_request(
 ):
     """Club, Agent, or Specialist creates a chat request to connect with a player"""
     role = current_user['role']
-    if role not in ['club', 'agent', 'specialist', 'college']:
+    if role not in ['club', 'agent', 'specialist', 'college', 'federation']:
         raise HTTPException(status_code=403, detail="Only clubs, colleges, agents, and specialists can request chats")
     
     # Specialists must include a message explaining their services
@@ -4375,7 +4398,7 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
                 req["specialist_type"] = org.get("specialist_type")
             enriched.append(req)
         return enriched
-    elif role in ['club', 'agent', 'specialist', 'college']:
+    elif role in ['club', 'agent', 'specialist', 'college', 'federation']:
         requests = await db.chat_requests.find({"requester_id": user_id}, {"_id": 0}).to_list(100)
     else:
         return []

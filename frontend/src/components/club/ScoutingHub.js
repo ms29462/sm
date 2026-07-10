@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Users, FileText, Target, MessageSquare, Plus, Trash2, Copy, ChevronDown, ChevronUp } from "lucide-react";
@@ -42,6 +42,8 @@ const labelClass = "text-xs text-muted-foreground uppercase tracking-wide";
 
 const ScoutingHub = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const basePath = location.pathname.startsWith('/federation') ? '/federation' : location.pathname.startsWith('/agent') ? '/agent' : '/club';
   const [activeTab, setActiveTab] = useState("Tracked Players");
   const [trackedPlayers, setTrackedPlayers] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -387,7 +389,7 @@ const ScoutingHub = () => {
                       </div>
                     )}
                     <div>
-                      <p className="font-heading font-bold uppercase">{player.name}</p>
+                      <p className="font-heading font-bold uppercase cursor-pointer hover:text-primary transition-colors" onClick={() => navigate(`${basePath}/player/${player.user_id}`)}>{player.name}</p>
                       <p className="text-xs text-muted-foreground">{player.position} · {player.nationality} {player.age && `· ${player.age} yrs`}</p>
                       <p className="text-xs text-muted-foreground">{player.playing_level}</p>
                     </div>

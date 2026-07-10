@@ -36,6 +36,7 @@ const PlayerDetailView = () => {
   const [matchArchive, setMatchArchive] = useState([]);
   const [isTracked, setIsTracked] = useState(false);
   const [inPipeline, setInPipeline] = useState(false);
+  const [pipelineLoading, setPipelineLoading] = useState(true);
   const [verification, setVerification] = useState(null);
   const [agentRep, setAgentRep] = useState(null);
   const [showTrialModal, setShowTrialModal] = useState(false);
@@ -82,6 +83,7 @@ const PlayerDetailView = () => {
       const inPipe = (res.data || []).some(p => p.player_id === playerId);
       setInPipeline(inPipe);
     } catch (e) {}
+    finally { setPipelineLoading(false); }
   };
 
   const loadPlayerProfile = async () => {
@@ -253,7 +255,7 @@ const PlayerDetailView = () => {
             </Button>
             <Button
               onClick={handleAddToPipeline}
-              disabled={inPipeline}
+              disabled={inPipeline || pipelineLoading}
               variant="outline"
               className={`rounded-sm h-12 px-6 font-bold uppercase tracking-wide ${inPipeline ? "border-purple-500 text-purple-400 cursor-not-allowed opacity-70" : "border-white/20 text-white hover:bg-white/10"}`}
             >

@@ -100,8 +100,8 @@ const FederationRecommended = () => {
                   </div>
                 )}
                 <div className="flex-1">
-                  <h3 className="font-heading font-bold uppercase">{player.name}</h3>
-                  <p className="text-sm text-muted-foreground">{player.position || 'Position not set'}</p>
+                  <h3 className="font-heading font-bold uppercase cursor-pointer hover:text-primary transition-colors" onClick={() => navigate(`/federation/player/${player.user_id}`)}>{player.name}</h3>
+                  <p className="text-sm text-muted-foreground">{player.position || '—'}</p>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {player.age && (
                       <span className="text-xs bg-white/10 text-white px-2 py-0.5 rounded-sm">
@@ -117,23 +117,21 @@ const FederationRecommended = () => {
                 </div>
               </div>
 
-              {/* Stats */}
-              {(player.games || player.goals || player.assists) && (
-                <div className="grid grid-cols-3 gap-2 mb-4 text-center">
+              {/* Stats - prefer current season */}
+              <div className="grid grid-cols-3 gap-2 mb-4 text-center">
                   <div className="bg-background p-2 rounded-sm">
-                    <p className="text-lg font-bold">{player.games || 0}</p>
+                    <p className="text-lg font-bold">{player.season_games ?? player.games ?? 0}</p>
                     <p className="text-xs text-muted-foreground">Games</p>
                   </div>
                   <div className="bg-background p-2 rounded-sm">
-                    <p className="text-lg font-bold">{player.goals || 0}</p>
+                    <p className="text-lg font-bold">{player.season_goals ?? player.goals ?? 0}</p>
                     <p className="text-xs text-muted-foreground">Goals</p>
                   </div>
                   <div className="bg-background p-2 rounded-sm">
-                    <p className="text-lg font-bold">{player.assists || 0}</p>
+                    <p className="text-lg font-bold">{player.season_assists ?? player.assists ?? 0}</p>
                     <p className="text-xs text-muted-foreground">Assists</p>
                   </div>
                 </div>
-              )}
 
               <div className="flex gap-2">
                 <Button

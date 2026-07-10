@@ -337,48 +337,48 @@ const RecruitmentPipeline = () => {
 
       {/* Kanban Board */}
       {viewMode === 'kanban' &&
-      <div className="flex gap-3 overflow-x-auto pb-4 flex-1 -mx-4 px-4 md:mx-0 md:px-0" style={{minHeight: "60vh", scrollbarWidth: "thin"}}>
-        {STAGES.map(stage => {
-          const stagePlayers = pipeline.filter(p => p.stage === stage);
-
-          const isDragOver = dragOverStage === stage;
-          return (
-            <div
-              key={stage}
-              onDragOver={(e) => handleDragOver(e, stage)}
-              onDrop={(e) => handleDrop(e, stage)}
-              className={`flex-shrink-0 w-56 bg-card rounded-sm border ${STAGE_COLORS[stage]} ${isDragOver ? "border-primary bg-primary/5" : ""} transition-colors flex flex-col`} style={{minHeight: "200px"}}
-            >
-              {/* Stage Header */}
-              <div className="p-3 border-b border-border/50">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wide">{STAGE_LABELS[stage] || stage}</h3>
-                  <span className="text-xs bg-white/10 px-2 py-0.5 rounded-sm">{stagePlayers.length}</span>
-                </div>
-              </div>
-
-              {/* Cards */}
-              <div className="p-2 flex-1 overflow-y-auto min-h-[100px]">
-                {stagePlayers.map(pp => (
-                  <PipelineCard
-                    key={pp.id}
-                    pp={pp}
-                    onDragStart={handleDragStart}
-                    onUpdate={handleUpdatePp}
-                    onRemove={handleRemove}
-                    onOpenDetail={setSelectedPp}
-                    scoutingBase={scoutingBase}
-                  />
-                ))}
-                {isDragOver && (
-                  <div className="border-2 border-dashed border-primary/50 rounded-sm p-4 text-center text-xs text-primary">
-                    Drop here
+      <div className="space-y-4">
+        {[STAGES.slice(0, 5), STAGES.slice(5, 10)].map((row, rowIdx) => (
+          <div key={rowIdx} className="grid grid-cols-5 gap-3">
+            {row.map((stage, colIdx) => {
+              const stageNum = rowIdx * 5 + colIdx + 1;
+              const stagePlayers = pipeline.filter(p => p.stage === stage);
+              const isDragOver = dragOverStage === stage;
+              return (
+                <div
+                  key={stage}
+                  onDragOver={(e) => handleDragOver(e, stage)}
+                  onDrop={(e) => handleDrop(e, stage)}
+                  className={`rounded-sm border ${STAGE_COLORS[stage]} ${isDragOver ? "border-primary bg-primary/5" : ""} flex flex-col`}
+                  style={{minHeight: "200px"}}
+                >
+                  <div className="p-2 border-b border-border/30">
+                    <p className="text-xs font-bold uppercase tracking-wide truncate">
+                      <span className="text-primary mr-1">{stageNum}.</span>{stage}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{stagePlayers.length} player{stagePlayers.length !== 1 ? "s" : ""}</p>
                   </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+                  <div className="p-2 space-y-2 flex-1">
+                    {stagePlayers.map(pp => (
+                      <div
+                        key={pp.id}
+                        draggable
+                        onDragStart={(e) => { e.stopPropagation(); setDraggedItem(pp); }}
+                        onClick={() => setSelectedPp(pp)}
+                        className="bg-card p-2 rounded-sm border border-primary/30 cursor-pointer hover:border-primary transition-colors text-xs shadow-sm"
+                      >
+                        <p className="font-bold text-white truncate">{pp.player?.name || pp.player_name || "Unknown"}</p>
+                        <p className="text-muted-foreground truncate">{pp.player?.position || pp.position || "—"}</p>
+                        <p className="text-muted-foreground truncate">{pp.player?.nationality || "—"}</p>
+                        {pp.priority && <span className="text-[10px] text-primary">{pp.priority}</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       }

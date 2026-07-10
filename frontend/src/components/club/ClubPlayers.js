@@ -34,6 +34,8 @@ const ClubPlayers = () => {
   const [filterTeam, setFilterTeam] = useState('');
   const [filterResidence, setFilterResidence] = useState('');
   const [filterNationality2, setFilterNationality2] = useState('');
+  const [filterMinAge, setFilterMinAge] = useState('');
+  const [filterMaxAge, setFilterMaxAge] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [filterMandate, setFilterMandate] = useState('');
@@ -47,7 +49,7 @@ const ClubPlayers = () => {
 
   useEffect(() => {
     loadPlayers();
-  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2]);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge]);
 
   const loadPlayers = async () => {
     try {
@@ -66,6 +68,8 @@ const ClubPlayers = () => {
       if (filterTeam) queryFilters.national_team = filterTeam;
       if (filterResidence) queryFilters.residence_country = filterResidence;
       if (filterNationality2) queryFilters.nationality_2 = filterNationality2;
+      if (filterMinAge) queryFilters.min_age = parseInt(filterMinAge);
+      if (filterMaxAge) queryFilters.max_age = parseInt(filterMaxAge);
       queryFilters.page = page;
       queryFilters.limit = 20;
       queryFilters.page = page;
@@ -190,6 +194,18 @@ const ClubPlayers = () => {
               </SelectContent>
             </Select>
           </div>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Min Age</label>
+            <input type="number" value={filterMinAge} onChange={e => setFilterMinAge(e.target.value)}
+              placeholder="e.g. 18"
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Max Age</label>
+            <input type="number" value={filterMaxAge} onChange={e => setFilterMaxAge(e.target.value)}
+              placeholder="e.g. 30"
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
           </div>
           <div className="col-span-1 md:col-span-2 lg:col-span-4 flex items-center gap-6 pt-3 border-t border-border/30 mt-2">
             <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Video:</label>

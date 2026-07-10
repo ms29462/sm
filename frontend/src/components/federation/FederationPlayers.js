@@ -36,6 +36,8 @@ const FederationPlayers = () => {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterNationality2, setFilterNationality2] = useState('');
+  const [filterMinAge, setFilterMinAge] = useState('');
+  const [filterMaxAge, setFilterMaxAge] = useState('');
   const [filterResidence, setFilterResidence] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -50,7 +52,7 @@ const FederationPlayers = () => {
 
   useEffect(() => {
     loadPlayers();
-  }, [filters, filterNationality2, filterResidence, page]);
+  }, [filters, filterNationality2, filterResidence, filterMinAge, filterMaxAge, page]);
 
   const loadPlayers = async () => {
     setLoading(true);
@@ -61,6 +63,8 @@ const FederationPlayers = () => {
       if (filters.level !== 'All') params.level = filters.level;
       if (filters.name) params.name = filters.name;
       if (filterNationality2) params.nationality_2 = filterNationality2;
+      if (filterMinAge) params.min_age = parseInt(filterMinAge);
+      if (filterMaxAge) params.max_age = parseInt(filterMaxAge);
       if (filterResidence) params.residence_country = filterResidence;
       params.page = page;
       params.limit = 20;
@@ -194,6 +198,20 @@ const FederationPlayers = () => {
                 {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
             </Select>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label className="text-xs text-muted-foreground uppercase mb-1 block">Min Age</label>
+            <input type="number" value={filterMinAge} onChange={e => setFilterMinAge(e.target.value)}
+              placeholder="e.g. 18"
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase mb-1 block">Max Age</label>
+            <input type="number" value={filterMaxAge} onChange={e => setFilterMaxAge(e.target.value)}
+              placeholder="e.g. 30"
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
           </div>
         </div>
         <Button
