@@ -49,6 +49,17 @@ const AgentProfile = () => {
     loadProfile();
   }, []);
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, profile_picture: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const loadProfile = async () => {
     try {
       const response = await api.getAgentProfile();
@@ -216,10 +227,19 @@ const AgentProfile = () => {
             </div>
             <div>
               <Label>Profile Picture URL</Label>
+              <div className="mt-1 flex items-center gap-3">
+                {formData.profile_picture && (
+                  <img src={formData.profile_picture} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-white/10" />
+                )}
+                <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-black/20 border border-white/10 rounded-sm hover:border-primary transition-colors text-sm">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  {formData.profile_picture ? "Change Photo" : "Upload Photo"}
+                </label>
+              </div>
               <Input
                 value={formData.profile_picture}
                 onChange={(e) => setFormData({ ...formData, profile_picture: e.target.value })}
-                placeholder="https://..."
+                placeholder="Or paste image URL..."
                 className="mt-1 bg-black/20 border-white/10"
               />
             </div>

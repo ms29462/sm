@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ArrowLeft, MapPin, Trophy, Clock, DollarSign, FileText, Building } from "lucide-react";
@@ -10,6 +11,7 @@ const OpportunityDetail = () => {
   const { opportunityId } = useParams();
   const navigate = useNavigate();
   const [opportunity, setOpportunity] = useState(null);
+  const { user } = useAuth();
   const location = useLocation();
   const passedScore = location.state?.displayScore ?? null;
   const passedLabel = location.state?.scoreLabel || null;
@@ -124,12 +126,12 @@ const OpportunityDetail = () => {
           </div>
         )}
 
-        {hasApplied ? (
+        {user?.role === "player" && (hasApplied ? (
           <Button disabled className="w-full bg-green-500/10 text-green-500 border border-green-500/20 rounded-sm h-12 font-bold uppercase tracking-wide cursor-not-allowed">
             ✓ Already Applied
           </Button>
         ) : (
-          <>
+          <div>
             {opportunity.credit_cost && (
               <div className="p-3 bg-primary/5 border border-primary/20 rounded-sm mb-3 flex items-center justify-between">
                 <div>
@@ -153,8 +155,8 @@ const OpportunityDetail = () => {
           >
             APPLY NOW
           </Button>
-          </>
-        )}
+          </div>
+        ))}
       </div>
 
       {/* Details */}
