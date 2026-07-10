@@ -1007,10 +1007,9 @@ class SpecialistProfile(BaseModel):
     current_club: Optional[str] = None  # If working with a club
     hourly_rate: Optional[str] = None
     availability: Optional[str] = None  # e.g., "Full-time", "Part-time", "Freelance"
-    services_offered: List[str] = []  # e.g., ["ACL Rehab", "Speed Training", "Nutrition Plans"]
+    services_offered: List[str] = []
     languages: List[str] = []
-    website: Optional[str] = None
-    linkedin: Optional[str] = None
+    specialist_sub_status: Optional[str] = None
     approved: bool = False
     verified: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -4246,6 +4245,10 @@ async def create_chat_request(
     if role not in ['club', 'agent', 'specialist', 'college']:
         raise HTTPException(status_code=403, detail="Only clubs, colleges, agents, and specialists can request chats")
     
+    # Specialists must include a message explaining their services
+    if role == 'specialist' and not request_data.message:
+        raise HTTPException(status_code=400, detail="Specialists must include a message describing the services they offer")
+    
     # Check if there's already a pending or accepted request from this requester
     existing = await db.chat_requests.find_one({
         "requester_id": current_user['user_id'],
@@ -4303,12 +4306,23 @@ async def create_chat_request(
     
     # Create notification for player
     role_label = role.capitalize()
+    # Build descriptive label based on role
+    # Specialists show name + type, others show playing level only
+    if role == "specialist" and requester:
+        specialist_type = requester.get("specialist_type", "Specialist")
+        notification_label = f"{requester_name} ({specialist_type})"
+    elif requester:
+        playing_level = requester.get("playing_level") or requester.get("league_level") or role.capitalize()
+        notification_label = playing_level
+    else:
+        notification_label = role.capitalize()
+
     await db.notifications.insert_one({
         "id": str(uuid.uuid4()),
         "user_id": request_data.player_id,
         "type": "chat_request",
         "title": f"New Chat Request",
-        "message": f"A {role_label} wants to chat with you",
+        "message": f"{notification_label} wants to connect with you",
         "reference_id": chat_request["id"],
         "read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -4347,8 +4361,18 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
                 if org:
                     break
             if org:
+                requester_role = req.get("requester_type", "club")
+                if requester_role == "specialist":
+                    # Specialists show name + speciality
+                    req["display_name"] = org.get("name", "Specialist")
+                    req["display_label"] = org.get("specialist_type", "Specialist")
+                else:
+                    # Clubs/agents/colleges show playing level only
+                    req["display_name"] = None
+                    req["display_label"] = org.get("playing_level") or org.get("league_level") or requester_role.capitalize()
                 req["org_playing_level"] = org.get("playing_level") or org.get("league_level")
                 req["org_name"] = org.get("name") or org.get("agency_name")
+                req["specialist_type"] = org.get("specialist_type")
             enriched.append(req)
         return enriched
     elif role in ['club', 'agent', 'specialist', 'college']:

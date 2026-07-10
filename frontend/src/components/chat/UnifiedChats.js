@@ -121,7 +121,7 @@ const UnifiedChats = () => {
                     <MessageCircle className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm truncate">{user?.role === "player" ? (chat.org_playing_level || chat.org_name || "Scout / Organization") : chat.other_party || "Chat Room"}</p>
+                    <p className="font-bold text-sm truncate">{user?.role === "player" ? (chat.display_name ? `${chat.display_name} (${chat.display_label})` : chat.display_label || chat.org_playing_level || "Organization") : chat.other_party || "Chat Room"}</p>
                     <p className="text-xs text-muted-foreground truncate">{chat.last_message?.message || "No messages yet"}</p>
                   </div>
                   {unread > 0 && (
@@ -151,7 +151,13 @@ const UnifiedChats = () => {
               <div key={req.id} className="bg-card border border-border/50 rounded-sm p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <p className="font-bold text-sm">{user?.role === "player" ? "Scout / Organization" : req.requester_name || "Organization"}</p>
+                    <p className="font-bold text-sm">
+                      {user?.role === "player"
+                        ? req.display_name
+                          ? `${req.display_name} (${req.display_label})`
+                          : req.display_label || req.org_playing_level || "Organization"
+                        : req.requester_name || "Organization"}
+                    </p>
                     <p className="text-xs text-muted-foreground">{new Date(req.created_at).toLocaleDateString()}</p>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-sm border uppercase font-bold ${STATUS_STYLES[req.status] || STATUS_STYLES.pending}`}>

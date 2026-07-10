@@ -189,14 +189,13 @@ const SpecialistPlayers = () => {
                 </div>
 
                 <div className="space-y-2 text-sm text-muted-foreground mb-4">
-                  {player.nationality && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span>{player.nationality}</span>
-                    </div>
-                  )}
-                  {player.age && <p>Age: {player.age}</p>}
-                  {player.current_club && <p>Club: {player.current_club}</p>}
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    <span>{player.nationality || "—"}</span>
+                    {player.nationality_2 && <span>/ {player.nationality_2}</span>}
+                  </div>
+                  <p>Age: {player.age || "—"}</p>
+                  <p>Club: {player.current_club || "—"}</p>
                 </div>
 
                 <Link to={`/specialist/player/${player.user_id}`}>

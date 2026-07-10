@@ -6,13 +6,20 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { MessageCircle } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 const RequestChatDialog = ({ playerId, playerName, onSent }) => {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const isSpecialist = user?.role === 'specialist';
 
   const handleSubmit = async () => {
+    if (isSpecialist && !notes.trim()) {
+      toast.error('Please describe the services you are offering');
+      return;
+    }
     setLoading(true);
     try {
       await api.requestChat(playerId, notes);
@@ -35,20 +42,24 @@ const RequestChatDialog = ({ playerId, playerName, onSent }) => {
           className="bg-blue-500 text-white font-bold uppercase tracking-wide hover:bg-blue-600 rounded-sm h-12 px-6"
         >
           <MessageCircle className="w-4 h-4 mr-2" />
-          REQUEST INTERVIEW CHAT
+          {isSpecialist ? 'OFFER SERVICES' : 'REQUEST INTERVIEW CHAT'}
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-card border border-border/50">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-heading font-bold uppercase">REQUEST INTERVIEW CHAT</DialogTitle>
+          <DialogTitle className="text-2xl font-heading font-bold uppercase">
+            {isSpecialist ? 'OFFER YOUR SERVICES' : 'REQUEST INTERVIEW CHAT'}
+          </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Request a private chat with {playerName}. The admin will review and create the chat room for you.
+            {isSpecialist
+              ? `Describe the services you are offering to ${playerName}. The player will be able to accept or decline.`
+              : `Request a private chat with ${playerName}. The admin will review and create the chat room for you.`}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 mt-4">
           <div>
             <Label htmlFor="notes" className="text-sm font-medium uppercase tracking-wide">
-              Message to Admin (Optional)
+              {isSpecialist ? 'Services Description *' : 'Message to Admin (Optional)'}
             </Label>
             <Textarea
               id="notes"
@@ -56,26 +67,29 @@ const RequestChatDialog = ({ playerId, playerName, onSent }) => {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm min-h-[120px]"
-              placeholder="Add any notes for the admin about why you want to chat with this player..."
+              placeholder={isSpecialist
+                ? 'Describe what services you offer (physio, nutrition, mental coaching, etc.)...'
+                : 'Add any notes for the admin about why you want to chat with this player...'}
             />
           </div>
-          <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-sm">
-            <p className="text-sm text-blue-400">
-              <strong>Note:</strong> Only admins can create chat rooms. Your request will be reviewed, and you'll be notified when the chat is available.
-            </p>
-          </div>
+          {!isSpecialist && (
+            <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-sm">
+              <p className="text-sm text-blue-400">
+                <strong>Note:</strong> Only admins can create chat rooms. Your request will be reviewed, and you'll be notified when the chat is available.
+              </p>
+            </div>
+          )}
           <Button
             data-testid="submit-request-btn"
             onClick={handleSubmit}
             disabled={loading}
             className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
           >
-            {loading ? 'SENDING REQUEST...' : 'SEND REQUEST'}
+            {loading ? 'SENDING...' : isSpecialist ? 'SEND SERVICE OFFER' : 'SEND REQUEST'}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
-
 export default RequestChatDialog;
