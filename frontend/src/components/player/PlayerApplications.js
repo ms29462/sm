@@ -159,6 +159,15 @@ const PlayerApplications = () => {
                     {app.opportunity.country || app.opportunity.club_country || "International"} — {app.opportunity.position}
                   </h3>
                   <p className="text-sm text-muted-foreground">{app.opportunity.league_level}</p>
+                  {(app.opportunity.status === "closed" || app.opportunity.status === "filled") && (
+                    <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-sm border mt-1 ${
+                      app.opportunity.status === "filled"
+                        ? "text-blue-400 border-blue-400/30 bg-blue-400/10"
+                        : "text-gray-400 border-gray-500/30 bg-gray-500/10"
+                    }`}>
+                      {app.opportunity.status === "filled" ? "🔒 Position Filled" : "⛔ Opportunity Closed"}
+                    </span>
+                  )}
                   {app.opportunity.club_id !== "anonymous" && app.opportunity.club_name && (
                     <p className="text-xs text-primary mt-0.5">{app.opportunity.club_name}</p>
                   )}
