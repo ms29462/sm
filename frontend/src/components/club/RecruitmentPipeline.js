@@ -367,7 +367,13 @@ const RecruitmentPipeline = () => {
                         onClick={() => setSelectedPp(pp)}
                         className="bg-card p-2 rounded-sm border border-primary/30 cursor-pointer hover:border-primary transition-colors text-xs shadow-sm"
                       >
-                        <p className="font-bold text-white truncate">{pp.player?.name || pp.player_name || "Unknown"}</p>
+                        <div className="flex items-start justify-between">
+                          <p className="font-bold text-white truncate flex-1">{pp.player?.name || pp.player_name || "Unknown"}</p>
+                          <button onClick={(e) => { e.stopPropagation(); handleRemove(pp.id); }}
+                            className="text-muted-foreground hover:text-red-500 transition-colors ml-1 flex-shrink-0">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
                         <p className="text-muted-foreground truncate">{pp.player?.position || pp.position || "—"}</p>
                         <p className="text-muted-foreground truncate">{pp.player?.nationality || "—"}</p>
                         {pp.priority && <span className="text-[10px] text-primary">{pp.priority}</span>}
