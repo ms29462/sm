@@ -184,6 +184,11 @@ const PlayerApplications = () => {
   {app.player_status_label || app.status}
                   </span>
                 </div>
+                {app.updated_at && app.status !== "pending" && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Decision: {new Date(app.updated_at).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 {app.opportunity.salary_range && (

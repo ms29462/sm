@@ -60,7 +60,7 @@ const NotificationBell = () => {
     const data = notif.data || {};
     switch (notif.type) {
       case "application_update":
-        return "/player/applications";
+        return data.opportunity_id ? `/player/opportunity/${data.opportunity_id}` : "/player/applications";
       case "chat_request":
         return "/player/chat-requests";
       case "chat_request_rejected":

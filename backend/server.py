@@ -2642,7 +2642,7 @@ async def update_application_status(
                 application.get("player_id"),
                 "application_update",
                 f"📋 {msg} — {opp_label}",
-                {"application_id": application_id, "status": status_update.status, "opportunity_label": opp_label}
+                {"application_id": application_id, "status": status_update.status, "opportunity_label": opp_label, "opportunity_id": application.get("opportunity_id")}
             )
     except Exception as e:
         print(f"Notification error: {e}")
