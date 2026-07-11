@@ -26,6 +26,10 @@ const FederationTeams = () => {
   const [filterPosition, setFilterPosition] = useState('');
   const [filterResidence, setFilterResidence] = useState('');
   const [newTeamName, setNewTeamName] = useState('');
+  const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [playerSearch, setPlayerSearch] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
   const [newTeamDescription, setNewTeamDescription] = useState('');
 
   useEffect(() => {
@@ -50,6 +54,27 @@ const FederationTeams = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearchPlayers = async () => {
+    if (!playerSearch.trim()) return;
+    setSearching(true);
+    try {
+      const res = await api.getPlayers({ name: playerSearch, limit: 10 });
+      setSearchResults(res.data || []);
+    } catch (e) { toast.error("Search failed"); }
+    finally { setSearching(false); }
+  };
+
+  const handleAddPlayer = async (playerId) => {
+    try {
+      await api.addPlayerToFederationTeam(selectedTeam.id, playerId, "");
+      toast.success("Player added!");
+      loadTeamPlayers(selectedTeam.id);
+      setShowAddPlayer(false);
+      setPlayerSearch('');
+      setSearchResults([]);
+    } catch (e) { toast.error(e.response?.data?.detail || "Failed to add player"); }
   };
 
   const loadTeamPlayers = async (teamId) => {
@@ -136,6 +161,7 @@ const FederationTeams = () => {
   }
 
   return (
+    <>
     <div className="p-4 md:p-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
@@ -238,7 +264,10 @@ const FederationTeams = () => {
                     )}
                   </div>
                   <Button
-                    data-testid="delete-team-btn"
+                    onClick={() => setShowAddPlayer(true)} className="bg-primary text-black font-bold text-sm px-3 py-1 rounded-sm mr-2">
+                      <Plus className="w-4 h-4 inline mr-1"/>Add Player
+                    </Button>
+                    <Button data-testid="delete-team-btn"
                     variant="outline"
                     size="sm"
                     onClick={() => handleDeleteTeam(selectedTeam.id)}
@@ -329,9 +358,43 @@ const FederationTeams = () => {
         </div>
       )}
     </div>
+
+      {showAddPlayer && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border/50 rounded-sm p-6 max-w-lg w-full">
+            <h3 className="font-heading font-bold uppercase text-lg mb-4">Add Player to {selectedTeam?.name}</h3>
+            <div className="flex gap-2 mb-4">
+              <Input value={playerSearch} onChange={e => setPlayerSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSearchPlayers()}
+                placeholder="Search by name..." className="bg-black/20 border-white/10" />
+              <Button onClick={handleSearchPlayers} disabled={searching} className="bg-primary text-black font-bold">
+                {searching ? "..." : "Search"}
+              </Button>
+            </div>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {searchResults.map(player => (
+                <div key={player.user_id} className="flex items-center justify-between p-3 bg-black/20 rounded-sm border border-white/10">
+                  <div>
+                    <p className="font-bold text-sm">{player.name}</p>
+                    <p className="text-xs text-muted-foreground">{player.position} · {player.nationality}</p>
+                  </div>
+                  <Button size="sm" onClick={() => handleAddPlayer(player.user_id)} className="bg-primary text-black text-xs">Add</Button>
+                </div>
+              ))}
+              {searchResults.length === 0 && playerSearch && !searching && (
+                <p className="text-sm text-muted-foreground text-center py-4">No players found</p>
+              )}
+            </div>
+            <Button variant="outline" onClick={() => { setShowAddPlayer(false); setSearchResults([]); setPlayerSearch(''); }}
+              className="w-full mt-4">Cancel</Button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
+
+
+
 export default FederationTeams;
-
-

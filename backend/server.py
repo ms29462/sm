@@ -2456,12 +2456,23 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
     if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
-    
+    # Look up org from correct collection based on role
+    org_role = current_user['role']
+    if org_role == 'federation':
+        club = await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    elif org_role == 'agent':
+        club = await db.agents.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    elif org_role == 'college':
+        club = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    elif org_role == 'specialist':
+        club = await db.specialists.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    else:
+        club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+
     opp_doc = {
         "id": str(uuid.uuid4()),
         "club_id": current_user['user_id'],
-        "club_name": club.get('name', 'Unknown Club'),
+        "club_name": club.get('name', 'Unknown') if club else 'Unknown',
         "club_country": club.get('country'),
         **opp.model_dump(),
         "status": "pending_review",

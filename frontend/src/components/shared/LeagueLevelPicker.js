@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 const LEAGUE_STRUCTURE = {
+  "National Team": ["Senior", "U23", "U21", "U20", "U19", "U18", "U17", "U16", "U15", "Other"],
   "Professional": ["1st Tier", "2nd Tier", "3rd Tier", "4th Tier", "5th Tier", "6th Tier", "7th Tier", "8th Tier", "Other"],
   "Semi-Professional": ["1st Tier", "2nd Tier", "3rd Tier", "4th Tier", "5th Tier", "6th Tier", "7th Tier", "8th Tier", "Other"],
   "Amateur": ["1st Tier", "2nd Tier", "3rd Tier", "4th Tier", "5th Tier", "6th Tier", "7th Tier", "8th Tier", "Other"],
