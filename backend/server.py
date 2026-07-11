@@ -5099,6 +5099,7 @@ async def add_to_pipeline(data: PipelinePlayerAdd, current_user: dict = Depends(
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
     await db.pipeline.insert_one(pp)
+    pp.pop('_id', None)  # Remove ObjectId before returning
     
     # Notify player they were added to pipeline
     try:
