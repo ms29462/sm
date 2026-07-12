@@ -745,12 +745,12 @@ const ScoutingHub = () => {
 
       {/* Game Report Modal */}
       <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
-        <DialogContent className="bg-card border border-border/50 max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border border-border/50 w-full max-w-lg max-h-[95vh] overflow-y-auto sm:mx-4">
           <DialogHeader>
             <DialogTitle className="font-heading uppercase">New Game Report</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-2">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Match Date</label>
                 <input type="date" style={{colorScheme: "dark"}} value={reportForm.match_date} onChange={e => setReportForm(f => ({...f, match_date: e.target.value}))}
@@ -792,7 +792,7 @@ const ScoutingHub = () => {
                 placeholder="Areas for improvement..." rows={2} className={textareaClass + " mt-1"} />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Recommendation</label>
                 <select value={reportForm.recommendation} onChange={e => setReportForm(f => ({...f, recommendation: e.target.value}))}
