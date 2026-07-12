@@ -2293,10 +2293,16 @@ async def auto_close_expired_opportunities(db):
                 {"$set": {"status": "filled"}}
             )
 
+@api_router.get("/opportunities/count")
+async def count_opportunities(current_user: dict = Depends(get_current_user)):
+    total = await db.opportunities.count_documents({"status": "published"})
+    return {"total": total, "pages": max(1, (total + 4) // 5)}
+
 @api_router.get("/opportunities", response_model=List[Opportunity])
-async def get_opportunities(current_user: dict = Depends(get_current_user), page: int = 1, limit: int = 12):
+async def get_opportunities(current_user: dict = Depends(get_current_user), page: int = 1, limit: int = 5):
     await auto_close_expired_opportunities(db)
     skip = (page - 1) * limit
+    total = await db.opportunities.count_documents({"status": "published"})
     opportunities = await db.opportunities.find({"status": "published"}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     opportunities = await attach_applicant_counts(opportunities)
 

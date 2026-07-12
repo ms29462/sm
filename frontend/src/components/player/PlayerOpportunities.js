@@ -14,6 +14,7 @@ const PlayerOpportunities = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPosition, setFilterPosition] = useState('');
   const [filterCountry, setFilterCountry] = useState('');
@@ -28,7 +29,7 @@ const PlayerOpportunities = () => {
     loadOpportunities();
     loadMatchScores();
     loadMyApplications();
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     let filtered = opportunities;
@@ -78,10 +79,18 @@ const PlayerOpportunities = () => {
     } catch (e) {}
   };
 
+  const loadTotalPages = async () => {
+    try {
+      const res = await api.getOpportunitiesCount();
+      setTotalPages(res.data.pages || 1);
+    } catch (e) {}
+  };
+
   const loadOpportunities = async () => {
     try {
       const response = await api.getOpportunities(page);
-      setHasMore((response.data || []).length === 12);
+      const data = response.data || [];
+      setHasMore(data.length === 5);
       setOpportunities(response.data);
       setFilteredOpportunities(response.data);
     } catch (error) {
@@ -247,7 +256,7 @@ const PlayerOpportunities = () => {
           className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
           Previous
         </button>
-        <span className="text-sm text-muted-foreground">Page {page}</span>
+        <span className="text-sm text-muted-foreground">Page {page}{!hasMore ? ` / ${page}` : ""}</span>
         <button onClick={() => setPage(p => p + 1)} disabled={!hasMore}
           className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
           Next

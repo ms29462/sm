@@ -17,6 +17,7 @@ export const api = {
   // Player
   getPlayerProfile: () => axios.get(`${API}/player/profile`, { headers: getAuthHeaders() }),
   updatePlayerProfile: (data) => axios.put(`${API}/player/profile`, data, { headers: getAuthHeaders() }),
+  getOpportunitiesCount: () => axios.get(`${API}/opportunities/count`, { headers: getAuthHeaders() }),
   getOpportunities: (page = 1) => axios.get(`${API}/opportunities?page=${page}&limit=5`, { headers: getAuthHeaders() }),
   getRecommendedOpportunities: () => axios.get(`${API}/opportunities/recommended`, { headers: getAuthHeaders() }),
   createApplication: (data) => axios.post(`${API}/applications`, data, { headers: getAuthHeaders() }),
