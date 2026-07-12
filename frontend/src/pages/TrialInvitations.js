@@ -23,6 +23,16 @@ const TrialInvitations = () => {
     loadInvitations();
   }, []);
 
+  const handleDelete = async (inviteId) => {
+    try {
+      await api.deleteTrialInvitation(inviteId);
+      setInvitations(prev => prev.filter(i => i.id !== inviteId));
+      toast.success("Invitation deleted");
+    } catch (e) {
+      toast.error("Failed to delete");
+    }
+  };
+
   const loadInvitations = async () => {
     try {
       const res = await api.getMyTrialInvitations();
@@ -168,6 +178,12 @@ const TrialInvitations = () => {
                   </Button>
                 </div>
               )}
+              <div className="mt-3 flex justify-end">
+                <button onClick={() => handleDelete(invite.id)}
+                  className="text-xs text-muted-foreground hover:text-red-400 transition-colors flex items-center gap-1">
+                  <Trash2 className="w-3 h-3" /> Delete invitation
+                </button>
+              </div>
             </div>
           ))}
         </div>

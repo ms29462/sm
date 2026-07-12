@@ -132,7 +132,7 @@ const ChatRoom = () => {
       emit("typing_start", {
         room_id: roomId,
         user_id: user.userId,
-        sender_name: user.name || user.email
+        sender_name: user.name || 'User'
       });
     }
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -155,7 +155,7 @@ const ChatRoom = () => {
       emit("send_chat_message", {
         room_id: roomId,
         sender_id: user.userId,
-        sender_name: user.name || user.email,
+        sender_name: user.name || 'User',
         sender_role: user.role,
         message: newMessage.trim()
       });

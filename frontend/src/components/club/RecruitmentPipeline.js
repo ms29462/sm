@@ -118,6 +118,9 @@ const RecruitmentPipeline = () => {
   const [selectedPp, setSelectedPp] = useState(null);
   const [noteForm, setNoteForm] = useState({ content: "", type: "note" });
   const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [playerSearchQuery, setPlayerSearchQuery] = useState('');
+  const [playerSearchResults, setPlayerSearchResults] = useState([]);
+  const [searchingPlayers, setSearchingPlayers] = useState(false);
   const [confirmRemoveId, setConfirmRemoveId] = useState(null);
   const [viewMode, setViewMode] = useState('opportunity'); // 'kanban' or 'opportunity'
   const [searchQuery, setSearchQuery] = useState('');
@@ -338,10 +341,10 @@ const RecruitmentPipeline = () => {
       {/* Kanban Board */}
       {viewMode === 'kanban' &&
       <div className="space-y-4">
-        {[STAGES.slice(0, 5), STAGES.slice(5, 10)].map((row, rowIdx) => (
-          <div key={rowIdx} className="grid grid-cols-5 gap-3">
+        {[STAGES.slice(0, 4), STAGES.slice(4, 7), STAGES.slice(7, 10)].map((row, rowIdx) => (
+          <div key={rowIdx} className={`grid gap-3 ${rowIdx === 0 ? "grid-cols-4" : "grid-cols-3"}`}>
             {row.map((stage, colIdx) => {
-              const stageNum = rowIdx * 5 + colIdx + 1;
+              const stageNum = [0,4,7][rowIdx] + colIdx + 1;
               const stagePlayers = pipeline.filter(p => p.stage === stage);
               const isDragOver = dragOverStage === stage;
               return (
@@ -423,7 +426,32 @@ const RecruitmentPipeline = () => {
               </select>
             </div>
             <div>
-              <label className={labelClass}>Select from Tracked Players</label>
+              <label className={labelClass}>Search Player by Name</label>
+              <div className="flex gap-2 mt-1">
+                <input value={playerSearchQuery} onChange={e => setPlayerSearchQuery(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSearchPlayers()}
+                  placeholder="Type player name..."
+                  className={inputClass} />
+                <Button onClick={handleSearchPlayers} disabled={searchingPlayers} size="sm" className="bg-primary text-black font-bold">
+                  {searchingPlayers ? "..." : "Search"}
+                </Button>
+              </div>
+              {playerSearchResults.length > 0 && (
+                <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
+                  {playerSearchResults.filter(p => !pipeline.find(pp => pp.player_id === p.user_id)).map(player => (
+                    <div key={player.user_id} onClick={() => { handleAddPlayer(player.user_id, null); setPlayerSearchResults([]); setPlayerSearchQuery(""); }}
+                      className="flex items-center gap-3 p-3 bg-background border border-border/50 rounded-sm hover:border-primary cursor-pointer transition-colors">
+                      <div>
+                        <p className="font-bold text-sm">{player.name}</p>
+                        <p className="text-xs text-muted-foreground">{player.position} · {player.nationality}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <label className={labelClass}>Or Select from Tracked Players</label>
               <div className="mt-1 space-y-2 max-h-60 overflow-y-auto">
                 {trackedPlayers.filter(p => !pipeline.find(pp => pp.player_id === p.user_id)).map(player => (
                   <div key={player.user_id} onClick={() => handleAddPlayer(player.user_id)}

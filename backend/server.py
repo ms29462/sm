@@ -4203,15 +4203,33 @@ async def get_my_chats(current_user: dict = Depends(get_current_user)):
         # club, specialist, agent, federation, college, analyst all use club_id
         my_rooms = [r for r in rooms if r.club_id == user_id]
     
-    return [
-        {
+    result = []
+    for r in my_rooms:
+        item = {
             "id": r.id,
-            "other_party": r.club_name if role == 'player' else r.player_name,
+            "other_party": r.club_name if role == "player" else r.player_name,
             "last_message": r.messages[-1].model_dump() if r.messages else None,
             "unread_count": 0
         }
-        for r in my_rooms
-    ]
+        # For players, enrich with org playing level and country
+        if role == "player" and r.club_id:
+            org = None
+            for coll in [db.clubs, db.agents, db.specialists, db.federations, db.colleges]:
+                org = await coll.find_one({"user_id": r.club_id}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1, "specialist_type": 1})
+                if org:
+                    break
+            if org:
+                org_country = org.get("country", "")
+                if org.get("specialist_type"):
+                    item["display_name"] = org.get("name", "Specialist")
+                    item["display_label"] = org.get("specialist_type")
+                else:
+                    playing_level = org.get("playing_level", "")
+                    item["display_name"] = None
+                    item["display_label"] = f"{playing_level}{(' · ' + org_country) if org_country else ''}"
+                item["specialist_type"] = org.get("specialist_type")
+        result.append(item)
+    return result
 
 @api_router.get("/chat/{room_id}/messages")
 async def get_chat_messages(room_id: str, before: str = None, limit: int = 50, current_user: dict = Depends(get_current_user)):
@@ -4384,33 +4402,34 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
     role = current_user['role']
     
     if role == 'player':
-        requests = await db.chat_requests.find({"player_id": user_id}, {"_id": 0}).to_list(100)
+        requests = await db.chat_requests.find({"player_id": user_id}, {"_id": 0}).sort("created_at", 1).to_list(100)
         # Enrich with requester org info (playing level/league)
         enriched = []
         for req in requests:
             requester_id = req.get("requester_id")
             org = None
             for coll in [db.clubs, db.agents, db.specialists, db.federations]:
-                org = await coll.find_one({"user_id": requester_id}, {"_id": 0, "name": 1, "playing_level": 1, "league_level": 1, "agency_name": 1})
+                org = await coll.find_one({"user_id": requester_id}, {"_id": 0, "name": 1, "playing_level": 1, "league_level": 1, "agency_name": 1, "country": 1, "specialist_type": 1})
                 if org:
                     break
             if org:
                 requester_role = req.get("requester_type", "club")
+                org_country = org.get("country", "")
                 if requester_role == "specialist":
-                    # Specialists show name + speciality
                     req["display_name"] = org.get("name", "Specialist")
                     req["display_label"] = org.get("specialist_type", "Specialist")
                 else:
-                    # Clubs/agents/colleges show playing level only
+                    playing_level = org.get("playing_level") or org.get("league_level") or requester_role.capitalize()
                     req["display_name"] = None
-                    req["display_label"] = org.get("playing_level") or org.get("league_level") or requester_role.capitalize()
+                    req["display_label"] = f"{playing_level}{(' · ' + org_country) if org_country else ''}"
                 req["org_playing_level"] = org.get("playing_level") or org.get("league_level")
                 req["org_name"] = org.get("name") or org.get("agency_name")
+                req["org_country"] = org_country
                 req["specialist_type"] = org.get("specialist_type")
             enriched.append(req)
         return enriched
     elif role in ['club', 'agent', 'specialist', 'college', 'federation']:
-        requests = await db.chat_requests.find({"requester_id": user_id}, {"_id": 0}).to_list(100)
+        requests = await db.chat_requests.find({"requester_id": user_id}, {"_id": 0}).sort("created_at", 1).to_list(100)
     else:
         return []
     
@@ -5250,6 +5269,19 @@ async def get_my_trial_invitations(current_user: dict = Depends(get_current_user
     else:
         invites = await db.trial_invitations.find({"org_id": current_user["user_id"]}, {"_id": 0}).sort("created_at", -1).to_list(50)
     return invites
+
+@api_router.delete("/trial-invitations/{invite_id}")
+async def delete_trial_invitation(invite_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.trial_invitations.delete_one({
+        "id": invite_id,
+        "$or": [
+            {"player_id": current_user["user_id"]},
+            {"club_id": current_user["user_id"]}
+        ]
+    })
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    return {"message": "Deleted"}
 
 @api_router.put("/trial-invitations/{invite_id}/respond")
 async def respond_to_trial(invite_id: str, response: dict, current_user: dict = Depends(get_current_user)):
