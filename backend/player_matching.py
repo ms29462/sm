@@ -629,7 +629,18 @@ def clean_position(player_name: str, position: str) -> str:
 
 
 def position_group(pos: str) -> str:
-    pos = str(pos).lower()
+    pos = str(pos).strip().lower()
+    # Handle abbreviations first
+    abbrev_map = {
+        "gk": "GK", "goalkeeper": "GK",
+        "cb": "DEF", "lb": "DEF", "rb": "DEF", "rwb": "DEF", "lwb": "DEF",
+        "dm": "MID", "cdm": "MID", "cm": "MID", "cam": "MID", "am": "MID",
+        "lm": "MID", "rm": "MID",
+        "lw": "FWD", "rw": "FWD", "st": "FWD", "cf": "FWD", "ss": "FWD",
+        "fw": "FWD", "striker": "FWD", "winger": "FWD",
+    }
+    if pos in abbrev_map:
+        return abbrev_map[pos]
     if "goalkeeper" in pos:
         return "GK"
     if any(x in pos for x in [
@@ -1368,8 +1379,8 @@ def calculate_match_score_for_opportunity(
             "level_score": None,
             "fit_label": "No benchmark data",
             "level_label": "No benchmark data",
-            "position_match": position_group_val == opp_position_group or position_group(player.get("secondary_position", "")) == opp_position_group,
-            "position_match_bonus": 10 if position_group_val == opp_position_group else (5 if position_group(player.get("secondary_position", "")) == opp_position_group else 0)
+            "position_match": (position_group_val == opp_position_group and position_group_val != "OTHER") or (position_group(player.get("secondary_position", "")) == opp_position_group and opp_position_group != "OTHER"),
+            "position_match_bonus": 10 if (position_group_val == opp_position_group and position_group_val != "OTHER") else (5 if (position_group(player.get("secondary_position", "")) == opp_position_group and opp_position_group != "OTHER") else 0)
         }
 
     # Compute production score

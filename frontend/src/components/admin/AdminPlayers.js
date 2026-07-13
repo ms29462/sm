@@ -9,10 +9,13 @@ const AdminPlayers = () => {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [ageFilter, setAgeFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadPlayers();
   }, []);
+
+
 
   const loadPlayers = async () => {
     try {
@@ -73,8 +76,11 @@ const AdminPlayers = () => {
   };
 
   const filteredPlayers = players.filter(p => {
-    if (ageFilter === 'minors') return p.is_minor === true;
-    if (ageFilter === 'adults') return !p.is_minor;
+    if (ageFilter === 'minors' && !p.is_minor) return false;
+    if (ageFilter === 'adults' && p.is_minor) return false;
+    if (searchQuery && !p.name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !p.nationality?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !p.position?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
@@ -93,7 +99,15 @@ const AdminPlayers = () => {
         <p className="text-muted-foreground">Approve and manage player accounts</p>
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="mb-4">
+        <input
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Search by name, nationality or position..."
+          className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-4 text-sm text-white outline-none focus:border-primary"
+        />
+      </div>
+      <div className="flex flex-wrap gap-2 mb-6">
         {[
           { id: 'all', label: 'All Players' },
           { id: 'minors', label: 'Minors (Admin Only)' },
@@ -101,7 +115,7 @@ const AdminPlayers = () => {
         ].map(f => (
           <button key={f.id} onClick={() => setAgeFilter(f.id)}
             className={`px-4 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${ageFilter === f.id ? "bg-primary text-black border-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
-            {f.label} {f.id === 'minors' ? `(${players.filter(p => p.is_minor).length})` : f.id === 'adults' ? `(${players.filter(p => !p.is_minor).length})` : `(${players.length})`}
+            {f.label} {f.id === 'minors' ? `(${filteredPlayers.filter(p => p.is_minor).length})` : f.id === 'adults' ? `(${filteredPlayers.filter(p => !p.is_minor).length})` : `(${players.length})`}
           </button>
         ))}
       </div>

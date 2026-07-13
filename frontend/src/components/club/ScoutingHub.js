@@ -448,7 +448,7 @@ const ScoutingHub = () => {
                             </div>
                             <div className="flex gap-2">
                               <button onClick={() => setEditingNote({...note})} className="text-muted-foreground hover:text-primary transition-colors text-xs">Edit</button>
-                              <button onClick={() => handleDeleteNote(note.id, player.user_id)} className="text-muted-foreground hover:text-red-500 transition-colors">
+                              <button onClick={(e) => { e.stopPropagation(); handleDeleteNote(note.id, player.user_id); }} className="text-muted-foreground hover:text-red-500 transition-colors">
                                 <Trash2 className="w-3 h-3" />
                               </button>
                             </div>
@@ -482,7 +482,7 @@ const ScoutingHub = () => {
                             <div className="flex items-center gap-2">
                               <RecommendationBadge rec={pm.recommendation} />
                               <button onClick={() => setEditingReport({...pm})} className="text-muted-foreground hover:text-primary transition-colors text-xs">Edit</button>
-                              <button onClick={() => handleDeleteReport(pm.id, player.user_id)} className="text-muted-foreground hover:text-red-500 transition-colors">
+                              <button onClick={(e) => { e.stopPropagation(); handleDeleteReport(pm.id, player.user_id); }} className="text-muted-foreground hover:text-red-500 transition-colors">
                                 <Trash2 className="w-3 h-3" />
                               </button>
                             </div>
@@ -552,7 +552,7 @@ const ScoutingHub = () => {
                       className="text-xs border border-primary text-primary hover:bg-primary hover:text-black rounded-sm px-3 py-1.5 transition-colors flex items-center gap-1">
                       <MessageSquare className="w-3 h-3" /> Chat
                     </button>
-                    <button onClick={() => handleDeleteGroup(group.id)}
+                    <button onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id); }}
                       className="text-muted-foreground hover:text-red-500 transition-colors p-1.5">
                       <Trash2 className="w-4 h-4" />
                     </button>

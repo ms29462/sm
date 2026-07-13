@@ -16,7 +16,6 @@ const NAV_LINKS = {
     { to: '/player/match-scores', label: 'Match Scores' },
     { to: '/player/kato', label: 'College Fit' },
     { to: '/player/masterclass', label: 'Masterclass' },
-    { to: '/player/trials', label: 'Trial Invitations' },
     { to: '/player/chats', label: 'My Chats' },
   ],
   club: [
@@ -27,7 +26,6 @@ const NAV_LINKS = {
     { to: '/club/opportunities', label: 'Opportunities' },
     { to: '/club/applications', label: 'Applications' },
     { to: '/club/favorites', label: 'Favorites' },
-    { to: '/club/trials', label: 'Trial Invitations' },
     { to: '/club/pipeline', label: 'Pipeline' },
     { to: '/club/scouting', label: 'Scouting Hub' },
     { to: '/club/chats', label: 'My Chats' },
@@ -40,7 +38,6 @@ const NAV_LINKS = {
     { to: '/college/opportunities', label: 'Opportunities' },
     { to: '/college/applications', label: 'Applications' },
     { to: '/college/favorites', label: 'Favorites' },
-    { to: '/college/trials', label: 'Trial Invitations' },
     { to: '/college/pipeline', label: 'Pipeline' },
     { to: '/college/chats', label: 'My Chats' },
   ],

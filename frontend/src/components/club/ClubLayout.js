@@ -125,12 +125,6 @@ const ClubLayout = ({ children, isCollege = false }) => {
               Favorites
             </Button>
           </Link>
-          <Link to={isCollege ? "/college/trials" : "/club/trials"}>
-            <Button variant={isActive("/club/trials") || isActive("/college/trials") ? "secondary" : "ghost"} className="w-full justify-start">
-              <CalendarCheck className="w-4 h-4 mr-3" />
-              Trial Invitations
-            </Button>
-          </Link>
           <Link to={isCollege ? "/college/pipeline" : "/club/pipeline"}>
             <Button
               variant={isActive("/club/pipeline") || isActive("/college/pipeline") ? "secondary" : "ghost"}

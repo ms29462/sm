@@ -29,6 +29,9 @@ const QUALITY_COLORS = {
 
 const PlayerDetailView = () => {
   const [chatRequestStatus, setChatRequestStatus] = useState(null);
+  const [trialSent] = useState(false);
+  const [showTrialModal, setShowTrialModal] = useState(false);
+  const [trialForm, setTrialForm] = useState({});
   const { playerId } = useParams();
   const navigate = useNavigate();
   const [player, setPlayer] = useState(null);
@@ -39,10 +42,7 @@ const PlayerDetailView = () => {
   const [pipelineLoading, setPipelineLoading] = useState(true);
   const [verification, setVerification] = useState(null);
   const [agentRep, setAgentRep] = useState(null);
-  const [showTrialModal, setShowTrialModal] = useState(false);
-  const [trialForm, setTrialForm] = useState({ trial_date: '', location: '', message: '' });
-  const [trialSent, setTrialSent] = useState(false);
-  const [showTrackConfirm, setShowTrackConfirm] = useState(false);
+        const [showTrackConfirm, setShowTrackConfirm] = useState(false);
   const [showFavConfirm, setShowFavConfirm] = useState(false);
 
   useEffect(() => {
@@ -101,17 +101,7 @@ const PlayerDetailView = () => {
     }
   };
 
-  const handleSendTrial = async () => {
-    try {
-      await api.sendTrialInvitation({ player_id: playerId, ...trialForm });
-      toast.success("Trial invitation sent!");
-      setShowTrialModal(false);
-      setTrialSent(true);
-    } catch (e) {
-      toast.error(e.response?.data?.detail || "Failed to send invitation");
-    }
-  };
-
+  
   const handleAddToPipeline = async () => {
     try {
       await api.addToPipeline({ player_id: playerId, stage: "New Application" });
@@ -262,15 +252,7 @@ const PlayerDetailView = () => {
               <Kanban className="w-4 h-4 mr-2" />
               {inPipeline ? "In Pipeline ✓" : "Add to Pipeline"}
             </Button>
-            <Button
-              onClick={() => setShowTrialModal(true)}
-              disabled={trialSent}
-              variant="outline"
-              className={`rounded-sm h-12 px-6 font-bold uppercase tracking-wide ${trialSent ? "border-green-500 text-green-400 cursor-not-allowed opacity-70" : "border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"}`}
-            >
-              <CalendarCheck className="w-4 h-4 mr-2" />
-              {trialSent ? "Invitation Sent ✓" : "Send Trial Invite"}
-            </Button>
+            
             <Button
               data-testid="add-favorite-btn"
               onClick={handleAddFavorite}
@@ -341,9 +323,9 @@ const PlayerDetailView = () => {
             { label: "Weight", value: player.weight ? `${player.weight} kg` : "N/A" },
             { label: "Preferred Foot", value: player.preferred_foot || "N/A" },
             { label: "Current Club", value: player.current_club || "Free Agent" },
-            { label: "Games", value: player.games || 0 },
-            { label: "Goals", value: player.goals || 0 },
-            { label: "Assists", value: player.assists || 0 },
+            { label: "Games", value: player.season_games ?? player.games ?? 0 },
+            { label: "Goals", value: player.season_goals ?? player.goals ?? 0 },
+            { label: "Assists", value: player.season_assists ?? player.assists ?? 0 },
           ].map(({ label, value }) => (
             <div key={label} className="bg-background border border-border/50 rounded-sm p-3">
               <p className="text-xs text-muted-foreground uppercase mb-1">{label}</p>
@@ -471,35 +453,7 @@ const PlayerDetailView = () => {
         onConfirm={() => { setShowFavConfirm(false); handleAddFavorite(); }}
       />
       {/* Trial Invitation Modal */}
-      {showTrialModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-card border border-border/50 rounded-sm p-6 w-full max-w-md mx-4">
-            <h3 className="font-heading font-bold uppercase mb-4">Send Trial Invitation</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-wide">Trial Date *</label>
-                <input type="date" style={{colorScheme: "dark"}} value={trialForm.trial_date} onChange={e => setTrialForm(f => ({...f, trial_date: e.target.value}))}
-                  style={{colorScheme: "dark"}} className="w-full mt-1 bg-black/20 border border-white/10 focus:border-primary rounded-sm h-10 px-3 text-sm text-white outline-none" />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-wide">Location *</label>
-                <input value={trialForm.location} onChange={e => setTrialForm(f => ({...f, location: e.target.value}))}
-                  placeholder="e.g. Training ground, City" className="w-full mt-1 bg-black/20 border border-white/10 focus:border-primary rounded-sm h-10 px-3 text-sm text-white outline-none" />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-wide">Message (optional)</label>
-                <textarea value={trialForm.message} onChange={e => setTrialForm(f => ({...f, message: e.target.value}))}
-                  placeholder="Add a personal message..." rows={3} className="w-full mt-1 bg-black/20 border border-white/10 focus:border-primary rounded-sm p-3 text-sm text-white outline-none resize-none" />
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => setShowTrialModal(false)} className="flex-1 border border-white/20 rounded-sm py-2 text-sm text-muted-foreground hover:text-white transition-colors">Cancel</button>
-                <button onClick={handleSendTrial} className="flex-1 bg-primary text-black font-bold rounded-sm py-2 text-sm">Send Invitation</button>
-              </div>
-            </div>
           </div>
-        </div>
-      )}
-    </div>
   );
 };
 

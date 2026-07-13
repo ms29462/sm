@@ -1,6 +1,5 @@
 ﻿import { Routes, Route } from 'react-router-dom';
 import NewsFeed from '@/components/shared/NewsFeed';
-import TrialInvitations from '@/pages/TrialInvitations';
 import OpportunityDetail from '@/pages/OpportunityDetail';
 import PlayerLayout from '@/components/player/PlayerLayout';
 import PlayerHome from '@/components/player/PlayerHome';
@@ -41,7 +40,6 @@ const PlayerDashboard = () => {
         <Route path="chats" element={<UnifiedChats />} />
         <Route path="videos" element={<VideoList />} />
         <Route path="opportunity/:opportunityId" element={<OpportunityDetail />} />
-        <Route path="trials" element={<TrialInvitations />} />
         <Route path="*" element={<PlayerHome />
         } />
         <Route path="news" element={<NewsFeed />} />

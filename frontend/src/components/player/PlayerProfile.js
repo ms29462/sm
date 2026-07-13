@@ -626,7 +626,7 @@ const PlayerProfile = () => {
 
             <div className="md:col-span-2">
               <Label htmlFor="highlight_video" className="text-sm font-medium uppercase tracking-wide flex items-center gap-2">
-                Highlight Video (YouTube/Vimeo URL)
+                Highlight Video (YouTube/Vimeo URL) *
               </Label>
               <Input
                 id="highlight_video"
@@ -638,6 +638,7 @@ const PlayerProfile = () => {
                 placeholder="https://youtube.com/..."
               />
             </div>
+              <p className="text-xs text-yellow-400 mt-1">⚠️ Make sure your video link is set to <strong>Public</strong> — private or unlisted links cannot be viewed by clubs.</p>
 
             <div className="md:col-span-2 border-t border-border/30 pt-4">
               <p className="text-sm font-bold uppercase tracking-wide text-primary mb-3">Current Season Stats <span className="text-xs font-normal normal-case text-muted-foreground">(fill in your stats for the ongoing season)</span></p>

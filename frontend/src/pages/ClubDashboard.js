@@ -15,7 +15,6 @@ import UnifiedChats from "@/components/chat/UnifiedChats";
 import VideoList from "@/components/video/VideoList";
 import ScoutingHub from "@/components/club/ScoutingHub";
 import RecruitmentPipeline from "@/components/club/RecruitmentPipeline";
-import TrialInvitations from "@/pages/TrialInvitations";
 import TrackingOverview from "@/components/club/TrackingOverview";
 import ClubSubscribe from "@/components/club/ClubSubscribe";
 import ClubSubscriptionGate from "@/components/club/ClubSubscriptionGate";
@@ -51,7 +50,6 @@ const ClubDashboard = () => {
         <Route path="videos" element={<VideoList />} />
         <Route path="scouting" element={<Gate><ScoutingHub /></Gate>} />
         <Route path="pipeline" element={<Gate><RecruitmentPipeline /></Gate>} />
-        <Route path="trials" element={<Gate><TrialInvitations /></Gate>} />
         <Route path="scouting/:playerId" element={<Gate><TrackingOverview /></Gate>} />
         <Route path="*" element={<ClubHome />
         } />

@@ -131,12 +131,6 @@ const PlayerLayout = ({ children }) => {
               Masterclass
             </Button>
           </Link>
-          <Link to="/player/trials">
-            <Button variant={isActive('/player/trials') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              <CalendarCheck className="w-4 h-4 mr-3" />
-              Trial Invitations
-            </Button>
-          </Link>
           <Link to="/player/applications">
             <Button
               data-testid="nav-applications-btn"

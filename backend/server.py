@@ -2729,11 +2729,18 @@ async def get_player_detail(player_id: str, current_user: dict = Depends(get_cur
     # Send profile viewed notification
     if current_user["role"] in ["club", "federation", "college", "agent"] and current_user["user_id"] != player_id:
         try:
-            org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or                   await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or                   await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+            org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
+                   await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
+                   await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
+                   await db.agents.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) #           await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or                   await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
             org_name = org.get("name", "An organization") if org else "An organization"
+            org_level = org.get("playing_level") or org.get("league_level", "") if org else ""
+            org_country = org.get("country", "") if org else ""
+            role_label = "College" if current_user["role"] == "college" else current_user["role"].capitalize()
+            level_info = f" ({org_level}" + (f" · {org_country}" if org_country else "") + ")" if org_level else (f" ({org_country})" if org_country else "")
             await create_notification(
                 player_id, "profile_viewed",
-                "A " + (current_user["role"].capitalize() if current_user["role"] != "college" else "College") + " viewed your profile",
+                f"A {role_label} viewed your profile{level_info}",
                 {"viewer_id": current_user["user_id"], "viewer_role": current_user["role"]}
             )
         except Exception:
@@ -5149,7 +5156,10 @@ async def update_pipeline_player(pipeline_id: str, update: PipelinePlayerUpdate,
     await db.pipeline.update_one({"id": pipeline_id}, {"$set": update_data})
     # Notify player of stage change
     if update.stage and update.stage != pp.get("stage"):
-        org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or               await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or               await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+        org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
+                   await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
+                   await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
+                   await db.agents.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) #       await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or               await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
         org_name = org.get("name", "An organization") if org else "An organization"
         stage_messages = {
             "Shortlisted": f"{org_name} has shortlisted you!",
@@ -5243,7 +5253,10 @@ class TrialInvitation(BaseModel):
 async def send_trial_invitation(invite: TrialInvitation, current_user: dict = Depends(get_current_user)):
     if current_user["role"] not in ["club", "federation", "college"]:
         raise HTTPException(status_code=403, detail="Not authorized")
-    org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
+                   await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
+                   await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
+                   await db.agents.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) #   await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
     org_name = org.get("name", "An organization") if org else "An organization"
     
     invitation = {

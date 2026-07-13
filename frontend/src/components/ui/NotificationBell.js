@@ -67,8 +67,6 @@ const NotificationBell = () => {
         return null;
       case "profile_viewed":
         return "/player/analytics";
-      case "trial_invitation":
-        return "/player/trials";
       default:
         return null;
     }

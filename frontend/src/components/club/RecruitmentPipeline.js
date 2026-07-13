@@ -198,6 +198,16 @@ const RecruitmentPipeline = () => {
     setConfirmRemoveId(null);
   };
 
+  const handleSearchPlayers = async () => {
+    if (!playerSearchQuery.trim()) return;
+    setSearchingPlayers(true);
+    try {
+      const res = await api.getPlayers({ name: playerSearchQuery, limit: 10 });
+      setPlayerSearchResults(res.data || []);
+    } catch (e) { toast.error("Search failed"); }
+    finally { setSearchingPlayers(false); }
+  };
+
   const handleAddPlayer = async (playerId) => {
     try {
       const res = await api.addToPipeline({ player_id: playerId, stage: addStage, opportunity_id: addOpportunityId || null });
