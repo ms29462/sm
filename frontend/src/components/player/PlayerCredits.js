@@ -118,11 +118,11 @@ const PlayerCredits = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-5">
+      <div className="flex flex-wrap gap-2 mb-5">
         {[
           { id: "overview", label: "Overview" },
-          { id: "earn", label: "Earn Free Credits" },
-          { id: "buy", label: "Buy Credits" },
+          { id: "earn", label: "Earn" },
+          { id: "buy", label: "Buy" },
           { id: "history", label: "History" },
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}

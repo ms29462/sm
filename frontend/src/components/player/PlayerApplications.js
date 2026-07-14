@@ -153,12 +153,14 @@ const PlayerApplications = () => {
               data-testid={`application-card-${app.id}`}
               className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors"
             >
-              <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg sm:text-xl font-heading font-bold uppercase mb-1 truncate">
-                    {app.opportunity.country || app.opportunity.club_country || "International"} — {app.opportunity.position}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{app.opportunity.league_level}</p>
+              <div className="flex flex-col gap-2 mb-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-heading font-bold uppercase mb-0.5 truncate">
+                      {app.opportunity.country || app.opportunity.club_country || "International"}
+                    </h3>
+                    <p className="text-sm font-medium text-primary">{app.opportunity.position}</p>
+                    <p className="text-xs text-muted-foreground">{app.opportunity.league_level}</p>
                   {(app.opportunity.status === "closed" || app.opportunity.status === "filled") && (
                     <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-sm border mt-1 ${
                       app.opportunity.status === "filled"
@@ -173,10 +175,11 @@ const PlayerApplications = () => {
                   )}
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Applied: {app.created_at?.slice(0,10)}
-                    {app.opportunity.deadline && ` · Deadline: ${app.opportunity.deadline}`}
+                    {app.opportunity.deadline && <span className="block">Deadline: {app.opportunity.deadline}</span>}
                   </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   {(matchScores[app.opportunity_id] != null) && (
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground uppercase tracking-wide">Fit</p>

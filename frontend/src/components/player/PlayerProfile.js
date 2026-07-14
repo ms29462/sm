@@ -767,7 +767,7 @@ const PlayerProfile = () => {
               <DialogTrigger asChild>
                 <Button
                   data-testid="add-match-btn"
-                  className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm"
+                  className="bg-primary text-black font-bold uppercase text-xs sm:text-sm tracking-normal hover:bg-primary/90 rounded-sm"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   ADD MATCH
@@ -937,7 +937,7 @@ const PlayerProfile = () => {
               <DialogTrigger asChild>
                 <Button
                   data-testid="add-calendar-match-btn"
-                  className="bg-blue-500 text-white font-bold uppercase tracking-wide hover:bg-blue-600 rounded-sm"
+                  className="bg-blue-500 text-white font-bold uppercase text-xs sm:text-sm tracking-normal hover:bg-blue-600 rounded-sm"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   ADD MATCH
