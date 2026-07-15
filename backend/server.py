@@ -174,6 +174,7 @@ class AuthResponse(BaseModel):
     role: str
     user_id: str
     email: str
+    name: Optional[str] = None
 
 # ============ PLAYER MODELS ============
 class PlayerProfile(BaseModel):
@@ -1488,7 +1489,7 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             print(f"Email error: {e}")
     
     token = create_token(user_id, user.email, user.role)
-    return AuthResponse(token=token, role=user.role, user_id=user_id, email=user.email)
+    return AuthResponse(token=token, role=user.role, user_id=user_id, email=user.email, name=user.get("name"))
 
 @api_router.post("/auth/login", response_model=AuthResponse)
 @limiter.limit("10/minute")
@@ -1517,7 +1518,25 @@ async def login(request: Request, credentials: UserLogin):
             raise HTTPException(status_code=403, detail=f"PENDING_REVIEW:{user['role']}")
     
     token = create_token(user_id, user['email'], user['role'])
-    return AuthResponse(token=token, role=user['role'], user_id=user_id, email=user['email'])
+    # Look up name from role-specific collection
+    role = user['role']
+    profile_name = None
+    if role == 'player':
+        p = await db.players.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+        profile_name = p.get("name") if p else None
+    elif role in ['club', 'college', 'analyst']:
+        p = await db.clubs.find_one({"user_id": user_id}, {"_id": 0, "name": 1}) or await db.colleges.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+        profile_name = p.get("name") if p else None
+    elif role == 'agent':
+        p = await db.agents.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+        profile_name = p.get("name") if p else None
+    elif role == 'federation':
+        p = await db.federations.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+        profile_name = p.get("name") if p else None
+    elif role == 'specialist':
+        p = await db.specialists.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+        profile_name = p.get("name") if p else None
+    return AuthResponse(token=token, role=user['role'], user_id=user_id, email=user['email'], name=profile_name)
 
 @api_router.post("/auth/refresh")
 async def refresh_token(request: Request):
@@ -1554,7 +1573,7 @@ async def admin_login(credentials: UserLogin):
     if credentials.email == admin_email and credentials.password == admin_password:
         user_id = "admin-001"
         token = create_token(user_id, credentials.email, 'admin')
-        return AuthResponse(token=token, role='admin', user_id=user_id, email=credentials.email)
+        return AuthResponse(token=token, role='admin', user_id=user_id, email=credentials.email, name=user.get("name"))
     raise HTTPException(status_code=401, detail="Invalid admin credentials")
 
 # ============ PLAYER ENDPOINTS ============

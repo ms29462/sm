@@ -14,7 +14,8 @@ export const AuthProvider = ({ children }) => {
     const role = localStorage.getItem("role");
     const userId = localStorage.getItem("userId");
     const email = localStorage.getItem("email");
-    const name = localStorage.getItem("name");
+    const storedName = localStorage.getItem("name");
+    const name = storedName || (email ? email.split('@')[0] : null);
     if (token && role && userId) {
       setUser({ token, refreshToken, role, userId, email, name });
     }
@@ -26,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("role", role);
     localStorage.setItem("userId", userId);
     localStorage.setItem("email", email);
-    if (name) localStorage.setItem("name", name);
+    localStorage.setItem("name", name || email.split('@')[0]);
     if (refreshToken) {
       localStorage.setItem("refresh_token", refreshToken);
     }

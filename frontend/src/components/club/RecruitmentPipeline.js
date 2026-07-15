@@ -262,9 +262,7 @@ const RecruitmentPipeline = () => {
           <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">Recruitment Pipeline</h1>
           <p className="text-muted-foreground text-sm mt-1">{pipeline.length} players tracked across {STAGES.length} stages</p>
         </div>
-        <Button onClick={() => setShowAddPlayer(true)} className="bg-primary text-black font-bold rounded-sm">
-          <Plus className="w-4 h-4 mr-2" /> Add Player
-        </Button>
+        
       </div>
 
       {/* View Toggle & Search */}
@@ -453,15 +451,15 @@ const RecruitmentPipeline = () => {
               </div>
               {playerSearchResults.length > 0 && (
                 <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
-                  {playerSearchResults.filter(p => !pipeline.find(pp => pp.player_id === p.user_id)).map(player => (
-                    <div key={player.user_id} onClick={() => { handleAddPlayer(player.user_id, null); setPlayerSearchResults([]); setPlayerSearchQuery(""); }}
+                  {playerSearchResults.map(player => { const alreadyInPipeline = pipeline.find(pp => pp.player_id === player.user_id); return (
+                    <div key={player.user_id} onClick={() => { if (!alreadyInPipeline) { handleAddPlayer(player.user_id, null); setPlayerSearchResults([]); setPlayerSearchQuery(""); } }}
                       className="flex items-center gap-3 p-3 bg-background border border-border/50 rounded-sm hover:border-primary cursor-pointer transition-colors">
                       <div>
                         <p className="font-bold text-sm">{player.name}</p>
                         <p className="text-xs text-muted-foreground">{player.position} · {player.nationality}</p>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               )}
             </div>
