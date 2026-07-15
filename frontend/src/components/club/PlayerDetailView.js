@@ -325,6 +325,8 @@ const PlayerDetailView = () => {
             { label: "Height", value: player.height ? `${player.height} cm` : "N/A" },
             { label: "Weight", value: player.weight ? `${player.weight} kg` : "N/A" },
             { label: "Preferred Foot", value: player.preferred_foot || "N/A" },
+            { label: "Playing Level", value: player.playing_level || "N/A" },
+            { label: "League", value: player.league || player.current_league || "N/A" },
             { label: "Current Club", value: player.current_club || "Free Agent" },
             { label: "Games", value: player.season_games ?? player.games ?? 0 },
             { label: "Goals", value: player.season_goals ?? player.goals ?? 0 },
