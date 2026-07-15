@@ -31,7 +31,7 @@ const UnifiedChats = () => {
   const loadChats = async () => {
     try {
       const res = await api.getMyChats();
-      setChats(res.data || []);
+      setChats((res.data || []).sort((a, b) => new Date(b.last_message?.created_at || 0) - new Date(a.last_message?.created_at || 0)));
     } catch (e) {
       toast.error("Failed to load chats");
     }
@@ -41,7 +41,7 @@ const UnifiedChats = () => {
   const loadRequests = async () => {
     try {
       const res = await api.getMyChatRequests();
-      setRequests(res.data || []);
+      setRequests((res.data || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
     } catch (e) {}
     setLoadingRequests(false);
   };

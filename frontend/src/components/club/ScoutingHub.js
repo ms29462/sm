@@ -179,6 +179,7 @@ const ScoutingHub = () => {
   };
 
   const handleDeleteNote = async (noteId, playerId) => {
+    if (!window.confirm('Are you sure you want to delete this note?')) return;
     try {
       await api.deleteScoutingNote(noteId);
       setPlayerNotes(prev => ({ ...prev, [playerId]: prev[playerId].filter(n => n.id !== noteId) }));
@@ -189,6 +190,7 @@ const ScoutingHub = () => {
   };
 
   const handleDeleteReport = async (pmId, playerId) => {
+    if (!window.confirm('Are you sure you want to delete this report?')) return;
     try {
       await api.deletePostMortem(pmId);
       setPlayerReports(prev => ({ ...prev, [playerId]: prev[playerId].filter(p => p.id !== pmId) }));
@@ -230,6 +232,7 @@ const ScoutingHub = () => {
   };
 
   const handleDeleteGroup = async (groupId) => {
+    if (!window.confirm('Are you sure you want to delete this group?')) return;
     try {
       await api.deleteScoutingGroup(groupId);
       toast.success("Group deleted");
