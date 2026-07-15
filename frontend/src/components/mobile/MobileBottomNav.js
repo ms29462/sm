@@ -14,7 +14,7 @@ const MobileNavConfig = {
     { path: '/club/dashboard', icon: Home, label: 'Home' },
     { path: '/club/players', icon: Users, label: 'Players' },
     { path: '/club/scouting', icon: Target, label: 'Scouting' },
-    { path: '/club/applications', icon: FileText, label: 'Applications' },
+    { path: '/club/opportunities/analytics', icon: Activity, label: 'Analytics' },
     { path: '/club/chats', icon: MessageCircle, label: 'Chats' }
   ],
   college: [
