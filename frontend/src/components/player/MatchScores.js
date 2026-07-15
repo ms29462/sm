@@ -5,9 +5,12 @@ import { toast } from 'sonner';
 import { TrendingUp, AlertCircle, CheckCircle, XCircle, Target, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const SCORES_PER_PAGE = 5;
+
 const MatchScores = () => {
   const navigate = useNavigate();
   const [scores, setScores] = useState([]);
+  const [page, setPage] = useState(1);
   const [opportunities, setOpportunities] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,7 +22,7 @@ const MatchScores = () => {
   const loadMatchScores = async () => {
     try {
       // First load opportunities to get details
-      const oppsResponse = await api.getOpportunities();
+      const oppsResponse = await api.getOpportunities(1, 100);
       const oppsMap = {};
       oppsResponse.data.forEach(opp => {
         oppsMap[opp.id] = opp;
@@ -79,6 +82,9 @@ const MatchScores = () => {
     return <XCircle className="w-4 h-4 text-red-500" />;
   };
 
+  const totalPages = Math.max(1, Math.ceil(scores.length / SCORES_PER_PAGE));
+  const paginatedScores = scores.slice((page-1)*SCORES_PER_PAGE, page*SCORES_PER_PAGE);
+
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
@@ -118,10 +124,10 @@ const MatchScores = () => {
           <p className="text-muted-foreground">No opportunities available for matching</p>
         </div>
       ) : (
+        <>
         <div className="space-y-4">
-          {scores.map((score, index) => {
-            const opp = opportunities[score.opportunity_id];
-            if (!opp) return null;
+          {paginatedScores.map((score, index) => {
+            const opp = opportunities[score.opportunity_id] || {};
 
             return (
               <div
@@ -129,11 +135,11 @@ const MatchScores = () => {
                 data-testid={`match-score-${score.opportunity_id}`}
                 className={`bg-card border p-6 rounded-sm ${getFitScoreBg(score.fit_score)}`}
               >
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-sm text-muted-foreground">#{index + 1}</span>
-                      <h3 className="text-lg font-heading font-bold uppercase">{opp.club_name}</h3>
+                      <h3 className="text-base font-heading font-bold uppercase">{opp.country || opp.club_country || score.club_name || "Opportunity"}</h3>
                       {score.position_match && (
                         <span className="px-2 py-0.5 text-xs bg-primary/10 text-primary border border-primary/20 rounded-sm">
                           POSITION MATCH
@@ -143,11 +149,11 @@ const MatchScores = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                       <div>
                         <p className="text-xs text-muted-foreground uppercase">Position</p>
-                        <p className="font-medium">{opp.position}</p>
+                        <p className="font-medium">{opp.position || score.position || '—'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground uppercase">League</p>
-                        <p className="font-medium">{opp.league_level}</p>
+                        <p className="font-medium">{opp.league_level || score.league_level || '—'}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground uppercase">Salary</p>
@@ -214,6 +220,20 @@ const MatchScores = () => {
             );
           })}
         </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 mt-6">
+            <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1}
+              className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
+              Previous
+            </button>
+            <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
+            <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page === totalPages}
+              className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
+              Next
+            </button>
+          </div>
+        )}
+        </>
       )}
     </div>
   );
