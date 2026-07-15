@@ -228,7 +228,7 @@ const ChatRoom = () => {
                 >
                   {!isMe && (
                     <p className="text-xs font-bold uppercase mb-1 text-primary">
-                      {message.sender_role === "player" ? message.sender_name : "Scout / Organization"}
+                      {message.sender_role === "player" ? (message.sender_name || "Player") : (message.sender_name || "Organization")}
                     </p>
                   )}
                   <p className="text-sm break-words">{message.message}</p>

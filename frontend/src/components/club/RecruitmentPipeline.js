@@ -215,7 +215,12 @@ const RecruitmentPipeline = () => {
       setShowAddPlayer(false);
       toast.success("Player added to pipeline!");
     } catch (e) {
-      toast.error(e.response?.data?.detail || "Failed to add player");
+      const detail = e.response?.data?.detail || "Failed to add player";
+      if (detail.includes("already in pipeline")) {
+        toast.info("This player is already in your pipeline");
+      } else {
+        toast.error(detail);
+      }
     }
   };
 

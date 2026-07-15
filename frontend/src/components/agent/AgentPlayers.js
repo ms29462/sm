@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ const POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Striker',
 const LEVELS = ['Professional', 'Semi-Professional', 'Amateur', 'Youth Academy', 'College/University'];
 
 const AgentPlayers = () => {
+  const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -192,6 +194,7 @@ const AgentPlayers = () => {
                   >
                     <Heart className={`w-5 h-5 ${favorites.has(player.user_id) ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
                   </button>
+                  <button onClick={() => navigate(`/agent/player/${player.user_id}`)} className="text-xs text-primary hover:underline">View Profile</button>
                 </div>
 
                 <div className="space-y-2 text-sm text-muted-foreground mb-4">

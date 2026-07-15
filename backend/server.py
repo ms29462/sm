@@ -4415,7 +4415,7 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
     role = current_user['role']
     
     if role == 'player':
-        requests = await db.chat_requests.find({"player_id": user_id}, {"_id": 0}).sort("created_at", 1).to_list(100)
+        requests = await db.chat_requests.find({"player_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
         # Enrich with requester org info (playing level/league)
         enriched = []
         for req in requests:
@@ -4442,7 +4442,7 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
             enriched.append(req)
         return enriched
     elif role in ['club', 'agent', 'specialist', 'college', 'federation']:
-        requests = await db.chat_requests.find({"requester_id": user_id}, {"_id": 0}).sort("created_at", 1).to_list(100)
+        requests = await db.chat_requests.find({"requester_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
     else:
         return []
     
@@ -4520,12 +4520,15 @@ async def respond_to_chat_request(
         
         # Notify requester about rejection
         if requester_id:
+            # Get player name
+            player_doc = await db.players.find_one({"user_id": chat_request.get("player_id")}, {"_id": 0, "name": 1})
+            player_name = player_doc.get("name", "The player") if player_doc else "The player"
             await db.notifications.insert_one({
                 "id": str(uuid.uuid4()),
                 "user_id": requester_id,
                 "type": "chat_request_rejected",
                 "title": "Chat Request Update",
-                "message": "The player has declined your chat request",
+                "message": f"{player_name} has declined your chat request",
                 "reference_id": request_id,
                 "read": False,
                 "created_at": datetime.now(timezone.utc).isoformat()
@@ -8501,7 +8504,7 @@ async def get_opportunity_detail(opportunity_id: str, current_user: dict = Depen
 
 @api_router.get("/club/opportunities/analytics")
 async def get_org_opportunity_analytics(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college", "agent"]:
+    if current_user["role"] not in ["club", "federation", "college"]:
         raise HTTPException(status_code=403)
 
     opportunities = await db.opportunities.find(

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play, Target, Kanban, CalendarCheck } from 'lucide-react';
@@ -32,6 +33,7 @@ const PlayerDetailView = () => {
   const [trialSent] = useState(false);
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [trialForm, setTrialForm] = useState({});
+  const { user } = useAuth();
   const { playerId } = useParams();
   const navigate = useNavigate();
   const [player, setPlayer] = useState(null);
@@ -235,6 +237,7 @@ const PlayerDetailView = () => {
 
             {/* Action Buttons */}
           <div className="flex flex-col gap-3">
+            {user?.role !== "agent" && (
             <Button
               onClick={handleTrackPlayer}
               variant="outline"
@@ -242,8 +245,8 @@ const PlayerDetailView = () => {
             >
               <Target className="w-4 h-4 mr-2" />
               {isTracked ? "Tracked ✓" : "Track Player"}
-            </Button>
-            <Button
+            </Button>)}
+            {user?.role !== "agent" && (<Button
               onClick={handleAddToPipeline}
               disabled={inPipeline || pipelineLoading}
               variant="outline"
@@ -251,7 +254,7 @@ const PlayerDetailView = () => {
             >
               <Kanban className="w-4 h-4 mr-2" />
               {inPipeline ? "In Pipeline ✓" : "Add to Pipeline"}
-            </Button>
+            </Button>)}
             
             <Button
               data-testid="add-favorite-btn"
