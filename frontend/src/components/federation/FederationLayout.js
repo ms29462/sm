@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Flag, Users, Heart, Briefcase, LogOut, Home, UserCircle, FolderOpen, Sparkles, Newspaper, FileText, Kanban, MessageCircle } from 'lucide-react';
+import { Trophy, Flag, Users, Heart, Briefcase, LogOut, Home, UserCircle, FolderOpen, Sparkles, Newspaper, FileText, Kanban, MessageCircle, TrendingUp } from 'lucide-react';
 
 const FederationLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -109,6 +109,12 @@ const FederationLayout = ({ children }) => {
             <Button variant={isActive('/federation/favorites') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <Heart className="w-4 h-4 mr-3" />
               Favorites
+            </Button>
+          </Link>
+          <Link to="/federation/opportunities/analytics">
+            <Button variant={isActive('/federation/opportunities/analytics') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <TrendingUp className="w-4 h-4 mr-3" />
+              Analytics
             </Button>
           </Link>
           <Link to="/federation/opportunities">
