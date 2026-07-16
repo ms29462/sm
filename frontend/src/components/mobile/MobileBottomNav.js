@@ -28,7 +28,7 @@ const MobileNavConfig = {
     { path: '/federation/dashboard', icon: Home, label: 'Home' },
     { path: '/federation/players', icon: Users, label: 'Players' },
     { path: '/federation/scouting', icon: Target, label: 'Scouting' },
-    { path: '/federation/analytics', icon: Activity, label: 'Analytics' },
+    { path: '/federation/opportunities/analytics', icon: Activity, label: 'Analytics' },
     { path: '/federation/chats', icon: MessageCircle, label: 'Chats' }
   ],
   agent: [

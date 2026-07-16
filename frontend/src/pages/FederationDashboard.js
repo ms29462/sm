@@ -11,6 +11,7 @@ import TrackingOverview from '@/components/club/TrackingOverview';
 import FederationTeams from '@/components/federation/FederationTeams';
 import PlayerDetailView from '@/components/club/PlayerDetailView';
 import ClubFavorites from '@/components/club/ClubFavorites';
+import ClubOpportunityAnalytics from "@/components/club/ClubOpportunityAnalytics";
 import ClubOpportunities from '@/components/club/ClubOpportunities';
 import ClubApplications from '@/components/club/ClubApplications';
 import RecruitmentPipeline from '@/components/club/RecruitmentPipeline';
@@ -35,6 +36,7 @@ const FederationDashboard = () => {
         <Route path="*" element={<FederationHome />} />
         <Route path="news" element={<NewsFeed />} />
         <Route path="favorites" element={<FederationAccessGate><ClubFavorites /></FederationAccessGate>} />
+        <Route path="opportunities/analytics" element={<FederationAccessGate><ClubOpportunityAnalytics /></FederationAccessGate>} />
         <Route path="opportunities" element={<FederationAccessGate><ClubOpportunities /></FederationAccessGate>} />
         <Route path="applications" element={<FederationAccessGate><ClubApplications /></FederationAccessGate>} />
         <Route path="pipeline" element={<FederationAccessGate><RecruitmentPipeline /></FederationAccessGate>} />
