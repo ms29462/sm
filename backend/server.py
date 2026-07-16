@@ -4369,6 +4369,9 @@ async def create_chat_request(
     elif role == 'specialist':
         requester = await db.specialists.find_one({"user_id": current_user['user_id']}, {"_id": 0})
         requester_name = requester.get('name', 'Unknown Specialist') if requester else 'Unknown Specialist'
+    elif role == 'federation':
+        requester = await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        requester_name = requester.get('name', 'Unknown Federation') if requester else 'Unknown Federatist'
     
     chat_request = {
         "id": str(uuid.uuid4()),
