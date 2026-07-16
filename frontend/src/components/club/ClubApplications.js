@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,7 +42,9 @@ const QUALITY_COLORS = {
 
 const PlayerProfilePopup = ({ player, onClose, verifications = {} }) => {
   const navigate = useNavigate();
-  const goToFullProfile = () => { onClose(); navigate(`/club/player/${player.user_id}`); };
+  const location = useLocation();
+  const basePath = location.pathname.startsWith('/federation') ? '/federation' : location.pathname.startsWith('/college') ? '/college' : location.pathname.startsWith('/agent') ? '/agent' : '/club';
+  const goToFullProfile = () => { onClose(); navigate(`${basePath}/player/${player.user_id}`); };
   if (!player) return null;
   const nationalities = [player.nationality_1, player.nationality_2, player.nationality_3]
     .filter(Boolean).join(", ") || player.nationality || "N/A";
