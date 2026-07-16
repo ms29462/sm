@@ -4261,6 +4261,8 @@ async def get_my_chats(current_user: dict = Depends(get_current_user)):
                     item["display_label"] = f"{playing_level}{(' · ' + org_country) if org_country else ''}"
                 item["specialist_type"] = org.get("specialist_type")
         result.append(item)
+    # Sort by last message date newest to oldest
+    result.sort(key=lambda x: x.get('last_message', {}).get('created_at', '') if x.get('last_message') else '', reverse=True)
     return result
 
 @api_router.get("/chat/{room_id}/messages")
