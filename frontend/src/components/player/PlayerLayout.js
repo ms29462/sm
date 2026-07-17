@@ -9,7 +9,7 @@ import Badge from '@/components/ui/badge';
 import { api } from '@/lib/api';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Star, Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap, CalendarCheck , Newspaper, TrendingUp } from 'lucide-react';
+import { Star, Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap, CalendarCheck , Newspaper, TrendingUp, Users } from 'lucide-react';
 
 const PlayerLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -119,6 +119,12 @@ const PlayerLayout = ({ children }) => {
             >
               <Target className="w-4 h-4 mr-3" />
               Match Scores
+            </Button>
+          </Link>
+          <Link to="/player/specialists">
+            <Button variant={isActive('/player/specialists') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Users className="w-4 h-4 mr-3" />
+              Specialists
             </Button>
           </Link>
           <Link to="/player/masterclass">

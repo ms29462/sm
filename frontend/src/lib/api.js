@@ -155,6 +155,8 @@ export const api = {
   getAgentOpportunities: () => axios.get(`${API}/agent/opportunities`, { headers: getAuthHeaders() }),
 
   // Specialist
+  getSpecialists: () => axios.get(`${API}/specialists`, { headers: getAuthHeaders() }),
+  getSpecialistById: (id) => axios.get(`${API}/specialists/${id}`, { headers: getAuthHeaders() }),
   getSpecialistProfile: () => axios.get(`${API}/specialist/profile`, { headers: getAuthHeaders() }),
   updateSpecialistProfile: (data) => axios.put(`${API}/specialist/profile`, data, { headers: getAuthHeaders() }),
   getSpecialistPlayers: (filters) => axios.get(`${API}/specialist/players`, { params: filters, headers: getAuthHeaders() }),

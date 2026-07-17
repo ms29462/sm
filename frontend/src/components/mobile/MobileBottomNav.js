@@ -7,6 +7,7 @@ const MobileNavConfig = {
     { path: '/player/profile', icon: User, label: 'Profile' },
     { path: '/player/opportunities', icon: FileText, label: 'Opportunities' },
     { path: '/player/credits', icon: Star, label: 'Credits' },
+    { path: '/player/specialists', icon: Users, label: 'Experts' },
     { path: '/player/analytics', icon: Activity, label: 'Analytics' },
     { path: '/player/chat-requests', icon: MessageCircle, label: 'Chats' }
   ],

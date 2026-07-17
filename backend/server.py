@@ -15,7 +15,7 @@ import logging
 import socketio
 import shutil
 from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
-from typing import List, Optional, Literal, Dict
+from typing import List, Optional, Literal, Dict, Union
 import uuid
 from datetime import datetime, timezone, timedelta
 import bcrypt
@@ -1018,7 +1018,7 @@ class SpecialistProfile(BaseModel):
     rep_role: Optional[str] = None
     rep_email: Optional[str] = None
     rep_phone: Optional[str] = None
-    certifications: Optional[str] = None
+    certifications: Optional[Union[List[str], str]] = None
     years_experience: Optional[int] = None
     current_club: Optional[str] = None  # If working with a club
     hourly_rate: Optional[str] = None
@@ -1061,15 +1061,13 @@ class SpecialistUpdate(BaseModel):
     rep_role: Optional[str] = None
     rep_email: Optional[str] = None
     rep_phone: Optional[str] = None
-    certifications: Optional[str] = None
+    certifications: Optional[List[str]] = None
     years_experience: Optional[int] = None
     current_club: Optional[str] = None
     hourly_rate: Optional[str] = None
     availability: Optional[str] = None
     services_offered: Optional[List[str]] = None
     languages: Optional[List[str]] = None
-    website: Optional[str] = None
-    linkedin: Optional[str] = None
 
 
 # ============ OPPORTUNITY MODELS ============
@@ -8696,6 +8694,20 @@ async def reset_password(data: dict):
     )
 
     return {"message": "Password updated successfully. You can now log in."}
+
+@api_router.get("/specialists/{specialist_id}")
+async def get_specialist_by_id(specialist_id: str, current_user: dict = Depends(get_current_user)):
+    spec = await db.specialists.find_one({"user_id": specialist_id}, {"_id": 0, "email": 0, "phone": 0})
+    if not spec:
+        raise HTTPException(status_code=404, detail="Specialist not found")
+    return spec
+
+@api_router.get("/specialists")
+async def get_specialists(current_user: dict = Depends(get_current_user)):
+    """Get all approved specialists for players to browse"""
+    specialists = await db.specialists.find({"approved": True}, {"_id": 0, "email": 0, "phone": 0}).to_list(100)
+    return specialists
+
 
 fastapi_app.include_router(api_router)
 
