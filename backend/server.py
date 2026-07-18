@@ -1571,7 +1571,7 @@ async def admin_login(credentials: UserLogin):
     if credentials.email == admin_email and credentials.password == admin_password:
         user_id = "admin-001"
         token = create_token(user_id, credentials.email, 'admin')
-        return AuthResponse(token=token, role='admin', user_id=user_id, email=credentials.email, name=user.get("name"))
+        return AuthResponse(token=token, role='admin', user_id=user_id, email=credentials.email, name='Admin')
     raise HTTPException(status_code=401, detail="Invalid admin credentials")
 
 # ============ PLAYER ENDPOINTS ============
