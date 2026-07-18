@@ -6271,8 +6271,9 @@ fastapi_app.add_middleware(
     allow_origins=[
         "https://www.soccer-match.org",
         "https://soccer-match.org",
-        "http://localhost:3000",
-        "*"
+        "https://www.soccermatch.app",
+        "https://soccermatch.app",
+        "http://localhost:3000"
     ],
     allow_methods=["*"],
     allow_headers=["*"],
@@ -8717,8 +8718,9 @@ fastapi_app.add_middleware(
     allow_origins=[
         "https://www.soccer-match.org",
         "https://soccer-match.org",
-        "http://localhost:3000",
-        "*"
+        "https://www.soccermatch.app",
+        "https://soccermatch.app",
+        "http://localhost:3000"
     ],
     allow_methods=["*"],
     allow_headers=["*"],
