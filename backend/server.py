@@ -5491,6 +5491,7 @@ async def create_news_post(post: NewsPostCreate, current_user: dict = Depends(ge
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.news.insert_one(news_doc)
+    news_doc.pop('_id', None)  # Remove ObjectId
     # Notify users in background (don't await to avoid timeout)
     try:
         users = await db.users.find({"role": {"$in": post.target_roles}}, {"_id": 0}).to_list(1000)
