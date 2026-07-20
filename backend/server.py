@@ -1488,7 +1488,7 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             print(f"Email error: {e}")
     
     token = create_token(user_id, user.email, user.role)
-    return AuthResponse(token=token, role=user.role, user_id=user_id, email=user.email, name=user.get("name"))
+    return AuthResponse(token=token, role=user.role, user_id=user_id, email=user.email, name=getattr(user, "name", None) or getattr(user, "club_name", None) or getattr(user, "rep_first_name", None))
 
 @api_router.post("/auth/login", response_model=AuthResponse)
 @limiter.limit("10/minute")
