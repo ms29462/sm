@@ -3188,6 +3188,16 @@ async def get_all_opportunities_admin(current_user: dict = Depends(get_current_u
     
     return [Opportunity(**opp) for opp in opportunities]
 
+@api_router.put("/admin/opportunities/{opportunity_id}")
+async def update_opportunity_admin(opportunity_id: str, update: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not an admin")
+    allowed_fields = ["description", "position", "salary_range", "contract_duration", "deadline", "status", "league_level", "country"]
+    update_data = {k: v for k, v in update.items() if k in allowed_fields}
+    if update_data:
+        await db.opportunities.update_one({"id": opportunity_id}, {"$set": update_data})
+    return {"message": "Updated"}
+
 @api_router.delete("/admin/opportunities/{opportunity_id}")
 async def delete_opportunity_admin(opportunity_id: str, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':

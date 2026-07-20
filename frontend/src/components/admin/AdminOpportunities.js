@@ -33,6 +33,7 @@ const AdminOpportunities = () => {
   const [editMaxApplicants, setEditMaxApplicants] = useState("");
   const [editDeadline, setEditDeadline] = useState("");
   const [editStatus, setEditStatus] = useState("");
+  const [editDescription, setEditDescription] = useState("");
   const [tab, setTab] = useState("pending_review");
   const [tier, setTier] = useState('amateur');
   const [adminNotes, setAdminNotes] = useState("");
@@ -105,6 +106,7 @@ const AdminOpportunities = () => {
         max_applicants: editMaxApplicants === "" ? null : Number(editMaxApplicants),
         deadline: editDeadline || null,
         status: editStatus,
+        description: editDescription || null,
       });
       toast.success("Opportunity updated");
       loadOpportunities();
@@ -227,6 +229,13 @@ const AdminOpportunities = () => {
                       ))}
                     </select>
                   </div>
+                </div>
+                <div className="mb-3">
+                  <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Description</label>
+                  <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
+                    rows={4}
+                    className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none resize-none"
+                    placeholder="Edit opportunity description..." />
                 </div>
                 <button onClick={handleSaveOpportunityFields}
                   className="text-xs border border-primary/30 text-primary rounded-sm px-3 py-1.5 hover:bg-primary/10 transition-colors">

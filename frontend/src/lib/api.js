@@ -51,6 +51,7 @@ export const api = {
   approveClub: (userId, approved) => axios.put(`${API}/admin/clubs/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
   deleteUser: (userId) => axios.delete(`${API}/admin/users/${userId}`, { headers: getAuthHeaders() }),
   getAllOpportunities: () => axios.get(`${API}/admin/opportunities`, { headers: getAuthHeaders() }),
+  updateOpportunityAdmin: (id, data) => axios.put(`${API}/admin/opportunities/${id}`, data, { headers: getAuthHeaders() }),
   deleteOpportunityAdmin: (id) => axios.delete(`${API}/admin/opportunities/${id}`, { headers: getAuthHeaders() }),
 
   // Chat & Video - Admin
