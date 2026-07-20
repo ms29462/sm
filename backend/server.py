@@ -2794,6 +2794,7 @@ async def get_players(
     nationality_2: Optional[str] = None,
     min_age: Optional[int] = None,
     max_age: Optional[int] = None,
+    gender: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
@@ -2840,6 +2841,8 @@ async def get_players(
     if max_age:
         query.setdefault("age", {})
         query["age"]["$lte"] = max_age
+    if gender:
+        query["gender"] = gender
 
     # Min quality score filter
     if min_quality_score:
@@ -3291,6 +3294,7 @@ async def get_federation_players(
     name: Optional[str] = None,
     min_age: Optional[int] = None,
     max_age: Optional[int] = None,
+    gender: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """Federation searches for players with filters"""

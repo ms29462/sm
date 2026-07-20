@@ -37,6 +37,7 @@ const FederationPlayers = () => {
   const [loading, setLoading] = useState(true);
   const [filterNationality2, setFilterNationality2] = useState('');
   const [filterMinAge, setFilterMinAge] = useState('');
+  const [filterGender, setFilterGender] = useState('');
   const [filterMaxAge, setFilterMaxAge] = useState('');
   const [filterResidence, setFilterResidence] = useState('');
   const [page, setPage] = useState(1);
@@ -52,7 +53,7 @@ const FederationPlayers = () => {
 
   useEffect(() => {
     loadPlayers();
-  }, [filters, filterNationality2, filterResidence, filterMinAge, filterMaxAge, page]);
+  }, [filters, filterNationality2, filterResidence, filterMinAge, filterMaxAge, filterGender, page]);
 
   const loadPlayers = async () => {
     setLoading(true);
@@ -212,6 +213,18 @@ const FederationPlayers = () => {
             <input type="number" value={filterMaxAge} onChange={e => setFilterMaxAge(e.target.value)}
               placeholder="e.g. 30"
               className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="text-xs text-muted-foreground uppercase mb-1 block">Gender</label>
+            <select value={filterGender} onChange={e => setFilterGender(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full">
+              <option value="">All</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
         </div>
         <Button

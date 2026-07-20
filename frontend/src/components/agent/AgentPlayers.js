@@ -37,6 +37,7 @@ const LEVELS = ['Professional', 'Semi-Professional', 'Amateur', 'College / Unive
 const AgentPlayers = () => {
   const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
+  const [filterGender, setFilterGender] = useState('');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState(new Set());
@@ -62,6 +63,7 @@ const AgentPlayers = () => {
       if (filters.nationality && filters.nationality !== 'All') params.nationality = filters.nationality;
       if (filters.nationality_2) params.nationality_2 = filters.nationality_2;
       if (filters.level && filters.level !== 'All') params.level = filters.level;
+      if (filterGender) params.gender = filterGender;
 
       params.page = page;
       params.limit = 20;
