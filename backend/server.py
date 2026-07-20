@@ -1040,6 +1040,7 @@ def strip_specialist_private_info(specialist_dict: dict) -> dict:
 
 
 class SpecialistUpdate(BaseModel):
+    model_config = ConfigDict(extra='ignore')
     name: Optional[str] = None
     specialist_type: Optional[str] = None
     profile_picture: Optional[str] = None

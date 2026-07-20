@@ -73,7 +73,18 @@ const SpecialistProfile = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, profile_picture: reader.result }));
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 400;
+          let w = img.width, h = img.height;
+          if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
+          else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          setFormData(prev => ({ ...prev, profile_picture: canvas.toDataURL('image/jpeg', 0.7) }));
+        };
+        img.src = reader.result;
       };
       reader.readAsDataURL(file);
     }
@@ -91,7 +102,7 @@ const SpecialistProfile = () => {
         country: response.data.country || '',
         city: response.data.city || '',
         phone: response.data.phone || '',
-        certifications: response.data.certifications || [],
+        certifications: Array.isArray(response.data.certifications) ? response.data.certifications : (response.data.certifications ? [response.data.certifications] : []),
         years_experience: response.data.years_experience || '',
         current_club: response.data.current_club || '',
         hourly_rate: response.data.hourly_rate || '',
@@ -114,8 +125,10 @@ const SpecialistProfile = () => {
     try {
       const updateData = {
         ...formData,
-        years_experience: formData.years_experience ? parseInt(formData.years_experience) : null
+        years_experience: formData.years_experience && formData.years_experience !== '' ? parseInt(formData.years_experience) : null,
+        certifications: Array.isArray(formData.certifications) ? formData.certifications : (formData.certifications ? [formData.certifications] : [])
       };
+      console.log('Sending:', JSON.stringify(updateData));
       await api.updateSpecialistProfile(updateData);
       toast.success('Profile updated successfully');
       loadProfile();

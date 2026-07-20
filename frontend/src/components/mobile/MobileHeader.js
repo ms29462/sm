@@ -60,7 +60,7 @@ const NAV_LINKS = {
     { to: '/agent/dashboard', label: 'Dashboard' },
     { to: '/agent/profile', label: 'My Profile' },
     { to: '/agent/players', label: 'Players' },
-    { to: '/agent/favorites', label: 'Favorites' },
+    { to: '/agent/watchlist', label: 'Watchlist' },
     { to: '/agent/opportunities', label: 'Opportunities' },
   ],
   specialist: [
