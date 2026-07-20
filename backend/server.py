@@ -1292,7 +1292,7 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
                 is_minor = False
         
         if is_minor and not user.parental_consent:
-            await db.users.delete_one({"id": user_id})
+            await db.users.delete_one({"user_id": user_id})
             raise HTTPException(
                 status_code=400,
                 detail="Players under 18 must confirm parental or legal guardian consent to register."
@@ -3114,7 +3114,7 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
 
-    await db.users.delete_one({"id": user_id})
+    await db.users.delete_one({"user_id": user_id})
     await db.players.delete_one({"user_id": user_id})
     await db.clubs.delete_one({"user_id": user_id})
     await db.federations.delete_one({"user_id": user_id})
@@ -8376,7 +8376,7 @@ async def approve_deletion_request(request_id: str, current_user: dict = Depends
         "request_id": request_id,
     })
 
-    await db.users.delete_one({"id": user_id})
+    await db.users.delete_one({"user_id": user_id})
     await db.players.delete_one({"user_id": user_id})
     await db.clubs.delete_one({"user_id": user_id})
     await db.federations.delete_one({"user_id": user_id})
