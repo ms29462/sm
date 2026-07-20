@@ -23,6 +23,17 @@ const AdminAgents = () => {
     }
   };
 
+  const handleDelete = async (userId, name) => {
+    if (!window.confirm(`Delete ${name}? This cannot be undone.`)) return;
+    try {
+      await api.deleteUser(userId);
+      setAgents(prev => prev.filter(a => a.user_id !== userId));
+      toast.success("Agent deleted");
+    } catch (e) {
+      toast.error("Failed to delete");
+    }
+  };
+
   const handleApprove = async (userId, approved) => {
     try {
       await api.approveAgent(userId, approved);
@@ -205,6 +216,11 @@ const AdminAgents = () => {
                       }}
                       className="border-blue-500 text-blue-500 hover:bg-blue-500/10 text-xs">
                       Allow Payment
+                    </Button>
+                    <Button size="sm" variant="outline"
+                      onClick={() => handleDelete(agent.user_id, agent.name)}
+                      className="border-red-500 text-red-500 hover:bg-red-500/10 text-xs">
+                      Delete
                     </Button>
                     <Button size="sm" variant="outline"
                       onClick={async () => {

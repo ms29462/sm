@@ -23,6 +23,17 @@ const AdminSpecialists = () => {
     }
   };
 
+  const handleDelete = async (userId, name) => {
+    if (!window.confirm(`Delete ${name}? This cannot be undone.`)) return;
+    try {
+      await api.deleteUser(userId);
+      setSpecialists(prev => prev.filter(s => s.user_id !== userId));
+      toast.success("Specialist deleted");
+    } catch (e) {
+      toast.error("Failed to delete");
+    }
+  };
+
   const handleApprove = async (userId, approved) => {
     try {
       await api.approveSpecialist(userId, approved);
@@ -214,6 +225,11 @@ const AdminSpecialists = () => {
                     }}
                     className="border-red-500 text-red-500 hover:bg-red-500/10 text-xs">
                     Suspend Access
+                  </Button>
+                  <Button size="sm" variant="outline"
+                    onClick={() => handleDelete(specialist.user_id, specialist.name)}
+                    className="border-red-500 text-red-500 hover:bg-red-500/10 text-xs">
+                    Delete
                   </Button>
                 </div>
               </div>
