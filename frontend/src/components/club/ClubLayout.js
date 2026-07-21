@@ -16,7 +16,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { totalUnread, totalPending } = useNotifications();
+  const { totalUnread, totalPending, unreadChatRequests } = useNotifications();
 
   const handleLogout = () => {
     logout();
@@ -113,6 +113,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
             >
               <FileText className="w-4 h-4 mr-3" />
               Applications
+              <Badge count={unreadChatRequests} />
             </Button>
           </Link>
           <Link to={isCollege ? "/college/favorites" : "/club/favorites"}>

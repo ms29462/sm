@@ -3,6 +3,8 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import NotificationBell from '@/components/ui/NotificationBell';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useNotifications } from '@/context/NotificationContext';
+import Badge from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
@@ -11,6 +13,7 @@ import { Trophy, Briefcase, Users, Heart, LogOut, Home, UserCircle, FileText , N
 const AgentLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useAuth();
+  const { totalUnread, unreadChatRequests } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
 

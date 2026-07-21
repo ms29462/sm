@@ -3,6 +3,8 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import NotificationBell from '@/components/ui/NotificationBell';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useNotifications } from '@/context/NotificationContext';
+import Badge from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
@@ -11,6 +13,7 @@ import { Trophy, Activity, Users, Heart, LogOut, Home, UserCircle , Newspaper , 
 const SpecialistLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useAuth();
+  const { totalUnread, unreadChatRequests } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -99,6 +102,7 @@ const SpecialistLayout = ({ children }) => {
             <Button variant={isActive('/specialist/chats') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <MessageCircle className="w-4 h-4 mr-3" />
               Chats
+              <Badge count={totalUnread} />
             </Button>
           </Link>
 

@@ -14,6 +14,7 @@ export const NotificationProvider = ({ children }) => {
   const [totalUnread, setTotalUnread] = useState(0);
   const [totalPending, setTotalPending] = useState(0);
   const [unreadApplications, setUnreadApplications] = useState(0);
+  const [unreadChatRequests, setUnreadChatRequests] = useState(0);
 
   // Load initial data
   useEffect(() => {
@@ -41,10 +42,12 @@ export const NotificationProvider = ({ children }) => {
 
   const loadNotifications = async () => {
     try {
-      const [chatsRes, videosRes, notifsRes] = await Promise.all([
+      const isOrg = user && ['club', 'federation', 'college', 'agent', 'specialist'].includes(user.role);
+      const [chatsRes, videosRes, notifsRes, chatReqRes] = await Promise.all([
         api.getMyChats(),
         api.getMyVideos(),
-        api.getNotifications()
+        api.getNotifications(),
+        isOrg ? api.getMyChatRequests() : Promise.resolve({ data: [] })
       ]);
 
       const unreadMap = {};
@@ -56,6 +59,10 @@ export const NotificationProvider = ({ children }) => {
       });
       setUnreadChats(unreadMap);
       setTotalUnread(Object.keys(unreadMap).length);
+
+      // Count pending chat requests for orgs
+      const pendingReqs = (chatReqRes?.data || []).filter(r => r.status === 'pending');
+      setUnreadChatRequests(pendingReqs.length);
 
       // Count unread application update notifications
       const appNotifs = (notifsRes?.data || []).filter(n => n.type === 'application_update' && !n.read);
@@ -184,6 +191,7 @@ export const NotificationProvider = ({ children }) => {
     totalUnread,
     totalPending,
     unreadApplications,
+    unreadChatRequests,
     markChatAsRead,
     clearVideoNotification,
     refreshNotifications: loadNotifications
