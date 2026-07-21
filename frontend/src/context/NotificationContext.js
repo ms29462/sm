@@ -13,6 +13,7 @@ export const NotificationProvider = ({ children }) => {
   const [pendingVideos, setPendingVideos] = useState([]);
   const [totalUnread, setTotalUnread] = useState(0);
   const [totalPending, setTotalPending] = useState(0);
+  const [unreadApplications, setUnreadApplications] = useState(0);
 
   // Load initial data
   useEffect(() => {
@@ -40,9 +41,10 @@ export const NotificationProvider = ({ children }) => {
 
   const loadNotifications = async () => {
     try {
-      const [chatsRes, videosRes] = await Promise.all([
+      const [chatsRes, videosRes, notifsRes] = await Promise.all([
         api.getMyChats(),
-        api.getMyVideos()
+        api.getMyVideos(),
+        api.getNotifications()
       ]);
 
       const unreadMap = {};
@@ -54,6 +56,10 @@ export const NotificationProvider = ({ children }) => {
       });
       setUnreadChats(unreadMap);
       setTotalUnread(Object.keys(unreadMap).length);
+
+      // Count unread application update notifications
+      const appNotifs = (notifsRes?.data || []).filter(n => n.type === 'application_update' && !n.read);
+      setUnreadApplications(appNotifs.length);
 
       const pending = videosRes.data.filter(v => v.is_active);
       setPendingVideos(pending);
@@ -177,6 +183,7 @@ export const NotificationProvider = ({ children }) => {
     pendingVideos,
     totalUnread,
     totalPending,
+    unreadApplications,
     markChatAsRead,
     clearVideoNotification,
     refreshNotifications: loadNotifications

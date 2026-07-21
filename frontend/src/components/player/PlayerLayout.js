@@ -21,7 +21,7 @@ const PlayerLayout = ({ children }) => {
   }, []);
   const navigate = useNavigate();
   const location = useLocation();
-  const { totalUnread, totalPending } = useNotifications();
+  const { totalUnread, totalPending, unreadApplications } = useNotifications();
 
   const handleLogout = () => {
     logout();
