@@ -1080,7 +1080,7 @@ class OpportunityCreate(BaseModel):
     custom_league: Optional[str] = None
     salary_range: Optional[str] = None
     contract_duration: Optional[str] = None
-    description: str
+    description: Optional[str] = None
     age_min: Optional[int] = None
     age_max: Optional[int] = None
     deadline: Optional[str] = None
@@ -1100,7 +1100,7 @@ class Opportunity(BaseModel):
     league_level: Optional[str] = None
     salary_range: Optional[str] = None
     contract_duration: Optional[str] = None
-    description: str
+    description: Optional[str] = None
     age_min: Optional[int] = None
     age_max: Optional[int] = None
     deadline: Optional[str] = None
@@ -2320,8 +2320,8 @@ async def count_opportunities(current_user: dict = Depends(get_current_user)):
 async def get_opportunities(current_user: dict = Depends(get_current_user), page: int = 1, limit: int = 5):
     await auto_close_expired_opportunities(db)
     skip = (page - 1) * limit
-    total = await db.opportunities.count_documents({"status": "published"})
-    opportunities = await db.opportunities.find({"status": "published"}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.opportunities.count_documents({"status": {"$in": ["published", "filled"]}})
+    opportunities = await db.opportunities.find({"status": {"$in": ["published", "filled"]}}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     opportunities = await attach_applicant_counts(opportunities)
 
     # Anonymize opportunities for players

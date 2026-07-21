@@ -78,7 +78,7 @@ const ClubOpportunities = () => {
       const response = await api.getClubOpportunities();
       setOpportunities(response.data);
     } catch (error) {
-      toast.error("Failed to load opportunities");
+      setOpportunities([]);
     } finally {
       setLoading(false);
     }
@@ -467,9 +467,7 @@ const ClubOpportunities = () => {
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
 
-                  <Button data-testid={`delete-btn-${opp.id}`} variant="ghost" size="icon" onClick={() => setDeleteId(opp.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  
                 </div>
               </div>
             </div>

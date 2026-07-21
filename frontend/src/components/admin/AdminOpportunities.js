@@ -130,6 +130,8 @@ const AdminOpportunities = () => {
     { id: "changes_requested", label: "Changes Requested", count: opportunities.filter(o => getStatus(o) === "changes_requested").length },
     { id: "published", label: "Published", count: opportunities.filter(o => getStatus(o) === "published").length },
     { id: "rejected", label: "Rejected", count: opportunities.filter(o => getStatus(o) === "rejected").length },
+    { id: "filled", label: "Filled", count: opportunities.filter(o => getStatus(o) === "filled").length },
+    { id: "closed", label: "Closed", count: opportunities.filter(o => getStatus(o) === "closed").length },
     { id: "all", label: "All", count: opportunities.length },
   ];
 
