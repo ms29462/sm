@@ -43,15 +43,18 @@ const NewsArticle = ({ post, onClose }) => (
 
 const NewsFeed = () => {
   const [posts, setPosts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
 
-  useEffect(() => { loadNews(); }, []);
+  useEffect(() => { loadNews(); }, [page]);
 
   const loadNews = async () => {
     try {
-      const res = await api.getNewsFeed();
-      setPosts(res.data || []);
+      const res = await api.getNewsFeed(page);
+      setPosts(res.data.posts || res.data || []);
+      setTotalPages(res.data.pages || 1);
     } catch (e) {}
     setLoading(false);
   };
@@ -62,6 +65,7 @@ const NewsFeed = () => {
   const regularPosts = posts.filter(p => !p.pinned);
 
   return (
+    <>
     <div className="p-6 max-w-5xl mx-auto">
       {selectedPost && <NewsArticle post={selectedPost} onClose={() => setSelectedPost(null)} />}
 
@@ -145,6 +149,21 @@ const NewsFeed = () => {
         </div>
       )}
     </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 mt-8">
+          <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1}
+            className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
+            Previous
+          </button>
+          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
+          <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page === totalPages}
+            className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
+            Next
+          </button>
+        </div>
+      )}
+    </>
   );
 };
 

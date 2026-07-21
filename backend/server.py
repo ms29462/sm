@@ -5559,13 +5559,15 @@ async def toggle_pin_news(news_id: str, current_user: dict = Depends(get_current
     return {"message": "Updated"}
 
 @api_router.get("/news")
-async def get_news_feed(current_user: dict = Depends(get_current_user)):
+async def get_news_feed(current_user: dict = Depends(get_current_user), page: int = 1, limit: int = 10):
     role = current_user["role"]
+    skip = (page - 1) * limit
+    total = await db.news.count_documents({"target_roles": role})
     posts = await db.news.find(
         {"target_roles": role},
         {"_id": 0}
-    ).sort([("pinned", -1), ("created_at", -1)]).to_list(50)
-    return posts
+    ).sort([("pinned", -1), ("created_at", -1)]).skip(skip).limit(limit).to_list(limit)
+    return {"posts": posts, "total": total, "pages": max(1, (total + limit - 1) // limit), "page": page}
 
 
 # ============ ANALYST ENDPOINTS ============

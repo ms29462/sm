@@ -228,7 +228,7 @@ export const api = {
   getPlayerVerification: (playerId) => axios.get(`${API}/players/${playerId}/verification`, { headers: getAuthHeaders() }),
 
   // News Feed
-  getNewsFeed: () => axios.get(`${API}/news`, { headers: getAuthHeaders() }),
+  getNewsFeed: (page = 1) => axios.get(`${API}/news?page=${page}`, { headers: getAuthHeaders() }),
   getAdminNews: () => axios.get(`${API}/admin/news`, { headers: getAuthHeaders() }),
   createNewsPost: (data) => axios.post(`${API}/admin/news`, data, { headers: getAuthHeaders() }),
   deleteNewsPost: (id) => axios.delete(`${API}/admin/news/${id}`, { headers: getAuthHeaders() }),
