@@ -2520,7 +2520,7 @@ async def get_club_opportunities(current_user: dict = Depends(get_current_user))
 
 @api_router.put("/opportunities/{opportunity_id}/status")
 async def update_opportunity_status(opportunity_id: str, status_update: dict, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college"]:
+    if current_user["role"] not in ["club", "federation", "college", "analyst"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     status = status_update.get("status")
     if status not in ["open", "closed", "filled"]:
@@ -2533,7 +2533,7 @@ async def update_opportunity_status(opportunity_id: str, status_update: dict, cu
 
 @api_router.put("/opportunities/{opportunity_id}")
 async def update_opportunity(opportunity_id: str, update: dict, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college"]:
+    if current_user["role"] not in ["club", "federation", "college", "analyst"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     opp = await db.opportunities.find_one({"id": opportunity_id, "club_id": current_user["user_id"]})
     if not opp:
@@ -4893,7 +4893,7 @@ async def clear_chatbot_session(
 # --- Scouting Notes ---
 @api_router.post("/scouting/notes", response_model=ScoutingNote)
 async def create_scouting_note(note: ScoutingNoteCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     org = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     author_name = org.get("name", current_user.get("email", "Unknown")) if org else current_user.get("email", "Unknown")
@@ -4913,7 +4913,7 @@ async def create_scouting_note(note: ScoutingNoteCreate, current_user: dict = De
 
 @api_router.get("/scouting/notes/{player_id}")
 async def get_scouting_notes(player_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     notes = await db.scouting_notes.find({
         "player_id": player_id,
@@ -4945,7 +4945,7 @@ async def delete_scouting_note(note_id: str, current_user: dict = Depends(get_cu
 # --- Post Mortems ---
 @api_router.post("/scouting/post-mortems", response_model=PostMortem)
 async def create_post_mortem(pm: PostMortemCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     org = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     author_name = org.get("name", current_user.get("email", "Unknown")) if org else current_user.get("email", "Unknown")
@@ -4961,7 +4961,7 @@ async def create_post_mortem(pm: PostMortemCreate, current_user: dict = Depends(
 
 @api_router.get("/scouting/post-mortems/{player_id}")
 async def get_post_mortems(player_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     pms = await db.post_mortems.find({
         "player_id": player_id,
@@ -4994,7 +4994,7 @@ async def delete_post_mortem(pm_id: str, current_user: dict = Depends(get_curren
 # --- Player Tracking ---
 @api_router.post("/scouting/track/{player_id}")
 async def track_player(player_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     existing = await db.tracked_players.find_one({"tracker_id": current_user['user_id'], "player_id": player_id})
     if existing:
@@ -5014,7 +5014,7 @@ async def untrack_player(player_id: str, current_user: dict = Depends(get_curren
 
 @api_router.get("/scouting/tracked")
 async def get_tracked_players(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
         raise HTTPException(status_code=403, detail="Not authorized")
     tracked = await db.tracked_players.find({"tracker_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
     player_ids = [t["player_id"] for t in tracked]
@@ -5125,7 +5125,7 @@ PIPELINE_STAGES = [
 
 @api_router.get("/pipeline")
 async def get_pipeline(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college"]:
+    if current_user["role"] not in ["club", "federation", "college", "analyst"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     pipeline_players = await db.pipeline.find({"org_id": current_user["user_id"]}, {"_id": 0}).to_list(1000)
     # Enrich with player data
@@ -5151,7 +5151,7 @@ async def get_pipeline(current_user: dict = Depends(get_current_user)):
 
 @api_router.post("/pipeline")
 async def add_to_pipeline(data: PipelinePlayerAdd, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college"]:
+    if current_user["role"] not in ["club", "federation", "college", "analyst"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     existing = await db.pipeline.find_one({"org_id": current_user["user_id"], "player_id": data.player_id})
     if existing:
@@ -5291,7 +5291,7 @@ class TrialInvitation(BaseModel):
 
 @api_router.post("/trial-invitation")
 async def send_trial_invitation(invite: TrialInvitation, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college"]:
+    if current_user["role"] not in ["club", "federation", "college", "analyst"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
                    await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
@@ -5655,7 +5655,7 @@ async def get_players_for_evaluation(
 ):
     """Get list of players available for evaluation"""
     players = await db.players.find(
-        {},
+        {"approved": True},
         {"_id": 0, "user_id": 1, "first_name": 1, "last_name": 1, "name": 1, 
          "position": 1, "nationality": 1, "nationality_2": 1, "date_of_birth": 1,
          "current_club": 1, "profile_picture": 1}
