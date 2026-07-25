@@ -87,6 +87,12 @@ const SpecialistProfilePage = () => {
                   <span className="text-muted-foreground">{specialist.languages.join(', ')}</span>
                 </div>
               )}
+              {specialist.current_club && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Briefcase className="w-4 h-4 text-primary" />
+                  <span className="text-muted-foreground">Works with: {specialist.current_club}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -126,7 +132,7 @@ const SpecialistProfilePage = () => {
         )}
 
         {/* Website / LinkedIn */}
-        {(specialist.website || specialist.linkedin) && (
+        {(specialist.website || specialist.linkedin || specialist.instagram || specialist.facebook) && (
           <div className="bg-card border border-border/50 rounded-sm p-6">
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Links</h2>
             <div className="space-y-2">
@@ -140,6 +146,18 @@ const SpecialistProfilePage = () => {
                 <a href={specialist.linkedin} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm text-primary hover:underline">
                   <Award className="w-4 h-4" /> LinkedIn
+                </a>
+              )}
+              {specialist.instagram && (
+                <a href={specialist.instagram} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-primary hover:underline">
+                  <Globe className="w-4 h-4" /> Instagram
+                </a>
+              )}
+              {specialist.facebook && (
+                <a href={specialist.facebook} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-primary hover:underline">
+                  <Globe className="w-4 h-4" /> Facebook
                 </a>
               )}
             </div>
