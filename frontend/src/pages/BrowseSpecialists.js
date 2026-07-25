@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { User, MapPin, Briefcase, Star, MessageCircle, Globe } from 'lucide-react';
 import RequestChatDialog from '@/components/club/RequestChatDialog';
 
 const BrowseSpecialists = () => {
+  const navigate = useNavigate();
   const [specialists, setSpecialists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -128,7 +130,7 @@ const BrowseSpecialists = () => {
 
               {/* CTA */}
               <button
-                onClick={() => { setProfileSpec(spec); setProfileOpen(true); }}
+                onClick={() => navigate(`/player/specialists/${spec.user_id}`)}
                 className="w-full border border-white/20 text-white font-bold uppercase text-xs py-2.5 rounded-sm hover:bg-white/5 transition-colors"
               >
                 View Profile
