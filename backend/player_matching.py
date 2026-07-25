@@ -1210,6 +1210,9 @@ def extract_source_league_from_profile(soup: BeautifulSoup) -> Optional[str]:
 
 def build_player_dict_from_transfermarkt_url(player_url: str, analysis_season: int = ANALYSIS_SEASON) -> Dict:
     """Scrape player data from Transfermarkt URL"""
+    # Normalize any transfermarkt domain to .us
+    import re as _re
+    player_url = _re.sub(r'https?://(?:www\.)?transfermarkt\.[a-z]+', 'https://www.transfermarkt.us', player_url)
     soup = get_soup(player_url)
     if soup is None:
         raise ValueError("Cannot load player profile page")
