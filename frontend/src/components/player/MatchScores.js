@@ -7,6 +7,30 @@ import { useNavigate } from 'react-router-dom';
 
 const SCORES_PER_PAGE = 5;
 
+const InfoBox = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="bg-card border border-border/50 rounded-sm mb-6">
+      <button onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium hover:bg-white/5 transition-colors">
+        <span className="flex items-center gap-2">
+          <span className="text-primary">ℹ</span>
+          How is your match score calculated?
+        </span>
+        <span className="text-muted-foreground">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 text-sm text-muted-foreground space-y-2 border-t border-border/50 pt-3">
+          <p>Your score reflects how well your stats compare to the average player at that league level and position.</p>
+          <p><span className="text-white font-medium">With a Transfermarkt profile linked</span> — we use your data from Transfermarkt for a more accurate score.</p>
+          <p><span className="text-white font-medium">Without a Transfermarkt profile</span> — we use your profile stats: games played, goals, assists and age.</p>
+          <p>The closer your stats are to the benchmark for that league and position, the higher your score.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MatchScores = () => {
   const navigate = useNavigate();
   const [scores, setScores] = useState([]);
@@ -100,6 +124,7 @@ const MatchScores = () => {
           <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">MY MATCH SCORES</h1>
           <p className="text-muted-foreground">AI-powered opportunity matching based on your profile</p>
         </div>
+        <InfoBox />
         <div className="bg-card border border-border/50 p-8 rounded-sm text-center">
           <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
           <p className="text-lg mb-4">{error}</p>
@@ -117,6 +142,7 @@ const MatchScores = () => {
         <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">MY MATCH SCORES</h1>
         <p className="text-muted-foreground">AI-powered opportunity matching based on your profile</p>
       </div>
+      <InfoBox />
 
       {scores.length === 0 ? (
         <div className="bg-card border border-border/50 p-12 rounded-sm text-center">
