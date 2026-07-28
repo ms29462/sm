@@ -144,7 +144,9 @@ const AdminSubscriptions = () => {
           <div key={sub.user_id} className="bg-card border border-border/50 rounded-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div>
-                <p className="text-sm font-bold">{sub.user_id}</p>
+                <p className="text-sm font-bold">{sub.user_name || sub.user_id}</p>
+                {sub.user_email && <p className="text-xs text-muted-foreground">{sub.user_email}</p>}
+                {sub.user_role && <p className="text-xs text-muted-foreground capitalize">{sub.user_role}</p>}
                 <div className="flex items-center gap-2 mt-1">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ${PLAN_COLORS[sub.plan_id] || "text-white border-white/10"}`}>
                     {sub.plan_name || sub.plan_id}

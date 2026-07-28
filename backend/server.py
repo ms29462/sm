@@ -7041,6 +7041,25 @@ async def get_all_subscriptions(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403)
     subs = await db.subscriptions.find({}, {"_id": 0}).to_list(1000)
+    
+    # Enrich with user names
+    for sub in subs:
+        uid = sub.get("user_id")
+        if uid:
+            player = await db.players.find_one({"user_id": uid}, {"_id": 0, "name": 1, "email": 1})
+            if player:
+                sub["user_name"] = player.get("name", "")
+                sub["user_email"] = player.get("email", "")
+                sub["user_role"] = "player"
+            else:
+                for collection, role in [("clubs", "club"), ("agents", "agent"), ("specialists", "specialist"), ("federations", "federation"), ("colleges", "college")]:
+                    org = await db[collection].find_one({"user_id": uid}, {"_id": 0, "name": 1, "email": 1})
+                    if org:
+                        sub["user_name"] = org.get("name", "")
+                        sub["user_email"] = org.get("email", "")
+                        sub["user_role"] = role
+                        break
+    
     return subs
 
 
