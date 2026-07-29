@@ -3133,6 +3133,23 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
 
     return {"message": "User and all associated data deleted"}
 
+@api_router.get("/admin/applications")
+async def get_all_applications_admin(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    applications = await db.applications.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
+    
+    # Enrich with player and opportunity names
+    for app in applications:
+        player = await db.players.find_one({"user_id": app.get("player_id")}, {"_id": 0, "name": 1})
+        if player:
+            app["player_name"] = player.get("name", "Unknown")
+        opp = await db.opportunities.find_one({"id": app.get("opportunity_id")}, {"_id": 0, "position": 1, "club_name": 1, "country": 1})
+        if opp:
+            app["opportunity_title"] = f"{opp.get('position', '')} - {opp.get('club_name', '')} ({opp.get('country', '')})"
+    
+    return applications
+
 @api_router.get("/admin/opportunities")
 async def get_all_opportunities_admin(current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
@@ -7062,6 +7079,23 @@ async def get_all_subscriptions(current_user: dict = Depends(get_current_user)):
     
     return subs
 
+
+@api_router.get("/admin/applications")
+async def get_all_applications_admin(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403)
+    applications = await db.applications.find({}, {"_id": 0}).sort("created_at", -1).to_list(2000)
+    
+    # Enrich with player and opportunity names
+    for app in applications:
+        player = await db.players.find_one({"user_id": app.get("player_id")}, {"_id": 0, "name": 1})
+        if player:
+            app["player_name"] = player.get("name", "Unknown")
+        opp = await db.opportunities.find_one({"id": app.get("opportunity_id")}, {"_id": 0, "position": 1, "club_name": 1, "country": 1})
+        if opp:
+            app["opportunity_title"] = f"{opp.get('position', '')} - {opp.get('club_name', '')} ({opp.get('country', '')})"
+    
+    return applications
 
 @api_router.get("/admin/opportunities")
 async def admin_get_opportunities(current_user: dict = Depends(get_current_user)):

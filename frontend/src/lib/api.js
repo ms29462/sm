@@ -309,6 +309,7 @@ export const api = {
   assignSubscription: (data) => axios.post(`${API}/subscription/assign`, data, { headers: getAuthHeaders() }),
   cancelSubscription: (data) => axios.post(`${API}/subscription/cancel`, data, { headers: getAuthHeaders() }),
   getAllSubscriptions: () => axios.get(`${API}/admin/subscriptions`, { headers: getAuthHeaders() }),
+  getAdminApplications: () => axios.get(`${API}/admin/applications`, { headers: getAuthHeaders() }),
   getAdminOpportunities: () => axios.get(`${API}/admin/opportunities`, { headers: getAuthHeaders() }),
   updateAdminOpportunity: (id, data) => axios.put(`${API}/admin/opportunities/${id}`, data, { headers: getAuthHeaders() }),
   approveOpportunity: (id, data) => axios.post(`${API}/admin/opportunities/${id}/approve`, data, { headers: getAuthHeaders() }),

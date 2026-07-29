@@ -7,7 +7,7 @@ import MobileHeader from '@/components/mobile/MobileHeader';
 import {
   Shield, Users, Building, Flag, Briefcase, LogOut, MessageCircle, Video,
   MessageSquare, Database, GraduationCap, Activity, ShieldCheck, Newspaper,
-  Copy, UserCog, Wallet, ClipboardList, CreditCard, Trash2, AlertTriangle,
+  Copy, UserCog, Wallet, ClipboardList, FileText, CreditCard, Trash2, AlertTriangle,
 } from 'lucide-react';
 
 const NAV_SECTIONS = [
@@ -34,6 +34,7 @@ const NAV_SECTIONS = [
     label: 'Recruitment',
     items: [
       { to: '/admin/opportunities', label: 'Opportunities', icon: Briefcase, testId: 'nav-opportunities-btn' },
+      { to: '/admin/applications', label: 'Applications', icon: ClipboardList },
       { to: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
       { to: '/admin/credits', label: 'Credits', icon: Wallet },
     ],
@@ -60,7 +61,7 @@ const NAV_SECTIONS = [
     items: [
       { to: '/admin/news', label: 'News Feed', icon: Newspaper },
       { to: '/admin/benchmark', label: 'Benchmark Data', icon: Database, testId: 'nav-benchmark-btn' },
-      { to: '/admin/masterclass', label: 'Masterclass', icon: ClipboardList, testId: 'nav-masterclass-btn' },
+      { to: '/admin/masterclass', label: 'Masterclass', icon: ClipboardList, FileText, testId: 'nav-masterclass-btn' },
     ],
   },
 ];
