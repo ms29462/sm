@@ -48,9 +48,15 @@ const ClubPlayers = () => {
     name: '',
   });
 
+  // Reset to page 1 whenever any filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender]);
+
+  // Reload whenever page or any filter changes
   useEffect(() => {
     loadPlayers();
-  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender]);
+  }, [page, filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender]);
 
   const loadPlayers = async () => {
     try {
@@ -72,8 +78,6 @@ const ClubPlayers = () => {
       if (filterMinAge) queryFilters.min_age = parseInt(filterMinAge);
       if (filterMaxAge) queryFilters.max_age = parseInt(filterMaxAge);
       if (filterGender) queryFilters.gender = filterGender;
-      queryFilters.page = page;
-      queryFilters.limit = 20;
       queryFilters.page = page;
       queryFilters.limit = 20;
 
