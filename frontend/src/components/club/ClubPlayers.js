@@ -37,6 +37,8 @@ const ClubPlayers = () => {
   const [filterMinAge, setFilterMinAge] = useState('');
   const [filterGender, setFilterGender] = useState('');
   const [filterMaxAge, setFilterMaxAge] = useState('');
+  const [filterMinHeight, setFilterMinHeight] = useState('');
+  const [filterMaxHeight, setFilterMaxHeight] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [filterMandate, setFilterMandate] = useState('');
@@ -51,12 +53,12 @@ const ClubPlayers = () => {
   // Reset to page 1 whenever any filter changes
   useEffect(() => {
     setPage(1);
-  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender]);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight]);
 
   // Reload whenever page or any filter changes
   useEffect(() => {
     loadPlayers();
-  }, [page, filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender]);
+  }, [page, filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight]);
 
   const loadPlayers = async () => {
     try {
@@ -78,6 +80,8 @@ const ClubPlayers = () => {
       if (filterMinAge) queryFilters.min_age = parseInt(filterMinAge);
       if (filterMaxAge) queryFilters.max_age = parseInt(filterMaxAge);
       if (filterGender) queryFilters.gender = filterGender;
+      if (filterMinHeight) queryFilters.min_height = parseInt(filterMinHeight);
+      if (filterMaxHeight) queryFilters.max_height = parseInt(filterMaxHeight);
       queryFilters.page = page;
       queryFilters.limit = 20;
 
@@ -211,6 +215,18 @@ const ClubPlayers = () => {
             <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Max Age</label>
             <input type="number" value={filterMaxAge} onChange={e => setFilterMaxAge(e.target.value)}
               placeholder="e.g. 30"
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Min Height (cm)</label>
+            <input type="number" value={filterMinHeight} onChange={e => setFilterMinHeight(e.target.value)}
+              placeholder="e.g. 170"
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Max Height (cm)</label>
+            <input type="number" value={filterMaxHeight} onChange={e => setFilterMaxHeight(e.target.value)}
+              placeholder="e.g. 195"
               className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
           </div>
           <div>
