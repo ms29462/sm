@@ -39,6 +39,7 @@ const ClubPlayers = () => {
   const [filterMaxAge, setFilterMaxAge] = useState('');
   const [filterMinHeight, setFilterMinHeight] = useState('');
   const [filterMaxHeight, setFilterMaxHeight] = useState('');
+  const [filterFoot, setFilterFoot] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [filterMandate, setFilterMandate] = useState('');
@@ -53,12 +54,12 @@ const ClubPlayers = () => {
   // Reset to page 1 whenever any filter changes
   useEffect(() => {
     setPage(1);
-  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight]);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight, filterFoot]);
 
   // Reload whenever page or any filter changes
   useEffect(() => {
     loadPlayers();
-  }, [page, filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight]);
+  }, [page, filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight, filterFoot]);
 
   const loadPlayers = async () => {
     try {
@@ -82,6 +83,7 @@ const ClubPlayers = () => {
       if (filterGender) queryFilters.gender = filterGender;
       if (filterMinHeight) queryFilters.min_height = parseInt(filterMinHeight);
       if (filterMaxHeight) queryFilters.max_height = parseInt(filterMaxHeight);
+      if (filterFoot) queryFilters.preferred_foot = filterFoot;
       queryFilters.page = page;
       queryFilters.limit = 20;
 
@@ -237,6 +239,16 @@ const ClubPlayers = () => {
               <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Preferred Foot</label>
+            <select value={filterFoot} onChange={e => setFilterFoot(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full">
+              <option value="">All</option>
+              <option value="Right">Right</option>
+              <option value="Left">Left</option>
+              <option value="Both">Both</option>
             </select>
           </div>
           <div className="col-span-1 md:col-span-2 lg:col-span-4 flex items-center gap-6 pt-3 border-t border-border/30 mt-2">

@@ -2797,6 +2797,7 @@ async def get_players(
     gender: Optional[str] = None,
     min_height: Optional[int] = None,
     max_height: Optional[int] = None,
+    preferred_foot: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
@@ -2851,6 +2852,8 @@ async def get_players(
     if max_height:
         query.setdefault("height", {})
         query["height"]["$lte"] = max_height
+    if preferred_foot:
+        query["preferred_foot"] = preferred_foot
 
     # Min quality score filter
     if min_quality_score:
