@@ -159,7 +159,7 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
       {/* Apply Button */}
       <div className="flex gap-2 mt-auto">
         <Button
-          onClick={() => navigate(`/player/opportunity/${opp.id}`, { state: { matchScore: score || matchScore, displayScore: score?.fit_score ?? (typeof matchScore === "number" ? matchScore : null), scoreLabel: score?.fit_label } })}
+          onClick={() => window.open(`/player/opportunity/${opp.id}`, '_blank')}
           variant="outline"
           className="flex-1 border-white/20 text-white hover:bg-white/10 rounded-sm h-12 font-bold uppercase tracking-wide"
         >
