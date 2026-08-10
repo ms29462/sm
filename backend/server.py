@@ -2312,16 +2312,51 @@ async def auto_close_expired_opportunities(db):
             )
 
 @api_router.get("/opportunities/count")
-async def count_opportunities(current_user: dict = Depends(get_current_user)):
-    total = await db.opportunities.count_documents({"status": "published"})
+async def count_opportunities(
+    current_user: dict = Depends(get_current_user),
+    country: Optional[str] = None,
+    position: Optional[str] = None,
+    league: Optional[str] = None,
+):
+    query = {"status": {"$in": ["published", "filled"]}}
+    if country:
+        query["$or"] = [{"country": country}, {"club_country": country}]
+    if position:
+        query["position"] = position
+    if league:
+        query["league_level"] = league
+    total = await db.opportunities.count_documents(query)
     return {"total": total, "pages": max(1, (total + 4) // 5)}
 
+@api_router.get("/opportunities/filters")
+async def get_opportunity_filters(current_user: dict = Depends(get_current_user)):
+    query = {"status": {"$in": ["published", "filled"]}}
+    c1 = await db.opportunities.distinct("country", query)
+    c2 = await db.opportunities.distinct("club_country", query)
+    countries = sorted(set(filter(None, c1 + c2)))
+    positions = sorted(set(filter(None, await db.opportunities.distinct("position", query))))
+    leagues   = sorted(set(filter(None, await db.opportunities.distinct("league_level", query))))
+    return {"countries": countries, "positions": positions, "leagues": leagues}
+
 @api_router.get("/opportunities", response_model=List[Opportunity])
-async def get_opportunities(current_user: dict = Depends(get_current_user), page: int = 1, limit: int = 5):
+async def get_opportunities(
+    current_user: dict = Depends(get_current_user),
+    page: int = 1,
+    limit: int = 5,
+    country: Optional[str] = None,
+    position: Optional[str] = None,
+    league: Optional[str] = None,
+):
     await auto_close_expired_opportunities(db)
+    query = {"status": {"$in": ["published", "filled"]}}
+    if country:
+        query["$or"] = [{"country": country}, {"club_country": country}]
+    if position:
+        query["position"] = position
+    if league:
+        query["league_level"] = league
     skip = (page - 1) * limit
-    total = await db.opportunities.count_documents({"status": {"$in": ["published", "filled"]}})
-    opportunities = await db.opportunities.find({"status": {"$in": ["published", "filled"]}}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    opportunities = await db.opportunities.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     opportunities = await attach_applicant_counts(opportunities)
 
     # Anonymize opportunities for players
