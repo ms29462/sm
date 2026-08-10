@@ -87,12 +87,13 @@ const PlayerOpportunities = () => {
   };
 
   const loadOpportunities = async () => {
+    setLoading(true);
     try {
       const response = await api.getOpportunities(page);
       const data = response.data || [];
       setHasMore(data.length === 5);
-      setOpportunities(response.data);
-      setFilteredOpportunities(response.data);
+      setOpportunities(data);
+      setFilteredOpportunities(data);
     } catch (error) {
       toast.error('Failed to load opportunities');
     } finally {
