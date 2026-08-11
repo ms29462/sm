@@ -75,14 +75,32 @@ const AdminPlayers = () => {
     }
   };
 
-  const filteredPlayers = players.filter(p => {
-    if (ageFilter === 'minors' && !p.is_minor) return false;
-    if (ageFilter === 'adults' && p.is_minor) return false;
-    if (searchQuery && !p.name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !p.nationality?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !p.position?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    return true;
-  });
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  const filteredPlayers = players
+    .filter(p => {
+      if (ageFilter === 'minors' && !p.is_minor) return false;
+      if (ageFilter === 'adults' && p.is_minor) return false;
+      if (ageFilter === 'new') {
+        const created = p.created_at ? new Date(p.created_at) : null;
+        if (!created || created < thirtyDaysAgo) return false;
+      }
+      if (searchQuery && !p.name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          !p.nationality?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          !p.position?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (ageFilter === 'new') {
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      }
+      return 0;
+    });
+
+  const newPlayersCount = players.filter(p => {
+    const created = p.created_at ? new Date(p.created_at) : null;
+    return created && created >= thirtyDaysAgo;
+  }).length;
 
   if (loading) {
     return (
@@ -109,13 +127,18 @@ const AdminPlayers = () => {
       </div>
       <div className="flex flex-wrap gap-2 mb-6">
         {[
-          { id: 'all', label: 'All Players' },
-          { id: 'minors', label: 'Minors (Admin Only)' },
-          { id: 'adults', label: 'Adults' },
+          { id: 'all', label: 'All Players', count: players.length },
+          { id: 'new', label: 'New (30d)', count: newPlayersCount },
+          { id: 'minors', label: 'Minors (Admin Only)', count: players.filter(p => p.is_minor).length },
+          { id: 'adults', label: 'Adults', count: players.filter(p => !p.is_minor).length },
         ].map(f => (
           <button key={f.id} onClick={() => setAgeFilter(f.id)}
-            className={`px-4 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${ageFilter === f.id ? "bg-primary text-black border-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
-            {f.label} {f.id === 'minors' ? `(${filteredPlayers.filter(p => p.is_minor).length})` : f.id === 'adults' ? `(${filteredPlayers.filter(p => !p.is_minor).length})` : `(${players.length})`}
+            className={`px-4 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${
+              ageFilter === f.id
+                ? f.id === 'new' ? "bg-green-500 text-black border-green-500" : "bg-primary text-black border-primary"
+                : f.id === 'new' && f.count > 0 ? "border-green-500/50 text-green-400 hover:border-green-500" : "border-white/10 text-muted-foreground hover:border-white/30"
+            }`}>
+            {f.label} ({f.count})
           </button>
         ))}
       </div>
@@ -179,7 +202,14 @@ const AdminPlayers = () => {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-3">{player.email}</p>
+                    <div className="mb-3">
+                      <p className="text-sm text-muted-foreground">{player.email}</p>
+                      {ageFilter === 'new' && player.created_at && (
+                        <p className="text-xs text-green-400 mt-1">
+                          Registered {new Date(player.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      )}
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       {player.position && (
                         <div>
