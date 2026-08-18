@@ -2827,8 +2827,8 @@ async def get_players(
 ):
     if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
-    query = {"approved": True}
+
+    query = {"approved": True, "account_status": {"$nin": ["suspended", "banned"]}}
     if position:
         query['position'] = position
     if nationality:
@@ -8381,6 +8381,7 @@ async def update_account_status(user_id: str, data: dict, current_user: dict = D
     if status_value not in ["active", "suspended", "banned"]:
         raise HTTPException(status_code=400, detail="Invalid status")
     await db.users.update_one({"id": user_id}, {"$set": {"account_status": status_value}})
+    await db.players.update_one({"user_id": user_id}, {"$set": {"account_status": status_value}})
     return {"message": f"Account status set to {status_value}"}
 
 
