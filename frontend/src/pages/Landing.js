@@ -74,6 +74,11 @@ const Landing = () => {
               points: [t("landing.pt_fed_1"), t("landing.pt_fed_2"), t("landing.pt_fed_3"), t("landing.pt_fed_4")]
             },
             {
+              role: "academy", label: "For Academies", icon: "🏫", btn: "Join as Academy", path: "/academy-register",
+              desc: "Register your academy and submit your players to professional opportunities worldwide.",
+              points: ["Manage your player roster", "Apply to opportunities on behalf of your players", "Get discovered by clubs and federations", "Track all your applications in one place"]
+            },
+            {
               role: "agent", label: t("landing.for_agents"), icon: "🤝", btn: t("landing.btn_agent"), path: "/agent-register",
               desc: t("landing.desc_agent"),
               points: [t("landing.pt_agent_1"), t("landing.pt_agent_2"), t("landing.pt_agent_3"), t("landing.pt_agent_4")]
