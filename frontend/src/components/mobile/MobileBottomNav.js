@@ -45,6 +45,13 @@ const MobileNavConfig = {
     { path: '/specialist/players', icon: Users, label: 'Players' },
     { path: '/specialist/clients', icon: Heart, label: 'Clients' }
   ],
+  academy: [
+    { path: '/academy/dashboard', icon: Home, label: 'Home' },
+    { path: '/academy/players', icon: Users, label: 'Players' },
+    { path: '/academy/opportunities', icon: Briefcase, label: 'Jobs' },
+    { path: '/academy/applications', icon: FileText, label: 'Apps' },
+    { path: '/academy/chats', icon: MessageCircle, label: 'Chats' },
+  ],
   admin: [
     { path: '/admin/dashboard', icon: Home, label: 'Home' },
     { path: '/admin/players', icon: Users, label: 'Players' },

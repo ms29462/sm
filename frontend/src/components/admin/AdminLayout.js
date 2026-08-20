@@ -24,6 +24,7 @@ const NAV_SECTIONS = [
       { to: '/admin/club-applications', label: 'Clubs', icon: Building, testId: 'nav-clubs-btn' },
       { to: '/admin/colleges', label: 'Colleges', icon: GraduationCap },
       { to: '/admin/federations', label: 'Federations', icon: Flag, testId: 'nav-federations-btn' },
+      { to: '/admin/academies', label: 'Academies', icon: GraduationCap },
       { to: '/admin/agents', label: 'Agents', icon: Briefcase, testId: 'nav-agents-btn' },
       { to: '/admin/specialists', label: 'Specialists', icon: Activity, testId: 'nav-specialists-btn' },
       { to: '/admin/analyst-management', label: 'Analyst Management', icon: UserCog },

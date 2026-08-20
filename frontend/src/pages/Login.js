@@ -49,6 +49,8 @@ const Login = ({ admin = false }) => {
         navigate("/specialist/dashboard");
       } else if (role === "college") {
         navigate("/college/dashboard");
+      } else if (role === "academy") {
+        navigate("/academy/dashboard");
       }
     } catch (error) {
       if (error.response?.data?.detail?.startsWith('PENDING_REVIEW')) {

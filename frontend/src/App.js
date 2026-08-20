@@ -16,6 +16,8 @@ import ClubPendingLogin from '@/pages/ClubPendingLogin';
 import CollegeRegister from '@/pages/CollegeRegister';
 import AgentRegister from '@/pages/AgentRegister';
 import FederationRegister from '@/pages/FederationRegister';
+import AcademyRegister from '@/pages/AcademyRegister';
+import AcademyDashboard from '@/pages/AcademyDashboard';
 import SpecialistRegister from '@/pages/SpecialistRegister';
 import AnalystActivate from '@/pages/AnalystActivate';
 import VerifyEmail from '@/pages/VerifyEmail';
@@ -64,6 +66,8 @@ function App() {
         <Route path="/agent-pending" element={<ClubPending />} />
         <Route path="/federation-register" element={<FederationRegister />} />
         <Route path="/federation-pending" element={<ClubPending />} />
+        <Route path="/academy-register" element={<AcademyRegister />} />
+        <Route path="/academy-pending" element={<ClubPending />} />
         <Route path="/specialist-register" element={<SpecialistRegister />} />
         <Route path="/specialist-pending" element={<ClubPending />} />
         <Route path="/analyst/activate/:token" element={<AnalystActivate />} />
@@ -128,6 +132,14 @@ function App() {
                   element={
                     <ProtectedRoute role="college">
                       <ClubDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/academy/*"
+                  element={
+                    <ProtectedRoute role="academy">
+                      <AcademyDashboard />
                     </ProtectedRoute>
                   }
                 />

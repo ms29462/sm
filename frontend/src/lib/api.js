@@ -93,6 +93,24 @@ export const api = {
   // Admin - Federations
   getAllFederations: () => axios.get(`${API}/admin/federations`, { headers: getAuthHeaders() }),
   approveFederation: (userId, approved) => axios.put(`${API}/admin/federations/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
+  verifyFederation: (userId) => axios.put(`${API}/admin/federations/${userId}/verify`, {}, { headers: getAuthHeaders() }),
+  unverifyFederation: (userId) => axios.put(`${API}/admin/federations/${userId}/unverify`, {}, { headers: getAuthHeaders() }),
+
+  // Admin - Academies
+  getAllAcademies: () => axios.get(`${API}/admin/academies`, { headers: getAuthHeaders() }),
+  approveAcademy: (userId, approved) => axios.put(`${API}/admin/academies/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
+  verifyAcademy: (userId) => axios.put(`${API}/admin/academies/${userId}/verify`, {}, { headers: getAuthHeaders() }),
+  unverifyAcademy: (userId) => axios.put(`${API}/admin/academies/${userId}/unverify`, {}, { headers: getAuthHeaders() }),
+
+  // Academy
+  getAcademyProfile: () => axios.get(`${API}/academy/profile`, { headers: getAuthHeaders() }),
+  updateAcademyProfile: (data) => axios.put(`${API}/academy/profile`, data, { headers: getAuthHeaders() }),
+  getAcademyPlayers: () => axios.get(`${API}/academy/players`, { headers: getAuthHeaders() }),
+  createAcademyPlayer: (data) => axios.post(`${API}/academy/players`, data, { headers: getAuthHeaders() }),
+  updateAcademyPlayer: (playerId, data) => axios.put(`${API}/academy/players/${playerId}`, data, { headers: getAuthHeaders() }),
+  deleteAcademyPlayer: (playerId) => axios.delete(`${API}/academy/players/${playerId}`, { headers: getAuthHeaders() }),
+  getAcademyApplications: () => axios.get(`${API}/academy/applications`, { headers: getAuthHeaders() }),
+  createAcademyApplication: (data) => axios.post(`${API}/applications`, data, { headers: getAuthHeaders() }),
 
   // Federation
   getFederationProfile: () => axios.get(`${API}/federation/profile`, { headers: getAuthHeaders() }),
