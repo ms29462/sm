@@ -4559,23 +4559,30 @@ async def get_my_chats(current_user: dict = Depends(get_current_user)):
     role = current_user['role']
     
     rooms = await chat_room_manager.get_all_chat_rooms()
-    
+
     if role == 'player':
         my_rooms = [r for r in rooms if r.player_id == user_id]
+    elif role == 'academy':
+        # Academy sees rooms where one of their players is the player_id
+        academy_players = await db.players.find(
+            {"academy_id": user_id}, {"_id": 0, "user_id": 1}
+        ).to_list(1000)
+        academy_player_ids = {p["user_id"] for p in academy_players}
+        my_rooms = [r for r in rooms if r.player_id in academy_player_ids]
     else:
         # club, specialist, agent, federation, college, analyst all use club_id
         my_rooms = [r for r in rooms if r.club_id == user_id]
-    
+
     result = []
     for r in my_rooms:
         item = {
             "id": r.id,
-            "other_party": r.club_name if role == "player" else r.player_name,
+            "other_party": r.club_name if (role == "player" or role == "academy") else r.player_name,
             "last_message": r.messages[-1].model_dump() if r.messages else None,
             "unread_count": 0
         }
-        # For players, enrich with org playing level and country
-        if role == "player" and r.club_id:
+        # For players and academies, enrich with org playing level and country
+        if (role == "player" or role == "academy") and r.club_id:
             org = None
             for coll in [db.clubs, db.agents, db.specialists, db.federations, db.colleges]:
                 org = await coll.find_one({"user_id": r.club_id}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1, "specialist_type": 1})
@@ -4605,7 +4612,14 @@ async def get_chat_messages(room_id: str, before: str = None, limit: int = 50, c
     room = await db.chat_rooms.find_one({"id": room_id}, {"_id": 0})
     if not room:
         raise HTTPException(status_code=404, detail="Chat room not found")
-    if user_id not in [room.get("player_id"), room.get("club_id")] and current_user["role"] != "admin":
+    if current_user["role"] == "academy":
+        # Academy can read messages if the room's player belongs to them
+        academy_player = await db.players.find_one(
+            {"user_id": room.get("player_id"), "academy_id": user_id}, {"_id": 0, "user_id": 1}
+        )
+        if not academy_player:
+            raise HTTPException(status_code=403, detail="Not authorized")
+    elif user_id not in [room.get("player_id"), room.get("club_id")] and current_user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
     
     # Build query - load messages before a given timestamp for pagination
