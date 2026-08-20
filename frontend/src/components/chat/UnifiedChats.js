@@ -40,7 +40,9 @@ const UnifiedChats = () => {
 
   const loadRequests = async () => {
     try {
-      const res = await api.getMyChatRequests();
+      const res = user?.role === 'academy'
+        ? await api.getAcademyChatRequests()
+        : await api.getMyChatRequests();
       setRequests((res.data || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
     } catch (e) {}
     setLoadingRequests(false);
@@ -121,7 +123,7 @@ const UnifiedChats = () => {
                     <MessageCircle className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm truncate">{user?.role === "player" ? (chat.display_name ? `${chat.display_name} (${chat.display_label})` : chat.display_label || chat.org_playing_level || "Organization") : chat.other_party || "Chat Room"}</p>
+                    <p className="font-bold text-sm truncate">{(user?.role === "player" || user?.role === "academy") ? (chat.display_name ? `${chat.display_name} (${chat.display_label})` : chat.display_label || chat.org_playing_level || "Organization") : chat.other_party || "Chat Room"}</p>
                     <p className="text-xs text-muted-foreground truncate">{chat.last_message?.message || "No messages yet"}</p>
                   </div>
                   {unread > 0 && (
@@ -158,6 +160,9 @@ const UnifiedChats = () => {
                           : req.display_label || req.org_playing_level || "Organization"
                         : req.requester_name || "Organization"}
                     </p>
+                    {user?.role === "academy" && req.player_display_name && (
+                      <p className="text-xs text-primary font-medium">For: {req.player_display_name}</p>
+                    )}
                     <p className="text-xs text-muted-foreground">{new Date(req.created_at).toLocaleDateString()}</p>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-sm border uppercase font-bold ${STATUS_STYLES[req.status] || STATUS_STYLES.pending}`}>
@@ -167,7 +172,7 @@ const UnifiedChats = () => {
                 {req.message && (
                   <p className="text-sm text-muted-foreground mb-3 bg-background/50 p-2 rounded-sm">"{req.message}"</p>
                 )}
-                {req.status === "pending" && user?.role === "player" && (
+                {req.status === "pending" && (user?.role === "player" || user?.role === "academy") && (
                   <div className="flex gap-2">
                     <button onClick={() => handleRespond(req.id, "accepted")}
                       className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold rounded-sm py-2 text-sm flex items-center justify-center gap-1">
@@ -179,7 +184,7 @@ const UnifiedChats = () => {
                     </button>
                   </div>
                 )}
-                {user?.role !== "player" && (
+                {user?.role !== "player" && user?.role !== "academy" && (
                   <div className="mt-2">
                     {deletionRequested[req.id] ? (
                       <p className="text-xs text-green-400 flex items-center gap-1">

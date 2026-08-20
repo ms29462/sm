@@ -18,7 +18,7 @@ export const NotificationProvider = ({ children }) => {
 
   // Load initial data
   useEffect(() => {
-    if (user && (user.role === "player" || user.role === "club")) {
+    if (user && (user.role === "player" || user.role === "club" || user.role === "academy")) {
       loadNotifications();
     }
   }, [user]);
@@ -42,12 +42,15 @@ export const NotificationProvider = ({ children }) => {
 
   const loadNotifications = async () => {
     try {
-      const isOrg = user && ['club', 'federation', 'college', 'agent', 'specialist'].includes(user.role);
       const [chatsRes, videosRes, notifsRes, chatReqRes] = await Promise.all([
         api.getMyChats(),
         api.getMyVideos(),
         api.getNotifications(),
-        isOrg ? api.getMyChatRequests() : Promise.resolve({ data: [] })
+        user?.role === 'academy'
+          ? api.getAcademyChatRequests()
+          : ['club', 'federation', 'college', 'agent', 'specialist'].includes(user?.role)
+            ? api.getMyChatRequests()
+            : Promise.resolve({ data: [] })
       ]);
 
       const unreadMap = {};

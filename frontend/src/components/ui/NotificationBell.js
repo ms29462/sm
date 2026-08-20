@@ -62,7 +62,8 @@ const NotificationBell = () => {
       case "application_update":
         return data.opportunity_id ? `/player/opportunity/${data.opportunity_id}` : "/player/applications";
       case "chat_request":
-        return "/player/chat-requests";
+      case "chat_request_accepted":
+        return null; // handled per role by caller
       case "chat_request_rejected":
         return null;
       case "profile_viewed":

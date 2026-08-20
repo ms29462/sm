@@ -111,6 +111,7 @@ export const api = {
   deleteAcademyPlayer: (playerId) => axios.delete(`${API}/academy/players/${playerId}`, { headers: getAuthHeaders() }),
   getAcademyApplications: () => axios.get(`${API}/academy/applications`, { headers: getAuthHeaders() }),
   createAcademyApplication: (data) => axios.post(`${API}/applications`, data, { headers: getAuthHeaders() }),
+  getAcademyChatRequests: () => axios.get(`${API}/academy/chat-requests`, { headers: getAuthHeaders() }),
 
   // Federation
   getFederationProfile: () => axios.get(`${API}/federation/profile`, { headers: getAuthHeaders() }),

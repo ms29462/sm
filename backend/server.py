@@ -3630,6 +3630,26 @@ async def get_academy_applications(current_user: dict = Depends(get_current_user
     return applications
 
 
+@api_router.get("/academy/chat-requests", response_model=List[dict])
+async def get_academy_chat_requests(current_user: dict = Depends(get_current_user)):
+    """Get all chat requests targeting any player in this academy"""
+    if current_user['role'] != 'academy':
+        raise HTTPException(status_code=403, detail="Not an academy")
+    academy_players = await db.players.find(
+        {"academy_id": current_user['user_id']}, {"_id": 0, "user_id": 1, "name": 1}
+    ).to_list(1000)
+    if not academy_players:
+        return []
+    player_ids = [p["user_id"] for p in academy_players]
+    player_names = {p["user_id"]: p.get("name", "Unknown") for p in academy_players}
+    requests = await db.chat_requests.find(
+        {"player_id": {"$in": player_ids}}, {"_id": 0}
+    ).sort("created_at", -1).to_list(500)
+    for req in requests:
+        req["player_display_name"] = player_names.get(req.get("player_id"), "Unknown Player")
+    return requests
+
+
 # Admin academy management
 @api_router.get("/admin/academies")
 async def get_all_academies(current_user: dict = Depends(get_current_user)):
@@ -4672,6 +4692,7 @@ async def create_chat_request(
         raise HTTPException(status_code=404, detail="Player not found")
     
     # Get requester info based on role
+    requester = None
     requester_name = "Unknown"
     if role == 'club':
         requester = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
@@ -4684,7 +4705,10 @@ async def create_chat_request(
         requester_name = requester.get('name', 'Unknown Specialist') if requester else 'Unknown Specialist'
     elif role == 'federation':
         requester = await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0})
-        requester_name = requester.get('name', 'Unknown Federation') if requester else 'Unknown Federatist'
+        requester_name = requester.get('name', 'Unknown Federation') if requester else 'Unknown Federation'
+    elif role == 'college':
+        requester = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        requester_name = requester.get('name', 'Unknown College') if requester else 'Unknown College'
     
     chat_request = {
         "id": str(uuid.uuid4()),
@@ -4703,8 +4727,8 @@ async def create_chat_request(
     }
     
     await db.chat_requests.insert_one(chat_request)
-    
-    # Create notification for player
+
+    # Create notification for player (or their academy if player has no login)
     role_label = role.capitalize()
     # Build descriptive label based on role
     # Specialists show name + type, others show playing level only
@@ -4717,12 +4741,15 @@ async def create_chat_request(
     else:
         notification_label = role.capitalize()
 
+    # Route notification to academy if player belongs to one
+    notify_user_id = player.get("academy_id") or request_data.player_id
+
     await db.notifications.insert_one({
         "id": str(uuid.uuid4()),
-        "user_id": request_data.player_id,
+        "user_id": notify_user_id,
         "type": "chat_request",
         "title": f"New Chat Request",
-        "message": f"{notification_label} wants to connect with you",
+        "message": f"{notification_label} wants to connect with {player.get('name', 'your player')}",
         "reference_id": chat_request["id"],
         "read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -4778,9 +4805,20 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
         return enriched
     elif role in ['club', 'agent', 'specialist', 'college', 'federation']:
         requests = await db.chat_requests.find({"requester_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    elif role == 'academy':
+        # Incoming requests for any player in this academy
+        academy_players = await db.players.find({"academy_id": user_id}, {"_id": 0, "user_id": 1, "name": 1}).to_list(1000)
+        player_ids = [p["user_id"] for p in academy_players]
+        if not player_ids:
+            return []
+        player_names = {p["user_id"]: p.get("name", "Unknown") for p in academy_players}
+        requests = await db.chat_requests.find({"player_id": {"$in": player_ids}}, {"_id": 0}).sort("created_at", -1).to_list(500)
+        for req in requests:
+            req["player_display_name"] = player_names.get(req.get("player_id"), "Unknown Player")
+        return requests
     else:
         return []
-    
+
     return requests
 
 
@@ -4790,18 +4828,27 @@ async def respond_to_chat_request(
     response: ChatRequestResponse,
     current_user: dict = Depends(get_current_user)
 ):
-    """Player responds to a chat request (accept or reject)"""
-    if current_user['role'] != 'player':
-        raise HTTPException(status_code=403, detail="Only players can respond to chat requests")
-    
-    chat_request = await db.chat_requests.find_one({
-        "id": request_id,
-        "player_id": current_user['user_id'],
-        "status": "pending"
-    }, {"_id": 0})
-    
-    if not chat_request:
-        raise HTTPException(status_code=404, detail="Chat request not found or already responded")
+    """Player (or their academy) responds to a chat request (accept or reject)"""
+    if current_user['role'] not in ['player', 'academy']:
+        raise HTTPException(status_code=403, detail="Only players or academies can respond to chat requests")
+
+    if current_user['role'] == 'academy':
+        chat_request = await db.chat_requests.find_one({"id": request_id, "status": "pending"}, {"_id": 0})
+        if not chat_request:
+            raise HTTPException(status_code=404, detail="Chat request not found or already responded")
+        academy_player = await db.players.find_one(
+            {"user_id": chat_request["player_id"], "academy_id": current_user['user_id']}, {"_id": 0}
+        )
+        if not academy_player:
+            raise HTTPException(status_code=403, detail="This player does not belong to your academy")
+    else:
+        chat_request = await db.chat_requests.find_one({
+            "id": request_id,
+            "player_id": current_user['user_id'],
+            "status": "pending"
+        }, {"_id": 0})
+        if not chat_request:
+            raise HTTPException(status_code=404, detail="Chat request not found or already responded")
     
     if response.status not in ['accepted', 'rejected']:
         raise HTTPException(status_code=400, detail="Invalid response status")
@@ -4814,9 +4861,9 @@ async def respond_to_chat_request(
         }}
     )
     
-    player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    player = await db.players.find_one({"user_id": chat_request['player_id']}, {"_id": 0})
     player_name = player.get('name', 'Unknown Player') if player else 'Unknown Player'
-    
+
     # Get requester info - support both new and legacy format
     requester_name = chat_request.get('requester_name') or chat_request.get('club_name', 'Unknown')
     requester_type = chat_request.get('requester_type', 'club')
