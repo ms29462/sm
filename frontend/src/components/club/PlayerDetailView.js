@@ -235,7 +235,8 @@ const PlayerDetailView = () => {
               </div>
             )}
 
-            {/* Action Buttons */}
+            {/* Action Buttons — hidden when academy views their own player */}
+          {user?.role !== 'academy' && (
           <div className="flex flex-col gap-3">
             {user?.role !== "agent" && (
             <Button
@@ -255,7 +256,7 @@ const PlayerDetailView = () => {
               <Kanban className="w-4 h-4 mr-2" />
               {inPipeline ? "In Pipeline ✓" : "Add to Pipeline"}
             </Button>)}
-            
+
             <Button
               data-testid="add-favorite-btn"
               onClick={handleAddFavorite}
@@ -277,6 +278,7 @@ const PlayerDetailView = () => {
             )}
             <ReportUserDialog reportedUserId={player.user_id} />
           </div>
+          )}
         </div>
       </div>
 

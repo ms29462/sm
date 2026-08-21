@@ -2878,10 +2878,10 @@ async def get_player_verification_public(player_id: str, current_user: dict = De
 @api_router.get("/players/{player_id}", response_model=PlayerProfile)
 async def get_player_detail(player_id: str, current_user: dict = Depends(get_current_user)):
     """Get detailed player profile by user_id"""
-    if current_user['role'] not in ['club', 'admin', 'federation', 'college', 'agent', 'specialist', 'analyst']:
+    if current_user['role'] not in ['club', 'admin', 'federation', 'college', 'agent', 'specialist', 'analyst', 'academy']:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
-    # Send profile viewed notification
+
+    # Send profile viewed notification (not for academy viewing their own player)
     if current_user["role"] in ["club", "federation", "college", "agent"] and current_user["user_id"] != player_id:
         try:
             org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
