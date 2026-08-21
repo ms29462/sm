@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Users, Plus, Edit2, Trash2, X, Upload } from 'lucide-react';
+import { NATIONALITIES, LEVELS } from '@/lib/constants';
 
 const POSITIONS = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'Winger', 'Striker'];
 const FEET = ['Left', 'Right', 'Both'];
@@ -17,6 +18,7 @@ const EMPTY_FORM = {
   playing_level: '', league: '', highlight_video: '', profile_picture: '',
   gender: '', games: '', goals: '', assists: '',
   season_games: '', season_goals: '', season_assists: '', description: '',
+  full_game_videos: [''],
 };
 
 const Field = ({ label, children }) => (
@@ -61,6 +63,7 @@ const AcademyPlayers = () => {
       gender: p.gender || '', games: p.games || '', goals: p.goals || '', assists: p.assists || '',
       season_games: p.season_games || '', season_goals: p.season_goals || '', season_assists: p.season_assists || '',
       description: p.description || '',
+      full_game_videos: (p.full_game_videos && p.full_game_videos.length > 0) ? p.full_game_videos : [''],
     });
     setEditingId(p.user_id);
     setShowModal(true);
@@ -76,10 +79,24 @@ const AcademyPlayers = () => {
     reader.readAsDataURL(file);
   };
 
+  const setVideoLink = (i, v) => {
+    const videos = [...form.full_game_videos];
+    videos[i] = v;
+    set('full_game_videos', videos);
+  };
+
+  const addVideoLink = () => set('full_game_videos', [...form.full_game_videos, '']);
+  const removeVideoLink = (i) => set('full_game_videos', form.full_game_videos.filter((_, idx) => idx !== i));
+
   const handleSave = async () => {
     if (!form.name) { toast.error('Player name is required'); return; }
+    if (!form.highlight_video || !form.highlight_video.trim()) {
+      toast.error('Highlight video is required');
+      return;
+    }
     setSaving(true);
     try {
+      const filteredVideos = form.full_game_videos.filter(v => v.trim());
       const payload = {
         ...form,
         age: form.age ? parseInt(form.age) : undefined,
@@ -91,6 +108,7 @@ const AcademyPlayers = () => {
         season_games: form.season_games ? parseInt(form.season_games) : undefined,
         season_goals: form.season_goals ? parseInt(form.season_goals) : undefined,
         season_assists: form.season_assists ? parseInt(form.season_assists) : undefined,
+        full_game_videos: filteredVideos.length > 0 ? filteredVideos : undefined,
       };
       if (editingId) {
         await api.updateAcademyPlayer(editingId, payload);
@@ -234,10 +252,16 @@ const AcademyPlayers = () => {
                   </select>
                 </Field>
                 <Field label="Nationality">
-                  <Input value={form.nationality} onChange={e => set('nationality', e.target.value)} className={inp} placeholder="e.g., Canadian" />
+                  <select value={form.nationality} onChange={e => set('nationality', e.target.value)} className={sel}>
+                    <option value="">Select</option>
+                    {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
                 </Field>
                 <Field label="Nationality 2">
-                  <Input value={form.nationality_2} onChange={e => set('nationality_2', e.target.value)} className={inp} placeholder="e.g., Cameroonian" />
+                  <select value={form.nationality_2} onChange={e => set('nationality_2', e.target.value)} className={sel}>
+                    <option value="">Select (optional)</option>
+                    {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
                 </Field>
                 <Field label="Age">
                   <Input type="number" value={form.age} onChange={e => set('age', e.target.value)} className={inp} placeholder="e.g., 18" />
@@ -258,14 +282,54 @@ const AcademyPlayers = () => {
                   <Input value={form.current_club} onChange={e => set('current_club', e.target.value)} className={inp} placeholder="e.g., AS Monaco" />
                 </Field>
                 <Field label="Playing Level">
-                  <Input value={form.playing_level} onChange={e => set('playing_level', e.target.value)} className={inp} placeholder="e.g., Semi-Pro" />
+                  <select value={form.playing_level} onChange={e => set('playing_level', e.target.value)} className={sel}>
+                    <option value="">Select</option>
+                    {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
                 </Field>
                 <Field label="League">
                   <Input value={form.league} onChange={e => set('league', e.target.value)} className={inp} placeholder="e.g., Ligue 1" />
                 </Field>
-                <Field label="Highlight Video (YouTube/Vimeo)">
-                  <Input value={form.highlight_video} onChange={e => set('highlight_video', e.target.value)} className={inp} placeholder="https://youtube.com/..." />
-                </Field>
+              </div>
+
+              {/* Highlight Video — required */}
+              <Field label="Highlight Video (YouTube/Vimeo) *">
+                <Input
+                  value={form.highlight_video}
+                  onChange={e => set('highlight_video', e.target.value)}
+                  className={inp}
+                  placeholder="https://youtube.com/..."
+                />
+              </Field>
+
+              {/* Full Match Videos */}
+              <div>
+                <Label className="text-xs font-bold uppercase tracking-wide mb-1 block">
+                  Full Match Videos <span className="text-muted-foreground font-normal normal-case">(optional)</span>
+                </Label>
+                <p className="text-xs text-muted-foreground mb-2">Add links to full match recordings</p>
+                {form.full_game_videos.map((v, i) => (
+                  <div key={i} className="flex gap-2 mb-2">
+                    <Input
+                      value={v}
+                      onChange={e => setVideoLink(i, e.target.value)}
+                      placeholder={`Full match ${i + 1} (YouTube/Vimeo)...`}
+                      className={inp + ' flex-1'}
+                    />
+                    {form.full_game_videos.length > 1 && (
+                      <button
+                        onClick={() => removeVideoLink(i)}
+                        className="px-3 text-red-400 border border-red-500/20 rounded-sm hover:bg-red-500/10"
+                      >×</button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  onClick={addVideoLink}
+                  className="text-xs text-primary border border-primary/20 rounded-sm px-3 py-1.5 hover:bg-primary/10 transition-colors"
+                >
+                  + Add another match
+                </button>
               </div>
 
               <div>

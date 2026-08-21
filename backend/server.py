@@ -909,6 +909,7 @@ class AcademyPlayerCreate(BaseModel):
     season_goals: Optional[int] = None
     season_assists: Optional[int] = None
     description: Optional[str] = None
+    full_game_videos: Optional[list] = None
 
 
 # Federation Team Groups (Senior, U23, U20, U17, U15)
