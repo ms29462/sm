@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Users, Plus, Edit2, Trash2, X, Upload } from 'lucide-react';
-import { NATIONALITIES, LEVELS } from '@/lib/constants';
+import { NATIONALITIES, LEVELS, LEAGUES } from '@/lib/constants';
 
 const POSITIONS = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'Winger', 'Striker'];
 const FEET = ['Left', 'Right', 'Both'];
@@ -288,7 +288,10 @@ const AcademyPlayers = () => {
                   </select>
                 </Field>
                 <Field label="League">
-                  <Input value={form.league} onChange={e => set('league', e.target.value)} className={inp} placeholder="e.g., Ligue 1" />
+                  <select value={form.league} onChange={e => set('league', e.target.value)} className={sel}>
+                    <option value="">Select</option>
+                    {LEAGUES.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
                 </Field>
               </div>
 

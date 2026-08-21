@@ -31,6 +31,17 @@ export const COUNTRIES = [
 export const POSITIONS = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'Winger', 'Striker'];
 export const LEVELS = ['Amateur', 'Semi-Pro', 'Professional', 'University'];
 export const FEET = ['Left', 'Right', 'Both'];
+export const LEAGUES = [
+  'Premier League', 'La Liga', 'Bundesliga', 'Serie A', 'Ligue 1',
+  'Eredivisie', 'Primeira Liga', 'Pro League', 'Challenger Pro League',
+  'Championship', 'League One', 'League Two',
+  'MLS', 'USL Championship', 'USL League One', 'CPL', 'Liga MX',
+  'Brasileirao', 'Primera Division', 'Colombian Primera',
+  'Saudi Pro League', 'J1 League',
+  'South African PSL', 'Egyptian Premier', 'Botola Pro',
+  'NCAA Division I', 'NCAA Division II', 'NAIA', 'NJCAA',
+  'National League', 'Semi-Professional', 'Amateur'
+];
 
 // NATIONALITIES is an alias for COUNTRIES for backward compatibility
 export const NATIONALITIES = [
