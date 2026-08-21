@@ -3623,11 +3623,19 @@ async def get_academy_applications(current_user: dict = Depends(get_current_user
         player = await db.players.find_one({"user_id": app.get("player_id")}, {"_id": 0, "name": 1})
         if player:
             app["player_name"] = player.get("name")
-        opp = await db.opportunities.find_one({"id": app.get("opportunity_id")}, {"_id": 0, "position": 1, "country": 1, "club_name": 1, "club_country": 1})
+        opp = await db.opportunities.find_one(
+            {"id": app.get("opportunity_id")},
+            {"_id": 0, "position": 1, "positions": 1, "country": 1, "club_name": 1, "club_country": 1, "league_level": 1, "salary_range": 1, "contract_duration": 1}
+        )
         if opp:
-            app["position"] = opp.get("position")
+            pos = opp.get("position") or (", ".join(opp["positions"]) if opp.get("positions") else "")
+            app["position"] = pos
             app["club_name"] = opp.get("club_name")
             app["club_country"] = opp.get("club_country") or opp.get("country")
+            app["league_level"] = opp.get("league_level")
+            app["salary_range"] = opp.get("salary_range")
+            app["contract_duration"] = opp.get("contract_duration")
+            app["opportunity_title"] = f"{pos} — {opp.get('league_level', '')}" if pos else opp.get("league_level", "Opportunity")
     return applications
 
 

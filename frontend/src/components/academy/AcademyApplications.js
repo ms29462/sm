@@ -81,10 +81,21 @@ const AcademyApplications = () => {
                     {app.opportunity_title || app.position || 'Opportunity'}
                   </p>
                   <p className="text-sm text-muted-foreground mb-1">
-                    {app.club_name || 'Club'} {app.club_country ? `· ${app.club_country}` : ''}
+                    {app.club_name || 'Club'}{app.club_country ? ` · ${app.club_country}` : ''}
                   </p>
+                  <div className="flex flex-wrap gap-2 mt-1 mb-1">
+                    {app.league_level && (
+                      <span className="text-xs bg-white/5 border border-white/10 rounded-sm px-2 py-0.5 text-muted-foreground">{app.league_level}</span>
+                    )}
+                    {app.salary_range && (
+                      <span className="text-xs bg-white/5 border border-white/10 rounded-sm px-2 py-0.5 text-muted-foreground">{app.salary_range}</span>
+                    )}
+                    {app.contract_duration && (
+                      <span className="text-xs bg-white/5 border border-white/10 rounded-sm px-2 py-0.5 text-muted-foreground">{app.contract_duration}</span>
+                    )}
+                  </div>
                   {app.player_name && (
-                    <p className="text-xs text-primary">Player: {app.player_name}</p>
+                    <p className="text-xs text-primary font-medium">Player: {app.player_name}</p>
                   )}
                   <p className="text-xs text-muted-foreground mt-1">
                     Submitted {new Date(app.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
