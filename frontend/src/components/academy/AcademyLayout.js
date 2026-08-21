@@ -8,7 +8,7 @@ import Badge from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Users, Briefcase, LogOut, Home, UserCircle, Newspaper, FileText, MessageCircle, GraduationCap } from 'lucide-react';
+import { Users, Briefcase, LogOut, Home, UserCircle, Newspaper, FileText, MessageCircle, GraduationCap, Star } from 'lucide-react';
 
 const AcademyLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -77,6 +77,11 @@ const AcademyLayout = ({ children }) => {
               <Button variant={isActive('/academy/chats') ? 'secondary' : 'ghost'} className="w-full justify-start">
                 <MessageCircle className="w-4 h-4 mr-3" /> Chats
                 <Badge count={totalUnread} />
+              </Button>
+            </Link>
+            <Link to="/academy/credits">
+              <Button variant={isActive('/academy/credits') ? 'secondary' : 'ghost'} className="w-full justify-start">
+                <Star className="w-4 h-4 mr-3" /> Credits
               </Button>
             </Link>
           </nav>

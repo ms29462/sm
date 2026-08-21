@@ -10,6 +10,7 @@ import PlayerDetailView from '@/components/club/PlayerDetailView';
 import UnifiedChats from '@/components/chat/UnifiedChats';
 import ChatRoom from '@/components/chat/ChatRoom';
 import ScoutingHub from '@/components/club/ScoutingHub';
+import AcademyCredits from '@/components/academy/AcademyCredits';
 
 const AcademyDashboard = () => {
   return (
@@ -25,6 +26,7 @@ const AcademyDashboard = () => {
         <Route path="chats" element={<UnifiedChats />} />
         <Route path="chat/:roomId" element={<ChatRoom />} />
         <Route path="scouting" element={<ScoutingHub />} />
+        <Route path="credits" element={<AcademyCredits />} />
         <Route path="*" element={<AcademyHome />} />
       </Routes>
     </AcademyLayout>

@@ -3,9 +3,11 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Briefcase, Search, X, ChevronDown, Users, Star } from 'lucide-react';
+import { Briefcase, Search, X, ChevronDown, Users, Star, ShoppingCart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AcademyOpportunities = () => {
+  const navigate = useNavigate();
   const [opportunities, setOpportunities] = useState([]);
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,10 +85,16 @@ const AcademyOpportunities = () => {
           <p className="text-muted-foreground">Browse and apply on behalf of your players</p>
         </div>
         {creditBalance !== null && (
-          <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-sm px-4 py-2">
-            <Star className="w-4 h-4 text-primary" />
-            <span className="font-bold text-primary text-sm">{creditBalance}</span>
-            <span className="text-xs text-muted-foreground">credits</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-sm px-4 py-2">
+              <Star className="w-4 h-4 text-primary" />
+              <span className="font-bold text-primary text-sm">{creditBalance}</span>
+              <span className="text-xs text-muted-foreground">credits</span>
+            </div>
+            <button onClick={() => navigate('/academy/credits?tab=buy')}
+              className="flex items-center gap-1 text-xs border border-white/10 rounded-sm px-3 py-2 text-muted-foreground hover:text-white hover:border-white/30 transition-colors">
+              <ShoppingCart className="w-3 h-3" /> Buy
+            </button>
           </div>
         )}
       </div>

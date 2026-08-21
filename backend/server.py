@@ -7800,6 +7800,41 @@ CREDIT_PACKS_STRIPE = {
     "elite": {"credits": 200, "price": 5999, "name": "Elite Pack - 200 Credits"},
 }
 
+@api_router.post("/stripe/create-academy-checkout")
+@limiter.limit("20/minute")
+async def create_academy_checkout_session(request: Request, data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "academy":
+        raise HTTPException(status_code=403, detail="Academies only")
+    pack_id = data.get("pack_id")
+    pack = CREDIT_PACKS_STRIPE.get(pack_id)
+    if not pack:
+        raise HTTPException(status_code=400, detail="Invalid pack")
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {"name": pack["name"]},
+                    "unit_amount": pack["price"],
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url="https://www.soccermatch.app/academy/credits?success=true",
+            cancel_url="https://www.soccermatch.app/academy/credits?cancelled=true",
+            metadata={
+                "user_id": current_user["user_id"],
+                "user_type": "academy",
+                "pack_id": pack_id,
+                "credits": str(pack["credits"]),
+            }
+        )
+        return {"checkout_url": session.url, "session_id": session.id}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @api_router.post("/stripe/create-checkout")
 @limiter.limit("20/minute")
 async def create_checkout_session(request: Request, data: dict, current_user: dict = Depends(get_current_user)):
@@ -8073,20 +8108,30 @@ async def stripe_webhook(request: Request):
         else:
             pack_id = metadata.get("pack_id")
             credits = int(metadata.get("credits", 0))
-            
+            user_type = metadata.get("user_type", "player")
+
             # Idempotency check
             existing = await db.credit_transactions.find_one({"reference": session_id})
             if existing:
                 return {"status": "already processed"}
-            
+
             if user_id and credits > 0:
-                await add_credits(
-                    user_id,
-                    credits,
-                    "credit_purchase",
-                    f"Purchase: {pack_id} pack ({credits} credits)",
-                    session_id
-                )
+                if user_type == "academy":
+                    await add_academy_credits(
+                        user_id,
+                        credits,
+                        "credit_purchase",
+                        f"Purchase: {pack_id} pack ({credits} credits)",
+                        session_id
+                    )
+                else:
+                    await add_credits(
+                        user_id,
+                        credits,
+                        "credit_purchase",
+                        f"Purchase: {pack_id} pack ({credits} credits)",
+                        session_id
+                    )
                 try:
                     player = await db.players.find_one({"user_id": user_id}, {"_id": 0})
                     user = await db.users.find_one({"id": user_id}, {"_id": 0})
