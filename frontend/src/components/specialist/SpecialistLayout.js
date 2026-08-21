@@ -102,7 +102,7 @@ const SpecialistLayout = ({ children }) => {
             <Button variant={isActive('/specialist/chats') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <MessageCircle className="w-4 h-4 mr-3" />
               Chats
-              <Badge count={totalUnread} />
+              <Badge count={totalUnread + unreadChatRequests} />
             </Button>
           </Link>
 

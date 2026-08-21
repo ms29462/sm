@@ -21,7 +21,7 @@ const PlayerLayout = ({ children }) => {
   }, []);
   const navigate = useNavigate();
   const location = useLocation();
-  const { totalUnread, totalPending, unreadApplications } = useNotifications();
+  const { totalUnread, totalPending, unreadApplications, unreadChatRequests } = useNotifications();
 
   const handleLogout = () => {
     logout();
@@ -168,7 +168,7 @@ const PlayerLayout = ({ children }) => {
             >
               <MessageCircle className="w-4 h-4 mr-3" />
               Chats
-              <Badge count={totalUnread} />
+              <Badge count={totalUnread + unreadChatRequests} />
             </Button>
           </Link>
         </nav>

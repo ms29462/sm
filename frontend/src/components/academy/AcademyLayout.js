@@ -13,7 +13,7 @@ import { Users, Briefcase, LogOut, Home, UserCircle, Newspaper, FileText, Messag
 const AcademyLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useAuth();
-  const { totalUnread } = useNotifications();
+  const { totalUnread, unreadChatRequests } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -76,7 +76,7 @@ const AcademyLayout = ({ children }) => {
             <Link to="/academy/chats">
               <Button variant={isActive('/academy/chats') ? 'secondary' : 'ghost'} className="w-full justify-start">
                 <MessageCircle className="w-4 h-4 mr-3" /> Chats
-                <Badge count={totalUnread} />
+                <Badge count={totalUnread + unreadChatRequests} />
               </Button>
             </Link>
             <Link to="/academy/credits">

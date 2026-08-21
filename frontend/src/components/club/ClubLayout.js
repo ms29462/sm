@@ -113,7 +113,6 @@ const ClubLayout = ({ children, isCollege = false }) => {
             >
               <FileText className="w-4 h-4 mr-3" />
               Applications
-              <Badge count={unreadChatRequests} />
             </Button>
           </Link>
           <Link to={isCollege ? "/college/favorites" : "/club/favorites"}>
@@ -152,7 +151,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
             >
               <MessageCircle className="w-4 h-4 mr-3" />
               Chats
-              <Badge count={totalUnread} />
+              <Badge count={totalUnread + unreadChatRequests} />
             </Button>
           </Link>
         </nav>

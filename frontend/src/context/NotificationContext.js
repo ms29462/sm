@@ -18,7 +18,7 @@ export const NotificationProvider = ({ children }) => {
 
   // Load initial data
   useEffect(() => {
-    if (user && (user.role === "player" || user.role === "club" || user.role === "academy")) {
+    if (user) {
       loadNotifications();
     }
   }, [user]);
@@ -42,38 +42,46 @@ export const NotificationProvider = ({ children }) => {
 
   const loadNotifications = async () => {
     try {
-      const [chatsRes, videosRes, notifsRes, chatReqRes] = await Promise.all([
+      const chatReqPromise = user?.role === 'academy'
+        ? api.getAcademyChatRequests()
+        : ['player', 'club', 'federation', 'college', 'agent', 'specialist'].includes(user?.role)
+          ? api.getMyChatRequests()
+          : Promise.resolve({ data: [] });
+
+      const [chatsResult, videosResult, notifsResult, chatReqResult] = await Promise.allSettled([
         api.getMyChats(),
         api.getMyVideos(),
         api.getNotifications(),
-        user?.role === 'academy'
-          ? api.getAcademyChatRequests()
-          : ['club', 'federation', 'college', 'agent', 'specialist'].includes(user?.role)
-            ? api.getMyChatRequests()
-            : Promise.resolve({ data: [] })
+        chatReqPromise
       ]);
 
-      const unreadMap = {};
-      chatsRes.data.forEach(chat => {
-        const stored = localStorage.getItem(`chat_read_${chat.id}`);
-        if (!stored && chat.last_message) {
-          unreadMap[chat.id] = 1;
-        }
-      });
-      setUnreadChats(unreadMap);
-      setTotalUnread(Object.keys(unreadMap).length);
+      if (chatsResult.status === 'fulfilled') {
+        const unreadMap = {};
+        chatsResult.value.data.forEach(chat => {
+          const stored = localStorage.getItem(`chat_read_${chat.id}`);
+          if (!stored && chat.last_message) {
+            unreadMap[chat.id] = 1;
+          }
+        });
+        setUnreadChats(unreadMap);
+        setTotalUnread(Object.keys(unreadMap).length);
+      }
 
-      // Count pending chat requests for orgs
-      const pendingReqs = (chatReqRes?.data || []).filter(r => r.status === 'pending');
-      setUnreadChatRequests(pendingReqs.length);
+      if (chatReqResult.status === 'fulfilled') {
+        const pendingReqs = (chatReqResult.value?.data || []).filter(r => r.status === 'pending');
+        setUnreadChatRequests(pendingReqs.length);
+      }
 
-      // Count unread application update notifications
-      const appNotifs = (notifsRes?.data || []).filter(n => n.type === 'application_update' && !n.read);
-      setUnreadApplications(appNotifs.length);
+      if (notifsResult.status === 'fulfilled') {
+        const appNotifs = (notifsResult.value?.data || []).filter(n => n.type === 'application_update' && !n.read);
+        setUnreadApplications(appNotifs.length);
+      }
 
-      const pending = videosRes.data.filter(v => v.is_active);
-      setPendingVideos(pending);
-      setTotalPending(pending.length);
+      if (videosResult.status === 'fulfilled') {
+        const pending = videosResult.value.data.filter(v => v.is_active);
+        setPendingVideos(pending);
+        setTotalPending(pending.length);
+      }
     } catch (error) {
       console.error("Failed to load notifications:", error);
     }

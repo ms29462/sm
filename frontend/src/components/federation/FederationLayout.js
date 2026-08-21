@@ -130,7 +130,6 @@ const FederationLayout = ({ children }) => {
             <Button variant={isActive('/federation/applications') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <FileText className="w-4 h-4 mr-3" />
               Applications
-              <Badge count={unreadChatRequests} />
             </Button>
           </Link>
           <Link to="/federation/pipeline">
@@ -143,7 +142,7 @@ const FederationLayout = ({ children }) => {
             <Button variant={isActive('/federation/chats') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <MessageCircle className="w-4 h-4 mr-3" />
               Chats
-              <Badge count={totalUnread} />
+              <Badge count={totalUnread + unreadChatRequests} />
             </Button>
           </Link>
           <Link to="/federation/teams">
