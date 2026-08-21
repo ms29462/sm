@@ -14,15 +14,18 @@ const TRANSACTION_LABELS = {
 };
 
 const AdminCredits = () => {
+  const [tab, setTab] = useState("players");
   const [players, setPlayers] = useState([]);
+  const [academies, setAcademies] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [selectedType, setSelectedType] = useState("player");
   const [credits, setCredits] = useState(null);
   const [loading, setLoading] = useState(true);
   const [adjustAmount, setAdjustAmount] = useState(0);
   const [adjustNote, setAdjustNote] = useState("");
   const [search, setSearch] = useState("");
 
-  useEffect(() => { loadPlayers(); }, []);
+  useEffect(() => { loadPlayers(); loadAcademies(); }, []);
 
   const loadPlayers = async () => {
     try {
@@ -35,11 +38,31 @@ const AdminCredits = () => {
     }
   };
 
+  const loadAcademies = async () => {
+    try {
+      const res = await api.getAllAcademies();
+      setAcademies(res.data || []);
+    } catch {}
+  };
+
   const loadPlayerCredits = async (player) => {
     setSelected(player);
+    setSelectedType("player");
     setCredits(null);
     try {
       const res = await api.getAdminPlayerCredits(player.user_id);
+      setCredits(res.data);
+    } catch (e) {
+      toast.error("Failed to load credits");
+    }
+  };
+
+  const loadAcademyCredits = async (academy) => {
+    setSelected(academy);
+    setSelectedType("academy");
+    setCredits(null);
+    try {
+      const res = await api.getAdminAcademyCredits(academy.user_id);
       setCredits(res.data);
     } catch (e) {
       toast.error("Failed to load credits");
@@ -54,11 +77,13 @@ const AdminCredits = () => {
         user_id: selected.user_id,
         amount: adjustAmount,
         note: adjustNote,
+        user_type: selectedType,
       });
       toast.success("Credits adjusted!");
       setAdjustAmount(0);
       setAdjustNote("");
-      loadPlayerCredits(selected);
+      if (selectedType === "academy") loadAcademyCredits(selected);
+      else loadPlayerCredits(selected);
     } catch (e) {
       toast.error(e.response?.data?.detail || "Failed to adjust");
     }
@@ -68,15 +93,20 @@ const AdminCredits = () => {
     try {
       await api.adminRefundCredits(applicationId);
       toast.success("Credits refunded!");
-      loadPlayerCredits(selected);
+      if (selectedType === "academy") loadAcademyCredits(selected);
+      else loadPlayerCredits(selected);
     } catch (e) {
       toast.error(e.response?.data?.detail || "Failed to refund");
     }
   };
 
-  const filtered = players.filter(p =>
+  const filteredPlayers = players.filter(p =>
     !search || p.name?.toLowerCase().includes(search.toLowerCase()) ||
     p.email?.toLowerCase().includes(search.toLowerCase())
+  );
+  const filteredAcademies = academies.filter(a =>
+    !search || a.name?.toLowerCase().includes(search.toLowerCase()) ||
+    a.email?.toLowerCase().includes(search.toLowerCase())
   );
 
   if (loading) return <div className="p-8 text-primary font-heading">LOADING...</div>;
@@ -89,19 +119,38 @@ const AdminCredits = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Player List */}
+        {/* Left: tab + list */}
         <div>
+          <div className="flex border border-white/10 rounded-sm overflow-hidden mb-3">
+            <button onClick={() => { setTab("players"); setSearch(""); setSelected(null); }}
+              className={`flex-1 py-2 text-xs font-bold uppercase transition-colors ${tab === "players" ? "bg-primary text-black" : "bg-black/20 text-muted-foreground hover:text-white"}`}>
+              Players
+            </button>
+            <button onClick={() => { setTab("academies"); setSearch(""); setSelected(null); }}
+              className={`flex-1 py-2 text-xs font-bold uppercase transition-colors ${tab === "academies" ? "bg-primary text-black" : "bg-black/20 text-muted-foreground hover:text-white"}`}>
+              Academies
+            </button>
+          </div>
           <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search players..."
+            placeholder={tab === "players" ? "Search players..." : "Search academies..."}
             className="w-full bg-black/20 border border-white/10 rounded-sm px-3 h-10 text-sm text-white outline-none focus:border-primary mb-3" />
           <div className="space-y-2 max-h-[600px] overflow-y-auto">
-            {filtered.map(p => (
+            {tab === "players" ? filteredPlayers.map(p => (
               <div key={p.user_id} onClick={() => loadPlayerCredits(p)}
-                className={`bg-card border rounded-sm p-3 cursor-pointer transition-colors ${selected?.user_id === p.user_id ? "border-primary" : "border-border/50 hover:border-white/30"}`}>
+                className={`bg-card border rounded-sm p-3 cursor-pointer transition-colors ${selected?.user_id === p.user_id && selectedType === "player" ? "border-primary" : "border-border/50 hover:border-white/30"}`}>
                 <p className="font-bold text-sm">{p.name}</p>
                 <div className="flex items-center justify-between mt-1">
                   <p className="text-xs text-muted-foreground">{p.email}</p>
                   <span className="text-xs font-bold text-primary">⭐ {p.credits || 0}</span>
+                </div>
+              </div>
+            )) : filteredAcademies.map(a => (
+              <div key={a.user_id} onClick={() => loadAcademyCredits(a)}
+                className={`bg-card border rounded-sm p-3 cursor-pointer transition-colors ${selected?.user_id === a.user_id && selectedType === "academy" ? "border-primary" : "border-border/50 hover:border-white/30"}`}>
+                <p className="font-bold text-sm">{a.name}</p>
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-xs text-muted-foreground">{a.email || a.city || ''}</p>
+                  <span className="text-xs font-bold text-primary">⭐ {a.credits || 0}</span>
                 </div>
               </div>
             ))}

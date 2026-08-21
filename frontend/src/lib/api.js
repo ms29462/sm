@@ -112,6 +112,8 @@ export const api = {
   getAcademyApplications: () => axios.get(`${API}/academy/applications`, { headers: getAuthHeaders() }),
   createAcademyApplication: (data) => axios.post(`${API}/applications`, data, { headers: getAuthHeaders() }),
   getAcademyChatRequests: () => axios.get(`${API}/academy/chat-requests`, { headers: getAuthHeaders() }),
+  getAcademyCredits: () => axios.get(`${API}/academy/credits`, { headers: getAuthHeaders() }),
+  getAdminAcademyCredits: (userId) => axios.get(`${API}/admin/academy-credits/${userId}`, { headers: getAuthHeaders() }),
 
   // Federation
   getFederationProfile: () => axios.get(`${API}/federation/profile`, { headers: getAuthHeaders() }),

@@ -866,6 +866,7 @@ class AcademyProfile(BaseModel):
     status: Optional[str] = None
     approved: bool = False
     verified: Optional[bool] = False
+    credits: int = 0
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -2496,10 +2497,14 @@ async def create_application(app_create: ApplicationCreate, current_user: dict =
     if opp.get("status") != "published":
         raise HTTPException(status_code=400, detail="Opportunity is not published")
     
-    # Check credits (academy players don't pay credits)
+    # Check credits
     credit_cost = opp.get("credit_cost", 0) or 0
     if credit_cost > 0 and current_user['role'] == 'player':
         balance = await get_player_credits(current_user["user_id"])
+        if balance < credit_cost:
+            raise HTTPException(status_code=400, detail=f"Insufficient credits. Need {credit_cost}, have {balance}")
+    elif credit_cost > 0 and current_user['role'] == 'academy':
+        balance = await get_academy_credits(current_user["user_id"])
         if balance < credit_cost:
             raise HTTPException(status_code=400, detail=f"Insufficient credits. Need {credit_cost}, have {balance}")
 
@@ -2546,7 +2551,7 @@ async def create_application(app_create: ApplicationCreate, current_user: dict =
     }
     await db.applications.insert_one(app_doc)
 
-    # Deduct credits if opportunity has a credit cost (players only)
+    # Deduct credits if opportunity has a credit cost
     credit_cost = opportunity.get("credit_cost", 0) or 0
     if credit_cost > 0 and current_user['role'] == 'player':
         player_credits = await get_player_credits(acting_player_id)
@@ -2555,6 +2560,22 @@ async def create_application(app_create: ApplicationCreate, current_user: dict =
             raise HTTPException(status_code=400, detail=f"Insufficient credits. Need {credit_cost}, have {player_credits}")
         await deduct_credits(
             acting_player_id,
+            credit_cost,
+            "application_spend",
+            f"Application to {opportunity.get('position', 'opportunity')}",
+            app_create.opportunity_id
+        )
+        await db.applications.update_one(
+            {"id": app_doc["id"]},
+            {"$set": {"credit_cost": credit_cost}}
+        )
+    elif credit_cost > 0 and current_user['role'] == 'academy':
+        academy_credits = await get_academy_credits(current_user["user_id"])
+        if academy_credits < credit_cost:
+            await db.applications.delete_one({"id": app_doc["id"]})
+            raise HTTPException(status_code=400, detail=f"Insufficient credits. Need {credit_cost}, have {academy_credits}")
+        await deduct_academy_credits(
+            current_user["user_id"],
             credit_cost,
             "application_spend",
             f"Application to {opportunity.get('position', 'opportunity')}",
@@ -3637,6 +3658,29 @@ async def get_academy_applications(current_user: dict = Depends(get_current_user
             app["contract_duration"] = opp.get("contract_duration")
             app["opportunity_title"] = f"{pos} — {opp.get('league_level', '')}" if pos else opp.get("league_level", "Opportunity")
     return applications
+
+
+@api_router.get("/academy/credits")
+async def get_academy_credits_endpoint(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'academy':
+        raise HTTPException(status_code=403, detail="Not an academy")
+    user_id = current_user['user_id']
+    balance = await get_academy_credits(user_id)
+    transactions = await db.credit_transactions.find(
+        {"user_id": user_id, "user_type": "academy"}, {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    return {"balance": balance, "transactions": transactions}
+
+
+@api_router.get("/admin/academy-credits/{user_id}")
+async def admin_get_academy_credits(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403)
+    balance = await get_academy_credits(user_id)
+    transactions = await db.credit_transactions.find(
+        {"user_id": user_id, "user_type": "academy"}, {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return {"balance": balance, "transactions": transactions}
 
 
 @api_router.get("/academy/chat-requests", response_model=List[dict])
@@ -7530,6 +7574,44 @@ async def get_player_credits(user_id: str) -> int:
     player = await db.players.find_one({"user_id": user_id}, {"_id": 0, "credits": 1})
     return player.get("credits", 0) if player else 0
 
+async def get_academy_credits(user_id: str) -> int:
+    academy = await db.academies.find_one({"user_id": user_id}, {"_id": 0, "credits": 1})
+    return academy.get("credits", 0) if academy else 0
+
+async def add_academy_credits(user_id: str, amount: int, transaction_type: str, reason: str, reference: str = None):
+    await db.academies.update_one({"user_id": user_id}, {"$inc": {"credits": amount}})
+    transaction = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "user_type": "academy",
+        "type": transaction_type,
+        "amount": amount,
+        "reason": reason,
+        "reference": reference,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.credit_transactions.insert_one(transaction)
+    return transaction
+
+async def deduct_academy_credits(user_id: str, amount: int, transaction_type: str, reason: str, reference: str = None):
+    academy = await db.academies.find_one({"user_id": user_id}, {"_id": 0, "credits": 1})
+    balance = academy.get("credits", 0) if academy else 0
+    if balance < amount:
+        return False
+    await db.academies.update_one({"user_id": user_id}, {"$inc": {"credits": -amount}})
+    transaction = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "user_type": "academy",
+        "type": transaction_type,
+        "amount": -amount,
+        "reason": reason,
+        "reference": reference,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.credit_transactions.insert_one(transaction)
+    return True
+
 async def add_credits(user_id: str, amount: int, transaction_type: str, reason: str, reference: str = None):
     # Update player balance
     await db.players.update_one(
@@ -7675,12 +7757,19 @@ async def admin_adjust_credits(data: dict, current_user: dict = Depends(get_curr
     user_id = data.get("user_id")
     amount = data.get("amount", 0)
     note = data.get("note", "")
+    user_type = data.get("user_type", "player")
     if not note:
         raise HTTPException(status_code=400, detail="Internal note required")
-    if amount > 0:
-        await add_credits(user_id, amount, "admin_adjustment", f"Admin adjustment: {note}")
+    if user_type == "academy":
+        if amount > 0:
+            await add_academy_credits(user_id, amount, "admin_adjustment", f"Admin adjustment: {note}")
+        else:
+            await deduct_academy_credits(user_id, abs(amount), "admin_adjustment", f"Admin adjustment: {note}")
     else:
-        await deduct_credits(user_id, abs(amount), "admin_adjustment", f"Admin adjustment: {note}")
+        if amount > 0:
+            await add_credits(user_id, amount, "admin_adjustment", f"Admin adjustment: {note}")
+        else:
+            await deduct_credits(user_id, abs(amount), "admin_adjustment", f"Admin adjustment: {note}")
     return {"message": "Credits adjusted"}
 
 @api_router.post("/admin/credits/refund/{application_id}")
