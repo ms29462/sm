@@ -1383,6 +1383,7 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             "nationality_2": user.nationality_2,
             "position": user.position,
             "secondary_position": user.secondary_position,
+            "looking_for": user.looking_for or [],
             "playing_level": user.playing_level,
             "height": user.height,
             "weight": user.weight,
