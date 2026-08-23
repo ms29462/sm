@@ -583,6 +583,26 @@ const PlayerProfile = () => {
             </div>
 
             <div>
+              <Label className="text-sm font-medium uppercase tracking-wide">Looking For</Label>
+              <p className="text-xs text-muted-foreground mt-1 mb-2">Let organizations know what level you're targeting</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {["Professional Opportunities","Semi-Professional Opportunities","University Opportunities","All"].map(opt => {
+                  const active = (formData.looking_for || []).includes(opt);
+                  return (
+                    <button key={opt} type="button"
+                      onClick={() => {
+                        const current = formData.looking_for || [];
+                        handleChange('looking_for', active ? current.filter(v => v !== opt) : [...current, opt]);
+                      }}
+                      className={`px-3 py-2 text-xs rounded-sm border-2 transition-all font-medium ${active ? 'border-primary bg-primary/10 text-primary' : 'border-white/10 text-muted-foreground hover:border-white/30'}`}>
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
               <Label htmlFor="games" className="text-sm font-medium uppercase tracking-wide">
                 Career Games Played
               </Label>
