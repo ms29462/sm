@@ -41,6 +41,11 @@ const ClubPlayers = () => {
   const [filterMaxHeight, setFilterMaxHeight] = useState('');
   const [filterFoot, setFilterFoot] = useState('');
   const [filterLookingFor, setFilterLookingFor] = useState('');
+  const [filterContractStatus, setFilterContractStatus] = useState('');
+  const [filterSecondaryPosition, setFilterSecondaryPosition] = useState('');
+  const [filterMinWeight, setFilterMinWeight] = useState('');
+  const [filterMaxWeight, setFilterMaxWeight] = useState('');
+  const [filterLanguage, setFilterLanguage] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [filterMandate, setFilterMandate] = useState('');
@@ -55,12 +60,12 @@ const ClubPlayers = () => {
   // Reset to page 1 whenever any filter changes
   useEffect(() => {
     setPage(1);
-  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight, filterFoot, filterLookingFor]);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight, filterFoot, filterLookingFor, filterContractStatus, filterSecondaryPosition, filterMinWeight, filterMaxWeight, filterLanguage]);
 
   // Reload whenever page or any filter changes
   useEffect(() => {
     loadPlayers();
-  }, [page, filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight, filterFoot, filterLookingFor]);
+  }, [page, filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight, filterFoot, filterLookingFor, filterContractStatus, filterSecondaryPosition, filterMinWeight, filterMaxWeight, filterLanguage]);
 
   const loadPlayers = async () => {
     try {
@@ -86,6 +91,11 @@ const ClubPlayers = () => {
       if (filterMaxHeight) queryFilters.max_height = parseInt(filterMaxHeight);
       if (filterFoot) queryFilters.preferred_foot = filterFoot;
       if (filterLookingFor) queryFilters.looking_for = filterLookingFor;
+      if (filterContractStatus) queryFilters.contract_status = filterContractStatus;
+      if (filterSecondaryPosition) queryFilters.secondary_position = filterSecondaryPosition;
+      if (filterMinWeight) queryFilters.min_weight = parseInt(filterMinWeight);
+      if (filterMaxWeight) queryFilters.max_weight = parseInt(filterMaxWeight);
+      if (filterLanguage) queryFilters.language = filterLanguage;
       queryFilters.page = page;
       queryFilters.limit = 20;
 
@@ -109,6 +119,22 @@ const ClubPlayers = () => {
       setLoading(false);
     }
   };
+
+  const clearAllFilters = () => {
+    setFilters({ position: 'All', level: 'All', nationality: 'All', name: '' });
+    setFilterBadge(''); setFilterQuality(''); setFilterRepresentation(''); setFilterMandate('');
+    setFilterMinScore(''); setFilterTeam(''); setFilterResidence(''); setFilterNationality2('');
+    setFilterMinAge(''); setFilterMaxAge(''); setFilterGender(''); setFilterMinHeight('');
+    setFilterMaxHeight(''); setFilterFoot(''); setFilterLookingFor(''); setFilterContractStatus('');
+    setFilterSecondaryPosition(''); setFilterMinWeight(''); setFilterMaxWeight(''); setFilterLanguage('');
+  };
+
+  const hasActiveFilters = filters.name || filters.position !== 'All' || filters.level !== 'All' ||
+    filters.nationality !== 'All' || filters.has_highlights || filters.has_full_game ||
+    filterBadge || filterQuality || filterRepresentation || filterMandate || filterMinScore ||
+    filterTeam || filterResidence || filterNationality2 || filterMinAge || filterMaxAge ||
+    filterGender || filterMinHeight || filterMaxHeight || filterFoot || filterLookingFor ||
+    filterContractStatus || filterSecondaryPosition || filterMinWeight || filterMaxWeight || filterLanguage;
 
   const handleAddFavorite = async (playerId) => {
     try {
@@ -134,72 +160,79 @@ const ClubPlayers = () => {
         <p className="text-muted-foreground">Find and save talented players</p>
       </div>
 
-      <div className="bg-card border border-border/50 p-6 rounded-sm mb-6">
-        <h3 className="text-lg font-heading font-bold uppercase mb-4">FILTERS</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="bg-card border border-border/50 p-4 md:p-6 rounded-sm mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-heading font-bold uppercase">FILTERS</h3>
+          {hasActiveFilters && (
+            <button onClick={clearAllFilters}
+              className="text-xs text-primary border border-primary/30 rounded-sm px-3 py-1.5 hover:bg-primary/10 transition-colors">
+              Reset All
+            </button>
+          )}
+        </div>
+
+        {/* Row 1: Name + Main Football Attributes */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
           <div>
-            <label className="text-sm font-medium uppercase tracking-wide block mb-2">Player Name</label>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Player Name</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                data-testid="name-filter"
-                type="text"
-                value={filters.name}
+              <Input data-testid="name-filter" type="text" value={filters.name}
                 onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
-                className="pl-10 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                placeholder="Search by name..."
-              />
+                className="pl-10 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10"
+                placeholder="Search by name..." />
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium uppercase tracking-wide block mb-2">Position</label>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Position</label>
             <Select value={filters.position} onValueChange={(value) => setFilters((prev) => ({ ...prev, position: value }))}>
-              <SelectTrigger data-testid="position-filter" className="bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12">
+              <SelectTrigger data-testid="position-filter" className="bg-black/20 border-white/10 focus:border-primary rounded-sm h-10">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {['All', ...POSITIONS].map((pos) => (
-                  <SelectItem key={pos} value={pos}>
-                    {pos}
-                  </SelectItem>
-                ))}
+                {['All', ...POSITIONS].map((pos) => <SelectItem key={pos} value={pos}>{pos}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-sm font-medium uppercase tracking-wide block mb-2">Level</label>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Secondary Position</label>
+            <select value={filterSecondaryPosition} onChange={e => setFilterSecondaryPosition(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full cursor-pointer">
+              <option value="">All</option>
+              {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Playing Level</label>
             <Select value={filters.level} onValueChange={(value) => setFilters((prev) => ({ ...prev, level: value }))}>
-              <SelectTrigger data-testid="level-filter" className="bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12">
+              <SelectTrigger data-testid="level-filter" className="bg-black/20 border-white/10 focus:border-primary rounded-sm h-10">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {['All', ...LEVELS].map((level) => (
-                  <SelectItem key={level} value={level}>
-                    {level}
-                  </SelectItem>
-                ))}
+                {['All', ...LEVELS].map((level) => <SelectItem key={level} value={level}>{level}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        {/* Row 2: Nationality + Contract + Looking For + Language */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
           <div>
-            <label className="text-sm font-medium uppercase tracking-wide block mb-2">Nationality</label>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Nationality</label>
             <Select value={filters.nationality} onValueChange={(value) => setFilters((prev) => ({ ...prev, nationality: value }))}>
-              <SelectTrigger data-testid="nationality-filter" className="bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12">
+              <SelectTrigger data-testid="nationality-filter" className="bg-black/20 border-white/10 focus:border-primary rounded-sm h-10">
                 <SelectValue placeholder="All" />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
                 <SelectItem value="All">All</SelectItem>
-                {COUNTRIES.map((country) => (
-                  <SelectItem key={country} value={country}>
-                    {country}
-                  </SelectItem>
-                ))}
+                {COUNTRIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
             </Select>
+          </div>
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">2nd Nationality</label>
             <Select value={filterNationality2 || "All"} onValueChange={(value) => setFilterNationality2(value === "All" ? "" : value)}>
-              <SelectTrigger className="bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12">
+              <SelectTrigger className="bg-black/20 border-white/10 focus:border-primary rounded-sm h-10">
                 <SelectValue placeholder="All" />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
@@ -208,35 +241,65 @@ const ClubPlayers = () => {
               </SelectContent>
             </Select>
           </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Contract Status</label>
+            <select value={filterContractStatus} onChange={e => setFilterContractStatus(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full cursor-pointer">
+              <option value="">All</option>
+              <option value="Free Agent">Free Agent</option>
+              <option value="Under Contract">Under Contract</option>
+              <option value="Loan Available">Loan Available</option>
+              <option value="Open to Offers">Open to Offers</option>
+            </select>
           </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Looking For</label>
+            <select value={filterLookingFor} onChange={e => setFilterLookingFor(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full cursor-pointer">
+              <option value="">All</option>
+              <option value="Professional Opportunities">Professional</option>
+              <option value="Semi-Professional Opportunities">Semi-Professional</option>
+              <option value="University Opportunities">University / College</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Row 3: Age + Height + Weight + Physical */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-3">
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Min Age</label>
             <input type="number" value={filterMinAge} onChange={e => setFilterMinAge(e.target.value)}
-              placeholder="e.g. 18"
-              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
+              placeholder="e.g. 18" className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full" />
           </div>
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Max Age</label>
             <input type="number" value={filterMaxAge} onChange={e => setFilterMaxAge(e.target.value)}
-              placeholder="e.g. 30"
-              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
+              placeholder="e.g. 30" className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full" />
           </div>
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Min Height (cm)</label>
             <input type="number" value={filterMinHeight} onChange={e => setFilterMinHeight(e.target.value)}
-              placeholder="e.g. 170"
-              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
+              placeholder="e.g. 170" className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full" />
           </div>
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Max Height (cm)</label>
             <input type="number" value={filterMaxHeight} onChange={e => setFilterMaxHeight(e.target.value)}
-              placeholder="e.g. 195"
-              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full" />
+              placeholder="e.g. 195" className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Min Weight (kg)</label>
+            <input type="number" value={filterMinWeight} onChange={e => setFilterMinWeight(e.target.value)}
+              placeholder="e.g. 60" className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Max Weight (kg)</label>
+            <input type="number" value={filterMaxWeight} onChange={e => setFilterMaxWeight(e.target.value)}
+              placeholder="e.g. 90" className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full" />
           </div>
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Gender</label>
             <select value={filterGender} onChange={e => setFilterGender(e.target.value)}
-              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full">
+              className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full cursor-pointer">
               <option value="">All</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
@@ -246,95 +309,92 @@ const ClubPlayers = () => {
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Preferred Foot</label>
             <select value={filterFoot} onChange={e => setFilterFoot(e.target.value)}
-              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full">
+              className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full cursor-pointer">
               <option value="">All</option>
               <option value="Right">Right</option>
               <option value="Left">Left</option>
               <option value="Both">Both</option>
             </select>
           </div>
-          <div>
-            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Looking For</label>
-            <select value={filterLookingFor} onChange={e => setFilterLookingFor(e.target.value)}
-              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none w-full">
+        </div>
+
+        {/* Row 4: Language + Residence + Video checkboxes */}
+        <div className="flex flex-wrap items-end gap-3 pb-3 border-b border-border/30 mb-3">
+          <div className="w-40">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Language</label>
+            <select value={filterLanguage} onChange={e => setFilterLanguage(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full cursor-pointer">
               <option value="">All</option>
-              <option value="Professional Opportunities">Professional</option>
-              <option value="Semi-Professional Opportunities">Semi-Professional</option>
-              <option value="University Opportunities">University / College</option>
+              {['English','French','Spanish','Portuguese','German','Arabic','Italian','Dutch','Turkish','Russian','Swahili','Chinese','Japanese'].map(l => (
+                <option key={l} value={l}>{l}</option>
+              ))}
             </select>
           </div>
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 flex items-center gap-6 pt-3 border-t border-border/30 mt-2">
-            <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Video:</label>
+          <div className="w-48">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Residence</label>
+            <select value={filterResidence} onChange={e => setFilterResidence(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full cursor-pointer">
+              <option value="">Any Country</option>
+              {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-5 h-10 px-1">
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={filters.has_highlights}
+              <input type="checkbox" checked={!!filters.has_highlights}
                 onChange={e => setFilters(prev => ({...prev, has_highlights: e.target.checked}))}
                 className="accent-primary w-4 h-4" />
-              <span className="text-sm">Has Highlights</span>
+              <span className="text-sm whitespace-nowrap">Has Highlights</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={filters.has_full_game}
+              <input type="checkbox" checked={!!filters.has_full_game}
                 onChange={e => setFilters(prev => ({...prev, has_full_game: e.target.checked}))}
                 className="accent-primary w-4 h-4" />
-              <span className="text-sm">Has Full Game</span>
+              <span className="text-sm whitespace-nowrap">Has Full Game</span>
             </label>
           </div>
-          {/* Badge & Quality Filters */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 flex flex-wrap items-center gap-4 pt-3 border-t border-border/30 mt-2">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Badge:</label>
-              <select value={filterBadge} onChange={e => setFilterBadge(e.target.value)}
-                className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
-                <option value="">All Badges</option>
-                <option value="verified_profile">✓ Verified Profile</option>
-                <option value="match_ready">⚡ Match Ready</option>
-                <option value="scout_approved">👁 Scout Approved</option>
-                <option value="professional_experience">🏆 Professional Experience</option>
-                <option value="international_player">🌍 International Player</option>
-                <option value="university_eligible">🎓 University Eligible</option>
-                <option value="top_prospect">⭐ Top Prospect</option>
-                <option value="diaspora_eligible">🌐 Diaspora Eligible</option>
-                <option value="video_verified">🎥 Video Verified</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Quality:</label>
-              <select value={filterQuality} onChange={e => setFilterQuality(e.target.value)}
-                className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
-                <option value="">All Levels</option>
-                <option value="Bronze">Bronze</option>
-                <option value="Silver">Silver</option>
-                <option value="Gold">Gold</option>
-                <option value="Elite">Elite</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Residence:</label>
-              <select value={filterResidence} onChange={e => setFilterResidence(e.target.value)}
-                className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
-                <option value="">Any Country</option>
-                {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
+        </div>
 
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Min Score:</label>
-              <select value={filterMinScore} onChange={e => setFilterMinScore(e.target.value)}
-                className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
-                <option value="">Any Score</option>
-                <option value="25">25+</option>
-                <option value="50">50+</option>
-                <option value="60">60+</option>
-                <option value="70">70+</option>
-                <option value="80">80+</option>
-                <option value="90">90+</option>
-              </select>
-            </div>
-            {(filterBadge || filterQuality || filterMinScore) && (
-              <button onClick={() => { setFilterBadge(''); setFilterQuality(''); setFilterMinScore(''); }}
-                className="text-xs text-muted-foreground hover:text-white border border-white/10 rounded-sm px-3 py-1.5 transition-colors">
-                Clear
-              </button>
-            )}
+        {/* Row 5: Badge / Quality / Score (advanced) */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide whitespace-nowrap">Badge:</label>
+            <select value={filterBadge} onChange={e => setFilterBadge(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+              <option value="">All</option>
+              <option value="verified_profile">✓ Verified</option>
+              <option value="match_ready">⚡ Match Ready</option>
+              <option value="scout_approved">👁 Scout Approved</option>
+              <option value="professional_experience">🏆 Pro Experience</option>
+              <option value="international_player">🌍 International</option>
+              <option value="university_eligible">🎓 University Eligible</option>
+              <option value="top_prospect">⭐ Top Prospect</option>
+              <option value="diaspora_eligible">🌐 Diaspora</option>
+              <option value="video_verified">🎥 Video Verified</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide whitespace-nowrap">Quality:</label>
+            <select value={filterQuality} onChange={e => setFilterQuality(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+              <option value="">All</option>
+              <option value="Bronze">Bronze</option>
+              <option value="Silver">Silver</option>
+              <option value="Gold">Gold</option>
+              <option value="Elite">Elite</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide whitespace-nowrap">Min Score:</label>
+            <select value={filterMinScore} onChange={e => setFilterMinScore(e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
+              <option value="">Any</option>
+              <option value="25">25+</option>
+              <option value="50">50+</option>
+              <option value="60">60+</option>
+              <option value="70">70+</option>
+              <option value="80">80+</option>
+              <option value="90">90+</option>
+            </select>
           </div>
         </div>
       </div>

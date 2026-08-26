@@ -2958,6 +2958,11 @@ async def get_players(
     max_height: Optional[int] = None,
     preferred_foot: Optional[str] = None,
     looking_for: Optional[str] = None,
+    contract_status: Optional[str] = None,
+    secondary_position: Optional[str] = None,
+    min_weight: Optional[int] = None,
+    max_weight: Optional[int] = None,
+    language: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
@@ -3016,6 +3021,18 @@ async def get_players(
         query["preferred_foot"] = preferred_foot
     if looking_for:
         query["looking_for"] = {"$in": [looking_for, "All"]}
+    if contract_status:
+        query["contract_status"] = contract_status
+    if secondary_position:
+        query["secondary_position"] = secondary_position
+    if min_weight:
+        query.setdefault("weight", {})
+        query["weight"]["$gte"] = min_weight
+    if max_weight:
+        query.setdefault("weight", {})
+        query["weight"]["$lte"] = max_weight
+    if language:
+        query["languages"] = language
 
     # Min quality score filter
     if min_quality_score:
