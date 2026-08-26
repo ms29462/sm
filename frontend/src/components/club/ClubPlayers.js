@@ -13,7 +13,8 @@ import { POSITIONS, LEVELS, COUNTRIES } from '@/lib/constants';
 const BADGE_ICONS = {
   verified_profile: "✓", match_ready: "⚡", scout_approved: "👁", professional_experience: "🏆",
   international_player: "🌍", university_eligible: "🎓", top_prospect: "⭐",
-  diaspora_eligible: "🌐", video_verified: "🎥"
+  diaspora_eligible: "🌐", video_verified: "🎥",
+  ncaa_ready: "🏈", njcaa_ready: "🏟️", usports_ready: "🍁"
 };
 const QUALITY_COLORS = {
   Bronze: "text-amber-600 border-amber-600/30 bg-amber-600/10",
@@ -346,6 +347,9 @@ const ClubPlayers = () => {
               <option value="top_prospect">⭐ Top Prospect</option>
               <option value="diaspora_eligible">🌐 Diaspora</option>
               <option value="video_verified">🎥 Video Verified</option>
+              <option value="ncaa_ready">🏈 NCAA Ready</option>
+              <option value="njcaa_ready">🏟️ NJCAA Ready</option>
+              <option value="usports_ready">🍁 U SPORTS Ready</option>
             </select>
           </div>
           <div className="flex items-center gap-2">

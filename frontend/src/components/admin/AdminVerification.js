@@ -14,6 +14,9 @@ const BADGES = [
   { id: "top_prospect", label: "Top Prospect", icon: "⭐" },
   { id: "diaspora_eligible", label: "Diaspora Eligible", icon: "🌐" },
   { id: "video_verified", label: "Video Verified", icon: "🎥" },
+  { id: "ncaa_ready", label: "NCAA Ready", icon: "🏈" },
+  { id: "njcaa_ready", label: "NJCAA Ready", icon: "🏟️" },
+  { id: "usports_ready", label: "U SPORTS Ready", icon: "🍁" },
 ];
 
 const QUALITY_LEVELS = ["Bronze", "Silver", "Gold", "Elite"];

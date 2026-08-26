@@ -479,7 +479,10 @@ AVAILABLE_BADGES = [
     "university_eligible",
     "top_prospect",
     "diaspora_eligible",
-    "video_verified"
+    "video_verified",
+    "ncaa_ready",
+    "njcaa_ready",
+    "usports_ready"
 ]
 
 BADGE_LABELS = {
@@ -491,7 +494,10 @@ BADGE_LABELS = {
     "university_eligible": "University Eligible",
     "top_prospect": "Top Prospect",
     "diaspora_eligible": "Diaspora Eligible",
-    "video_verified": "Video Verified"
+    "video_verified": "Video Verified",
+    "ncaa_ready": "NCAA Ready",
+    "njcaa_ready": "NJCAA Ready",
+    "usports_ready": "U SPORTS Ready"
 }
 
 QUALITY_LEVELS = ["Bronze", "Silver", "Gold", "Elite"]

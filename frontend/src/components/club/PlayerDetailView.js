@@ -13,12 +13,14 @@ const BADGE_LABELS = {
   verified_profile: "Verified Profile", match_ready: "Match Ready", scout_approved: "Scout Approved",
   professional_experience: "Professional Experience", international_player: "International Player",
   university_eligible: "University Eligible", top_prospect: "Top Prospect",
-  diaspora_eligible: "Diaspora Eligible", video_verified: "Video Verified"
+  diaspora_eligible: "Diaspora Eligible", video_verified: "Video Verified",
+  ncaa_ready: "NCAA Ready", njcaa_ready: "NJCAA Ready", usports_ready: "U SPORTS Ready"
 };
 const BADGE_ICONS = {
   verified_profile: "✓", match_ready: "⚡", scout_approved: "👁", professional_experience: "🏆",
   international_player: "🌍", university_eligible: "🎓", top_prospect: "⭐",
-  diaspora_eligible: "🌐", video_verified: "🎥"
+  diaspora_eligible: "🌐", video_verified: "🎥",
+  ncaa_ready: "🏈", njcaa_ready: "🏟️", usports_ready: "🍁"
 };
 const QUALITY_COLORS = {
   Bronze: "text-amber-600 border-amber-600/30 bg-amber-600/10",
