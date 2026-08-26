@@ -32,7 +32,6 @@ const ClubPlayers = () => {
   const [filterRepresentation, setFilterRepresentation] = useState('');
   const [filterMinScore, setFilterMinScore] = useState('');
   const [filterTeam, setFilterTeam] = useState('');
-  const [filterResidence, setFilterResidence] = useState('');
   const [filterNationality2, setFilterNationality2] = useState('');
   const [filterMinAge, setFilterMinAge] = useState('');
   const [filterGender, setFilterGender] = useState('');
@@ -45,7 +44,6 @@ const ClubPlayers = () => {
   const [filterSecondaryPosition, setFilterSecondaryPosition] = useState('');
   const [filterMinWeight, setFilterMinWeight] = useState('');
   const [filterMaxWeight, setFilterMaxWeight] = useState('');
-  const [filterLanguage, setFilterLanguage] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [filterMandate, setFilterMandate] = useState('');
@@ -60,12 +58,12 @@ const ClubPlayers = () => {
   // Reset to page 1 whenever any filter changes
   useEffect(() => {
     setPage(1);
-  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight, filterFoot, filterLookingFor, filterContractStatus, filterSecondaryPosition, filterMinWeight, filterMaxWeight, filterLanguage]);
+  }, [filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight, filterFoot, filterLookingFor, filterContractStatus, filterSecondaryPosition, filterMinWeight, filterMaxWeight]);
 
   // Reload whenever page or any filter changes
   useEffect(() => {
     loadPlayers();
-  }, [page, filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterResidence, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight, filterFoot, filterLookingFor, filterContractStatus, filterSecondaryPosition, filterMinWeight, filterMaxWeight, filterLanguage]);
+  }, [page, filters, filterBadge, filterQuality, filterRepresentation, filterMandate, filterMinScore, filterTeam, filterNationality2, filterMinAge, filterMaxAge, filterGender, filterMinHeight, filterMaxHeight, filterFoot, filterLookingFor, filterContractStatus, filterSecondaryPosition, filterMinWeight, filterMaxWeight]);
 
   const loadPlayers = async () => {
     try {
@@ -82,7 +80,6 @@ const ClubPlayers = () => {
       if (filterMandate) queryFilters.mandate_status = filterMandate;
       if (filterMinScore) queryFilters.min_quality_score = parseInt(filterMinScore);
       if (filterTeam) queryFilters.national_team = filterTeam;
-      if (filterResidence) queryFilters.residence_country = filterResidence;
       if (filterNationality2) queryFilters.nationality_2 = filterNationality2;
       if (filterMinAge) queryFilters.min_age = parseInt(filterMinAge);
       if (filterMaxAge) queryFilters.max_age = parseInt(filterMaxAge);
@@ -95,7 +92,6 @@ const ClubPlayers = () => {
       if (filterSecondaryPosition) queryFilters.secondary_position = filterSecondaryPosition;
       if (filterMinWeight) queryFilters.min_weight = parseInt(filterMinWeight);
       if (filterMaxWeight) queryFilters.max_weight = parseInt(filterMaxWeight);
-      if (filterLanguage) queryFilters.language = filterLanguage;
       queryFilters.page = page;
       queryFilters.limit = 20;
 
@@ -123,18 +119,18 @@ const ClubPlayers = () => {
   const clearAllFilters = () => {
     setFilters({ position: 'All', level: 'All', nationality: 'All', name: '' });
     setFilterBadge(''); setFilterQuality(''); setFilterRepresentation(''); setFilterMandate('');
-    setFilterMinScore(''); setFilterTeam(''); setFilterResidence(''); setFilterNationality2('');
+    setFilterMinScore(''); setFilterTeam(''); setFilterNationality2('');
     setFilterMinAge(''); setFilterMaxAge(''); setFilterGender(''); setFilterMinHeight('');
     setFilterMaxHeight(''); setFilterFoot(''); setFilterLookingFor(''); setFilterContractStatus('');
-    setFilterSecondaryPosition(''); setFilterMinWeight(''); setFilterMaxWeight(''); setFilterLanguage('');
+    setFilterSecondaryPosition(''); setFilterMinWeight(''); setFilterMaxWeight('');
   };
 
   const hasActiveFilters = filters.name || filters.position !== 'All' || filters.level !== 'All' ||
     filters.nationality !== 'All' || filters.has_highlights || filters.has_full_game ||
     filterBadge || filterQuality || filterRepresentation || filterMandate || filterMinScore ||
-    filterTeam || filterResidence || filterNationality2 || filterMinAge || filterMaxAge ||
+    filterTeam || filterNationality2 || filterMinAge || filterMaxAge ||
     filterGender || filterMinHeight || filterMaxHeight || filterFoot || filterLookingFor ||
-    filterContractStatus || filterSecondaryPosition || filterMinWeight || filterMaxWeight || filterLanguage;
+    filterContractStatus || filterSecondaryPosition || filterMinWeight || filterMaxWeight;
 
   const handleAddFavorite = async (playerId) => {
     try {
@@ -318,40 +314,20 @@ const ClubPlayers = () => {
           </div>
         </div>
 
-        {/* Row 4: Language + Residence + Video checkboxes */}
-        <div className="flex flex-wrap items-end gap-3 pb-3 border-b border-border/30 mb-3">
-          <div className="w-40">
-            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Language</label>
-            <select value={filterLanguage} onChange={e => setFilterLanguage(e.target.value)}
-              className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full cursor-pointer">
-              <option value="">All</option>
-              {['English','French','Spanish','Portuguese','German','Arabic','Italian','Dutch','Turkish','Russian','Swahili','Chinese','Japanese'].map(l => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
-          </div>
-          <div className="w-48">
-            <label className="text-xs text-muted-foreground uppercase tracking-wide block mb-1">Residence</label>
-            <select value={filterResidence} onChange={e => setFilterResidence(e.target.value)}
-              className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none w-full cursor-pointer">
-              <option value="">Any Country</option>
-              {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-          <div className="flex items-center gap-5 h-10 px-1">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={!!filters.has_highlights}
-                onChange={e => setFilters(prev => ({...prev, has_highlights: e.target.checked}))}
-                className="accent-primary w-4 h-4" />
-              <span className="text-sm whitespace-nowrap">Has Highlights</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={!!filters.has_full_game}
-                onChange={e => setFilters(prev => ({...prev, has_full_game: e.target.checked}))}
-                className="accent-primary w-4 h-4" />
-              <span className="text-sm whitespace-nowrap">Has Full Game</span>
-            </label>
-          </div>
+        {/* Row 4: Video checkboxes */}
+        <div className="flex flex-wrap items-center gap-6 pb-3 border-b border-border/30 mb-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={!!filters.has_highlights}
+              onChange={e => setFilters(prev => ({...prev, has_highlights: e.target.checked}))}
+              className="accent-primary w-4 h-4" />
+            <span className="text-sm whitespace-nowrap">Has Highlights</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={!!filters.has_full_game}
+              onChange={e => setFilters(prev => ({...prev, has_full_game: e.target.checked}))}
+              className="accent-primary w-4 h-4" />
+            <span className="text-sm whitespace-nowrap">Has Full Game</span>
+          </label>
         </div>
 
         {/* Row 5: Badge / Quality / Score (advanced) */}

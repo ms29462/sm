@@ -3034,18 +3034,9 @@ async def get_players(
     if language:
         query["languages"] = language
 
-    # Min quality score filter
+    # Min quality score filter — filters directly on player profile completion_score
     if min_quality_score:
-        verif_query_score = {"quality_score": {"$gte": min_quality_score}}
-        score_user_ids = await db.verifications.distinct("user_id", verif_query_score)
-        if "user_id" in query and "$in" in query.get("user_id", {}):
-            query["user_id"]["$in"] = list(set(query["user_id"]["$in"]) & set(score_user_ids))
-        else:
-            existing_ids = query.get("user_id", {}).get("$in", None)
-            if existing_ids:
-                query["user_id"] = {"$in": list(set(existing_ids) & set(score_user_ids))}
-            else:
-                query["user_id"] = {"$in": score_user_ids}
+        query["completion_score"] = {"$gte": min_quality_score}
 
     # Badge and quality level filters - lookup from verifications collection
     if badge or quality_level:
