@@ -2971,6 +2971,7 @@ async def get_players(
     min_weight: Optional[int] = None,
     max_weight: Optional[int] = None,
     language: Optional[str] = None,
+    no_agent: Optional[bool] = None,
     current_user: dict = Depends(get_current_user)
 ):
     if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
@@ -2990,9 +2991,11 @@ async def get_players(
     if has_full_game:
         archive_entries = await db.match_archive.distinct("player_id")
         query['user_id'] = {"$in": archive_entries}
-    
+
     # Representation status filters
-    if representation_status:
+    if no_agent:
+        query["representation_status"] = {"$nin": ["represented"]}
+    elif representation_status:
         query["representation_status"] = representation_status
     if mandate_status:
         query["mandate_status"] = mandate_status

@@ -34,10 +34,19 @@ const COUNTRIES = [
 const POSITIONS = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'LM', 'RM', 'LW', 'RW', 'ST', 'CF', 'SS'];
 const LEVELS = ['Professional', 'Semi-Professional', 'Amateur', 'College / University', 'National Team'];
 
+const REPRESENTATION_STATUSES = [
+  { value: '', label: 'All statuses' },
+  { value: 'seeking', label: 'Seeking representation' },
+  { value: 'open', label: 'Open to offers' },
+  { value: 'represented', label: 'Represented' },
+];
+
 const AgentPlayers = () => {
   const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [filterGender, setFilterGender] = useState('');
+  const [noAgent, setNoAgent] = useState(false);
+  const [representationStatus, setRepresentationStatus] = useState('');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState(new Set());
@@ -52,7 +61,7 @@ const AgentPlayers = () => {
     loadFavorites();
   }, []);
 
-  useEffect(() => { loadPlayers(); }, [filters, page]);
+  useEffect(() => { loadPlayers(); }, [filters, page, filterGender, noAgent, representationStatus]);
 
   const loadPlayers = async () => {
     setLoading(true);
@@ -64,6 +73,11 @@ const AgentPlayers = () => {
       if (filters.nationality_2) params.nationality_2 = filters.nationality_2;
       if (filters.level && filters.level !== 'All') params.level = filters.level;
       if (filterGender) params.gender = filterGender;
+      if (noAgent) {
+        params.no_agent = true;
+      } else if (representationStatus) {
+        params.representation_status = representationStatus;
+      }
 
       params.page = page;
       params.limit = 20;
@@ -92,6 +106,9 @@ const AgentPlayers = () => {
 
   const handleClearFilters = () => {
     setFilters({ name: '', position: '', nationality: '', level: '' });
+    setNoAgent(false);
+    setRepresentationStatus('');
+    setFilterGender('');
   };
 
   const toggleFavorite = async (playerId) => {
@@ -126,6 +143,36 @@ const AgentPlayers = () => {
 
       {/* Filters */}
       <div className="bg-card border border-border/50 p-6 rounded-sm mb-6">
+        {/* Representation filters row */}
+        <div className="flex flex-wrap items-center gap-4 mb-4 pb-4 border-b border-border/50">
+          <button
+            type="button"
+            onClick={() => { setNoAgent(v => !v); setRepresentationStatus(''); setPage(1); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-sm border text-sm font-medium transition-colors ${
+              noAgent
+                ? 'bg-primary text-black border-primary'
+                : 'border-white/20 text-muted-foreground hover:border-primary/50 hover:text-white'
+            }`}
+          >
+            <span className={`w-4 h-4 rounded-sm border flex items-center justify-center flex-shrink-0 ${
+              noAgent ? 'bg-black/30 border-black/30' : 'border-white/30'
+            }`}>
+              {noAgent && <span className="w-2 h-2 bg-black rounded-sm" />}
+            </span>
+            Joueurs sans représentation uniquement
+          </button>
+          {!noAgent && (
+            <select
+              value={representationStatus}
+              onChange={e => { setRepresentationStatus(e.target.value); setPage(1); }}
+              className="bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none focus:border-primary min-w-[200px]"
+            >
+              {REPRESENTATION_STATUSES.map(s => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          )}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
             <Input
@@ -237,6 +284,22 @@ const AgentPlayers = () => {
                   <p>Age: {player.age || "—"}</p>
                   <p>Club: {player.current_club || "—"}</p>
                   <p>Level: {player.playing_level || "—"}</p>
+                  {player.representation_status && (
+                    <span className={`inline-block text-xs px-2 py-0.5 rounded-sm border ${
+                      player.representation_status === 'seeking'
+                        ? 'bg-primary/10 text-primary border-primary/30'
+                        : player.representation_status === 'open'
+                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                        : player.representation_status === 'represented'
+                        ? 'bg-white/5 text-muted-foreground border-white/10'
+                        : 'bg-white/5 text-muted-foreground border-white/10'
+                    }`}>
+                      {player.representation_status === 'seeking' ? 'Seeking representation'
+                        : player.representation_status === 'open' ? 'Open to offers'
+                        : player.representation_status === 'represented' ? 'Represented'
+                        : player.representation_status}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex gap-2 text-xs mb-4">
