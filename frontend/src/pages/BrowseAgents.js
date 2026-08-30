@@ -84,11 +84,11 @@ const BrowseAgents = () => {
                   )}
                   {agent.license_verified && agent.license_type ? (
                     <span className="inline-flex items-center gap-1 text-[10px] bg-green-500/10 text-green-400 border border-green-500/30 px-2 py-0.5 rounded-sm mt-1">
-                      <CheckCircle className="w-2.5 h-2.5" /> Agent Licencié {agent.license_type}
+                      <CheckCircle className="w-2.5 h-2.5" /> Licensed — {agent.license_type}
                     </span>
-                  ) : agent.license_number ? (
+                  ) : !agent.license_verified && agent.license_number ? (
                     <span className="text-[10px] bg-white/5 text-muted-foreground border border-white/10 px-2 py-0.5 rounded-sm mt-1 inline-block">
-                      Licence en attente
+                      License pending
                     </span>
                   ) : null}
                 </div>

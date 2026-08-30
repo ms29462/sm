@@ -67,7 +67,7 @@ const AdminAgents = () => {
       setAgents(agents.map(a => a.user_id === licenseModal.userId
         ? { ...a, license_verified: true, license_type: licenseType }
         : a));
-      toast.success(`Licence ${licenseType} vérifiée`);
+      toast.success(`${licenseType} license verified`);
       setLicenseModal(null);
       setLicenseType('');
     } catch (e) {
@@ -174,11 +174,11 @@ const AdminAgents = () => {
                     )}
                     {agent.license_verified && agent.license_type ? (
                       <span className="inline-flex items-center gap-1 text-xs bg-green-500/10 text-green-400 border border-green-500/30 px-2 py-0.5 rounded-sm mt-1">
-                        <CheckCircle className="w-3 h-3" /> Agent Licencié {agent.license_type}
+                        <CheckCircle className="w-3 h-3" /> Licensed — {agent.license_type}
                       </span>
                     ) : agent.license_number ? (
                       <span className="text-xs bg-white/5 text-muted-foreground border border-white/10 px-2 py-0.5 rounded-sm mt-1 inline-block">
-                        Licence non vérifiée
+                        License not verified
                       </span>
                     ) : null}
                     {!agent.license_verified && agent.license_type && (
@@ -252,7 +252,7 @@ const AdminAgents = () => {
                         size="sm"
                       >
                         <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-                        Retirer licence
+                        Remove License
                       </Button>
                     ) : (
                       <Button
@@ -262,7 +262,7 @@ const AdminAgents = () => {
                         size="sm"
                       >
                         <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-                        Vérifier licence
+                        Verify License
                       </Button>
                     )
                   )}
@@ -319,16 +319,16 @@ const AdminAgents = () => {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border/50 rounded-sm p-6 w-full max-w-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-heading font-bold uppercase">Vérifier la licence</h3>
+              <h3 className="font-heading font-bold uppercase">Verify License</h3>
               <button onClick={() => setLicenseModal(null)} className="text-muted-foreground hover:text-white p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Sélectionnez le type de licence pour <span className="text-white font-medium">{licenseModal.name}</span>
+              Select the license type for <span className="text-white font-medium">{licenseModal.name}</span>
             </p>
             <div className="mb-4">
-              <label className="text-xs font-bold uppercase tracking-wide mb-2 block">Type de licence</label>
+              <label className="text-xs font-bold uppercase tracking-wide mb-2 block">License Type</label>
               <select
                 value={licenseType}
                 onChange={e => setLicenseType(e.target.value)}
@@ -341,11 +341,11 @@ const AdminAgents = () => {
             <div className="flex gap-3">
               <button onClick={() => setLicenseModal(null)}
                 className="flex-1 border border-white/20 rounded-sm py-2.5 text-sm hover:bg-white/5 transition-colors">
-                Annuler
+                Cancel
               </button>
               <button onClick={handleVerifyLicense} disabled={licenseVerifying || !licenseType}
                 className="flex-1 bg-green-600 text-white font-bold rounded-sm py-2.5 text-sm hover:bg-green-700 transition-colors disabled:opacity-50">
-                {licenseVerifying ? 'En cours...' : 'Confirmer'}
+                {licenseVerifying ? 'Verifying...' : 'Confirm'}
               </button>
             </div>
           </div>
