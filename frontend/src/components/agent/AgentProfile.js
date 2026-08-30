@@ -158,7 +158,7 @@ const AgentProfile = () => {
             <p className="text-sm text-muted-foreground">Your {profile.license_type} license has been verified by our team.</p>
           </div>
         </div>
-      ) : profile?.license_number ? (
+      ) : !profile?.license_verified && profile?.license_number ? (
         <div className="bg-white/5 border border-white/10 rounded-sm p-4 mb-6 flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-muted-foreground" />
           <div>

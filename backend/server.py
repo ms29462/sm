@@ -9423,6 +9423,7 @@ async def get_agent_by_id(agent_id: str, current_user: dict = Depends(get_curren
     )
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
+    agent.setdefault("license_verified", False)
     return agent
 
 
@@ -9433,6 +9434,8 @@ async def get_agents(current_user: dict = Depends(get_current_user)):
         {"approved": True},
         {"_id": 0, "email": 0, "phone": 0, "rep_email": 0, "rep_phone": 0, "license_document": 0}
     ).to_list(200)
+    for a in agents:
+        a.setdefault("license_verified", False)
     return agents
 
 
