@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Users, Plus, Edit2, Trash2, X, Upload } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, X, Upload, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { NATIONALITIES, LEVELS, LEAGUES } from '@/lib/constants';
 
 const POSITIONS = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'Winger', 'Striker'];
@@ -40,6 +40,14 @@ const AcademyPlayers = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterPosition, setFilterPosition] = useState('');
+  const [filterAgeMin, setFilterAgeMin] = useState('');
+  const [filterAgeMax, setFilterAgeMax] = useState('');
+  const [filterNationality, setFilterNationality] = useState('');
+  const [filterLevel, setFilterLevel] = useState('');
+  const [filterGender, setFilterGender] = useState('');
+  const [filterFoot, setFilterFoot] = useState('');
 
   useEffect(() => { loadPlayers(); }, []);
 
@@ -133,11 +141,27 @@ const AcademyPlayers = () => {
     } catch { toast.error('Failed to delete player'); }
   };
 
-  const filtered = players.filter(p =>
-    !search || p.name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.position?.toLowerCase().includes(search.toLowerCase()) ||
-    p.nationality?.toLowerCase().includes(search.toLowerCase())
-  );
+  const activeFilterCount = [filterPosition, filterAgeMin, filterAgeMax, filterNationality, filterLevel, filterGender, filterFoot].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setFilterPosition(''); setFilterAgeMin(''); setFilterAgeMax('');
+    setFilterNationality(''); setFilterLevel(''); setFilterGender(''); setFilterFoot('');
+    setSearch('');
+  };
+
+  const filtered = useMemo(() => players.filter(p => {
+    if (search && !p.name?.toLowerCase().includes(search.toLowerCase()) &&
+        !p.position?.toLowerCase().includes(search.toLowerCase()) &&
+        !p.nationality?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterPosition && p.position !== filterPosition) return false;
+    if (filterAgeMin && (p.age ?? 0) < parseInt(filterAgeMin)) return false;
+    if (filterAgeMax && (p.age ?? 999) > parseInt(filterAgeMax)) return false;
+    if (filterNationality && p.nationality !== filterNationality) return false;
+    if (filterLevel && p.playing_level !== filterLevel) return false;
+    if (filterGender && p.gender !== filterGender) return false;
+    if (filterFoot && p.preferred_foot !== filterFoot) return false;
+    return true;
+  }), [players, search, filterPosition, filterAgeMin, filterAgeMax, filterNationality, filterLevel, filterGender, filterFoot]);
 
   if (loading) return <div className="p-8 flex items-center justify-center"><div className="text-primary text-xl font-heading">LOADING...</div></div>;
 
@@ -153,16 +177,115 @@ const AcademyPlayers = () => {
         </Button>
       </div>
 
-      <div className="mb-4">
+      {/* Search + filter toggle */}
+      <div className="flex gap-2 mb-3">
         <Input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search by name, position, nationality..."
-          className="bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
+          className="bg-black/20 border-white/10 focus:border-primary rounded-sm h-10 flex-1" />
+        <button onClick={() => setShowFilters(v => !v)}
+          className={`flex items-center gap-2 h-10 px-3 rounded-sm border text-sm font-medium transition-colors flex-shrink-0 ${
+            showFilters || activeFilterCount > 0
+              ? 'border-primary text-primary bg-primary/10'
+              : 'border-white/10 text-muted-foreground hover:border-white/30 hover:text-white'
+          }`}>
+          <SlidersHorizontal className="w-4 h-4" />
+          <span className="hidden sm:inline">Filters</span>
+          {activeFilterCount > 0 && (
+            <span className="bg-primary text-black text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
+              {activeFilterCount}
+            </span>
+          )}
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+        </button>
       </div>
+
+      {/* Filter panel */}
+      {showFilters && (
+        <div className="bg-card border border-border/50 rounded-sm p-4 mb-4 space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {/* Position */}
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Position</label>
+              <select value={filterPosition} onChange={e => setFilterPosition(e.target.value)} className={sel}>
+                <option value="">All</option>
+                {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            {/* Level */}
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Playing Level</label>
+              <select value={filterLevel} onChange={e => setFilterLevel(e.target.value)} className={sel}>
+                <option value="">All</option>
+                {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+            {/* Nationality */}
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Nationality</label>
+              <select value={filterNationality} onChange={e => setFilterNationality(e.target.value)} className={sel}>
+                <option value="">All</option>
+                {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </div>
+            {/* Preferred foot */}
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Preferred Foot</label>
+              <select value={filterFoot} onChange={e => setFilterFoot(e.target.value)} className={sel}>
+                <option value="">All</option>
+                {FEET.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Age range + Gender on the same row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Min Age</label>
+              <Input type="number" value={filterAgeMin} onChange={e => setFilterAgeMin(e.target.value)}
+                placeholder="e.g. 15" className={inp} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Max Age</label>
+              <Input type="number" value={filterAgeMax} onChange={e => setFilterAgeMax(e.target.value)}
+                placeholder="e.g. 23" className={inp} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Gender</label>
+              <div className="flex gap-1">
+                {['', ...GENDERS].map(g => (
+                  <button key={g} onClick={() => setFilterGender(g)}
+                    className={`flex-1 h-10 rounded-sm border text-xs font-medium transition-colors ${
+                      filterGender === g
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-white/10 text-muted-foreground hover:border-white/30'
+                    }`}>
+                    {g || 'All'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-end">
+              {activeFilterCount > 0 && (
+                <button onClick={clearFilters}
+                  className="w-full h-10 rounded-sm border border-white/10 text-xs text-muted-foreground hover:border-red-500/30 hover:text-red-400 transition-colors flex items-center justify-center gap-1.5">
+                  <X className="w-3.5 h-3.5" /> Reset all
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Result count */}
+      <p className="text-xs text-muted-foreground mb-3">
+        {filtered.length} of {players.length} player{players.length !== 1 ? 's' : ''}
+        {(search || activeFilterCount > 0) ? ' matching' : ''}
+      </p>
 
       {filtered.length === 0 ? (
         <div className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">{players.length === 0 ? "No players added yet" : "No players match your search"}</p>
+          <p className="text-muted-foreground mb-4">{players.length === 0 ? "No players added yet" : "No players match your filters"}</p>
           {players.length === 0 && (
             <Button onClick={openAdd} className="bg-primary text-black font-bold uppercase text-sm rounded-sm h-10 px-6">
               Add First Player

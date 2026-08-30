@@ -17,6 +17,7 @@ const NAV_LINKS = {
     { to: '/player/kato', label: 'College Fit' },
     { to: '/player/masterclass', label: 'Masterclass' },
     { to: '/player/agents', label: 'Agents' },
+    { to: '/player/representation', label: 'Representation' },
     { to: '/player/chats', label: 'My Chats' },
   ],
   club: [
@@ -63,6 +64,7 @@ const NAV_LINKS = {
     { to: '/agent/players', label: 'Players' },
     { to: '/agent/watchlist', label: 'Watchlist' },
     { to: '/agent/opportunities', label: 'Opportunities' },
+    { to: '/agent/representation', label: 'Representation' },
   ],
   specialist: [
     { to: '/specialist/news', label: 'News Feed' },

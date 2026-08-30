@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import LeagueLevelPicker from "@/components/shared/LeagueLevelPicker";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Briefcase, Plus, Trash2, Pencil } from "lucide-react";
+import { Briefcase, Plus, Trash2, Pencil, ChevronRight, Clock, Users, CalendarDays, ArrowLeft } from "lucide-react";
 import { POSITIONS } from "@/lib/constants";
-
 
 const COUNTRIES = [
   "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
@@ -36,27 +35,39 @@ const COUNTRIES = [
   "Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
 ];
 
-const LEAGUES = [
-  "Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1",
-  "Eredivisie", "Primeira Liga", "Pro League", "Challenger Pro League",
-  "Championship", "League One", "League Two",
-  "MLS", "USL Championship", "USL League One", "CPL", "Liga MX",
-  "Brasileirao", "Primera Division", "Colombian Primera",
-  "Saudi Pro League", "J1 League",
-  "South African PSL", "Egyptian Premier", "Botola Pro",
-  "NCAA Division I", "NCAA Division II", "NAIA", "NJCAA",
-  "National League", "Semi-Professional", "Amateur"
-];
-
-const STATUS_COLORS = {
-  open: "bg-green-500/10 text-green-500 border-green-500/20",
-  closed: "bg-red-500/10 text-red-500 border-red-500/20",
-  filled: "bg-blue-500/10 text-blue-500 border-blue-500/20"
+const STATUS_BADGE = {
+  published:        "text-green-400 bg-green-500/10 border-green-500/20",
+  open:             "text-green-400 bg-green-500/10 border-green-500/20",
+  pending_review:   "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+  changes_requested:"text-orange-400 bg-orange-500/10 border-orange-500/20",
+  rejected:         "text-red-400 bg-red-500/10 border-red-500/20",
+  closed:           "text-gray-400 bg-gray-500/10 border-gray-500/20",
+  filled:           "text-blue-400 bg-blue-500/10 border-blue-500/20",
 };
+
+const STATUS_LABEL = {
+  published: "Published", open: "Open", pending_review: "Under Review",
+  changes_requested: "Changes Requested", rejected: "Rejected",
+  closed: "Closed", filled: "Filled",
+};
+
+const TABS = [
+  { id: "all",              label: "All" },
+  { id: "published",        label: "Published" },
+  { id: "pending_review",   label: "Under Review" },
+  { id: "changes_requested",label: "Changes Req." },
+  { id: "closed",           label: "Closed" },
+  { id: "filled",           label: "Filled" },
+  { id: "rejected",         label: "Rejected" },
+];
 
 const ClubOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+  const [activeTab, setActiveTab] = useState("all");
+  const [showMobileDetail, setShowMobileDetail] = useState(false);
+
   const [showReviewPopup, setShowReviewPopup] = useState(false);
   const [editingOpp, setEditingOpp] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -66,27 +77,24 @@ const ClubOpportunities = () => {
   const [formData, setFormData] = useState({
     position: "", league_level: "", salary_range: "",
     contract_duration: "", description: "",
-    deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: [], visibility: "public", country: ""
+    deadline: "", max_applicants: "", age_min: "", age_max: "",
+    requirements: [], visibility: "public", country: ""
   });
 
-  useEffect(() => {
-    loadOpportunities();
-  }, []);
+  useEffect(() => { loadOpportunities(); }, []);
 
   const loadOpportunities = async () => {
     try {
       const response = await api.getClubOpportunities();
       setOpportunities(response.data);
-    } catch (error) {
+    } catch {
       setOpportunities([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
 
   const handleCreate = async () => {
     const newErrors = {};
@@ -96,11 +104,7 @@ const ClubOpportunities = () => {
     if (!formData.description) newErrors.description = "Please add a description";
     if (!formData.deadline) newErrors.deadline = "Please set an application deadline";
     if (!formData.max_applicants) newErrors.max_applicants = "Please set max applicants";
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      toast.error("Please fix the highlighted fields");
-      return;
-    }
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); toast.error("Please fix the highlighted fields"); return; }
     setErrors({});
     try {
       const submitData = {
@@ -112,17 +116,13 @@ const ClubOpportunities = () => {
       await api.createOpportunity(submitData);
       toast.success("Opportunity created!");
       setShowDialog(false); setErrors({});
-      setFormData({
-        position: "", league_level: "", salary_range: "",
-        contract_duration: "", description: "",
-        deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: [], visibility: "public", country: ""
-      });
+      setFormData({ position: "", league_level: "", salary_range: "", contract_duration: "", description: "", deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: [], visibility: "public", country: "" });
+      setShowReviewPopup(true);
       loadOpportunities();
     } catch (error) {
       const detail = error.response?.data?.detail;
       if (Array.isArray(detail)) {
-        const missing = detail.map(e => e.loc?.[e.loc.length-1]).join(", ");
-        toast.error(`Missing required fields: ${missing}`);
+        toast.error(`Missing required fields: ${detail.map(e => e.loc?.[e.loc.length-1]).join(", ")}`);
       } else {
         toast.error(detail || "Failed to create opportunity");
       }
@@ -133,8 +133,9 @@ const ClubOpportunities = () => {
     try {
       await api.updateOpportunityStatus(id, status);
       toast.success(`Opportunity marked as ${status}`);
-      loadOpportunities();
-    } catch (error) {
+      await loadOpportunities();
+      setSelected(prev => prev?.id === id ? { ...prev, status } : prev);
+    } catch {
       toast.error("Failed to update status");
     }
   };
@@ -145,7 +146,6 @@ const ClubOpportunities = () => {
       positions: opp.position ? opp.position.split(", ") : [],
       country: opp.country || "",
       league_level: opp.league_level || "",
-      custom_league: "",
       salary_range: opp.salary_range || "",
       contract_duration: opp.contract_duration || "",
       description: opp.description || "",
@@ -156,18 +156,42 @@ const ClubOpportunities = () => {
     });
   };
 
+  const handleEditSave = async () => {
+    try {
+      await api.updateOpportunity(editingOpp.id, editForm);
+      toast.success("Opportunity updated!");
+      setEditingOpp(null);
+      await loadOpportunities();
+    } catch {
+      toast.error("Failed to update opportunity");
+    }
+  };
+
   const handleDeleteConfirmed = async () => {
     if (!deleteId) return;
     try {
       await api.deleteOpportunity(deleteId);
       toast.success("Opportunity deleted");
+      if (selected?.id === deleteId) { setSelected(null); setShowMobileDetail(false); }
       loadOpportunities();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete opportunity");
     } finally {
       setDeleteId(null);
     }
   };
+
+  const filteredOpps = activeTab === "all"
+    ? opportunities
+    : opportunities.filter(o => {
+        const s = o.status || "open";
+        if (activeTab === "published") return s === "published" || s === "open";
+        return s === activeTab;
+      });
+
+  const spotsLeft = (opp) => opp.max_applicants
+    ? Math.max(opp.max_applicants - (opp.applicants_count ?? 0), 0)
+    : null;
 
   if (loading) {
     return (
@@ -178,8 +202,29 @@ const ClubOpportunities = () => {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      {showReviewPopup && <ReviewPopup />}
+    <div className="flex flex-col h-full">
+      {/* ── Dialogs ─────────────────────────────────────── */}
+      {showReviewPopup && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border/50 rounded-sm p-6 max-w-md w-full">
+            <div className="w-12 h-12 bg-yellow-500/10 border border-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">⏳</span>
+            </div>
+            <h3 className="font-heading font-bold uppercase text-lg mb-3 text-center">Opportunity Submitted</h3>
+            <p className="text-sm text-muted-foreground text-center mb-3 leading-relaxed">
+              Your opportunity has been submitted and is currently under review by the Soccer Match team.
+            </p>
+            <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-sm mb-5">
+              <p className="text-xs text-yellow-400 font-bold text-center">You will receive a response within 24 hours.</p>
+            </div>
+            <button onClick={() => setShowReviewPopup(false)}
+              className="w-full bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors">
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
       {editingOpp && (
         <Dialog open={!!editingOpp} onOpenChange={(open) => !open && setEditingOpp(null)}>
           <DialogContent className="bg-card border border-border/50 max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -187,7 +232,6 @@ const ClubOpportunities = () => {
               <DialogTitle className="font-heading uppercase">Edit Opportunity</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-2">
-              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium uppercase tracking-wide">League Level</Label>
@@ -207,10 +251,9 @@ const ClubOpportunities = () => {
                     className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. 2 years" />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Deadline *</Label>
-                {errors.deadline && <p className="text-xs text-red-400 mt-1">⚠ {errors.deadline}</p>}
-                  <Input type="date" style={{colorScheme: "dark"}} value={editForm.deadline} onChange={(e) => setEditForm(f => ({...f, deadline: e.target.value}))}
-                    style={{colorScheme: "dark"}} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
+                  <Label className="text-sm font-medium uppercase tracking-wide">Deadline</Label>
+                  <Input type="date" style={{colorScheme:"dark"}} value={editForm.deadline} onChange={(e) => setEditForm(f => ({...f, deadline: e.target.value}))}
+                    className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -248,259 +291,341 @@ const ClubOpportunities = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-sm uppercase text-xs tracking-wide">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirmed}
-              className="bg-destructive text-white hover:bg-destructive/90 rounded-sm uppercase text-xs tracking-wide"
-            >
+            <AlertDialogAction onClick={handleDeleteConfirmed}
+              className="bg-destructive text-white hover:bg-destructive/90 rounded-sm uppercase text-xs tracking-wide">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">OPPORTUNITIES</h1>
-          <p className="text-muted-foreground">Manage your posted opportunities</p>
-        </div>
-        <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogTrigger asChild>
-            <Button
-              data-testid="create-opportunity-btn"
-              className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12 px-6"
-            >
-              <Plus className="w-4 h-4 mr-2" />
+      {/* Create opportunity dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="bg-card border border-border/50 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-heading font-bold uppercase">POST NEW OPPORTUNITY</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label className="text-sm font-medium uppercase tracking-wide">Position *</Label>
+              {errors.position && <p className="text-xs text-red-400 mt-1">⚠ {errors.position}</p>}
+              <Select value={formData.position} onValueChange={(v) => handleChange("position", v)}>
+                <SelectTrigger data-testid="position-select" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12">
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
+                <SelectContent>
+                  {POSITIONS.map((pos) => <SelectItem key={pos} value={pos}>{pos}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-sm font-medium uppercase tracking-wide">League Level *</Label>
+              {errors.league_level && <p className="text-xs text-red-400 mt-1">⚠ {errors.league_level}</p>}
+              <div className="mt-2">
+                <LeagueLevelPicker value={formData.league_level} onChange={(val) => handleChange("league_level", val)} country={formData.country} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Salary Range</Label>
+                <Input data-testid="salary-range-input" value={formData.salary_range} onChange={(e) => handleChange("salary_range", e.target.value)}
+                  className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., $50k - $100k" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Country</Label>
+                <select value={formData.country} onChange={(e) => handleChange("country", e.target.value)}
+                  className="mt-2 w-full bg-black/20 border border-white/10 rounded-sm h-12 px-3 text-sm text-white outline-none cursor-pointer">
+                  <option value="">Select country...</option>
+                  {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Contract Duration</Label>
+                <Input data-testid="contract-duration-input" value={formData.contract_duration} onChange={(e) => handleChange("contract_duration", e.target.value)}
+                  className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 2 years" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Age Min</Label>
+                <Input type="number" value={formData.age_min} onChange={(e) => handleChange("age_min", e.target.value)}
+                  className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 18" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Age Max</Label>
+                <Input type="number" value={formData.age_max} onChange={(e) => handleChange("age_max", e.target.value)}
+                  className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 28" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Deadline *</Label>
+                {errors.deadline && <p className="text-xs text-red-400 mt-1">⚠ {errors.deadline}</p>}
+                <Input type="date" style={{colorScheme:"dark"}} value={formData.deadline} onChange={(e) => handleChange("deadline", e.target.value)}
+                  className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium uppercase tracking-wide">Max Applicants *</Label>
+                {errors.max_applicants && <p className="text-xs text-red-400 mt-1">⚠ {errors.max_applicants}</p>}
+                <Input type="number" value={formData.max_applicants} onChange={(e) => handleChange("max_applicants", e.target.value)}
+                  className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 50" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm font-medium uppercase tracking-wide">Opportunity Visibility *</Label>
+              <div className="grid grid-cols-2 gap-2 mt-2 mb-4">
+                {[
+                  {id:"public", label:"Public", desc:"Your organization name is visible to players"},
+                  {id:"anonymous", label:"Anonymous", desc:"Your identity is hidden from players"},
+                ].map(opt => (
+                  <button key={opt.id} type="button" onClick={() => handleChange("visibility", opt.id)}
+                    className={`px-3 py-3 text-sm rounded-sm border-2 transition-all text-left ${formData.visibility === opt.id ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+                    <p className="font-bold">{opt.label}</p>
+                    <p className="text-xs opacity-70">{opt.desc}</p>
+                  </button>
+                ))}
+              </div>
+              <Label className="text-sm font-medium uppercase tracking-wide">Mandatory Requirements</Label>
+              <p className="text-xs text-muted-foreground mb-2">Players must have these to apply</p>
+              <div className="space-y-2 mb-4">
+                {[
+                  {id:"highlight_video", label:"Highlight Video"},
+                  {id:"full_match", label:"Full Match Video"},
+                  {id:"profile_picture", label:"Profile Photo"},
+                  {id:"cv", label:"CV / Resume"},
+                ].map(req => (
+                  <label key={req.id} className="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" checked={formData.requirements?.includes(req.id) || false}
+                      onChange={e => {
+                        const curr = formData.requirements || [];
+                        handleChange("requirements", e.target.checked ? [...curr, req.id] : curr.filter(r => r !== req.id));
+                      }} className="accent-primary w-4 h-4" />
+                    <span className="text-sm">{req.label}</span>
+                  </label>
+                ))}
+              </div>
+              <Label className="text-sm font-medium uppercase tracking-wide">Description *</Label>
+              {errors.description && <p className="text-xs text-red-400 mt-1">⚠ {errors.description}</p>}
+              <Textarea data-testid="description-input" value={formData.description} onChange={(e) => handleChange("description", e.target.value)}
+                className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" placeholder="Describe the opportunity..." />
+            </div>
+            <Button data-testid="submit-opportunity-btn" onClick={handleCreate}
+              className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12">
               POST OPPORTUNITY
             </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card border border-border/50 max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-heading font-bold uppercase">POST NEW OPPORTUNITY</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div>
-                <Label className="text-sm font-medium uppercase tracking-wide">Position *</Label>
-                {errors.position && <p className="text-xs text-red-400 mt-1">⚠ {errors.position}</p>}
-                <Select value={formData.position} onValueChange={(v) => handleChange("position", v)}>
-                  <SelectTrigger data-testid="position-select" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12">
-                    <SelectValue placeholder="Select position" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {POSITIONS.map((pos) => <SelectItem key={pos} value={pos}>{pos}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-sm font-medium uppercase tracking-wide">League Level *</Label>
-                {errors.league_level && <p className="text-xs text-red-400 mt-1">⚠ {errors.league_level}</p>}
-                <div className="mt-2">
-                  <LeagueLevelPicker
-                    value={formData.league_level}
-                    onChange={(val) => handleChange("league_level", val)}
-                    country={formData.country}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Salary Range</Label>
-                  <Input data-testid="salary-range-input" value={formData.salary_range} onChange={(e) => handleChange("salary_range", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., $50k - $100k" />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Country</Label>
-                  <select value={formData.country} onChange={(e) => handleChange("country", e.target.value)}
-                    className="mt-2 w-full bg-black/20 border border-white/10 rounded-sm h-12 px-3 text-sm text-white outline-none cursor-pointer">
-                    <option value="">Select country...</option>
-                    {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Contract Duration</Label>
-                  <Input data-testid="contract-duration-input" value={formData.contract_duration} onChange={(e) => handleChange("contract_duration", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 2 years" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Age Min</Label>
-                  <Input type="number" value={formData.age_min} onChange={(e) => handleChange("age_min", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 18" />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Age Max</Label>
-                  <Input type="number" value={formData.age_max} onChange={(e) => handleChange("age_max", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 28" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Deadline *</Label>
-                {errors.deadline && <p className="text-xs text-red-400 mt-1">⚠ {errors.deadline}</p>}
-                  <Input type="date" style={{colorScheme: "dark"}} value={formData.deadline} onChange={(e) => handleChange("deadline", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium uppercase tracking-wide">Max Applicants *</Label>
-                {errors.max_applicants && <p className="text-xs text-red-400 mt-1">⚠ {errors.max_applicants}</p>}
-                  <Input type="number" value={formData.max_applicants} onChange={(e) => handleChange("max_applicants", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g., 50" />
-                </div>
-              </div>
-              <div>
-                <Label className="text-sm font-medium uppercase tracking-wide">Opportunity Visibility *</Label>
-                <div className="space-y-2 mb-4">
-                  {[
-                    {id: "anonymous", label: "Anonymous Opportunity", desc: "Your organization identity is hidden from players"},
-                    {id: "public", label: "Public Opportunity", desc: "Your organization name and info are visible to players"},
-                  ].map(opt => (
-                    <label key={opt.id} onClick={() => handleChange("visibility", opt.id)}
-                      className={`flex items-start gap-3 p-3 rounded-sm border-2 cursor-pointer transition-colors ${
-                        formData.visibility === opt.id ? "border-primary bg-primary/10" : "border-white/10 hover:border-white/30"
-                      }`}>
-                      <input type="radio" checked={formData.visibility === opt.id} onChange={() => handleChange("visibility", opt.id)}
-                        className="accent-primary mt-0.5" />
-                      <div>
-                        <p className="text-sm font-bold">{opt.label}</p>
-                        <p className="text-xs text-muted-foreground">{opt.desc}</p>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-                <Label className="text-sm font-medium uppercase tracking-wide">Mandatory Requirements</Label>
-                <p className="text-xs text-muted-foreground mb-2">Players must have these to apply</p>
-                <div className="space-y-2">
-                  {[
-                    {id: "highlight_video", label: "Highlight Video"},
-                    {id: "full_match", label: "Full Match Video"},
-                    {id: "profile_picture", label: "Profile Photo"},
-                    {id: "cv", label: "CV / Resume"},
-                  ].map(req => (
-                    <label key={req.id} className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox"
-                        checked={formData.requirements?.includes(req.id) || false}
-                        onChange={e => {
-                          const curr = formData.requirements || [];
-                          handleChange("requirements", e.target.checked ? [...curr, req.id] : curr.filter(r => r !== req.id));
-                        }}
-                        className="accent-primary w-4 h-4" />
-                      <span className="text-sm">{req.label}</span>
-                    </label>
-                  ))}
-                </div>
-                <Label className="text-sm font-medium uppercase tracking-wide">Description *</Label>
-                {errors.description && <p className="text-xs text-red-400 mt-1">⚠ {errors.description}</p>}
-                <Textarea data-testid="description-input" value={formData.description} onChange={(e) => handleChange("description", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" placeholder="Describe the opportunity..." />
-              </div>
-              <div className="bg-black/20 border border-white/10 rounded-sm p-4">
-                <p className="text-sm font-bold uppercase tracking-wide mb-3">Organization Visibility</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => handleChange("visibility", "public")}
-                    className={`px-3 py-3 text-sm rounded-sm border-2 transition-all text-left ${formData.visibility === "public" ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
-                    <p className="font-bold">Public</p>
-                    <p className="text-xs opacity-70">Club name visible to players</p>
-                  </button>
-                  <button type="button" onClick={() => handleChange("visibility", "anonymous")}
-                    className={`px-3 py-3 text-sm rounded-sm border-2 transition-all text-left ${formData.visibility === "anonymous" ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
-                    <p className="font-bold">Anonymous</p>
-                    <p className="text-xs opacity-70">Club identity hidden from players</p>
-                  </button>
-                </div>
-              </div>
-              <Button data-testid="submit-opportunity-btn" onClick={handleCreate} className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12">
-                POST OPPORTUNITY
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      {opportunities.length === 0 ? (
-        <div data-testid="no-opportunities" className="bg-card border border-border/50 p-12 rounded-sm text-center">
-          <Briefcase className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No opportunities posted yet</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {opportunities.map((opp) => (
-            <div key={opp.id} data-testid={`opportunity-card-${opp.id}`} className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <h3 className="text-xl font-heading font-bold uppercase">{opp.position}
-                  {(!opp.status || opp.status === "pending_review") && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm border text-yellow-400 bg-yellow-500/10 border-yellow-500/20 ml-2">Under Review</span>
-                  )}
-                  {opp.status === "published" && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm border text-green-400 bg-green-500/10 border-green-500/20 ml-2">Published</span>
-                  )}
-                  {opp.status === "changes_requested" && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm border text-orange-400 bg-orange-500/10 border-orange-500/20 ml-2">Changes Requested</span>
-                  )}
-                  {opp.status === "rejected" && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm border text-red-400 bg-red-500/10 border-red-500/20 ml-2">Rejected</span>
-                  )}</h3>
-                    <span className="bg-white/10 text-white border border-white/20 uppercase text-[10px] tracking-wider px-2 py-1">{opp.league_level}
-                {opp.credit_cost && (
-                  <span className="text-xs font-bold text-primary">⭐ {opp.credit_cost} credit{opp.credit_cost > 1 ? "s" : ""}</span>
-                )}
-                {opp.max_applicants && (
-                  <span className={`text-xs font-bold ${(opp.max_applicants - (opp.applicants_count ?? 0)) <= 0 ? "text-red-400" : "text-green-400"}`}>
-                    {Math.max(opp.max_applicants - (opp.applicants_count ?? 0), 0)}/{opp.max_applicants} spots left
+      {/* ── Main layout ─────────────────────────────────── */}
+      <div className="flex flex-1 overflow-hidden h-full">
+
+        {/* ── LEFT: opportunity list ─────────────────────── */}
+        <div className={`flex flex-col border-r border-border/50 w-full md:w-80 lg:w-96 flex-shrink-0 ${showMobileDetail ? "hidden md:flex" : "flex"}`}>
+          {/* Header */}
+          <div className="p-4 border-b border-border/50 flex items-center justify-between gap-3 flex-shrink-0">
+            <div>
+              <h1 className="font-heading font-bold uppercase text-lg leading-tight">Opportunities</h1>
+              <p className="text-xs text-muted-foreground">{opportunities.length} posted</p>
+            </div>
+            <Button onClick={() => setShowDialog(true)} data-testid="create-opportunity-btn"
+              className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-9 px-4 text-xs flex-shrink-0">
+              <Plus className="w-3.5 h-3.5 mr-1.5" /> Post
+            </Button>
+          </div>
+
+          {/* Status tabs */}
+          <div className="flex gap-1 p-2 border-b border-border/50 overflow-x-auto flex-shrink-0 no-scrollbar">
+            {TABS.map(tab => {
+              const count = tab.id === "all"
+                ? opportunities.length
+                : opportunities.filter(o => {
+                    const s = o.status || "open";
+                    if (tab.id === "published") return s === "published" || s === "open";
+                    return s === tab.id;
+                  }).length;
+              if (count === 0 && tab.id !== "all") return null;
+              return (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  className={`flex-shrink-0 px-2.5 py-1 rounded-sm text-xs font-medium transition-colors whitespace-nowrap ${
+                    activeTab === tab.id ? "bg-primary text-black" : "text-muted-foreground hover:text-white hover:bg-white/5"
+                  }`}>
+                  {tab.label}
+                  <span className={`ml-1.5 text-[10px] ${activeTab === tab.id ? "text-black/60" : "text-muted-foreground"}`}>
+                    {count}
                   </span>
-                )}
-                  {opp.status === "pending_review" && (
-                    <p className="text-xs text-yellow-400 mt-1">⏳ Under review by Soccer Match</p>
-                  )}
-                  {opp.status === "published" && (
-                    <p className="text-xs text-muted-foreground mt-1">To edit this opportunity, email <a href="mailto:contact@soccermatch.ca" className="text-primary">contact@soccermatch.ca</a></p>
-                  )}
-                  {opp.status === "changes_requested" && opp.public_feedback && (
-                    <p className="text-xs text-orange-400 mt-1">📝 {opp.public_feedback}</p>
-                  )}</span>
-                    <span className={`px-2 py-1 text-[10px] uppercase tracking-wider border rounded-sm ${STATUS_COLORS[opp.status || "open"]}`}>
-                      {opp.status || "open"}
-                    </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Compact list */}
+          <div className="flex-1 overflow-y-auto">
+            {filteredOpps.length === 0 ? (
+              <div className="p-8 text-center">
+                <Briefcase className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
+                <p className="text-sm text-muted-foreground">No opportunities here</p>
+              </div>
+            ) : filteredOpps.map(opp => {
+              const status = opp.status || "open";
+              const spots = spotsLeft(opp);
+              const isSelected = selected?.id === opp.id;
+              return (
+                <button key={opp.id} data-testid={`opportunity-card-${opp.id}`}
+                  onClick={() => { setSelected(opp); setShowMobileDetail(true); }}
+                  className={`w-full text-left p-4 border-b border-border/30 hover:bg-white/5 transition-colors flex items-start gap-3 ${isSelected ? "bg-primary/5 border-l-2 border-l-primary" : ""}`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="font-bold text-sm truncate">{opp.position}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-sm border flex-shrink-0 ${STATUS_BADGE[status]}`}>
+                        {STATUS_LABEL[status] || status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">{opp.league_level}</p>
+                    <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+                      {opp.deadline && (
+                        <span className="flex items-center gap-1">
+                          <CalendarDays className="w-3 h-3" />
+                          {new Date(opp.deadline).toLocaleDateString("en-US", {month:"short", day:"numeric"})}
+                        </span>
+                      )}
+                      {spots !== null && (
+                        <span className={`flex items-center gap-1 ${spots === 0 ? "text-red-400" : "text-green-400"}`}>
+                          <Users className="w-3 h-3" />
+                          {spots}/{opp.max_applicants}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">{opp.description}</p>
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    {opp.salary_range && <div><span className="text-muted-foreground">Salary: </span><span className="font-medium font-mono">{opp.salary_range}</span></div>}
-                    {opp.contract_duration && <div><span className="text-muted-foreground">Duration: </span><span className="font-medium">{opp.contract_duration}</span></div>}
-                    {opp.deadline && <div><span className="text-muted-foreground">Deadline: </span><span className="font-medium">{new Date(opp.deadline).toLocaleDateString()}</span></div>}
-                    {opp.age_min && opp.age_max && <div><span className="text-muted-foreground">Age: </span><span className="font-medium">{opp.age_min} - {opp.age_max}</span></div>}
-                    {opp.max_applicants && <div><span className="text-muted-foreground">Max applicants: </span><span className="font-medium">{opp.max_applicants}</span></div>}
+                  <ChevronRight className={`w-4 h-4 flex-shrink-0 mt-0.5 transition-colors ${isSelected ? "text-primary" : "text-muted-foreground/40"}`} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── RIGHT: detail panel ────────────────────────── */}
+        <div className={`flex-1 overflow-y-auto ${showMobileDetail ? "flex flex-col" : "hidden md:flex md:flex-col"}`}>
+          {!selected ? (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground p-8">
+              <div className="text-center">
+                <Briefcase className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                <p className="font-heading uppercase text-sm">Select an opportunity</p>
+                <p className="text-xs mt-1 opacity-60">Click any item on the left to view details</p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-6 max-w-2xl w-full mx-auto space-y-6">
+              {/* Mobile back */}
+              <button onClick={() => setShowMobileDetail(false)}
+                className="md:hidden flex items-center gap-2 text-muted-foreground hover:text-primary text-sm mb-2 transition-colors">
+                <ArrowLeft className="w-4 h-4" /> Back to list
+              </button>
+
+              {/* Title + actions */}
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <h2 className="text-2xl font-heading font-bold uppercase">{selected.position}</h2>
+                  <p className="text-muted-foreground text-sm mt-1">{selected.league_level}{selected.country ? ` · ${selected.country}` : ""}</p>
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <span className={`text-xs px-2 py-1 rounded-sm border ${STATUS_BADGE[selected.status || "open"]}`}>
+                      {STATUS_LABEL[selected.status || "open"]}
+                    </span>
+                    {selected.visibility === "anonymous" && (
+                      <span className="text-xs px-2 py-1 rounded-sm border border-white/10 text-muted-foreground">Anonymous</span>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  {selected.status !== "published" && (
+                    <Button onClick={() => openEdit(selected)} variant="outline" size="sm"
+                      className="rounded-sm border-white/20 text-white hover:bg-white/10 text-xs">
+                      <Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit
+                    </Button>
+                  )}
+                  <Button onClick={() => setDeleteId(selected.id)} variant="outline" size="sm"
+                    className="rounded-sm border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs">
+                    <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete
+                  </Button>
+                </div>
+              </div>
 
-                  
+              {/* Review notices */}
+              {selected.status === "pending_review" && (
+                <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-sm">
+                  <p className="text-sm text-yellow-400 font-medium">⏳ Under review by Soccer Match — you'll hear back within 24 hours.</p>
+                </div>
+              )}
+              {selected.status === "published" && (
+                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-sm">
+                  <p className="text-sm text-green-400">✓ Published and visible to players. To edit, email <a href="mailto:contact@soccermatch.ca" className="underline">contact@soccermatch.ca</a></p>
+                </div>
+              )}
+              {selected.status === "changes_requested" && selected.public_feedback && (
+                <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-sm">
+                  <p className="text-sm text-orange-400">📝 Changes requested: {selected.public_feedback}</p>
+                </div>
+              )}
+
+              {/* Key stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {[
+                  { label: "Deadline", value: selected.deadline ? new Date(selected.deadline).toLocaleDateString("en-US", {year:"numeric", month:"short", day:"numeric"}) : "—" },
+                  { label: "Spots Left", value: spotsLeft(selected) !== null ? `${spotsLeft(selected)} / ${selected.max_applicants}` : "—" },
+                  { label: "Salary", value: selected.salary_range || "—" },
+                  { label: "Duration", value: selected.contract_duration || "—" },
+                  { label: "Age Range", value: (selected.age_min && selected.age_max) ? `${selected.age_min} – ${selected.age_max} yrs` : "—" },
+                  { label: "Credits", value: selected.credit_cost ? `⭐ ${selected.credit_cost}` : "—" },
+                ].filter(s => s.value !== "—").map(({ label, value }) => (
+                  <div key={label} className="bg-card border border-border/50 rounded-sm p-3">
+                    <p className="text-xs text-muted-foreground uppercase mb-1">{label}</p>
+                    <p className="font-medium text-sm">{value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Description */}
+              <div className="bg-card border border-border/50 rounded-sm p-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Description</h3>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{selected.description}</p>
+              </div>
+
+              {/* Requirements */}
+              {selected.requirements?.length > 0 && (
+                <div className="bg-card border border-border/50 rounded-sm p-4">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Mandatory Requirements</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selected.requirements.map(r => (
+                      <span key={r} className="text-xs px-2 py-1 bg-white/5 border border-white/10 rounded-sm">
+                        {r === "highlight_video" ? "Highlight Video" : r === "full_match" ? "Full Match Video" : r === "profile_picture" ? "Profile Photo" : r === "cv" ? "CV / Resume" : r}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Status controls */}
+              <div className="bg-card border border-border/50 rounded-sm p-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Change Status</h3>
+                <div className="flex flex-wrap gap-2">
+                  {["open","closed","filled"].map(s => (
+                    <button key={s} onClick={() => handleStatusChange(selected.id, s)}
+                      className={`px-3 py-1.5 text-xs rounded-sm border transition-colors font-medium ${
+                        (selected.status || "open") === s
+                          ? `${STATUS_BADGE[s]} font-bold`
+                          : "border-white/10 text-muted-foreground hover:border-white/30"
+                      }`}>
+                      {STATUS_LABEL[s]}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
-          ))}
+          )}
         </div>
-      )}
-    </div>
-  );
-  const ReviewPopup = () => (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border/50 rounded-sm p-6 max-w-md w-full">
-        <div className="w-12 h-12 bg-yellow-500/10 border border-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">⏳</span>
-        </div>
-        <h3 className="font-heading font-bold uppercase text-lg mb-3 text-center">Opportunity Submitted</h3>
-        <p className="text-sm text-muted-foreground text-center mb-3 leading-relaxed">
-          Your opportunity has been submitted and is currently under review by the Soccer Match team.
-        </p>
-        <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-sm mb-5">
-          <p className="text-xs text-yellow-400 font-bold text-center">You will receive a response within 24 hours.</p>
-        </div>
-        <p className="text-xs text-muted-foreground text-center mb-5">
-          Once approved, your opportunity will be visible to players on the platform.
-        </p>
-        <button onClick={() => setShowReviewPopup(false)}
-          className="w-full bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors">
-          Got it
-        </button>
       </div>
     </div>
   );
-
 };
 
 export default ClubOpportunities;
-

@@ -15,9 +15,13 @@ const PlayerLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useAuth();
   const [creditBalance, setCreditBalance] = useState(null);
+  const [pendingRepCount, setPendingRepCount] = useState(0);
 
   useEffect(() => {
     api.getMyCredits().then(res => setCreditBalance(res.data.balance)).catch(() => {});
+    api.getRepresentationRequests().then(res => {
+      setPendingRepCount((res.data || []).filter(r => r.status === 'pending').length);
+    }).catch(() => {});
   }, []);
   const navigate = useNavigate();
   const location = useLocation();
@@ -131,6 +135,13 @@ const PlayerLayout = ({ children }) => {
             <Button variant={isActive('/player/agents') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <Briefcase className="w-4 h-4 mr-3" />
               Agents
+            </Button>
+          </Link>
+          <Link to="/player/representation">
+            <Button variant={isActive('/player/representation') ? 'secondary' : 'ghost'} className="w-full justify-start relative">
+              <Users className="w-4 h-4 mr-3" />
+              Representation
+              <Badge count={pendingRepCount} />
             </Button>
           </Link>
           <Link to="/player/masterclass">

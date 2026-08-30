@@ -31,7 +31,7 @@ const FederationLayout = ({ children }) => {
 
   return (
     <>
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div className="h-screen overflow-hidden flex flex-col md:flex-row">
       {/* Mobile Header */}
       <MobileHeader title="SOCCERMATCH" />
 
@@ -171,7 +171,7 @@ const FederationLayout = ({ children }) => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+      <main className="flex-1 md:ml-64 overflow-y-auto pb-20 md:pb-0">
         {children}
       </main>
 

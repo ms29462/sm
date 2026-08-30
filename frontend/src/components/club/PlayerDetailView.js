@@ -41,6 +41,7 @@ const PlayerDetailView = () => {
   const [player, setPlayer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [matchArchive, setMatchArchive] = useState([]);
+  const [matchCalendar, setMatchCalendar] = useState([]);
   const [isTracked, setIsTracked] = useState(false);
   const [inPipeline, setInPipeline] = useState(false);
   const [pipelineLoading, setPipelineLoading] = useState(true);
@@ -92,12 +93,14 @@ const PlayerDetailView = () => {
 
   const loadPlayerProfile = async () => {
     try {
-      const [playerRes, archiveRes] = await Promise.all([
+      const [playerRes, archiveRes, calendarRes] = await Promise.all([
         api.getPlayerDetail(playerId),
-        api.getPlayerMatchArchivePublic(playerId).catch(() => ({ data: [] }))
+        api.getPlayerMatchArchivePublic(playerId).catch(() => ({ data: [] })),
+        api.getPlayerMatchCalendarPublic(playerId).catch(() => ({ data: [] }))
       ]);
       setPlayer(playerRes.data);
       setMatchArchive(archiveRes.data || []);
+      setMatchCalendar(calendarRes.data || []);
     } catch (error) {
       toast.error('Failed to load player profile');
     } finally {
@@ -410,6 +413,42 @@ const PlayerDetailView = () => {
                 </Button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming Match Calendar */}
+      {matchCalendar.length > 0 && (
+        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border flex items-center gap-2">
+            <CalendarCheck className="w-5 h-5 text-primary" /> Upcoming Matches
+          </h3>
+          <div className="space-y-3">
+            {matchCalendar.map((match) => {
+              const matchDate = match.match_date ? new Date(match.match_date) : null;
+              const isPast = matchDate && matchDate < new Date();
+              return (
+                <div key={match.id} className={`flex flex-wrap items-center justify-between gap-2 p-4 bg-background rounded-sm border transition-colors ${isPast ? 'border-border/30 opacity-60' : 'border-border hover:border-primary/40'}`}>
+                  <div className="flex items-center gap-4">
+                    {matchDate && (
+                      <div className="text-center min-w-[48px]">
+                        <p className="text-lg font-heading font-bold leading-none">{matchDate.getDate()}</p>
+                        <p className="text-xs text-muted-foreground uppercase">{matchDate.toLocaleString('en-US', { month: 'short' })}</p>
+                        <p className="text-xs text-muted-foreground">{matchDate.getFullYear()}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-medium">{match.opponent || 'TBD'}</p>
+                      <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        {match.competition && <span className="bg-white/10 px-1.5 py-0.5 rounded-sm uppercase tracking-wide">{match.competition}</span>}
+                        {match.stadium && <span>📍 {match.stadium}</span>}
+                        {isPast && <span className="text-yellow-500/70">Completed</span>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

@@ -9285,6 +9285,106 @@ async def get_specialists(current_user: dict = Depends(get_current_user)):
     return specialists
 
 
+# ============ REPRESENTATION REQUEST ENDPOINTS ============
+
+class RepresentationRequestCreate(BaseModel):
+    player_id: str
+    message: Optional[str] = None
+
+class RepresentationRequestRespond(BaseModel):
+    status: str  # "accepted" or "declined"
+
+@api_router.post("/representation-requests")
+async def send_representation_request(
+    req: RepresentationRequestCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user['role'] != 'agent':
+        raise HTTPException(status_code=403, detail="Only agents can send representation requests")
+    existing = await db.representation_requests.find_one({
+        "agent_id": current_user['user_id'],
+        "player_id": req.player_id,
+        "status": "pending"
+    })
+    if existing:
+        raise HTTPException(status_code=409, detail="You already have a pending request with this player")
+    agent = await db.agents.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    agent_name = agent.get("name", "An agent") if agent else "An agent"
+    agency_name = agent.get("agency_name", "") if agent else ""
+    request_doc = {
+        "id": str(uuid.uuid4()),
+        "agent_id": current_user['user_id'],
+        "player_id": req.player_id,
+        "message": req.message,
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.representation_requests.insert_one(request_doc)
+    request_doc.pop("_id", None)
+    notif_msg = f"{agent_name}{' from ' + agency_name if agency_name else ''} has sent you a representation request"
+    await create_notification(req.player_id, "representation_request", notif_msg, {"agent_id": current_user['user_id']})
+    return request_doc
+
+
+@api_router.get("/representation-requests/my")
+async def get_my_representation_requests(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] == 'agent':
+        requests = await db.representation_requests.find(
+            {"agent_id": current_user['user_id']}, {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
+        for r in requests:
+            player = await db.players.find_one(
+                {"user_id": r["player_id"]},
+                {"_id": 0, "name": 1, "position": 1, "nationality": 1, "profile_picture": 1}
+            )
+            r["player_info"] = player or {}
+        return requests
+    elif current_user['role'] == 'player':
+        requests = await db.representation_requests.find(
+            {"player_id": current_user['user_id']}, {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
+        for r in requests:
+            agent = await db.agents.find_one(
+                {"user_id": r["agent_id"]},
+                {"_id": 0, "name": 1, "agency_name": 1, "country": 1, "profile_picture": 1,
+                 "license_number": 1, "years_experience": 1, "primary_market": 1}
+            )
+            r["agent_info"] = agent or {}
+        return requests
+    else:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+
+@api_router.put("/representation-requests/{request_id}/respond")
+async def respond_to_representation_request(
+    request_id: str,
+    response: RepresentationRequestRespond,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user['role'] != 'player':
+        raise HTTPException(status_code=403, detail="Only players can respond to representation requests")
+    if response.status not in ("accepted", "declined"):
+        raise HTTPException(status_code=400, detail="Status must be 'accepted' or 'declined'")
+    req = await db.representation_requests.find_one({"id": request_id, "player_id": current_user['user_id']})
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+    if req["status"] != "pending":
+        raise HTTPException(status_code=409, detail="Request already responded to")
+    await db.representation_requests.update_one(
+        {"id": request_id},
+        {"$set": {"status": response.status, "responded_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    player = await db.players.find_one({"user_id": current_user['user_id']}, {"_id": 0, "name": 1})
+    player_name = player.get("name", "A player") if player else "A player"
+    action = "accepted" if response.status == "accepted" else "declined"
+    await create_notification(
+        req["agent_id"], "representation_response",
+        f"{player_name} has {action} your representation request",
+        {"player_id": current_user['user_id'], "status": response.status}
+    )
+    return {"message": f"Request {action}"}
+
+
 @api_router.get("/agents/{agent_id}")
 async def get_agent_by_id(agent_id: str, current_user: dict = Depends(get_current_user)):
     """Get a single approved agent's public profile"""
