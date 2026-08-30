@@ -4684,15 +4684,20 @@ async def get_my_chats(current_user: dict = Depends(get_current_user)):
         # For players and academies, enrich with org playing level and country
         if (role == "player" or role == "academy") and r.club_id:
             org = None
-            for coll in [db.clubs, db.agents, db.specialists, db.federations, db.colleges]:
-                org = await coll.find_one({"user_id": r.club_id}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1, "specialist_type": 1})
+            org_role = None
+            for coll, coll_role in [(db.clubs, "club"), (db.agents, "agent"), (db.specialists, "specialist"), (db.federations, "federation"), (db.colleges, "college")]:
+                org = await coll.find_one({"user_id": r.club_id}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1, "specialist_type": 1, "agency_name": 1})
                 if org:
+                    org_role = coll_role
                     break
             if org:
                 org_country = org.get("country", "")
-                if org.get("specialist_type"):
+                if org_role == "specialist":
                     item["display_name"] = org.get("name", "Specialist")
-                    item["display_label"] = org.get("specialist_type")
+                    item["display_label"] = org.get("specialist_type", "Specialist")
+                elif org_role == "agent":
+                    item["display_name"] = org.get("name") or org.get("agency_name", "Agent")
+                    item["display_label"] = "Agent"
                 else:
                     playing_level = org.get("playing_level", "")
                     item["display_name"] = None
@@ -4907,6 +4912,9 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
                 if requester_role == "specialist":
                     req["display_name"] = org.get("name", "Specialist")
                     req["display_label"] = org.get("specialist_type", "Specialist")
+                elif requester_role == "agent":
+                    req["display_name"] = org.get("name") or org.get("agency_name", "Agent")
+                    req["display_label"] = "Agent"
                 else:
                     playing_level = org.get("playing_level") or org.get("league_level") or requester_role.capitalize()
                     req["display_name"] = None
