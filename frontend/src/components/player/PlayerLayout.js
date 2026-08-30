@@ -127,6 +127,12 @@ const PlayerLayout = ({ children }) => {
               Specialists
             </Button>
           </Link>
+          <Link to="/player/agents">
+            <Button variant={isActive('/player/agents') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <Briefcase className="w-4 h-4 mr-3" />
+              Agents
+            </Button>
+          </Link>
           <Link to="/player/masterclass">
             <Button
               data-testid="nav-masterclass-btn"

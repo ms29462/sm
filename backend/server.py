@@ -4428,8 +4428,8 @@ async def delete_match_from_calendar(match_id: str, current_user: dict = Depends
 
 @api_router.get("/players/{player_id}/match-calendar")
 async def get_player_match_calendar_public(player_id: str, current_user: dict = Depends(get_current_user)):
-    """Clubs and federations can view player upcoming matches"""
-    if current_user['role'] not in ['club', 'federation', 'admin']:
+    """Clubs, colleges, academies, agents, specialists and federations can view player upcoming matches"""
+    if current_user['role'] not in ['club', 'federation', 'admin', 'college', 'academy', 'agent', 'specialist']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     matches = await db.match_calendar.find({"player_id": player_id}, {"_id": 0}).sort("match_date", 1).to_list(100)
@@ -9283,6 +9283,28 @@ async def get_specialists(current_user: dict = Depends(get_current_user)):
     """Get all approved specialists for players to browse"""
     specialists = await db.specialists.find({"approved": True}, {"_id": 0, "email": 0, "phone": 0}).to_list(100)
     return specialists
+
+
+@api_router.get("/agents/{agent_id}")
+async def get_agent_by_id(agent_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a single approved agent's public profile"""
+    agent = await db.agents.find_one(
+        {"user_id": agent_id, "approved": True},
+        {"_id": 0, "email": 0, "phone": 0, "rep_email": 0, "rep_phone": 0, "license_document": 0}
+    )
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return agent
+
+
+@api_router.get("/agents")
+async def get_agents(current_user: dict = Depends(get_current_user)):
+    """Get all approved agents for players to browse"""
+    agents = await db.agents.find(
+        {"approved": True},
+        {"_id": 0, "email": 0, "phone": 0, "rep_email": 0, "rep_phone": 0, "license_document": 0}
+    ).to_list(200)
+    return agents
 
 
 fastapi_app.include_router(api_router)
