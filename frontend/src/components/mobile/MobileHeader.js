@@ -17,7 +17,6 @@ const NAV_LINKS = {
     { to: '/player/kato', label: 'College Fit' },
     { to: '/player/masterclass', label: 'Masterclass' },
     { to: '/player/agents', label: 'Agents' },
-    { to: '/player/representation', label: 'Representation' },
     { to: '/player/chats', label: 'My Chats' },
   ],
   club: [

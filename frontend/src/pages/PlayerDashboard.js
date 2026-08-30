@@ -21,7 +21,6 @@ import BrowseSpecialists from '@/pages/BrowseSpecialists';
 import SpecialistProfilePage from '@/pages/SpecialistProfilePage';
 import BrowseAgents from '@/pages/BrowseAgents';
 import AgentProfilePage from '@/pages/AgentProfilePage';
-import RepresentationRequests from '@/pages/player/RepresentationRequests';
 import PlayerAnalytics from '@/components/player/PlayerAnalytics';
 
 const PlayerDashboard = () => {
@@ -37,7 +36,6 @@ const PlayerDashboard = () => {
         <Route path="specialists/:specialistId" element={<SpecialistProfilePage />} />
         <Route path="agents" element={<BrowseAgents />} />
         <Route path="agents/:agentId" element={<AgentProfilePage />} />
-        <Route path="representation" element={<RepresentationRequests />} />
         <Route path="kato" element={<KatoPage />} />
         <Route path="match-scores" element={<MatchScores />} />
         <Route path="masterclass" element={<MasterclassHome />} />
