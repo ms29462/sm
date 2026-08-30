@@ -150,7 +150,7 @@ const AgentProfile = () => {
       )}
 
       {/* License Badge Status */}
-      {profile?.license_verified ? (
+      {profile?.license_verified && (
         <div className="bg-green-500/10 border border-green-500/20 rounded-sm p-4 mb-6 flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-500" />
           <div>
@@ -158,15 +158,7 @@ const AgentProfile = () => {
             <p className="text-sm text-muted-foreground">{profile.license_type ? `Your ${profile.license_type} license has` : 'Your license has'} been verified by our team.</p>
           </div>
         </div>
-      ) : !profile?.license_verified && profile?.license_number ? (
-        <div className="bg-white/5 border border-white/10 rounded-sm p-4 mb-6 flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-muted-foreground" />
-          <div>
-            <p className="font-medium text-muted-foreground">License pending verification</p>
-            <p className="text-sm text-muted-foreground">Our team will verify your license within 48 hours.</p>
-          </div>
-        </div>
-      ) : null}
+      )}
 
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
         {/* Basic Info */}
