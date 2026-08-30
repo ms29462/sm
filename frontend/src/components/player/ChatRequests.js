@@ -73,7 +73,7 @@ const ChatRequests = () => {
     <div className="p-4 md:p-8">
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">CHAT REQUESTS</h1>
-        <p className="text-muted-foreground">Clubs that want to connect with you</p>
+        <p className="text-muted-foreground">Clubs, agents and specialists that want to connect with you</p>
       </div>
 
       {requests.length === 0 ? (
@@ -91,8 +91,16 @@ const ChatRequests = () => {
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-heading font-bold uppercase">{request.club_name}</h3>
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
+                    <h3 className="text-lg font-heading font-bold uppercase">
+                      {request.requester_name || request.club_name}
+                    </h3>
+                    {request.requester_type && request.requester_type !== 'club' && (
+                      <span className="text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-sm border
+                        border-primary/30 bg-primary/10 text-primary">
+                        {request.requester_type}
+                      </span>
+                    )}
                     {getStatusBadge(request.status)}
                   </div>
                   {request.message && (
