@@ -31,7 +31,7 @@ const COUNTRIES = [
   "Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
 ];
 
-const POSITIONS = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'LM', 'RM', 'LW', 'RW', 'ST', 'CF', 'SS'];
+const POSITIONS = ['GK', 'CB', 'LB', 'RB', 'DM', 'CM', 'AM', 'Winger', 'Striker'];
 const LEVELS = ['Professional', 'Semi-Professional', 'Amateur', 'College / University', 'National Team'];
 
 const REPRESENTATION_STATUSES = [
