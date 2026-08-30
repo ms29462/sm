@@ -159,7 +159,7 @@ const AgentPlayers = () => {
             }`}>
               {noAgent && <span className="w-2 h-2 bg-black rounded-sm" />}
             </span>
-            Joueurs sans représentation uniquement
+            Unrepresented players only
           </button>
           {!noAgent && (
             <select
