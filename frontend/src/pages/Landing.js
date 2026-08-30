@@ -115,6 +115,39 @@ const Landing = () => {
         </div>
       </main>
 
+      {/* Partners Section */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 mt-20 mb-12">
+        <div className="text-center mb-8">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Our Partners</p>
+          <h3 className="text-2xl font-heading font-bold uppercase">Trusted by the best in football</h3>
+        </div>
+        <div className="flex justify-center">
+          <a
+            href="https://ratiofootball.fr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group bg-card border border-border/50 hover:border-primary/50 rounded-sm p-8 flex flex-col items-center gap-5 transition-all duration-200 max-w-sm w-full"
+          >
+            {/* Logo area */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-sm bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">⚽</span>
+              </div>
+              <div className="text-left">
+                <p className="text-lg font-heading font-bold uppercase tracking-wide group-hover:text-primary transition-colors">Ratio Football</p>
+                <p className="text-xs text-muted-foreground">ratiofootball.fr</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground text-center leading-relaxed">
+              Highlight reels · Video analysis · Personalized coaching
+            </p>
+            <span className="text-xs font-bold text-primary border border-primary/30 rounded-sm px-4 py-1.5 group-hover:bg-primary group-hover:text-black transition-all">
+              Visit Partner →
+            </span>
+          </a>
+        </div>
+      </section>
+
       <footer className="relative z-10 border-t border-white/10 mt-20">
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-8 text-center text-muted-foreground text-sm">
           <div className="flex items-center justify-center gap-6 mb-4 flex-wrap">

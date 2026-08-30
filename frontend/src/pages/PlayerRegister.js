@@ -39,6 +39,8 @@ const PlayerRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showIntegrityModal, setShowIntegrityModal] = useState(false);
+  const [showRatioModal, setShowRatioModal] = useState(false);
+  const [ratioDismissed, setRatioDismissed] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -99,9 +101,6 @@ const PlayerRegister = () => {
             return false;
           }
         }
-        if (!form.highlight_video) {
-          toast.error("A highlight video is required"); return false;
-        }
         return true;
       case 5:
         if (!form.phone || !form.email || !form.password || !form.confirm_password) {
@@ -124,10 +123,27 @@ const PlayerRegister = () => {
   };
 
   const next = () => {
+    if (step === 4 && !form.highlight_video && !ratioDismissed) {
+      setShowRatioModal(true);
+      return;
+    }
     if (validateStep()) {
       if (step === 6) setShowIntegrityModal(true);
       else setStep(s => s + 1);
     }
+  };
+
+  const handleRatioDiscover = () => {
+    window.open('https://ratiofootball.fr', '_blank', 'noopener,noreferrer');
+    setRatioDismissed(true);
+    setShowRatioModal(false);
+    setStep(s => s + 1);
+  };
+
+  const handleRatioContinue = () => {
+    setRatioDismissed(true);
+    setShowRatioModal(false);
+    setStep(s => s + 1);
   };
 
   const handleSubmit = async () => {
@@ -362,8 +378,8 @@ const PlayerRegister = () => {
           {step === 4 && (
             <div className="space-y-5">
               <div>
-                <label className={labelClass}>Highlight Video *</label>
-                <p className="text-xs text-muted-foreground mb-2">YouTube or Vimeo link — required to appear in searches</p>
+                <label className={labelClass}>Highlight Video <span className="text-muted-foreground font-normal normal-case">(recommended)</span></label>
+                <p className="text-xs text-muted-foreground mb-2">YouTube or Vimeo link — strongly recommended to appear in searches</p>
                 <input value={form.highlight_video} onChange={e => set("highlight_video", e.target.value)}
                   placeholder="https://youtube.com/watch?v=..." className={inputClass} />
                 <div className="mt-2 p-3 bg-primary/5 border border-primary/20 rounded-sm">
@@ -488,6 +504,43 @@ const PlayerRegister = () => {
           </div>
         </div>
       </div>
+
+      {/* Ratio Football Modal */}
+      {showRatioModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border/50 rounded-sm p-6 max-w-md w-full">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-sm bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
+                <span className="text-xl">⚽</span>
+              </div>
+              <h3 className="font-heading font-bold uppercase text-lg">No highlights yet?</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+              Our partners at <span className="text-white font-medium">Ratio Football</span> specialize in creating professional highlight reels that get you noticed by clubs and scouts worldwide.
+            </p>
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              A quality highlight can make all the difference in your recruitment journey.
+            </p>
+            <div className="p-3 bg-primary/5 border border-primary/20 rounded-sm mb-6">
+              <p className="text-xs text-primary">💡 Players with a highlight video receive 3x more profile views from organizations.</p>
+            </div>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleRatioDiscover}
+                className="w-full bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors"
+              >
+                Discover Ratio Football →
+              </button>
+              <button
+                onClick={handleRatioContinue}
+                className="w-full border border-white/10 text-muted-foreground hover:text-white rounded-sm py-3 text-sm transition-colors"
+              >
+                Continue without highlights
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Integrity Modal */}
       {showIntegrityModal && (
