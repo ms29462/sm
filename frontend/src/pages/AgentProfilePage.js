@@ -88,11 +88,11 @@ const AgentProfilePage = () => {
               <p className="text-muted-foreground mb-2">{agent.agency_name}</p>
             )}
             <div className="flex flex-wrap gap-2 mb-3">
-              {agent.license_verified && agent.license_type ? (
+              {agent.license_verified ? (
                 <span className="inline-flex items-center gap-1.5 text-xs bg-green-500/10 text-green-400 border border-green-500/30 px-3 py-1.5 rounded-sm font-medium">
-                  <CheckCircle className="w-3.5 h-3.5" /> Licensed Agent — {agent.license_type}
+                  <CheckCircle className="w-3.5 h-3.5" /> Licensed Agent{agent.license_type ? ` — ${agent.license_type}` : ''}
                 </span>
-              ) : !agent.license_verified && agent.license_number ? (
+              ) : agent.license_number ? (
                 <span className="inline-flex items-center gap-1.5 text-xs bg-white/5 text-muted-foreground border border-white/10 px-3 py-1.5 rounded-sm">
                   <CheckCircle className="w-3.5 h-3.5" /> License pending verification
                 </span>

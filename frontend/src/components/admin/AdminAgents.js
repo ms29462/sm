@@ -172,9 +172,9 @@ const AdminAgents = () => {
                     {agent.license_number && (
                       <p className="text-sm text-muted-foreground">License #: {agent.license_number}</p>
                     )}
-                    {agent.license_verified && agent.license_type ? (
+                    {agent.license_verified ? (
                       <span className="inline-flex items-center gap-1 text-xs bg-green-500/10 text-green-400 border border-green-500/30 px-2 py-0.5 rounded-sm mt-1">
-                        <CheckCircle className="w-3 h-3" /> Licensed — {agent.license_type}
+                        <CheckCircle className="w-3 h-3" /> Licensed{agent.license_type ? ` — ${agent.license_type}` : ''}
                       </span>
                     ) : agent.license_number ? (
                       <span className="text-xs bg-white/5 text-muted-foreground border border-white/10 px-2 py-0.5 rounded-sm mt-1 inline-block">
