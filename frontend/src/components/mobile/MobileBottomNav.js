@@ -35,8 +35,8 @@ const MobileNavConfig = {
   ],
   agent: [
     { path: '/agent/dashboard', icon: Home, label: 'Home' },
-    { path: '/agent/profile', icon: Briefcase, label: 'Profile' },
     { path: '/agent/players', icon: Users, label: 'Players' },
+    { path: '/agent/portfolio', icon: Star, label: 'Portfolio' },
     { path: '/agent/watchlist', icon: Heart, label: 'Watchlist' },
     { path: '/agent/opportunities', icon: FileText, label: 'Jobs' }
   ],

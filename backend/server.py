@@ -9436,6 +9436,104 @@ async def get_agents(current_user: dict = Depends(get_current_user)):
     return agents
 
 
+# ─── Agent Portfolio ───────────────────────────────────────────────────────────
+
+class PortfolioEntryCreate(BaseModel):
+    player_id: str
+    signed_date: Optional[str] = None
+    contract_end_date: Optional[str] = None
+    notes: Optional[str] = None
+    status: str = "active"
+
+class PortfolioEntryUpdate(BaseModel):
+    signed_date: Optional[str] = None
+    contract_end_date: Optional[str] = None
+    notes: Optional[str] = None
+    status: Optional[str] = None
+
+@api_router.post("/agent/portfolio")
+async def add_portfolio_player(entry: PortfolioEntryCreate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "agent":
+        raise HTTPException(status_code=403, detail="Agents only")
+    agent_id = current_user["user_id"]
+    existing = await db.agent_portfolio.find_one({"agent_id": agent_id, "player_id": entry.player_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Player already in portfolio")
+    player = await db.players.find_one({"user_id": entry.player_id}, {"_id": 0, "name": 1})
+    player_name = player.get("name", "Unknown") if player else "Unknown"
+    doc = {
+        "id": str(uuid.uuid4()),
+        "agent_id": agent_id,
+        "player_id": entry.player_id,
+        "player_name": player_name,
+        "signed_date": entry.signed_date,
+        "contract_end_date": entry.contract_end_date,
+        "notes": entry.notes,
+        "status": entry.status,
+        "created_at": datetime.utcnow().isoformat(),
+    }
+    await db.agent_portfolio.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.get("/agent/portfolio")
+async def get_portfolio(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "agent":
+        raise HTTPException(status_code=403, detail="Agents only")
+    entries = await db.agent_portfolio.find({"agent_id": current_user["user_id"]}, {"_id": 0}).to_list(200)
+    player_ids = [e["player_id"] for e in entries]
+    players = await db.players.find(
+        {"user_id": {"$in": player_ids}},
+        {"_id": 0, "user_id": 1, "name": 1, "position": 1, "nationality": 1, "age": 1,
+         "current_club": 1, "playing_level": 1, "profile_picture": 1, "representation_status": 1}
+    ).to_list(200)
+    player_map = {p["user_id"]: p for p in players}
+    result = []
+    for e in entries:
+        e["player"] = player_map.get(e["player_id"], {})
+        result.append(e)
+    return result
+
+@api_router.put("/agent/portfolio/{entry_id}")
+async def update_portfolio_entry(entry_id: str, update: PortfolioEntryUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "agent":
+        raise HTTPException(status_code=403, detail="Agents only")
+    set_data = {k: v for k, v in update.dict().items() if v is not None}
+    if not set_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    result = await db.agent_portfolio.update_one(
+        {"id": entry_id, "agent_id": current_user["user_id"]},
+        {"$set": set_data}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    return {"success": True}
+
+@api_router.delete("/agent/portfolio/{entry_id}")
+async def delete_portfolio_entry(entry_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "agent":
+        raise HTTPException(status_code=403, detail="Agents only")
+    result = await db.agent_portfolio.delete_one({"id": entry_id, "agent_id": current_user["user_id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    return {"success": True}
+
+@api_router.get("/agent/portfolio/{player_id}/applications")
+async def get_portfolio_player_applications(player_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "agent":
+        raise HTTPException(status_code=403, detail="Agents only")
+    entry = await db.agent_portfolio.find_one({"agent_id": current_user["user_id"], "player_id": player_id})
+    if not entry:
+        raise HTTPException(status_code=404, detail="Player not in portfolio")
+    applications = await db.applications.find({"player_id": player_id}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    opp_ids = list({a.get("opportunity_id") for a in applications if a.get("opportunity_id")})
+    opps = await db.opportunities.find({"id": {"$in": opp_ids}}, {"_id": 0, "id": 1, "title": 1, "club_name": 1, "location": 1}).to_list(50)
+    opp_map = {o["id"]: o for o in opps}
+    for a in applications:
+        a["opportunity"] = opp_map.get(a.get("opportunity_id"), {})
+    return applications
+
+
 fastapi_app.include_router(api_router)
 
 fastapi_app.add_middleware(

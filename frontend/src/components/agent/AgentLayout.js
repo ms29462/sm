@@ -8,7 +8,7 @@ import Badge from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Trophy, Briefcase, Users, Heart, LogOut, Home, UserCircle, FileText, Newspaper, Send } from 'lucide-react';
+import { Trophy, Briefcase, Users, Heart, LogOut, Home, UserCircle, FileText, Newspaper, Send, Star } from 'lucide-react';
 
 const AgentLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -76,6 +76,11 @@ const AgentLayout = ({ children }) => {
             <Link to="/agent/representation">
               <Button variant={isActive('/agent/representation') ? 'secondary' : 'ghost'} className="w-full justify-start">
                 <Send className="w-4 h-4 mr-3" /> Representation
+              </Button>
+            </Link>
+            <Link to="/agent/portfolio">
+              <Button variant={isActive('/agent/portfolio') ? 'secondary' : 'ghost'} className="w-full justify-start">
+                <Star className="w-4 h-4 mr-3" /> Portfolio
               </Button>
             </Link>
           </nav>

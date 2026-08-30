@@ -353,6 +353,13 @@ export const api = {
   getAdminClubApplications: () => axios.get(`${API}/admin/club-applications`, { headers: getAuthHeaders() }),
   updateClubApplication: (clubId, data) => axios.put(`${API}/admin/club-applications/${clubId}`, data, { headers: getAuthHeaders() }),
 
+  // Agent Portfolio
+  getAgentPortfolio: () => axios.get(`${API}/agent/portfolio`, { headers: getAuthHeaders() }),
+  addPortfolioPlayer: (data) => axios.post(`${API}/agent/portfolio`, data, { headers: getAuthHeaders() }),
+  updatePortfolioEntry: (entryId, data) => axios.put(`${API}/agent/portfolio/${entryId}`, data, { headers: getAuthHeaders() }),
+  deletePortfolioEntry: (entryId) => axios.delete(`${API}/agent/portfolio/${entryId}`, { headers: getAuthHeaders() }),
+  getPortfolioPlayerApplications: (playerId) => axios.get(`${API}/agent/portfolio/${playerId}/applications`, { headers: getAuthHeaders() }),
+
   // Agent Representation
   getMyAgentRepresentation: () => axios.get(`${API}/player/agent-representation`, { headers: getAuthHeaders() }),
   updateMyAgentRepresentation: (data) => axios.put(`${API}/player/agent-representation`, data, { headers: getAuthHeaders() }),

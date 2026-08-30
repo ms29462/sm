@@ -62,6 +62,7 @@ const NAV_LINKS = {
     { to: '/agent/dashboard', label: 'Dashboard' },
     { to: '/agent/profile', label: 'My Profile' },
     { to: '/agent/players', label: 'Players' },
+    { to: '/agent/portfolio', label: 'Portfolio' },
     { to: '/agent/watchlist', label: 'Watchlist' },
     { to: '/agent/opportunities', label: 'Opportunities' },
     { to: '/agent/representation', label: 'Representation' },
