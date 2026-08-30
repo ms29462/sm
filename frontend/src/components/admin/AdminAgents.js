@@ -2,11 +2,16 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Briefcase, CheckCircle, XCircle, Shield, User, MapPin, Award } from 'lucide-react';
+import { Briefcase, CheckCircle, XCircle, Shield, User, MapPin, Award, X } from 'lucide-react';
+
+const LICENSE_TYPES = ['FIFA', 'FFF', 'FA', 'UEFA', 'Other'];
 
 const AdminAgents = () => {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [licenseModal, setLicenseModal] = useState(null); // { userId, name }
+  const [licenseType, setLicenseType] = useState('');
+  const [licenseVerifying, setLicenseVerifying] = useState(false);
 
   useEffect(() => {
     loadAgents();
@@ -51,6 +56,36 @@ const AdminAgents = () => {
       toast.success(verified ? 'Agent verified' : 'Verification removed');
     } catch (error) {
       toast.error('Failed to update agent');
+    }
+  };
+
+  const handleVerifyLicense = async () => {
+    if (!licenseType) { toast.error('Please select a license type'); return; }
+    setLicenseVerifying(true);
+    try {
+      await api.adminVerifyAgentLicense(licenseModal.userId, licenseType);
+      setAgents(agents.map(a => a.user_id === licenseModal.userId
+        ? { ...a, license_verified: true, license_type: licenseType }
+        : a));
+      toast.success(`Licence ${licenseType} vérifiée`);
+      setLicenseModal(null);
+      setLicenseType('');
+    } catch (e) {
+      toast.error('Failed to verify license');
+    } finally {
+      setLicenseVerifying(false);
+    }
+  };
+
+  const handleUnverifyLicense = async (userId) => {
+    try {
+      await api.adminUnverifyAgentLicense(userId);
+      setAgents(agents.map(a => a.user_id === userId
+        ? { ...a, license_verified: false }
+        : a));
+      toast.success('License verification removed');
+    } catch (e) {
+      toast.error('Failed to remove license verification');
     }
   };
 
@@ -137,7 +172,16 @@ const AdminAgents = () => {
                     {agent.license_number && (
                       <p className="text-sm text-muted-foreground">License #: {agent.license_number}</p>
                     )}
-                    {agent.license_type && (
+                    {agent.license_verified && agent.license_type ? (
+                      <span className="inline-flex items-center gap-1 text-xs bg-green-500/10 text-green-400 border border-green-500/30 px-2 py-0.5 rounded-sm mt-1">
+                        <CheckCircle className="w-3 h-3" /> Agent Licencié {agent.license_type}
+                      </span>
+                    ) : agent.license_number ? (
+                      <span className="text-xs bg-white/5 text-muted-foreground border border-white/10 px-2 py-0.5 rounded-sm mt-1 inline-block">
+                        Licence non vérifiée
+                      </span>
+                    ) : null}
+                    {!agent.license_verified && agent.license_type && (
                       <p className="text-sm text-muted-foreground">License Type: <span className="text-white">{agent.license_type}</span></p>
                     )}
                     {agent.licensing_authority && (
@@ -199,6 +243,29 @@ const AdminAgents = () => {
                       </Button>
                     )
                   )}
+                  {agent.license_number && (
+                    agent.license_verified ? (
+                      <Button
+                        onClick={() => handleUnverifyLicense(agent.user_id)}
+                        variant="outline"
+                        className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10 text-xs"
+                        size="sm"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                        Retirer licence
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => { setLicenseModal({ userId: agent.user_id, name: agent.name }); setLicenseType(agent.license_type || ''); }}
+                        variant="outline"
+                        className="border-green-500 text-green-500 hover:bg-green-500/10 text-xs"
+                        size="sm"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                        Vérifier licence
+                      </Button>
+                    )
+                  )}
                 </div>
 
                 {/* Subscription Access Control */}
@@ -245,6 +312,43 @@ const AdminAgents = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {/* License Verify Modal */}
+      {licenseModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border/50 rounded-sm p-6 w-full max-w-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading font-bold uppercase">Vérifier la licence</h3>
+              <button onClick={() => setLicenseModal(null)} className="text-muted-foreground hover:text-white p-1">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Sélectionnez le type de licence pour <span className="text-white font-medium">{licenseModal.name}</span>
+            </p>
+            <div className="mb-4">
+              <label className="text-xs font-bold uppercase tracking-wide mb-2 block">Type de licence</label>
+              <select
+                value={licenseType}
+                onChange={e => setLicenseType(e.target.value)}
+                className="w-full bg-black/20 border border-white/10 rounded-sm p-2.5 text-sm text-white outline-none focus:border-primary"
+              >
+                <option value="">-- Sélectionner --</option>
+                {LICENSE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setLicenseModal(null)}
+                className="flex-1 border border-white/20 rounded-sm py-2.5 text-sm hover:bg-white/5 transition-colors">
+                Annuler
+              </button>
+              <button onClick={handleVerifyLicense} disabled={licenseVerifying || !licenseType}
+                className="flex-1 bg-green-600 text-white font-bold rounded-sm py-2.5 text-sm hover:bg-green-700 transition-colors disabled:opacity-50">
+                {licenseVerifying ? 'En cours...' : 'Confirmer'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

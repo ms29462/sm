@@ -28,10 +28,13 @@ const AgentProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const LICENSE_TYPES = ['FIFA', 'FFF', 'FA', 'UEFA', 'Other'];
+
   const [formData, setFormData] = useState({
     name: '',
     agency_name: '',
     license_number: '',
+    license_type: '',
     fifa_registered: false,
     country: '',
     phone: '',
@@ -68,6 +71,7 @@ const AgentProfile = () => {
         name: response.data.name || '',
         agency_name: response.data.agency_name || '',
         license_number: response.data.license_number || '',
+        license_type: response.data.license_type || '',
         fifa_registered: response.data.fifa_registered || false,
         country: response.data.country || '',
         phone: response.data.phone || '',
@@ -136,7 +140,7 @@ const AgentProfile = () => {
 
       {/* Verification Badge */}
       {profile?.verified && (
-        <div className="bg-green-500/10 border border-green-500/20 rounded-sm p-4 mb-6 flex items-center gap-3">
+        <div className="bg-green-500/10 border border-green-500/20 rounded-sm p-4 mb-4 flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-500" />
           <div>
             <p className="font-medium text-green-500">Verified Agent</p>
@@ -144,6 +148,25 @@ const AgentProfile = () => {
           </div>
         </div>
       )}
+
+      {/* License Badge Status */}
+      {profile?.license_verified && profile?.license_type ? (
+        <div className="bg-green-500/10 border border-green-500/20 rounded-sm p-4 mb-6 flex items-center gap-3">
+          <CheckCircle className="w-5 h-5 text-green-500" />
+          <div>
+            <p className="font-medium text-green-400">Agent Licencié {profile.license_type}</p>
+            <p className="text-sm text-muted-foreground">Votre licence {profile.license_type} a été vérifiée par notre équipe.</p>
+          </div>
+        </div>
+      ) : profile?.license_number ? (
+        <div className="bg-white/5 border border-white/10 rounded-sm p-4 mb-6 flex items-center gap-3">
+          <CheckCircle className="w-5 h-5 text-muted-foreground" />
+          <div>
+            <p className="font-medium text-muted-foreground">Licence en attente de vérification</p>
+            <p className="text-sm text-muted-foreground">Notre équipe vérifiera votre licence sous 48h.</p>
+          </div>
+        </div>
+      ) : null}
 
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
         {/* Basic Info */}
@@ -184,6 +207,20 @@ const AgentProfile = () => {
                 className="mt-1 bg-black/20 border-white/10"
               />
             </div>
+            <div>
+              <Label>License Type</Label>
+              <Select value={formData.license_type} onValueChange={(v) => setFormData({ ...formData, license_type: v })}>
+                <SelectTrigger className="mt-1 bg-black/20 border-white/10">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LICENSE_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Country</Label>
               <Select value={formData.country} onValueChange={(v) => setFormData({ ...formData, country: v })}>

@@ -198,6 +198,8 @@ export const api = {
   getAllAgents: () => axios.get(`${API}/admin/agents`, { headers: getAuthHeaders() }),
   approveAgent: (userId, approved) => axios.put(`${API}/admin/agents/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
   verifyAgent: (userId, verified) => axios.put(`${API}/admin/agents/${userId}/verify?verified=${verified}`, {}, { headers: getAuthHeaders() }),
+  adminVerifyAgentLicense: (userId, licenseType) => axios.put(`${API}/admin/agents/${userId}/verify-license`, { license_type: licenseType }, { headers: getAuthHeaders() }),
+  adminUnverifyAgentLicense: (userId) => axios.put(`${API}/admin/agents/${userId}/unverify-license`, {}, { headers: getAuthHeaders() }),
 
   // Admin Specialists
   getAllSpecialists: () => axios.get(`${API}/admin/specialists`, { headers: getAuthHeaders() }),

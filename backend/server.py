@@ -1001,6 +1001,7 @@ class AgentProfile(BaseModel):
     agent_sub_status: Optional[str] = None
     approved: bool = False
     verified: bool = False
+    license_verified: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -1016,6 +1017,7 @@ class AgentUpdate(BaseModel):
     name: Optional[str] = None
     agency_name: Optional[str] = None
     license_number: Optional[str] = None
+    license_type: Optional[str] = None
     fifa_registered: Optional[bool] = None
     country: Optional[str] = None
     phone: Optional[str] = None
@@ -4142,11 +4144,35 @@ async def approve_agent(user_id: str, approval: UserApproval, current_user: dict
 async def verify_agent(user_id: str, verified: bool, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
-    
+
     result = await db.agents.update_one({"user_id": user_id}, {"$set": {"verified": verified}})
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Agent not found")
     return {"message": "Updated"}
+
+
+class LicenseVerification(BaseModel):
+    license_type: str  # "FIFA", "FFF", "FA", "UEFA", "Other"
+
+@api_router.put("/admin/agents/{user_id}/verify-license")
+async def verify_agent_license(user_id: str, data: LicenseVerification, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    result = await db.agents.update_one(
+        {"user_id": user_id},
+        {"$set": {"license_verified": True, "license_type": data.license_type}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return {"message": "License verified"}
+
+
+@api_router.put("/admin/agents/{user_id}/unverify-license")
+async def unverify_agent_license(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    await db.agents.update_one({"user_id": user_id}, {"$set": {"license_verified": False}})
+    return {"message": "License verification removed"}
 
 
 # ============ SPECIALIST ENDPOINTS ============
