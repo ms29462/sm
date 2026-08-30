@@ -64,10 +64,12 @@ const AdminAgents = () => {
     setLicenseVerifying(true);
     try {
       await api.adminVerifyAgentLicense(licenseModal.userId, licenseType);
-      setAgents(agents.map(a => a.user_id === licenseModal.userId
-        ? { ...a, license_verified: true, license_type: licenseType }
+      const uid = licenseModal.userId;
+      const lt = licenseType;
+      setAgents(prev => prev.map(a => a.user_id === uid
+        ? { ...a, license_verified: true, license_type: lt }
         : a));
-      toast.success(`${licenseType} license verified`);
+      toast.success(`${lt} license verified`);
       setLicenseModal(null);
       setLicenseType('');
     } catch (e) {
@@ -80,7 +82,7 @@ const AdminAgents = () => {
   const handleUnverifyLicense = async (userId) => {
     try {
       await api.adminUnverifyAgentLicense(userId);
-      setAgents(agents.map(a => a.user_id === userId
+      setAgents(prev => prev.map(a => a.user_id === userId
         ? { ...a, license_verified: false }
         : a));
       toast.success('License verification removed');
