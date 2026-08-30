@@ -32,10 +32,15 @@ const AgentPortfolio = () => {
 
   // Add modal state
   const [addPlayerId, setAddPlayerId] = useState('');
+  const [addPlayerName, setAddPlayerName] = useState('');
   const [addSignedDate, setAddSignedDate] = useState('');
   const [addContractEnd, setAddContractEnd] = useState('');
   const [addNotes, setAddNotes] = useState('');
   const [adding, setAdding] = useState(false);
+  const [playerSearch, setPlayerSearch] = useState('');
+  const [playerSearchResults, setPlayerSearchResults] = useState([]);
+  const [playerSearchLoading, setPlayerSearchLoading] = useState(false);
+  const [showPlayerDropdown, setShowPlayerDropdown] = useState(false);
 
   // Inline edit state
   const [editingEntry, setEditingEntry] = useState(null); // entry id
@@ -58,12 +63,34 @@ const AgentPortfolio = () => {
     }
   };
 
+  const searchPlayers = async (query) => {
+    setPlayerSearch(query);
+    if (query.length < 2) { setPlayerSearchResults([]); setShowPlayerDropdown(false); return; }
+    setPlayerSearchLoading(true);
+    try {
+      const res = await api.getPlayers({ name: query, limit: 8 });
+      setPlayerSearchResults(res.data || []);
+      setShowPlayerDropdown(true);
+    } catch {
+      setPlayerSearchResults([]);
+    } finally {
+      setPlayerSearchLoading(false);
+    }
+  };
+
+  const selectPlayer = (player) => {
+    setAddPlayerId(player.user_id);
+    setAddPlayerName(player.name);
+    setPlayerSearch(player.name);
+    setShowPlayerDropdown(false);
+  };
+
   const handleAdd = async () => {
-    if (!addPlayerId.trim()) { toast.error('Player ID is required'); return; }
+    if (!addPlayerId) { toast.error('Please select a player'); return; }
     setAdding(true);
     try {
       await api.addPortfolioPlayer({
-        player_id: addPlayerId.trim(),
+        player_id: addPlayerId,
         signed_date: addSignedDate || null,
         contract_end_date: addContractEnd || null,
         notes: addNotes || null,
@@ -71,7 +98,8 @@ const AgentPortfolio = () => {
       });
       toast.success('Player added to portfolio');
       setShowAddModal(false);
-      setAddPlayerId(''); setAddSignedDate(''); setAddContractEnd(''); setAddNotes('');
+      setAddPlayerId(''); setAddPlayerName(''); setPlayerSearch('');
+      setAddSignedDate(''); setAddContractEnd(''); setAddNotes('');
       loadPortfolio();
     } catch (e) {
       toast.error(e.response?.data?.detail || 'Failed to add player');
@@ -315,22 +343,47 @@ const AgentPortfolio = () => {
           <div className="bg-card border border-border/50 rounded-sm p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading font-bold uppercase">Add Player to Portfolio</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-muted-foreground hover:text-white p-1">
+              <button onClick={() => { setShowAddModal(false); setPlayerSearch(''); setAddPlayerId(''); setPlayerSearchResults([]); setShowPlayerDropdown(false); }} className="text-muted-foreground hover:text-white p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-xs text-muted-foreground mb-4">
-              Enter the player's User ID. You can find it in their profile URL or via the Search Players page.
-            </p>
             <div className="space-y-3">
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wide mb-1 block">Player ID *</label>
+              <div className="relative">
+                <label className="text-xs font-bold uppercase tracking-wide mb-1 block">Player *</label>
                 <input
-                  value={addPlayerId}
-                  onChange={e => setAddPlayerId(e.target.value)}
-                  placeholder="e.g. abc123..."
+                  value={playerSearch}
+                  onChange={e => { searchPlayers(e.target.value); setAddPlayerId(''); setAddPlayerName(''); }}
+                  placeholder="Type player name to search..."
                   className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-primary"
+                  autoComplete="off"
                 />
+                {playerSearchLoading && (
+                  <p className="text-xs text-muted-foreground mt-1">Searching...</p>
+                )}
+                {showPlayerDropdown && playerSearchResults.length > 0 && (
+                  <div className="absolute z-10 w-full bg-card border border-border/50 rounded-sm mt-1 max-h-48 overflow-y-auto shadow-lg">
+                    {playerSearchResults.map(p => (
+                      <button
+                        key={p.user_id}
+                        type="button"
+                        onClick={() => selectPlayer(p)}
+                        className="w-full text-left px-3 py-2.5 text-sm hover:bg-white/10 transition-colors flex items-center gap-2"
+                      >
+                        {p.profile_picture
+                          ? <img src={p.profile_picture} alt={p.name} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                          : <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0"><User className="w-4 h-4 text-primary" /></div>
+                        }
+                        <div>
+                          <p className="font-medium">{p.name}</p>
+                          <p className="text-xs text-muted-foreground">{p.position || ''}{p.nationality ? ` · ${p.nationality}` : ''}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showPlayerDropdown && playerSearchResults.length === 0 && !playerSearchLoading && playerSearch.length >= 2 && (
+                  <p className="text-xs text-muted-foreground mt-1">No players found</p>
+                )}
               </div>
               <div>
                 <label className="text-xs font-bold uppercase tracking-wide mb-1 block">Signed Date</label>
@@ -362,7 +415,7 @@ const AgentPortfolio = () => {
               </div>
             </div>
             <div className="flex gap-3 mt-4">
-              <button onClick={() => setShowAddModal(false)}
+              <button onClick={() => { setShowAddModal(false); setPlayerSearch(''); setAddPlayerId(''); setPlayerSearchResults([]); setShowPlayerDropdown(false); }}
                 className="flex-1 border border-white/20 rounded-sm py-2.5 text-sm hover:bg-white/5 transition-colors">
                 Cancel
               </button>

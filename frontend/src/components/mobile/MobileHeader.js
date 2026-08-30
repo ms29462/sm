@@ -64,6 +64,7 @@ const NAV_LINKS = {
     { to: '/agent/portfolio', label: 'Portfolio' },
     { to: '/agent/watchlist', label: 'Watchlist' },
     { to: '/agent/opportunities', label: 'Opportunities' },
+    { to: '/agent/chats', label: 'My Chats' },
   ],
   specialist: [
     { to: '/specialist/news', label: 'News Feed' },

@@ -11,6 +11,7 @@ import OpportunityDetail from '@/pages/OpportunityDetail';
 import AgentSubscribe from '@/components/agent/AgentSubscribe';
 import AgentSubscriptionGate from '@/components/agent/AgentSubscriptionGate';
 import AgentPortfolio from '@/components/agent/AgentPortfolio';
+import UnifiedChats from '@/components/chat/UnifiedChats';
 
 const AgentDashboard = () => {
   return (
@@ -25,6 +26,7 @@ const AgentDashboard = () => {
         <Route path="opportunities" element={<AgentSubscriptionGate><AgentOpportunities /></AgentSubscriptionGate>} />
         <Route path="opportunity/:opportunityId" element={<AgentSubscriptionGate><OpportunityDetail /></AgentSubscriptionGate>} />
         <Route path="portfolio" element={<AgentSubscriptionGate><AgentPortfolio /></AgentSubscriptionGate>} />
+        <Route path="chats" element={<AgentSubscriptionGate><UnifiedChats /></AgentSubscriptionGate>} />
         <Route path="*" element={<Navigate to="/agent/dashboard" replace />} />
         <Route path="news" element={<NewsFeed />} />
       </Routes>
