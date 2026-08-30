@@ -1,25 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
-import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { User, MapPin, Star, Globe, ArrowLeft, Briefcase, Award, CheckCircle, Send, X } from 'lucide-react';
+import { User, MapPin, Star, Globe, ArrowLeft, Briefcase, Award, CheckCircle } from 'lucide-react';
 
 const AgentProfilePage = () => {
   const { agentId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [agent, setAgent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [existingRequest, setExistingRequest] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [message, setMessage] = useState('');
-  const [sending, setSending] = useState(false);
 
   useEffect(() => { loadAgent(); }, [agentId]);
-  useEffect(() => {
-    if (user?.role === 'player') loadMyRequests();
-  }, [agentId, user]);
 
   const loadAgent = async () => {
     try {
@@ -29,29 +20,6 @@ const AgentProfilePage = () => {
       toast.error('Failed to load agent profile');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadMyRequests = async () => {
-    try {
-      const res = await api.getRepresentationRequests();
-      const match = (res.data || []).find(r => r.agent_id === agentId);
-      setExistingRequest(match || null);
-    } catch {}
-  };
-
-  const handleSendRequest = async () => {
-    setSending(true);
-    try {
-      await api.sendRepresentationRequest({ player_id: user.userId, message: message.trim() || undefined });
-      toast.success('Representation request sent!');
-      setShowModal(false);
-      setMessage('');
-      loadMyRequests();
-    } catch (e) {
-      toast.error(e.response?.data?.detail || 'Failed to send request');
-    } finally {
-      setSending(false);
     }
   };
 
@@ -133,62 +101,6 @@ const AgentProfilePage = () => {
           </div>
         </div>
       </div>
-
-      {/* Request Representation — only visible to players */}
-      {user?.role === 'player' && (
-        <div className="mb-4">
-          {!existingRequest ? (
-            <button onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 bg-primary text-black font-bold uppercase text-sm px-6 py-3 rounded-sm hover:bg-primary/90 transition-colors">
-              <Send className="w-4 h-4" /> Request Representation
-            </button>
-          ) : (
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-sm border text-sm font-medium ${
-              existingRequest.status === 'pending' ? 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10' :
-              existingRequest.status === 'accepted' ? 'border-green-500/30 text-green-400 bg-green-500/10' :
-              'border-red-500/30 text-red-400 bg-red-500/10'
-            }`}>
-              {existingRequest.status === 'pending' && '⏳ Request Pending'}
-              {existingRequest.status === 'accepted' && '✓ Representation Accepted'}
-              {existingRequest.status === 'declined' && '✗ Request Declined'}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Request modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border/50 rounded-sm p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-heading font-bold uppercase">Request Representation</h3>
-              <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-white p-1">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Send a representation request to <span className="text-white font-medium">{agent?.name}</span>
-              {agent?.agency_name ? ` (${agent.agency_name})` : ''}. They will be notified and can accept or decline.
-            </p>
-            <div className="mb-4">
-              <label className="text-xs font-bold uppercase tracking-wide mb-2 block">Message (optional)</label>
-              <textarea value={message} onChange={e => setMessage(e.target.value)} rows={4}
-                placeholder="Introduce yourself, share your goals, or ask any questions..."
-                className="w-full bg-black/20 border border-white/10 rounded-sm p-3 text-sm text-white outline-none focus:border-primary resize-none" />
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setShowModal(false)}
-                className="flex-1 border border-white/20 rounded-sm py-2.5 text-sm hover:bg-white/5 transition-colors">
-                Cancel
-              </button>
-              <button onClick={handleSendRequest} disabled={sending}
-                className="flex-1 bg-primary text-black font-bold rounded-sm py-2.5 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-                {sending ? 'Sending...' : 'Send Request'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Bio */}
