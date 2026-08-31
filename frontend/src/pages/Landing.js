@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Users, Trophy, ChevronRight, Newspaper, Pin, ArrowRight, X } from 'lucide-react';
+import { Users, Trophy, ChevronRight, Newspaper, Pin, ArrowRight, X, Menu } from 'lucide-react';
 import { api } from '@/lib/api';
 
 const getYouTubeId = (url) => {
@@ -16,10 +16,16 @@ const Landing = () => {
   const { t } = useTranslation();
   const [newsPosts, setNewsPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     api.getPublicNewsFeed().then(res => setNewsPosts(res.data.posts || [])).catch(() => {});
   }, []);
+
+  const scrollTo = (id) => {
+    setMobileMenuOpen(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div className="min-h-screen relative">
@@ -32,27 +38,74 @@ const Landing = () => {
         }}
       />
 
-      <nav className="relative z-50 bg-black/40 backdrop-blur-xl border-b border-white/10 overflow-visible">
+      <nav className="relative z-50 bg-black/40 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            
-            <h1 className="text-2xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-10 w-auto" /></h1>
+          {/* Logo */}
+          <div className="flex items-center">
+            <img src="/logo.png" alt="Soccer Match" className="h-10 w-auto" />
           </div>
-          <div className="flex items-center space-x-4">
-            <LanguageSwitcher />
-            <Button
-              data-testid="landing-login-btn"
-              variant="ghost"
-              className="text-white hover:text-primary"
-              onClick={() => navigate('/login')}
-            >
+
+          {/* Desktop links */}
+          <div className="hidden md:flex items-center gap-1">
+            {newsPosts.length > 0 && (
+              <button onClick={() => scrollTo('landing-news')}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm text-muted-foreground hover:text-white transition-colors rounded-sm hover:bg-white/5">
+                <Newspaper className="w-4 h-4" /> News
+              </button>
+            )}
+            <button onClick={() => scrollTo('landing-partners')}
+              className="px-4 py-2 text-sm text-muted-foreground hover:text-white transition-colors rounded-sm hover:bg-white/5">
+              Partners
+            </button>
+            <button onClick={() => scrollTo('landing-register')}
+              className="px-4 py-2 text-sm text-muted-foreground hover:text-white transition-colors rounded-sm hover:bg-white/5">
+              Register
+            </button>
+          </div>
+
+          {/* Right side */}
+          <div className="flex items-center gap-3">
+            <div className="hidden md:block"><LanguageSwitcher /></div>
+            <Button data-testid="landing-login-btn" variant="ghost"
+              className="text-white hover:text-primary text-sm font-bold"
+              onClick={() => navigate('/login')}>
               LOGIN
             </Button>
-              </div>
+            {/* Mobile hamburger */}
+            <button onClick={() => setMobileMenuOpen(v => !v)}
+              className="md:hidden p-2 text-muted-foreground hover:text-white transition-colors">
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-white/10 bg-black/60 backdrop-blur-xl">
+            <div className="px-6 py-4 space-y-1">
+              {newsPosts.length > 0 && (
+                <button onClick={() => scrollTo('landing-news')}
+                  className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-muted-foreground hover:text-white hover:bg-white/5 rounded-sm transition-colors text-left">
+                  <Newspaper className="w-4 h-4" /> News
+                </button>
+              )}
+              <button onClick={() => scrollTo('landing-partners')}
+                className="flex w-full px-3 py-2.5 text-sm text-muted-foreground hover:text-white hover:bg-white/5 rounded-sm transition-colors text-left">
+                Partners
+              </button>
+              <button onClick={() => scrollTo('landing-register')}
+                className="flex w-full px-3 py-2.5 text-sm text-muted-foreground hover:text-white hover:bg-white/5 rounded-sm transition-colors text-left">
+                Register
+              </button>
+              <div className="pt-2 border-t border-white/10">
+                <LanguageSwitcher />
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
-      <main className="relative z-0 max-w-7xl mx-auto px-6 md:px-12 py-20">
+      <main id="landing-register" className="relative z-0 max-w-7xl mx-auto px-6 md:px-12 py-20">
         <div className="text-center mb-20">
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold uppercase mb-6 leading-tight">
             {t("landing.hero_line1")}
@@ -130,7 +183,7 @@ const Landing = () => {
 
       {/* News Feed Section */}
       {newsPosts.length > 0 && (
-        <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 mt-20">
+        <section id="landing-news" className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 mt-20">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <Newspaper className="w-6 h-6 text-primary" />
@@ -215,7 +268,7 @@ const Landing = () => {
       )}
 
       {/* Partners Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 mt-20 mb-12">
+      <section id="landing-partners" className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 mt-20 mb-12">
         <div className="text-center mb-8">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Our Partners</p>
           <h3 className="text-2xl font-heading font-bold uppercase">Trusted by the best in football</h3>
