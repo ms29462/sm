@@ -1,12 +1,25 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Users, Trophy, ChevronRight } from 'lucide-react';
+import { Users, Trophy, ChevronRight, Newspaper, Pin, ArrowRight, X } from 'lucide-react';
+import { api } from '@/lib/api';
+
+const getYouTubeId = (url) => {
+  const match = url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+  return match ? match[1] : null;
+};
 
 const Landing = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [newsPosts, setNewsPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+
+  useEffect(() => {
+    api.getPublicNewsFeed().then(res => setNewsPosts(res.data.posts || [])).catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen relative">
@@ -114,6 +127,92 @@ const Landing = () => {
           ))}
         </div>
       </main>
+
+      {/* News Feed Section */}
+      {newsPosts.length > 0 && (
+        <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 mt-20">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <Newspaper className="w-6 h-6 text-primary" />
+              <div>
+                <h3 className="text-2xl font-heading font-bold uppercase">Latest News</h3>
+                <p className="text-sm text-muted-foreground">Updates from SoccerMatch</p>
+              </div>
+            </div>
+            <button onClick={() => navigate('/login')}
+              className="text-xs font-bold text-primary border border-primary/30 rounded-sm px-4 py-1.5 hover:bg-primary/10 transition-colors">
+              View all →
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {newsPosts.map(post => (
+              <div key={post.id} onClick={() => setSelectedPost(post)}
+                className="bg-card border border-border/50 hover:border-primary/50 rounded-sm overflow-hidden cursor-pointer transition-colors group">
+                {post.media_type === 'image' && post.media_url && (
+                  <img src={post.media_url} alt={post.title} className="w-full h-40 object-cover group-hover:opacity-90 transition-opacity" />
+                )}
+                {post.media_type === 'youtube' && getYouTubeId(post.media_url) && (
+                  <div className="relative h-40 bg-black/40">
+                    <img src={`https://img.youtube.com/vi/${getYouTubeId(post.media_url)}/hqdefault.jpg`} alt={post.title} className="w-full h-full object-cover opacity-70" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
+                        <div className="w-0 h-0 ml-0.5" style={{borderTop:'6px solid transparent', borderBottom:'6px solid transparent', borderLeft:'10px solid white'}} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    {post.pinned && (
+                      <span className="text-xs bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-sm font-bold uppercase flex items-center gap-1">
+                        <Pin className="w-3 h-3" /> Pinned
+                      </span>
+                    )}
+                    <p className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                  </div>
+                  <h4 className="font-heading font-bold uppercase mb-2 group-hover:text-primary transition-colors text-sm leading-snug">{post.title}</h4>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{post.content}</p>
+                  <div className="flex items-center gap-1 text-xs text-primary font-bold">
+                    Read more <ArrowRight className="w-3 h-3" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Article Modal */}
+      {selectedPost && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto">
+          <div className="max-w-3xl mx-auto p-4 py-8">
+            <div className="bg-card border border-border/50 rounded-sm overflow-hidden">
+              {selectedPost.media_type === 'image' && selectedPost.media_url && (
+                <img src={selectedPost.media_url} alt={selectedPost.title} className="w-full h-64 object-cover" />
+              )}
+              {selectedPost.media_type === 'youtube' && getYouTubeId(selectedPost.media_url) && (
+                <div className="aspect-video">
+                  <iframe src={`https://www.youtube.com/embed/${getYouTubeId(selectedPost.media_url)}`} className="w-full h-full" allowFullScreen title={selectedPost.title} />
+                </div>
+              )}
+              <div className="p-6 md:p-8">
+                <div className="flex items-start justify-between mb-4">
+                  <p className="text-xs text-muted-foreground">
+                    <span className="text-primary font-bold">{selectedPost.author}</span>
+                    <span> · </span>
+                    <span>{new Date(selectedPost.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  </p>
+                  <button onClick={() => setSelectedPost(null)} className="text-muted-foreground hover:text-white transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-6">{selectedPost.title}</h2>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{selectedPost.content}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Partners Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 mt-20 mb-12">

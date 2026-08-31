@@ -257,6 +257,7 @@ export const api = {
   getPlayerVerification: (playerId) => axios.get(`${API}/players/${playerId}/verification`, { headers: getAuthHeaders() }),
 
   // News Feed
+  getPublicNewsFeed: () => axios.get(`${API}/news/public`),
   getNewsFeed: (page = 1) => axios.get(`${API}/news?page=${page}`, { headers: getAuthHeaders() }),
   getAdminNews: () => axios.get(`${API}/admin/news`, { headers: getAuthHeaders() }),
   createNewsPost: (data) => axios.post(`${API}/admin/news`, data, { headers: getAuthHeaders() }),

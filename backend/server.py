@@ -6025,6 +6025,11 @@ async def toggle_pin_news(news_id: str, current_user: dict = Depends(get_current
     await db.news.update_one({"id": news_id}, {"$set": {"pinned": not post.get("pinned", False)}})
     return {"message": "Updated"}
 
+@api_router.get("/news/public")
+async def get_public_news_feed(limit: int = 6):
+    posts = await db.news.find({}, {"_id": 0}).sort([("pinned", -1), ("created_at", -1)]).limit(limit).to_list(limit)
+    return {"posts": posts}
+
 @api_router.get("/news")
 async def get_news_feed(current_user: dict = Depends(get_current_user), page: int = 1, limit: int = 10):
     role = current_user["role"]
