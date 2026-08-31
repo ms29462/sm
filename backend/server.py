@@ -1406,7 +1406,10 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             raise HTTPException(status_code=400, detail="Please enter a valid YouTube or Vimeo link for your highlight video.")
         
         await db.players.insert_one(player_doc)
-        
+
+        # Grant welcome credits
+        await add_credits(user_id, 5, "welcome_bonus", "Welcome bonus — thanks for joining SoccerMatch!")
+
         # Generate referral code AFTER insert
         import secrets as sec
         referral_code = sec.token_hex(6).upper()
