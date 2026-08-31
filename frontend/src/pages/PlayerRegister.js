@@ -509,10 +509,8 @@ const PlayerRegister = () => {
       {showRatioModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border/50 rounded-sm p-6 max-w-md w-full">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-sm bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                <span className="text-xl">⚽</span>
-              </div>
+            <div className="flex items-center gap-4 mb-4">
+              <img src="/ratio-football-logo.png" alt="Ratio Football" className="h-10 w-auto object-contain" />
               <h3 className="font-heading font-bold uppercase text-lg">No highlights yet?</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-3 leading-relaxed">

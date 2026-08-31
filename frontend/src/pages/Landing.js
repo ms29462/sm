@@ -128,16 +128,12 @@ const Landing = () => {
             rel="noopener noreferrer"
             className="group bg-card border border-border/50 hover:border-primary/50 rounded-sm p-8 flex flex-col items-center gap-5 transition-all duration-200 max-w-sm w-full"
           >
-            {/* Logo area */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-sm bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl">⚽</span>
-              </div>
-              <div className="text-left">
-                <p className="text-lg font-heading font-bold uppercase tracking-wide group-hover:text-primary transition-colors">Ratio Football</p>
-                <p className="text-xs text-muted-foreground">ratiofootball.fr</p>
-              </div>
-            </div>
+            {/* Logo */}
+            <img
+              src="/ratio-football-logo.png"
+              alt="Ratio Football"
+              className="h-16 w-auto object-contain"
+            />
             <p className="text-sm text-muted-foreground text-center leading-relaxed">
               Highlight reels · Video analysis · Personalized coaching
             </p>
