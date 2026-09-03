@@ -4,7 +4,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play, Target, Kanban, CalendarCheck } from 'lucide-react';
+import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play, Target, Kanban, CalendarCheck, Instagram, Twitter, Linkedin, Globe } from 'lucide-react';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import RequestChatDialog from './RequestChatDialog';
 import ReportUserDialog from '@/components/shared/ReportUserDialog';
@@ -346,6 +346,183 @@ const PlayerDetailView = () => {
           ))}
         </div>
       </div>
+
+      {/* Bio */}
+      {player.bio && (
+        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          <h3 className="text-xl font-heading font-bold uppercase mb-4 pb-3 border-b border-border">About</h3>
+          <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{player.bio}</p>
+        </div>
+      )}
+
+      {/* Extended Player Details */}
+      {(player.gender || player.secondary_position || player.jersey_number || player.residence_country ||
+        player.national_team || (player.languages && player.languages.length > 0) ||
+        player.contract_status || player.contract_end_date || player.market_value || player.annual_budget) && (
+        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">Additional Details</h3>
+          <div className="grid grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {player.gender && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Gender</p>
+                <p className="font-medium capitalize">{player.gender}</p>
+              </div>
+            )}
+            {player.secondary_position && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Secondary Position</p>
+                <p className="font-medium">{player.secondary_position}</p>
+              </div>
+            )}
+            {player.jersey_number && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Jersey Number</p>
+                <p className="font-medium">#{player.jersey_number}</p>
+              </div>
+            )}
+            {player.national_team && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">National Team</p>
+                <p className="font-medium">{player.national_team}</p>
+              </div>
+            )}
+            {player.residence_country && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Residence Country</p>
+                <p className="font-medium">{player.residence_country}</p>
+              </div>
+            )}
+            {player.languages && player.languages.length > 0 && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Languages</p>
+                <p className="font-medium">{player.languages.join(', ')}</p>
+              </div>
+            )}
+            {player.contract_status && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Contract Status</p>
+                <p className="font-medium capitalize">{player.contract_status.replace(/_/g, ' ')}</p>
+              </div>
+            )}
+            {player.contract_end_date && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Contract Until</p>
+                <p className="font-medium">{player.contract_end_date}</p>
+              </div>
+            )}
+            {player.market_value && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Market Value</p>
+                <p className="font-medium">{player.market_value}</p>
+              </div>
+            )}
+            {player.annual_budget && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Annual Budget</p>
+                <p className="font-medium">{player.annual_budget}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Looking For */}
+      {player.looking_for && player.looking_for.length > 0 && (
+        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          <h3 className="text-xl font-heading font-bold uppercase mb-4 pb-3 border-b border-border">Looking For</h3>
+          <div className="flex flex-wrap gap-2">
+            {player.looking_for.map(item => (
+              <span key={item} className="px-3 py-1.5 text-sm bg-primary/10 text-primary border border-primary/20 rounded-sm uppercase tracking-wide">
+                {item.replace(/_/g, ' ')}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Education */}
+      {(player.has_baccalaureate || player.has_postsecondary || player.english_level) && (
+        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">Education</h3>
+          <div className="grid grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {player.has_baccalaureate && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Baccalaureate</p>
+                <p className="font-medium">
+                  Yes{player.bac_year ? ` · ${player.bac_year}` : ''}{player.bac_grade ? ` · ${player.bac_grade}` : ''}
+                </p>
+              </div>
+            )}
+            {player.has_postsecondary && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">Post-Secondary</p>
+                <p className="font-medium">
+                  Yes{player.postsecondary_start_date ? ` · from ${player.postsecondary_start_date}` : ''}
+                </p>
+              </div>
+            )}
+            {player.english_level != null && (
+              <div className="bg-background border border-border/50 rounded-sm p-3">
+                <p className="text-xs text-muted-foreground uppercase mb-1">English Level</p>
+                <p className="font-medium">{player.english_level} / 5</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Full Game Videos */}
+      {player.full_game_videos && player.full_game_videos.length > 0 && (
+        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border flex items-center gap-2">
+            <Video className="w-5 h-5 text-primary" /> Full Game Videos
+          </h3>
+          <div className="space-y-3">
+            {player.full_game_videos.map((video, idx) => (
+              <div key={idx} className="flex flex-wrap items-center justify-between gap-2 p-4 bg-background rounded-sm border border-border hover:border-primary/40 transition-colors">
+                <div>
+                  <p className="font-medium">{video.label || `Game ${idx + 1}`}</p>
+                  {video.date && <p className="text-sm text-muted-foreground">{video.date}</p>}
+                </div>
+                <a href={video.url || video} target="_blank" rel="noopener noreferrer"
+                  className="px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-black rounded-sm text-sm font-medium transition-colors flex items-center gap-1">
+                  <Play className="w-3 h-3" /> Watch
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Social Links */}
+      {(player.instagram || player.twitter || player.linkedin) && (
+        <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
+          <h3 className="text-xl font-heading font-bold uppercase mb-6 pb-3 border-b border-border">Social Media</h3>
+          <div className="flex flex-wrap gap-3">
+            {player.instagram && (
+              <a href={player.instagram.startsWith('http') ? player.instagram : `https://instagram.com/${player.instagram.replace('@','')}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-sm border border-pink-500/30 text-pink-400 hover:bg-pink-500/10 transition-colors text-sm font-medium">
+                <Instagram className="w-4 h-4" /> Instagram
+              </a>
+            )}
+            {player.twitter && (
+              <a href={player.twitter.startsWith('http') ? player.twitter : `https://twitter.com/${player.twitter.replace('@','')}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-sm border border-sky-500/30 text-sky-400 hover:bg-sky-500/10 transition-colors text-sm font-medium">
+                <Twitter className="w-4 h-4" /> Twitter / X
+              </a>
+            )}
+            {player.linkedin && (
+              <a href={player.linkedin.startsWith('http') ? player.linkedin : `https://linkedin.com/in/${player.linkedin.replace('@','')}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-sm border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors text-sm font-medium">
+                <Linkedin className="w-4 h-4" /> LinkedIn
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Current Season Stats */}
       {player.season_label && (

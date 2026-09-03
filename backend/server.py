@@ -239,6 +239,20 @@ class PlayerProfile(BaseModel):
     is_minor: Optional[bool] = False
     parental_consent: Optional[bool] = None
     parental_consent_form_received: Optional[bool] = False
+    # Additional public fields
+    gender: Optional[str] = None
+    secondary_position: Optional[str] = None
+    league: Optional[str] = None
+    instagram: Optional[str] = None
+    twitter: Optional[str] = None
+    linkedin: Optional[str] = None
+    has_baccalaureate: Optional[bool] = None
+    bac_year: Optional[int] = None
+    bac_grade: Optional[str] = None
+    english_level: Optional[int] = None
+    has_postsecondary: Optional[bool] = None
+    postsecondary_start_date: Optional[str] = None
+    annual_budget: Optional[str] = None
 
 
 # Helper function to strip private info from player data
