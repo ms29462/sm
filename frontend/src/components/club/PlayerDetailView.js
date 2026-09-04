@@ -170,8 +170,9 @@ const PlayerDetailView = () => {
     );
   }
 
-  const nationalities = [player.nationality_1, player.nationality_2, player.nationality_3]
-    .filter(Boolean).join(', ') || player.nationality || 'N/A';
+  const nat1 = player.nationality_1 || player.nationality || null;
+  const nat2 = player.nationality_2 || null;
+  const nat3 = player.nationality_3 || null;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -328,7 +329,9 @@ const PlayerDetailView = () => {
         <div className="grid grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {[
             { label: "Age", value: player.age ? `${player.age} years` : "N/A" },
-            { label: "Nationality", value: nationalities },
+            { label: "Nationality 1", value: nat1 || "N/A" },
+            ...(nat2 ? [{ label: "Nationality 2", value: nat2 }] : []),
+            ...(nat3 ? [{ label: "Nationality 3", value: nat3 }] : []),
             { label: "Height", value: player.height ? `${player.height} cm` : "N/A" },
             { label: "Weight", value: player.weight ? `${player.weight} kg` : "N/A" },
             { label: "Preferred Foot", value: player.preferred_foot || "N/A" },
@@ -464,7 +467,7 @@ const PlayerDetailView = () => {
             {player.english_level != null && (
               <div className="bg-background border border-border/50 rounded-sm p-3">
                 <p className="text-xs text-muted-foreground uppercase mb-1">English Level</p>
-                <p className="font-medium">{player.english_level} / 5</p>
+                <p className="font-medium">{player.english_level} / 10</p>
               </div>
             )}
           </div>
