@@ -7353,7 +7353,8 @@ async def invite_analyst(data: dict, current_user: dict = Depends(get_current_us
         "badges": [],
     }
     await db.analysts.insert_one(analyst_doc)
-    activation_link = f"http://localhost:3000/analyst/activate/{activation_token}"
+    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+    activation_link = f"{frontend_url}/analyst/activate/{activation_token}"
     # Send invitation email
     try:
         await send_analyst_invitation(email, name, activation_link)
