@@ -2681,7 +2681,7 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
         "id": str(uuid.uuid4()),
         "club_id": current_user['user_id'],
         "club_name": club.get('name', 'Unknown') if club else 'Unknown',
-        "club_country": club.get('country'),
+        "club_country": club.get('country') if club else None,
         **opp.model_dump(),
         "status": "pending_review",
         "admin_status": "pending_review",
