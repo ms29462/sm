@@ -2671,7 +2671,9 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
     elif org_role == 'agent':
         club = await db.agents.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     elif org_role == 'college':
-        club = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        if not club:
+            club = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     elif org_role == 'specialist':
         club = await db.specialists.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     else:
@@ -4707,6 +4709,11 @@ async def get_my_chats(current_user: dict = Depends(get_current_user)):
                 if org:
                     org_role = coll_role
                     break
+            # If found in clubs collection, check whether the user is actually a college
+            if org and org_role == "club":
+                user_doc = await db.users.find_one({"id": r.club_id}, {"_id": 0, "role": 1})
+                if user_doc and user_doc.get("role") == "college":
+                    org_role = "college"
             if org:
                 org_country = org.get("country", "")
                 if org_role == "specialist":
@@ -4715,6 +4722,9 @@ async def get_my_chats(current_user: dict = Depends(get_current_user)):
                 elif org_role == "agent":
                     item["display_name"] = org.get("name") or org.get("agency_name", "Agent")
                     item["display_label"] = "Agent"
+                elif org_role == "college":
+                    item["display_name"] = org.get("name", "College")
+                    item["display_label"] = "College"
                 else:
                     playing_level = org.get("playing_level", "")
                     item["display_name"] = None
@@ -4843,7 +4853,9 @@ async def create_chat_request(
         requester = await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0})
         requester_name = requester.get('name', 'Unknown Federation') if requester else 'Unknown Federation'
     elif role == 'college':
-        requester = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        requester = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        if not requester:
+            requester = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
         requester_name = requester.get('name', 'Unknown College') if requester else 'Unknown College'
     
     chat_request = {
@@ -4932,6 +4944,9 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
                 elif requester_role == "agent":
                     req["display_name"] = org.get("name") or org.get("agency_name", "Agent")
                     req["display_label"] = "Agent"
+                elif requester_role == "college":
+                    req["display_name"] = org.get("name", "College")
+                    req["display_label"] = "College"
                 else:
                     playing_level = org.get("playing_level") or org.get("league_level") or requester_role.capitalize()
                     req["display_name"] = None
