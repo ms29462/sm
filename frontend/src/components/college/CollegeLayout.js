@@ -1,12 +1,12 @@
 import { useState } from 'react';
-﻿import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import NotificationBell from '@/components/ui/NotificationBell';
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import MobileBottomNav from "@/components/mobile/MobileBottomNav";
 import MobileHeader from "@/components/mobile/MobileHeader";
-import { Trophy, Users, Home, UserCircle, LogOut, GraduationCap } from "lucide-react";
+import { Trophy, Users, Home, UserCircle, LogOut, GraduationCap, Newspaper, Briefcase } from "lucide-react";
 
 const CollegeLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -23,57 +23,59 @@ const CollegeLayout = ({ children }) => {
 
   return (
     <>
-    <div className="min-h-screen flex flex-col md:flex-row">
-      <MobileHeader title="SOCCERMATCH" />
-      <aside className="w-64 border-r border-border bg-background fixed h-full hidden md:block">
-        <div className="p-6 border-b border-border flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Trophy className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-xl font-heading font-bold tracking-tight">SOCCERMATCH</h1>
-              <p className="text-xs text-muted-foreground uppercase flex items-center">
-                <GraduationCap className="w-3 h-3 mr-1" />
-                College Portal
-              </p>
+      <div className="min-h-screen flex flex-col md:flex-row">
+        <MobileHeader title="SOCCERMATCH" />
+        <aside className="w-64 border-r border-border bg-background fixed h-full hidden md:block">
+          <div className="p-6 border-b border-border flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Trophy className="w-8 h-8 text-primary" />
+              <div>
+                <h1 className="text-xl font-heading font-bold tracking-tight">SOCCERMATCH</h1>
+                <p className="text-xs text-muted-foreground uppercase flex items-center">
+                  <GraduationCap className="w-3 h-3 mr-1" />
+                  College Portal
+                </p>
+              </div>
             </div>
+            <NotificationBell />
           </div>
-          <NotificationBell />
-        </div>
-        <nav className="p-4 space-y-2">
-          <Link to="/college/news">
-            <Button variant={isActive('/college/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
-              <Newspaper className="w-4 h-4 mr-3" />
-              News Feed
+          <nav className="p-4 space-y-2">
+            <Link to="/college/news">
+              <Button variant={isActive('/college/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
+                <Newspaper className="w-4 h-4 mr-3" />
+                News Feed
+              </Button>
+            </Link>
+            <Link to="/college/dashboard">
+              <Button variant={isActive("/college/dashboard") ? "secondary" : "ghost"} className="w-full justify-start">
+                <Home className="w-4 h-4 mr-3" />Dashboard
+              </Button>
+            </Link>
+            <Link to="/college/profile">
+              <Button variant={isActive("/college/profile") ? "secondary" : "ghost"} className="w-full justify-start">
+                <UserCircle className="w-4 h-4 mr-3" />My Profile
+              </Button>
+            </Link>
+            <Link to="/college/players">
+              <Button variant={isActive("/college/players") ? "secondary" : "ghost"} className="w-full justify-start">
+                <Users className="w-4 h-4 mr-3" />Search Players
+              </Button>
+            </Link>
+            <Link to="/college/opportunities">
+              <Button variant={isActive("/college/opportunities") ? "secondary" : "ghost"} className="w-full justify-start">
+                <Briefcase className="w-4 h-4 mr-3" />Opportunities
+              </Button>
+            </Link>
+          </nav>
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+            <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setShowLogoutConfirm(true)}>
+              <LogOut className="w-4 h-4 mr-3" />Logout
             </Button>
-          </Link>
-          <Link to="/college/dashboard">
-            <Button variant={isActive("/college/dashboard") ? "secondary" : "ghost"} className="w-full justify-start">
-              <Home className="w-4 h-4 mr-3" />Dashboard
-            </Button>
-          </Link>
-          <Link to="/college/profile">
-            <Button variant={isActive("/college/profile") ? "secondary" : "ghost"} className="w-full justify-start">
-              <UserCircle className="w-4 h-4 mr-3" />My Profile
-            </Button>
-          </Link>
-          <Link to="/college/players">
-            <Button variant={isActive("/college/players") ? "secondary" : "ghost"} className="w-full justify-start">
-              <Users className="w-4 h-4 mr-3" />Search Players
-            </Button>
-          </Link>
-        </nav>
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
-          <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" onClick={confirmLogout}>
-            <LogOut className="w-4 h-4 mr-3" />Logout
-          </Button>
-        </div>
-      </aside>
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">{children}</main>
-      <MobileBottomNav role="college" />
-    </div>
-  );
-};
-
+          </div>
+        </aside>
+        <main className="flex-1 md:ml-64 pb-20 md:pb-0">{children}</main>
+        <MobileBottomNav role="college" />
+      </div>
       <ConfirmDialog
         open={showLogoutConfirm}
         onOpenChange={setShowLogoutConfirm}

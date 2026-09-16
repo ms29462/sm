@@ -2,7 +2,7 @@
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Users, GraduationCap, AlertCircle, CheckCircle } from "lucide-react";
+import { Users, GraduationCap, AlertCircle, CheckCircle, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const CollegeHome = () => {
@@ -76,6 +76,14 @@ const CollegeHome = () => {
           <GraduationCap className="w-10 h-10 text-primary mb-4" />
           <h3 className="text-xl font-heading font-bold uppercase mb-2">College Profile</h3>
           <p className="text-muted-foreground text-sm">Manage your college program information</p>
+        </div>
+        <div
+          onClick={() => navigate("/college/opportunities")}
+          className="bg-card border border-border/50 p-8 rounded-sm hover:border-primary/50 transition-colors cursor-pointer"
+        >
+          <Briefcase className="w-10 h-10 text-primary mb-4" />
+          <h3 className="text-xl font-heading font-bold uppercase mb-2">Opportunities</h3>
+          <p className="text-muted-foreground text-sm">Post and manage recruitment opportunities</p>
         </div>
       </div>
     </div>
