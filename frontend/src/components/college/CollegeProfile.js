@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { GraduationCap, Camera, Globe, MapPin, CheckCircle } from "lucide-react";
+import { GraduationCap, Camera, Globe, MapPin, CheckCircle, Instagram, Linkedin, Facebook } from "lucide-react";
+
+const COUNTRIES = ["Afghanistan","Albania","Algeria","Angola","Argentina","Australia","Austria","Belgium","Bolivia","Brazil","Cameroon","Canada","Chile","China","Colombia","Congo","Costa Rica","Croatia","Czech Republic","Denmark","DR Congo","Ecuador","Egypt","England","Ethiopia","Finland","France","Germany","Ghana","Greece","Guinea","Honduras","Hungary","India","Indonesia","Iran","Ireland","Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan","Kenya","Mali","Mexico","Morocco","Netherlands","New Zealand","Nigeria","Norway","Panama","Paraguay","Peru","Poland","Portugal","Romania","Russia","Saudi Arabia","Scotland","Senegal","Serbia","South Africa","South Korea","Spain","Sweden","Switzerland","Tunisia","Turkey","Uganda","Ukraine","United Kingdom","United States","Uruguay","Venezuela","Wales","Zambia","Zimbabwe"];
 
 const DIVISIONS = [
   // USA
@@ -38,7 +40,8 @@ const CollegeProfile = () => {
   const [formData, setFormData] = useState({
     name: "", country: "", city: "", state: "",
     conference: "", division: "", logo: "",
-    website: "", description: ""
+    website: "", instagram: "", facebook: "", linkedin: "",
+    description: ""
   });
 
   useEffect(() => {
@@ -58,6 +61,9 @@ const CollegeProfile = () => {
         division: response.data.division || "",
         logo: response.data.logo || "",
         website: response.data.website || "",
+        instagram: response.data.instagram || "",
+        facebook: response.data.facebook || "",
+        linkedin: response.data.linkedin || "",
         description: response.data.description || ""
       });
     } catch (error) {
@@ -148,6 +154,13 @@ const CollegeProfile = () => {
               <Input value={formData.name} onChange={(e) => handleChange("name", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
             </div>
             <div>
+              <Label className="text-sm font-medium uppercase tracking-wide">Country</Label>
+              <select value={formData.country} onChange={(e) => handleChange("country", e.target.value)} className="mt-2 w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white appearance-none cursor-pointer">
+                <option value="">Select country...</option>
+                {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
               <Label className="text-sm font-medium uppercase tracking-wide">Division</Label>
               <select value={formData.division} onChange={(e) => handleChange("division", e.target.value)} className="mt-2 w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white appearance-none cursor-pointer">
                 <option value="">Select division...</option>
@@ -159,7 +172,7 @@ const CollegeProfile = () => {
               <Input value={formData.conference} onChange={(e) => handleChange("conference", e.target.value)} placeholder="e.g., ACC, Big Ten, Pac-12" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">State</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">State / Province</Label>
               <Input value={formData.state} onChange={(e) => handleChange("state", e.target.value)} placeholder="e.g., California" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
             </div>
             <div>
@@ -174,6 +187,27 @@ const CollegeProfile = () => {
               <div className="relative">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
                 <Input value={formData.website} onChange={(e) => handleChange("website", e.target.value)} placeholder="https://athletics.university.edu" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm font-medium uppercase tracking-wide">Instagram</Label>
+              <div className="relative">
+                <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
+                <Input value={formData.instagram} onChange={(e) => handleChange("instagram", e.target.value)} placeholder="https://instagram.com/yourprogram" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm font-medium uppercase tracking-wide">Facebook</Label>
+              <div className="relative">
+                <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
+                <Input value={formData.facebook} onChange={(e) => handleChange("facebook", e.target.value)} placeholder="https://facebook.com/yourprogram" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm font-medium uppercase tracking-wide">LinkedIn</Label>
+              <div className="relative">
+                <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
+                <Input value={formData.linkedin} onChange={(e) => handleChange("linkedin", e.target.value)} placeholder="https://linkedin.com/school/yourprogram" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9" />
               </div>
             </div>
             <div className="md:col-span-2">

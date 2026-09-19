@@ -782,9 +782,12 @@ class CollegeProfile(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     conference: Optional[str] = None
-    division: Optional[Literal["NCAA Division I", "NCAA Division II", "NAIA", "NJCAA"]] = None
+    division: Optional[str] = None
     logo: Optional[str] = None
     website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
     description: Optional[str] = None
     approved: bool = False
     verified: bool = False
@@ -803,9 +806,12 @@ class CollegeUpdate(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     conference: Optional[str] = None
-    division: Optional[Literal["NCAA Division I", "NCAA Division II", "NAIA", "NJCAA"]] = None
+    division: Optional[str] = None
     logo: Optional[str] = None
     website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
     description: Optional[str] = None
 
 # ============ FEDERATION MODELS ============
@@ -3455,8 +3461,8 @@ async def get_college_profile(current_user: dict = Depends(get_current_user)):
 async def update_college_profile(update: CollegeUpdate, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'college':
         raise HTTPException(status_code=403, detail="Not a college")
-    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
-    
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None and v != ""}
+
     existing_in_colleges = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     target_collection = db.colleges if existing_in_colleges else db.clubs
     existing = existing_in_colleges or await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
