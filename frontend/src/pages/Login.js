@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Trophy, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { trackLogin } from "@/lib/analytics";
 import LanguageSwitcher from "@/components/ui/LanguageSwitcher";;
 
 const Login = ({ admin = false }) => {
@@ -31,6 +32,7 @@ const Login = ({ admin = false }) => {
 
       const { token, role, user_id, email: userEmail } = response.data;
       login(token, role, user_id, userEmail, response.data.refresh_token, response.data.name);
+      trackLogin(role);
       toast.success("Login successful!");
 
       if (role === "admin") {

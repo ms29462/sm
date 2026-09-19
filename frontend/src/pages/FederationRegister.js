@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { trackRegistration } from "@/lib/analytics";
 
 const STEPS = [
   { id: 1, title: "Federation" },
@@ -115,6 +116,7 @@ const FederationRegister = () => {
         facebook: form.facebook,
         linkedin: form.linkedin,
       });
+      trackRegistration('federation');
       navigate("/federation-pending");
     } catch (e) {
       toast.error(e.response?.data?.detail || "Registration failed");

@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { trackRegistration } from "@/lib/analytics";
 
 const STEPS = [
   { id: 1, title: "Agent Info" },
@@ -109,6 +110,7 @@ const AgentRegister = () => {
         regions: form.regions,
         phone: form.phone,
       });
+      trackRegistration('agent');
       navigate("/agent-pending");
     } catch (e) {
       toast.error(e.response?.data?.detail || "Registration failed");

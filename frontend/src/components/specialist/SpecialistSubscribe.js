@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
+import { trackBeginCheckout } from "@/lib/analytics";
 
 const FEATURES = [
   "Public Specialist Profile",
@@ -35,6 +36,7 @@ const SpecialistSubscribe = () => {
     setCheckingOut(true);
     try {
       const res = await api.createSpecialistCheckout();
+      trackBeginCheckout('specialist_standard', 'specialist');
       window.location.href = res.data.checkout_url;
     } catch (e) {
       toast.error(e.response?.data?.detail || "Failed to start checkout");

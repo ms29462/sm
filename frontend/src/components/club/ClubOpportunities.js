@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Briefcase, Plus, Trash2, Pencil, ChevronRight, Clock, Users, CalendarDays, ArrowLeft } from "lucide-react";
+import { trackOpportunityPosted } from "@/lib/analytics";
+import { useAuth } from "@/context/AuthContext";
 import { POSITIONS } from "@/lib/constants";
 
 const COUNTRIES = [
@@ -62,6 +64,7 @@ const TABS = [
 ];
 
 const ClubOpportunities = () => {
+  const { user } = useAuth();
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -114,6 +117,7 @@ const ClubOpportunities = () => {
         max_applicants: formData.max_applicants ? parseInt(formData.max_applicants) : null,
       };
       await api.createOpportunity(submitData);
+      trackOpportunityPosted(user?.role || 'club');
       toast.success("Opportunity created!");
       setShowDialog(false); setErrors({});
       setFormData({ position: "", league_level: "", salary_range: "", contract_duration: "", description: "", deadline: "", max_applicants: "", age_min: "", age_max: "", requirements: [], visibility: "public", country: "" });

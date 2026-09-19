@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Check, Star } from "lucide-react";
+import { trackBeginCheckout } from "@/lib/analytics";
 
 const PLANS = [
   {
@@ -56,6 +57,7 @@ const ClubSubscribe = () => {
     setCheckingOut(planId);
     try {
       const res = await api.createClubCheckout(planId);
+      trackBeginCheckout(planId, 'club');
       window.location.href = res.data.checkout_url;
     } catch (e) {
       toast.error(e.response?.data?.detail || "Failed to start checkout");

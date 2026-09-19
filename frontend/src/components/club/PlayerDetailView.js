@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ArrowLeft, User, CheckCircle, Heart, ExternalLink, Download, Video, Play, Target, Kanban, CalendarCheck, Instagram, Twitter, Linkedin, Globe } from 'lucide-react';
+import { trackPlayerProfileViewed } from '@/lib/analytics';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import RequestChatDialog from './RequestChatDialog';
 import ReportUserDialog from '@/components/shared/ReportUserDialog';
@@ -99,6 +100,7 @@ const PlayerDetailView = () => {
         api.getPlayerMatchCalendarPublic(playerId).catch(() => ({ data: [] }))
       ]);
       setPlayer(playerRes.data);
+      trackPlayerProfileViewed(playerId, playerRes.data?.first_name + ' ' + playerRes.data?.last_name);
       setMatchArchive(archiveRes.data || []);
       setMatchCalendar(calendarRes.data || []);
     } catch (error) {

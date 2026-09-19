@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { MessageCircle } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { trackChatRequest } from '@/lib/analytics';
 
 const RequestChatDialog = ({ playerId, playerName, onSent }) => {
   const [open, setOpen] = useState(false);
@@ -23,6 +24,7 @@ const RequestChatDialog = ({ playerId, playerName, onSent }) => {
     setLoading(true);
     try {
       await api.requestChat(playerId, notes);
+      trackChatRequest(playerName);
       toast.success('Chat request sent to the player!');
       if (onSent) onSent();
       setOpen(false);

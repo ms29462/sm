@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { trackRegistration } from "@/lib/analytics";
 import { ChevronRight, ChevronLeft, Check, Eye, EyeOff } from "lucide-react";
 
 const STEPS = [
@@ -166,6 +167,7 @@ const PlayerRegister = () => {
 
       const { token, role, user_id, name: playerName } = response.data;
       login(token, role, user_id, form.email, response.data.refresh_token, playerName);
+      trackRegistration('player');
       toast.success("Welcome to Soccer Match! 🎉");
       navigate("/player/dashboard");
     } catch (e) {
