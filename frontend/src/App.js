@@ -1,7 +1,8 @@
 import '@/App.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { PermissionsProvider } from '@/context/PermissionsContext';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Toaster } from '@/components/ui/sonner';
 import Landing from '@/pages/Landing';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -40,6 +41,16 @@ import { PWAProvider } from '@/context/PWAContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PWAInstallBanner, { OfflineBanner } from '@/components/mobile/PWAInstallBanner';
 
+function RouteTracker() {
+  const location = useLocation();
+  useEffect(() => {
+    if (typeof window.gtag === 'function') {
+      window.gtag('config', 'G-LJ4916HR50', { page_path: location.pathname + location.search });
+    }
+  }, [location]);
+  return null;
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -50,6 +61,7 @@ function App() {
           <div className="App min-h-screen">
             <OfflineBanner />
             <BrowserRouter>
+              <RouteTracker />
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
