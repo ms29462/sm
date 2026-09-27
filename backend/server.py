@@ -2223,6 +2223,7 @@ async def create_masterclass(masterclass: MasterclassCreate, current_user: dict 
         "id": str(uuid.uuid4()),
         **masterclass.model_dump(),
         "published": True,
+        "status": "published",
         "views": 0,
         "bookmarks_count": 0,
         "comments_count": 0,
@@ -2248,7 +2249,9 @@ async def update_masterclass(masterclass_id: str, update: MasterclassUpdate, cur
     
     update_data = {k: v for k, v in update.model_dump().items() if v is not None}
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
-    
+    if "published" in update_data:
+        update_data["status"] = "published" if update_data["published"] else "draft"
+
     await db.masterclasses.update_one({"id": masterclass_id}, {"$set": update_data})
     
     updated = await db.masterclasses.find_one({"id": masterclass_id}, {"_id": 0})
