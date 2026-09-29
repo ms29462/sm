@@ -182,6 +182,7 @@ class PlayerProfile(BaseModel):
     user_id: str
     name: str
     email: Optional[str] = None  # Only visible to admin
+    phone: Optional[str] = None  # Only visible to admin
     profile_picture: Optional[str] = None
     position: Optional[str] = None
     age: Optional[int] = None
