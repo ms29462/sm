@@ -230,7 +230,7 @@ const PlayerOnboarding = () => {
               <div>
                 <label className={labelClass}>Looking For *</label>
                 <div className="space-y-2">
-                  {["Professional Opportunities", "University Opportunities", "Both"].map(s => (
+                  {["Professional Opportunities", "Semi-Professional Opportunities", "Amateur Opportunities", "University Opportunities", "All"].map(s => (
                     <button key={s} onClick={() => toggleArr("looking_for", s)}
                       className={`w-full py-3 text-sm text-left px-4 rounded-sm border transition-colors ${form.looking_for.includes(s) ? 'border-primary bg-primary/10 text-primary' : 'border-white/10 text-muted-foreground hover:border-white/30'}`}>
                       {s}

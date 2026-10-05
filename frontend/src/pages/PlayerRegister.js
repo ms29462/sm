@@ -316,7 +316,7 @@ const PlayerRegister = () => {
               <div>
                 <label className={labelClass}>Looking For</label>
                 <div className="space-y-2">
-                  {["Professional Opportunities","Semi-Professional Opportunities","University Opportunities","All"].map(o => (
+                  {["Professional Opportunities","Semi-Professional Opportunities","Amateur Opportunities","University Opportunities","All"].map(o => (
                     <button key={o} onClick={() => toggleArr("looking_for", o)} type="button"
                       className={`w-full text-left px-4 py-3 text-sm rounded-sm border-2 transition-all ${form.looking_for.includes(o) ? 'border-primary bg-primary/10 text-primary' : 'border-white/10 text-muted-foreground hover:border-white/30'}`}>
                       {o}

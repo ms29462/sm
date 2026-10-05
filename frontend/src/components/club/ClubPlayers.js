@@ -256,6 +256,7 @@ const ClubPlayers = () => {
               <option value="">All</option>
               <option value="Professional Opportunities">Professional</option>
               <option value="Semi-Professional Opportunities">Semi-Professional</option>
+              <option value="Amateur Opportunities">Amateur</option>
               <option value="University Opportunities">University / College</option>
             </select>
           </div>

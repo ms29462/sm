@@ -588,7 +588,7 @@ const PlayerProfile = () => {
               <Label className="text-sm font-medium uppercase tracking-wide">Looking For</Label>
               <p className="text-xs text-muted-foreground mt-1 mb-2">Let organizations know what level you're targeting</p>
               <div className="flex flex-wrap gap-2 mt-2">
-                {["Professional Opportunities","Semi-Professional Opportunities","University Opportunities","All"].map(opt => {
+                {["Professional Opportunities","Semi-Professional Opportunities","Amateur Opportunities","University Opportunities","All"].map(opt => {
                   const active = (formData.looking_for || []).includes(opt);
                   return (
                     <button key={opt} type="button"
