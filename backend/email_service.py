@@ -286,6 +286,30 @@ async def send_admin_chat_request_accepted(email: str, player_name: str, org_nam
     await send_email(email, f"Action required: create chat room — {player_name} & {org_name}", get_base_template(content, "Chat Request Accepted"))
 
 
+async def send_opportunity_published(email: str, org_name: str, position: str, league_level: str):
+    label = f"{position} — {league_level}" if position and league_level else (position or league_level or "Your opportunity")
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Opportunity Published ✓</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {org_name},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Your opportunity has been reviewed and is now live on Soccer Match. Players matching your criteria will be able to discover and apply to it.
+      </p>
+      <div style="background-color:#1a1a1a;border:1px solid #333;border-left:3px solid #c8f135;padding:16px 20px;margin:0 0 24px;border-radius:4px;">
+        <p style="color:#c8f135;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 4px;">Published Opportunity</p>
+        <p style="color:#fff;font-size:16px;font-weight:700;margin:0;">{label}</p>
+      </div>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">View My Opportunities</a>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#555;font-size:13px;">You are receiving this email because you have an account on Soccer Match. To manage your email preferences, visit your account settings.</p>
+    """
+    await send_email(email, f"Your opportunity is now live — Soccer Match", get_base_template(content, "Opportunity Published"))
+
+
 async def send_credit_purchase_confirmation(email: str, name: str, credits: int, pack_name: str, amount: str):
     content = f"""
       <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Payment Confirmed ✓</h1>

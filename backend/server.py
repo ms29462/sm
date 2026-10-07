@@ -38,7 +38,8 @@ from email_service import (
     send_player_welcome, send_org_application_received, send_org_approved,
     send_analyst_invitation, send_application_status_update, send_credit_purchase_confirmation,
     send_chat_request_received, send_chat_request_accepted, send_chat_request_declined, send_new_chat_message,
-    send_admin_new_chat_request, send_admin_chat_request_accepted
+    send_admin_new_chat_request, send_admin_chat_request_accepted,
+    send_opportunity_published
 )
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -7715,9 +7716,14 @@ async def admin_update_opportunity(opp_id: str, data: dict, current_user: dict =
     return {"message": "Updated"}
 
 @api_router.post("/admin/opportunities/{opp_id}/approve")
-async def admin_approve_opportunity(opp_id: str, data: dict, current_user: dict = Depends(get_current_user)):
+async def admin_approve_opportunity(opp_id: str, data: dict, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403)
+
+    opp = await db.opportunities.find_one({"id": opp_id}, {"_id": 0})
+    if not opp:
+        raise HTTPException(status_code=404, detail="Opportunity not found")
+
     tier = data.get("tier", "amateur")
     credit_cost = get_tier_cost(tier)
     await db.opportunities.update_one(
@@ -7731,6 +7737,21 @@ async def admin_approve_opportunity(opp_id: str, data: dict, current_user: dict 
             "approved_by": current_user["user_id"],
         }}
     )
+
+    # Email notification to the org
+    try:
+        org_email = await get_user_email(opp["club_id"])
+        if org_email:
+            background_tasks.add_task(
+                send_opportunity_published,
+                org_email,
+                opp.get("club_name", ""),
+                opp.get("position") or (opp.get("positions") or [""])[0],
+                opp.get("league_level", "")
+            )
+    except Exception as e:
+        logger.error(f"Failed to schedule opportunity published email: {e}")
+
     return {"message": "Opportunity approved and published"}
 
 @api_router.post("/admin/opportunities/{opp_id}/reject")
