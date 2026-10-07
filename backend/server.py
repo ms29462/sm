@@ -34,7 +34,11 @@ from player_matching import (
     AVAILABLE_LEAGUES, DEFAULT_LEAGUES
 )
 from subscription_plans import SUBSCRIPTION_PLANS, get_plan, get_plans_for_role, create_subscription, is_subscription_active, get_default_plan
-from email_service import send_player_welcome, send_org_application_received, send_org_approved, send_analyst_invitation, send_application_status_update, send_credit_purchase_confirmation
+from email_service import (
+    send_player_welcome, send_org_application_received, send_org_approved,
+    send_analyst_invitation, send_application_status_update, send_credit_purchase_confirmation,
+    send_chat_request_received, send_chat_request_accepted, send_chat_request_declined, send_new_chat_message
+)
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -86,6 +90,7 @@ fastapi_app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR.parent)), na
 # Initialize managers
 chat_room_manager = ChatRoomManager(db)
 video_session_manager = VideoSessionManager(db)
+_message_email_throttle: dict = {}  # "{room_id}:{user_id}" → last email datetime (5-min cooldown)
 
 JWT_SECRET = os.environ['JWT_SECRET']
 JWT_ALGORITHM = 'HS256'
@@ -4680,6 +4685,14 @@ async def delete_video_session(session_id: str, current_user: dict = Depends(get
     await video_session_manager.delete_video_session(session_id)
     return {"message": "Video session deleted"}
 
+async def get_user_email(user_id: str) -> str:
+    """Look up a user's email from db.users by user_id."""
+    try:
+        user = await db.users.find_one({"id": user_id}, {"_id": 0, "email": 1})
+        return user.get("email", "") if user else ""
+    except Exception:
+        return ""
+
 # ============ PLAYER/CLUB CHAT & VIDEO ENDPOINTS ============
 @api_router.get("/my-chats")
 async def get_my_chats(current_user: dict = Depends(get_current_user)):
@@ -4811,6 +4824,7 @@ async def get_my_videos(current_user: dict = Depends(get_current_user)):
 @api_router.post("/chat-requests", response_model=dict)
 async def create_chat_request(
     request_data: ChatRequestCreate,
+    background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user)
 ):
     """Club, Agent, or Specialist creates a chat request to connect with a player"""
@@ -4925,6 +4939,20 @@ async def create_chat_request(
         "created_at": datetime.now(timezone.utc).isoformat()
     })
     
+    # Email notification to player
+    try:
+        player_email = player.get("email") or await get_user_email(request_data.player_id)
+        if player_email:
+            background_tasks.add_task(
+                send_chat_request_received,
+                player_email,
+                player.get("name", "Player"),
+                requester_name,
+                role.capitalize()
+            )
+    except Exception as e:
+        logger.error(f"Failed to schedule chat request email: {e}")
+
     return {"message": "Chat request sent successfully", "request_id": chat_request["id"]}
 
 
@@ -4990,6 +5018,7 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
 async def respond_to_chat_request(
     request_id: str,
     response: ChatRequestResponse,
+    background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user)
 ):
     """Player (or their academy) responds to a chat request (accept or reject)"""
@@ -5050,6 +5079,14 @@ async def respond_to_chat_request(
             "read": False,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
+        # Email notification to requester
+        try:
+            requester_email = await get_user_email(requester_id)
+            if requester_email:
+                background_tasks.add_task(send_chat_request_accepted, requester_email, requester_name, player_name)
+        except Exception as e:
+            logger.error(f"Failed to schedule chat accepted email: {e}")
+
         return {"message": "Chat request accepted. Admin will create the chat room."}
     else:
         # Notify admin about rejection
@@ -5063,7 +5100,7 @@ async def respond_to_chat_request(
             "read": False,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
-        
+
         # Notify requester about rejection
         if requester_id:
             # Get player name
@@ -5079,6 +5116,14 @@ async def respond_to_chat_request(
                 "read": False,
                 "created_at": datetime.now(timezone.utc).isoformat()
             })
+            # Email notification to requester
+            try:
+                requester_email = await get_user_email(requester_id)
+                if requester_email:
+                    background_tasks.add_task(send_chat_request_declined, requester_email, requester_name, player_name)
+            except Exception as e:
+                logger.error(f"Failed to schedule chat declined email: {e}")
+
         return {"message": "Chat request rejected"}
 
 
@@ -6884,9 +6929,26 @@ async def send_chat_message(sid, data):
         )
         
         await chat_room_manager.add_message(room_id, message)
-        
+
         # Broadcast to all in room
         await sio.emit('new_chat_message', message.model_dump(), room=room_id)
+
+        # Email notification to the other participant (throttled to 1 per 5 min per conversation)
+        try:
+            msg_room = await chat_room_manager.get_chat_room(room_id)
+            if msg_room:
+                recipient_id = msg_room.player_id if sender_id == msg_room.club_id else msg_room.club_id
+                throttle_key = f"{room_id}:{recipient_id}"
+                now = datetime.now(timezone.utc)
+                last_sent = _message_email_throttle.get(throttle_key)
+                if not last_sent or (now - last_sent).total_seconds() > 300:
+                    _message_email_throttle[throttle_key] = now
+                    recipient_email = await get_user_email(recipient_id)
+                    if recipient_email:
+                        recipient_name = msg_room.player_name if sender_id == msg_room.club_id else msg_room.club_name
+                        asyncio.create_task(send_new_chat_message(recipient_email, recipient_name or "there", sender_name or "Someone"))
+        except Exception as e:
+            logger.error(f"Failed to send new message email: {e}")
 
 @sio.event
 async def join_video_session(sid, data):

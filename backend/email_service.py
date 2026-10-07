@@ -174,6 +174,82 @@ async def send_application_status_update(email: str, player_name: str, status: s
       </table>
     """
     await send_email(email, f"{subject_text} — Soccer Match", get_base_template(content))
+async def send_chat_request_received(email: str, player_name: str, org_name: str, org_role: str):
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">New Chat Request</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {player_name},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        <strong style="color:#fff;">{org_name}</strong> ({org_role}) has sent you a chat request on Soccer Match. Log in to review and respond.
+      </p>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">View Chat Request</a>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#555;font-size:13px;">You are receiving this email because you have an account on Soccer Match. To manage your email preferences, visit your account settings.</p>
+    """
+    await send_email(email, "New chat request on SoccerMatch", get_base_template(content, "New Chat Request"))
+
+
+async def send_chat_request_accepted(email: str, org_name: str, player_name: str):
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Chat Request Accepted ✓</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {org_name},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        <strong style="color:#fff;">{player_name}</strong> has accepted your chat request. You can now start a conversation on Soccer Match.
+      </p>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Open Chat</a>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#555;font-size:13px;">You are receiving this email because you have an account on Soccer Match. To manage your email preferences, visit your account settings.</p>
+    """
+    await send_email(email, "Your chat request was accepted — Soccer Match", get_base_template(content, "Chat Request Accepted"))
+
+
+async def send_chat_request_declined(email: str, org_name: str, player_name: str):
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Chat Request Update</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {org_name},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        <strong style="color:#fff;">{player_name}</strong> has declined your chat request on Soccer Match.
+      </p>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Browse Players</a>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#555;font-size:13px;">You are receiving this email because you have an account on Soccer Match. To manage your email preferences, visit your account settings.</p>
+    """
+    await send_email(email, "Chat request update — Soccer Match", get_base_template(content, "Chat Request Update"))
+
+
+async def send_new_chat_message(email: str, recipient_name: str, sender_name: str):
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">New Message</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {recipient_name},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        You have a new message from <strong style="color:#fff;">{sender_name}</strong> on Soccer Match.
+      </p>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Read Message</a>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#555;font-size:13px;">You are receiving this email because you have an account on Soccer Match. To manage your email preferences, visit your account settings.</p>
+    """
+    await send_email(email, "New message on SoccerMatch", get_base_template(content, "New Message"))
+
+
 async def send_credit_purchase_confirmation(email: str, name: str, credits: int, pack_name: str, amount: str):
     content = f"""
       <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Payment Confirmed ✓</h1>
