@@ -37,7 +37,8 @@ from subscription_plans import SUBSCRIPTION_PLANS, get_plan, get_plans_for_role,
 from email_service import (
     send_player_welcome, send_org_application_received, send_org_approved,
     send_analyst_invitation, send_application_status_update, send_credit_purchase_confirmation,
-    send_chat_request_received, send_chat_request_accepted, send_chat_request_declined, send_new_chat_message
+    send_chat_request_received, send_chat_request_accepted, send_chat_request_declined, send_new_chat_message,
+    send_admin_new_chat_request, send_admin_chat_request_accepted
 )
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -4967,6 +4968,20 @@ async def create_chat_request(
     except Exception as e:
         logger.error(f"Failed to schedule chat request email: {e}")
 
+    # Email notification to admin
+    try:
+        admin_email = os.environ.get("ADMIN_EMAIL")
+        if admin_email:
+            background_tasks.add_task(
+                send_admin_new_chat_request,
+                admin_email,
+                requester_name,
+                role.capitalize(),
+                player.get("name", "Unknown Player")
+            )
+    except Exception as e:
+        logger.error(f"Failed to schedule admin chat request email: {e}")
+
     return {"message": "Chat request sent successfully", "request_id": chat_request["id"]}
 
 
@@ -5093,6 +5108,18 @@ async def respond_to_chat_request(
             "read": False,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
+        # Email notification to admin
+        try:
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            if admin_email:
+                background_tasks.add_task(
+                    send_admin_chat_request_accepted,
+                    admin_email,
+                    player_name,
+                    requester_name
+                )
+        except Exception as e:
+            logger.error(f"Failed to schedule admin chat accepted email: {e}")
         return {"message": "Chat request accepted. Admin will create the chat room."}
     else:
         # Notify admin about rejection

@@ -250,6 +250,42 @@ async def send_new_chat_message(email: str, recipient_name: str, sender_name: st
     await send_email(email, "New message on SoccerMatch", get_base_template(content, "New Message"))
 
 
+async def send_admin_new_chat_request(email: str, org_name: str, org_role: str, player_name: str):
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">New Chat Request</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        <strong style="color:#fff;">{org_name}</strong> ({org_role}) has sent a chat request to <strong style="color:#fff;">{player_name}</strong>.
+        You will need to create the chat room once the player accepts.
+      </p>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}/admin" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">View Admin Panel</a>
+          </td>
+        </tr>
+      </table>
+    """
+    await send_email(email, f"New chat request — {org_name} → {player_name}", get_base_template(content, "New Chat Request"))
+
+
+async def send_admin_chat_request_accepted(email: str, player_name: str, org_name: str):
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Chat Request Accepted — Action Required</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        <strong style="color:#fff;">{player_name}</strong> has accepted the chat request from <strong style="color:#fff;">{org_name}</strong>.
+        Please create the chat room so they can start their conversation.
+      </p>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}/admin" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Create Chat Room</a>
+          </td>
+        </tr>
+      </table>
+    """
+    await send_email(email, f"Action required: create chat room — {player_name} & {org_name}", get_base_template(content, "Chat Request Accepted"))
+
+
 async def send_credit_purchase_confirmation(email: str, name: str, credits: int, pack_name: str, amount: str):
     content = f"""
       <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Payment Confirmed ✓</h1>
