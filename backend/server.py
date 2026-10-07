@@ -91,7 +91,8 @@ fastapi_app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR.parent)), na
 # Initialize managers
 chat_room_manager = ChatRoomManager(db)
 video_session_manager = VideoSessionManager(db)
-_message_email_throttle: dict = {}  # "{user_id}" → last email datetime (24h cooldown, across all rooms)
+_room_active_users: dict = {}   # room_id → set of user_ids currently in that room
+_sid_to_room_user: dict = {}    # sid → (room_id, user_id) for cleanup on disconnect
 
 JWT_SECRET = os.environ['JWT_SECRET']
 JWT_ALGORITHM = 'HS256'
@@ -6897,6 +6898,13 @@ async def connect(sid, environ):
 @sio.event
 async def disconnect(sid):
     logger.info(f"Client disconnected: {sid}")
+    # Clean up chat room presence
+    if sid in _sid_to_room_user:
+        room_id, user_id = _sid_to_room_user.pop(sid)
+        if room_id in _room_active_users:
+            _room_active_users[room_id].discard(user_id)
+            if not _room_active_users[room_id]:
+                del _room_active_users[room_id]
     # Clean up video session if user was in one
     for session_id, session in video_session_manager.active_sessions.items():
         for participant in session.participants:
@@ -6916,6 +6924,10 @@ async def join_chat_room(sid, data):
     if room_id:
         await sio.enter_room(sid, room_id)
         logger.info(f"User {user_id} joined chat room {room_id}")
+        # Track presence for email suppression
+        if user_id:
+            _room_active_users.setdefault(room_id, set()).add(user_id)
+            _sid_to_room_user[sid] = (room_id, user_id)
         
         room = await chat_room_manager.get_chat_room(room_id)
         
@@ -6966,16 +6978,13 @@ async def send_chat_message(sid, data):
         # Broadcast to all in room
         await sio.emit('new_chat_message', message.model_dump(), room=room_id)
 
-        # Email notification to the other participant (throttled to 1 per 5 min per conversation)
+        # Email notification to the other participant only if they are not currently in this chat room
         try:
             msg_room = await chat_room_manager.get_chat_room(room_id)
             if msg_room:
                 recipient_id = msg_room.player_id if sender_id == msg_room.club_id else msg_room.club_id
-                throttle_key = recipient_id
-                now = datetime.now(timezone.utc)
-                last_sent = _message_email_throttle.get(throttle_key)
-                if not last_sent or (now - last_sent).total_seconds() > 86400:
-                    _message_email_throttle[throttle_key] = now
+                recipient_in_room = recipient_id in _room_active_users.get(room_id, set())
+                if not recipient_in_room:
                     recipient_email = await get_user_email(recipient_id)
                     if recipient_email:
                         recipient_name = msg_room.player_name if sender_id == msg_room.club_id else msg_room.club_name
