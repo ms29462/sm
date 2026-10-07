@@ -4504,6 +4504,7 @@ async def get_player_match_calendar_public(player_id: str, current_user: dict = 
 async def create_chat_room_admin(
     player_id: str,
     club_id: str,
+    background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user)
 ):
     """Admin creates a chat room between player and club"""
@@ -4535,6 +4536,19 @@ async def create_chat_room_admin(
         current_user['user_id']
     )
     
+    # Notify the org that their chat room is ready
+    try:
+        org_email = await get_user_email(club_id)
+        if org_email:
+            background_tasks.add_task(
+                send_chat_request_accepted,
+                org_email,
+                club.get("name", ""),
+                player.get("name", "The player")
+            )
+    except Exception as e:
+        logger.error(f"Failed to schedule chat room ready email: {e}")
+
     return {
         "room_id": room.id,
         "player_name": room.player_name,
@@ -5079,14 +5093,6 @@ async def respond_to_chat_request(
             "read": False,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
-        # Email notification to requester
-        try:
-            requester_email = await get_user_email(requester_id)
-            if requester_email:
-                background_tasks.add_task(send_chat_request_accepted, requester_email, requester_name, player_name)
-        except Exception as e:
-            logger.error(f"Failed to schedule chat accepted email: {e}")
-
         return {"message": "Chat request accepted. Admin will create the chat room."}
     else:
         # Notify admin about rejection
