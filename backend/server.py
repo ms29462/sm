@@ -91,7 +91,7 @@ fastapi_app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR.parent)), na
 # Initialize managers
 chat_room_manager = ChatRoomManager(db)
 video_session_manager = VideoSessionManager(db)
-_message_email_throttle: dict = {}  # "{room_id}:{user_id}" → last email datetime (5-min cooldown)
+_message_email_throttle: dict = {}  # "{user_id}" → last email datetime (24h cooldown, across all rooms)
 
 JWT_SECRET = os.environ['JWT_SECRET']
 JWT_ALGORITHM = 'HS256'
@@ -6971,10 +6971,10 @@ async def send_chat_message(sid, data):
             msg_room = await chat_room_manager.get_chat_room(room_id)
             if msg_room:
                 recipient_id = msg_room.player_id if sender_id == msg_room.club_id else msg_room.club_id
-                throttle_key = f"{room_id}:{recipient_id}"
+                throttle_key = recipient_id
                 now = datetime.now(timezone.utc)
                 last_sent = _message_email_throttle.get(throttle_key)
-                if not last_sent or (now - last_sent).total_seconds() > 300:
+                if not last_sent or (now - last_sent).total_seconds() > 86400:
                     _message_email_throttle[throttle_key] = now
                     recipient_email = await get_user_email(recipient_id)
                     if recipient_email:
