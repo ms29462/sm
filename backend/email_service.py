@@ -310,6 +310,26 @@ async def send_opportunity_published(email: str, org_name: str, position: str, l
     await send_email(email, f"Your opportunity is now live — Soccer Match", get_base_template(content, "Opportunity Published"))
 
 
+async def send_unread_messages_reminder(email: str, recipient_name: str, unread_count: int, sender_name: str):
+    msg_label = f"{unread_count} unread message{'s' if unread_count > 1 else ''}"
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">You have unread messages</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {recipient_name},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        You have <strong style="color:#fff;">{msg_label}</strong> from <strong style="color:#fff;">{sender_name}</strong> waiting for you on Soccer Match.
+      </p>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Read Messages</a>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#555;font-size:13px;">You are receiving this email because you have an account on Soccer Match. To manage your email preferences, visit your account settings.</p>
+    """
+    await send_email(email, f"You have {msg_label} on SoccerMatch", get_base_template(content, "Unread Messages"))
+
+
 async def send_credit_purchase_confirmation(email: str, name: str, credits: int, pack_name: str, amount: str):
     content = f"""
       <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Payment Confirmed ✓</h1>

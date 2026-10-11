@@ -39,7 +39,7 @@ from email_service import (
     send_analyst_invitation, send_application_status_update, send_credit_purchase_confirmation,
     send_chat_request_received, send_chat_request_accepted, send_chat_request_declined, send_new_chat_message,
     send_admin_new_chat_request, send_admin_chat_request_accepted,
-    send_opportunity_published
+    send_opportunity_published, send_unread_messages_reminder
 )
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -6891,6 +6891,64 @@ fastapi_app.add_middleware(
     allow_headers=["*"],
 )
 
+# ============ UNREAD MESSAGE REMINDER JOB ============
+async def check_unread_messages_job():
+    """Hourly job: emails users who have unread messages older than 24h."""
+    while True:
+        await asyncio.sleep(3600)
+        try:
+            now = datetime.now(timezone.utc)
+            cutoff = (now - timedelta(hours=24)).isoformat()
+
+            rooms = await db.chat_rooms.find({"is_active": True}, {"_id": 0}).to_list(1000)
+            for room in rooms:
+                room_id = room["id"]
+                player_id = room.get("player_id")
+                club_id = room.get("club_id")
+                last_read = room.get("last_read", {})
+                last_unread_email = room.get("last_unread_email", {})
+
+                for user_id, other_id, recipient_name, sender_name in [
+                    (player_id, club_id, room.get("player_name", ""), room.get("club_name", "")),
+                    (club_id, player_id, room.get("club_name", ""), room.get("player_name", "")),
+                ]:
+                    if not user_id or not other_id:
+                        continue
+
+                    user_last_read = last_read.get(user_id, "1970-01-01T00:00:00+00:00")
+
+                    # Messages from the other person that are unread AND have been waiting >24h
+                    unread_count = await db.chat_messages.count_documents({
+                        "room_id": room_id,
+                        "sender_id": other_id,
+                        "timestamp": {"$gt": user_last_read, "$lt": cutoff}
+                    })
+                    if unread_count == 0:
+                        continue
+
+                    # Skip if we already sent a reminder in the last 24h for this room/user
+                    last_email_ts = last_unread_email.get(user_id, "")
+                    if last_email_ts and last_email_ts > cutoff:
+                        continue
+
+                    user_email = await get_user_email(user_id)
+                    if not user_email:
+                        continue
+
+                    try:
+                        await send_unread_messages_reminder(user_email, recipient_name or "there", unread_count, sender_name or "Someone")
+                        await db.chat_rooms.update_one(
+                            {"id": room_id},
+                            {"$set": {f"last_unread_email.{user_id}": now.isoformat()}}
+                        )
+                        logger.info(f"Unread reminder sent to {user_id} for room {room_id} ({unread_count} messages)")
+                    except Exception as e:
+                        logger.error(f"Failed to send unread reminder to {user_id}: {e}")
+
+        except Exception as e:
+            logger.error(f"check_unread_messages_job error: {e}")
+
+
 # Socket.IO Event Handlers
 @sio.event
 async def connect(sid, environ):
@@ -6925,10 +6983,15 @@ async def join_chat_room(sid, data):
     if room_id:
         await sio.enter_room(sid, room_id)
         logger.info(f"User {user_id} joined chat room {room_id}")
-        # Track presence for email suppression
+        # Track presence for real-time email suppression
         if user_id:
             _room_active_users.setdefault(room_id, set()).add(user_id)
             _sid_to_room_user[sid] = (room_id, user_id)
+            # Persist last_read so the unread reminder job knows messages were seen
+            await db.chat_rooms.update_one(
+                {"id": room_id},
+                {"$set": {f"last_read.{user_id}": datetime.now(timezone.utc).isoformat()}}
+            )
         
         room = await chat_room_manager.get_chat_room(room_id)
         
@@ -9792,6 +9855,11 @@ async def create_db_indexes():
         logger.info("MongoDB indexes verified/created successfully")
     except Exception as e:
         logger.error(f"Index creation error: {e}")
+
+
+@fastapi_app.on_event("startup")
+async def start_background_jobs():
+    asyncio.create_task(check_unread_messages_job())
 
 
 @fastapi_app.on_event("shutdown")
