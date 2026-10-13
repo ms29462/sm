@@ -3,14 +3,9 @@ import { Home, User, Users, Heart, FileText, Settings, MessageCircle, Briefcase,
 
 const MobileNavConfig = {
   player: [
-    { path: '/player/dashboard', icon: Home, label: 'Home' },
     { path: '/player/profile', icon: User, label: 'Profile' },
-    { path: '/player/opportunities', icon: FileText, label: 'Opportunities' },
     { path: '/player/credits', icon: Star, label: 'Credits' },
-    { path: '/player/specialists', icon: Users, label: 'Experts' },
-    { path: '/player/agents', icon: Briefcase, label: 'Agents' },
-    { path: '/player/analytics', icon: Activity, label: 'Analytics' },
-    { path: '/player/chats', icon: MessageCircle, label: 'Chats' }
+    { path: '/player/analytics', icon: Activity, label: 'Analytics' }
   ],
   club: [
     { path: '/club/dashboard', icon: Home, label: 'Home' },
