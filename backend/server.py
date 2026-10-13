@@ -39,7 +39,8 @@ from email_service import (
     send_analyst_invitation, send_application_status_update, send_credit_purchase_confirmation,
     send_chat_request_received, send_chat_request_accepted, send_chat_request_declined, send_new_chat_message,
     send_admin_new_chat_request, send_admin_chat_request_accepted,
-    send_opportunity_published, send_unread_messages_reminder
+    send_opportunity_published, send_unread_messages_reminder,
+    send_new_application_received
 )
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -2519,7 +2520,7 @@ async def get_recommended_opportunities(current_user: dict = Depends(get_current
     return [Opportunity(**opp) for opp in opportunities]
 
 @api_router.post("/applications", response_model=Application)
-async def create_application(app_create: ApplicationCreate, current_user: dict = Depends(get_current_user)):
+async def create_application(app_create: ApplicationCreate, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     if current_user['role'] not in ['player', 'academy']:
         raise HTTPException(status_code=403, detail="Not authorized")
 
@@ -2630,6 +2631,21 @@ async def create_application(app_create: ApplicationCreate, current_user: dict =
             {"$set": {"credit_cost": credit_cost}}
         )
     
+    # Email notification to the org
+    try:
+        org_email = await get_user_email(opportunity["club_id"])
+        if org_email:
+            background_tasks.add_task(
+                send_new_application_received,
+                org_email,
+                opportunity.get("club_name", ""),
+                player.get("name", "A player"),
+                opportunity.get("position") or (opportunity.get("positions") or [""])[0],
+                opportunity.get("league_level", "")
+            )
+    except Exception as e:
+        logger.error(f"Failed to schedule application received email: {e}")
+
     return Application(**app_doc)
 
 @api_router.get("/applications/my", response_model=List[dict])
