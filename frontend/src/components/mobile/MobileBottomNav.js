@@ -10,7 +10,7 @@ const MobileNavConfig = {
     { path: '/player/specialists', icon: Users, label: 'Experts' },
     { path: '/player/agents', icon: Briefcase, label: 'Agents' },
     { path: '/player/analytics', icon: Activity, label: 'Analytics' },
-    { path: '/player/chat-requests', icon: MessageCircle, label: 'Chats' }
+    { path: '/player/chats', icon: MessageCircle, label: 'Chats' }
   ],
   club: [
     { path: '/club/dashboard', icon: Home, label: 'Home' },
