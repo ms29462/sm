@@ -26,6 +26,7 @@ import AdminAnalystManagement from '@/components/admin/AdminAnalystManagement';
 import AdminSubscriptions from '@/components/admin/AdminSubscriptions';
 import AdminReports from '@/components/admin/AdminReports';
 import AdminDeletionRequests from '@/components/admin/AdminDeletionRequests';
+import AdminCollegeAgencies from '@/components/admin/AdminCollegeAgencies';
 
 const AdminDashboard = () => {
   return (
@@ -44,6 +45,7 @@ const AdminDashboard = () => {
         <Route path="credits" element={<AdminCredits />} />
         <Route path="federations" element={<AdminFederations />} />
         <Route path="academies" element={<AdminAcademies />} />
+        <Route path="college-agencies" element={<AdminCollegeAgencies />} />
         <Route path="agents" element={<AdminAgents />} />
                 <Route path="colleges" element={<AdminColleges />} />
                 <Route path="verification" element={<AdminVerification />} />

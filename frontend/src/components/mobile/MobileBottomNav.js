@@ -48,6 +48,13 @@ const MobileNavConfig = {
     { path: '/academy/applications', icon: FileText, label: 'Apps' },
     { path: '/academy/chats', icon: MessageCircle, label: 'Chats' },
   ],
+  college_agency: [
+    { path: '/college-agency/dashboard', icon: Home, label: 'Home' },
+    { path: '/college-agency/players', icon: Users, label: 'Players' },
+    { path: '/college-agency/scouting', icon: Target, label: 'Scouting' },
+    { path: '/college-agency/opportunities/analytics', icon: Activity, label: 'Analytics' },
+    { path: '/college-agency/chats', icon: MessageCircle, label: 'Chats' }
+  ],
   admin: [
     { path: '/admin/dashboard', icon: Home, label: 'Home' },
     { path: '/admin/players', icon: Users, label: 'Players' },

@@ -781,6 +781,39 @@ class ClubUpdate(BaseModel):
     facebook: Optional[str] = None
     twitter: Optional[str] = None
 
+# ============ COLLEGE AGENCY MODELS ============
+class CollegeAgencyProfile(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    user_id: str
+    name: str
+    email: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    description: Optional[str] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+    rep_first_name: Optional[str] = None
+    rep_last_name: Optional[str] = None
+    rep_email: Optional[str] = None
+    rep_phone: Optional[str] = None
+    approved: bool = False
+    status: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class CollegeAgencyUpdate(BaseModel):
+    name: Optional[str] = None
+    country: Optional[str] = None
+    city: Optional[str] = None
+    description: Optional[str] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    linkedin: Optional[str] = None
+
 
 # ============ COLLEGE MODELS ============
 class CollegeProfile(BaseModel):
@@ -1668,6 +1701,40 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
         except Exception as e:
             print(f"Admin notification error: {e}")
 
+    if user.role == 'college_agency':
+        agency_doc = {
+            "user_id": user_id,
+            "name": user.name or user.club_name,
+            "email": user.email,
+            "approved": False,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "country": user.country,
+            "city": getattr(user, 'city', None),
+            "description": user.description,
+            "website": user.website,
+            "instagram": user.instagram,
+            "facebook": user.facebook,
+            "linkedin": getattr(user, 'linkedin', None),
+            "rep_first_name": user.rep_first_name,
+            "rep_last_name": user.rep_last_name,
+            "rep_role": user.rep_role,
+            "rep_email": user.rep_email,
+            "rep_phone": user.rep_phone,
+            "discovery_call_status": "Not Contacted",
+        }
+        await db.college_agencies.insert_one(agency_doc)
+        try:
+            await send_org_application_received(user.rep_email or user.email, user.name or user.club_name, "college agency")
+        except Exception as e:
+            print(f"Email error: {e}")
+        try:
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            if admin_email:
+                background_tasks.add_task(send_admin_new_user_pending, admin_email, user.name or user.club_name, "college_agency")
+        except Exception as e:
+            print(f"Admin notification error: {e}")
+
     token = create_token(user_id, user.email, user.role)
     return AuthResponse(token=token, role=user.role, user_id=user_id, email=user.email, name=getattr(user, "name", None) or getattr(user, "club_name", None) or getattr(user, "rep_first_name", None))
 
@@ -1687,14 +1754,15 @@ async def login(request: Request, credentials: UserLogin):
         raise HTTPException(status_code=403, detail="This account has been suspended. Please contact contact@soccermatch.ca for assistance.")
     
     # Check if club or college is pending review
-    if user['role'] in ['club', 'college', 'agent', 'federation', 'specialist', 'academy']:
+    if user['role'] in ['club', 'college', 'agent', 'federation', 'specialist', 'academy', 'college_agency']:
         club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
         college = await db.colleges.find_one({"user_id": user_id}, {"_id": 0}) if not club else None
         agent = await db.agents.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college else None
         federation = await db.federations.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college and not agent else None
         specialist = await db.specialists.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college and not agent and not federation else None
         academy = await db.academies.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college and not agent and not federation and not specialist else None
-        org = club or college or agent or federation or specialist or academy
+        college_agency_org = await db.college_agencies.find_one({"user_id": user_id}, {"_id": 0}) if not club and not college and not agent and not federation and not specialist and not academy else None
+        org = club or college or agent or federation or specialist or academy or college_agency_org
         if org and org.get('status') == 'pending' and not org.get('approved', False):
             raise HTTPException(status_code=403, detail=f"PENDING_REVIEW:{user['role']}")
     
@@ -1719,6 +1787,9 @@ async def login(request: Request, credentials: UserLogin):
         profile_name = p.get("name") if p else None
     elif role == 'academy':
         p = await db.academies.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+        profile_name = p.get("name") if p else None
+    elif role == 'college_agency':
+        p = await db.college_agencies.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
         profile_name = p.get("name") if p else None
     return AuthResponse(token=token, role=user['role'], user_id=user_id, email=user['email'], name=profile_name)
 
@@ -1993,9 +2064,9 @@ async def get_video_analysis_status(current_user: dict = Depends(get_current_use
 @api_router.get("/players/{player_id}/video-analysis")
 async def get_player_video_analysis_public(player_id: str, current_user: dict = Depends(get_current_user)):
     """Get video analysis for any player (clubs/federations/admins can view)"""
-    if current_user['role'] not in ['club', 'federation', 'admin']:
+    if current_user['role'] not in ['club', 'federation', 'admin', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
     analysis = await db.video_analyses.find_one(
         {"player_id": player_id, "status": "completed"},
         {"_id": 0}
@@ -2715,7 +2786,7 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
 # ============ CLUB ENDPOINTS ============
 @api_router.get("/club/profile", response_model=ClubProfile)
 async def get_club_profile(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
@@ -2725,7 +2796,7 @@ async def get_club_profile(current_user: dict = Depends(get_current_user)):
 
 @api_router.put("/club/profile", response_model=ClubProfile)
 async def update_club_profile(update: ClubUpdate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     update_data = {k: v for k, v in update.model_dump().items() if v is not None}
@@ -2737,7 +2808,7 @@ async def update_club_profile(update: ClubUpdate, current_user: dict = Depends(g
 
 @api_router.post("/opportunities", response_model=Opportunity)
 async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     # Look up org from correct collection based on role
@@ -2752,6 +2823,16 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
             club = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     elif org_role == 'specialist':
         club = await db.specialists.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    elif org_role == 'college_agency':
+        club = await db.college_agencies.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        COLLEGE_LEVELS = [
+            "NCAA Division I", "NCAA Division II", "NCAA Division III",
+            "NAIA", "NJCAA", "CCAA", "USports",
+            "College / University", "College / University / NCAA Division I",
+            "College / University / NCAA Division II",
+        ]
+        if opp.league_level and opp.league_level not in COLLEGE_LEVELS:
+            raise HTTPException(status_code=400, detail="College agencies can only post college-level opportunities")
     else:
         club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
 
@@ -2773,7 +2854,7 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
 
 @api_router.get("/club/opportunities", response_model=List[Opportunity])
 async def get_club_opportunities(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     await auto_close_expired_opportunities(db)
     opportunities = await db.opportunities.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
@@ -2782,7 +2863,7 @@ async def get_club_opportunities(current_user: dict = Depends(get_current_user))
 
 @api_router.put("/opportunities/{opportunity_id}/status")
 async def update_opportunity_status(opportunity_id: str, status_update: dict, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college", "analyst", "academy"]:
+    if current_user["role"] not in ["club", "federation", "college", "analyst", "academy", "college_agency"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     status = status_update.get("status")
     if status not in ["open", "closed", "filled"]:
@@ -2795,7 +2876,7 @@ async def update_opportunity_status(opportunity_id: str, status_update: dict, cu
 
 @api_router.put("/opportunities/{opportunity_id}")
 async def update_opportunity(opportunity_id: str, update: dict, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college", "analyst", "academy"]:
+    if current_user["role"] not in ["club", "federation", "college", "analyst", "academy", "college_agency"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     opp = await db.opportunities.find_one({"id": opportunity_id, "club_id": current_user["user_id"]})
     if not opp:
@@ -2839,7 +2920,7 @@ async def get_opportunity_changes(current_user: dict = Depends(get_current_user)
 
 @api_router.delete("/opportunities/{opportunity_id}")
 async def delete_opportunity(opportunity_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     result = await db.opportunities.delete_one({"id": opportunity_id, "club_id": current_user['user_id']})
@@ -2849,7 +2930,7 @@ async def delete_opportunity(opportunity_id: str, current_user: dict = Depends(g
 
 @api_router.get("/club/applications", response_model=List[dict])
 async def get_club_applications(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     applications = await db.applications.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
@@ -2887,7 +2968,7 @@ async def update_application_status(
     status_update: ApplicationStatusUpdate,
     current_user: dict = Depends(get_current_user)
 ):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     player_label = APPLICATION_STATUS_LABELS.get(status_update.status, status_update.status)
@@ -3069,7 +3150,7 @@ async def get_players(
     no_agent: Optional[bool] = None,
     current_user: dict = Depends(get_current_user)
 ):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     query = {"approved": True, "account_status": {"$nin": ["suspended", "banned"]}}
@@ -3180,7 +3261,7 @@ async def get_players(
 
 @api_router.get("/players/recommended-list", response_model=List[PlayerProfile])
 async def get_recommended_players(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     club = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0})
@@ -3206,7 +3287,7 @@ async def get_recommended_players(current_user: dict = Depends(get_current_user)
 
 @api_router.post("/favorites", response_model=Favorite)
 async def add_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     existing = await db.favorites.find_one({
@@ -3227,7 +3308,7 @@ async def add_favorite(fav: FavoriteCreate, current_user: dict = Depends(get_cur
 
 @api_router.get("/favorites", response_model=List[PlayerProfile])
 async def get_favorites(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     favorites = await db.favorites.find({"club_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
@@ -3240,7 +3321,7 @@ async def get_favorites(current_user: dict = Depends(get_current_user)):
 
 @api_router.delete("/favorites/{player_id}")
 async def remove_favorite(player_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy']:
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     result = await db.favorites.delete_one({"club_id": current_user['user_id'], "player_id": player_id})
@@ -3574,6 +3655,26 @@ async def get_college_players(
     players = [strip_player_private_info(p) for p in players]
     return [PlayerProfile(**p) for p in players]
 
+# ============ COLLEGE AGENCY ENDPOINTS ============
+@api_router.get("/college-agency/profile", response_model=CollegeAgencyProfile)
+async def get_college_agency_profile(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'college_agency':
+        raise HTTPException(status_code=403, detail="Not a college agency")
+    agency = await db.college_agencies.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    if not agency:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return CollegeAgencyProfile(**agency)
+
+@api_router.put("/college-agency/profile", response_model=CollegeAgencyProfile)
+async def update_college_agency_profile(update: CollegeAgencyUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'college_agency':
+        raise HTTPException(status_code=403, detail="Not a college agency")
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if update_data:
+        await db.college_agencies.update_one({"user_id": current_user['user_id']}, {"$set": update_data})
+    agency = await db.college_agencies.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+    return CollegeAgencyProfile(**agency)
+
 # ============ FEDERATION ENDPOINTS ============
 @api_router.get("/federation/profile", response_model=FederationProfile)
 async def get_federation_profile(current_user: dict = Depends(get_current_user)):
@@ -3856,6 +3957,34 @@ async def unverify_academy(user_id: str, current_user: dict = Depends(get_curren
         raise HTTPException(status_code=403, detail="Not an admin")
     await db.academies.update_one({"user_id": user_id}, {"$set": {"verified": False}})
     return {"message": "Academy verification removed"}
+
+
+# ============ COLLEGE AGENCY ADMIN ENDPOINTS ============
+@api_router.get("/admin/college-agencies")
+async def get_all_college_agencies(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    agencies = await db.college_agencies.find({}, {"_id": 0}).to_list(1000)
+    return agencies
+
+@api_router.put("/admin/college-agencies/{user_id}/approve")
+async def approve_college_agency(user_id: str, approval: UserApproval, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    new_status = "active" if approval.approved else "pending"
+    result = await db.college_agencies.update_one({"user_id": user_id}, {"$set": {"approved": approval.approved, "status": new_status}})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="College agency not found")
+    if approval.approved:
+        user_doc = await db.users.find_one({"id": user_id}, {"_id": 0, "email": 1})
+        agency = await db.college_agencies.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+        if user_doc and agency:
+            try:
+                await send_org_approved(user_doc["email"], agency.get("name", ""), "college agency")
+            except Exception:
+                pass
+        await sio.emit("account_approved", {"approved": True, "message": "Your college agency account has been approved!"}, room=f"user_{user_id}")
+    return {"message": "Updated"}
 
 
 # Federation favorites (scouting list)
@@ -4499,7 +4628,7 @@ async def delete_match_from_archive(match_id: str, current_user: dict = Depends(
 @api_router.get("/players/{player_id}/match-archive")
 async def get_player_match_archive_public(player_id: str, current_user: dict = Depends(get_current_user)):
     """Clubs and federations can view player match archive"""
-    if current_user['role'] not in ['club', 'federation', 'admin', 'college', 'agent', 'specialist', 'analyst']:
+    if current_user['role'] not in ['club', 'federation', 'admin', 'college', 'agent', 'specialist', 'analyst', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     matches = await db.match_archive.find({"player_id": player_id}, {"_id": 0}).sort("match_date", -1).to_list(100)
@@ -4553,7 +4682,7 @@ async def delete_match_from_calendar(match_id: str, current_user: dict = Depends
 @api_router.get("/players/{player_id}/match-calendar")
 async def get_player_match_calendar_public(player_id: str, current_user: dict = Depends(get_current_user)):
     """Clubs, colleges, academies, agents, specialists and federations can view player upcoming matches"""
-    if current_user['role'] not in ['club', 'federation', 'admin', 'college', 'academy', 'agent', 'specialist']:
+    if current_user['role'] not in ['club', 'federation', 'admin', 'college', 'academy', 'agent', 'specialist', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     matches = await db.match_calendar.find({"player_id": player_id}, {"_id": 0}).sort("match_date", 1).to_list(100)
@@ -4904,7 +5033,7 @@ async def create_chat_request(
 ):
     """Club, Agent, or Specialist creates a chat request to connect with a player"""
     role = current_user['role']
-    if role not in ['club', 'agent', 'specialist', 'college', 'federation']:
+    if role not in ['club', 'agent', 'specialist', 'college', 'federation', 'college_agency']:
         raise HTTPException(status_code=403, detail="Only clubs, colleges, agents, and specialists can request chats")
     
     # Specialists must include a message explaining their services
@@ -4956,7 +5085,10 @@ async def create_chat_request(
         if not requester:
             requester = await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
         requester_name = requester.get('name', 'Unknown College') if requester else 'Unknown College'
-    
+    elif role == 'college_agency':
+        requester = await db.college_agencies.find_one({"user_id": current_user['user_id']}, {"_id": 0})
+        requester_name = requester.get('name', 'Unknown Agency') if requester else 'Unknown Agency'
+
     chat_request = {
         "id": str(uuid.uuid4()),
         "player_id": request_data.player_id,
@@ -5084,7 +5216,7 @@ async def get_my_chat_requests(current_user: dict = Depends(get_current_user)):
                 req["specialist_type"] = org.get("specialist_type")
             enriched.append(req)
         return enriched
-    elif role in ['club', 'agent', 'specialist', 'college', 'federation']:
+    elif role in ['club', 'agent', 'specialist', 'college', 'federation', 'college_agency']:
         requests = await db.chat_requests.find({"requester_id": user_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
     elif role == 'academy':
         # Incoming requests for any player in this academy
@@ -5540,7 +5672,7 @@ async def clear_chatbot_session(
 # --- Scouting Notes ---
 @api_router.post("/scouting/notes", response_model=ScoutingNote)
 async def create_scouting_note(note: ScoutingNoteCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     org = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     author_name = org.get("name", current_user.get("email", "Unknown")) if org else current_user.get("email", "Unknown")
@@ -5560,7 +5692,7 @@ async def create_scouting_note(note: ScoutingNoteCreate, current_user: dict = De
 
 @api_router.get("/scouting/notes/{player_id}")
 async def get_scouting_notes(player_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     notes = await db.scouting_notes.find({
         "player_id": player_id,
@@ -5592,7 +5724,7 @@ async def delete_scouting_note(note_id: str, current_user: dict = Depends(get_cu
 # --- Post Mortems ---
 @api_router.post("/scouting/post-mortems", response_model=PostMortem)
 async def create_post_mortem(pm: PostMortemCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     org = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     author_name = org.get("name", current_user.get("email", "Unknown")) if org else current_user.get("email", "Unknown")
@@ -5608,7 +5740,7 @@ async def create_post_mortem(pm: PostMortemCreate, current_user: dict = Depends(
 
 @api_router.get("/scouting/post-mortems/{player_id}")
 async def get_post_mortems(player_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     pms = await db.post_mortems.find({
         "player_id": player_id,
@@ -5641,7 +5773,7 @@ async def delete_post_mortem(pm_id: str, current_user: dict = Depends(get_curren
 # --- Player Tracking ---
 @api_router.post("/scouting/track/{player_id}")
 async def track_player(player_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     existing = await db.tracked_players.find_one({"tracker_id": current_user['user_id'], "player_id": player_id})
     if existing:
@@ -5661,7 +5793,7 @@ async def untrack_player(player_id: str, current_user: dict = Depends(get_curren
 
 @api_router.get("/scouting/tracked")
 async def get_tracked_players(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'agent', 'analyst', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     tracked = await db.tracked_players.find({"tracker_id": current_user['user_id']}, {"_id": 0}).to_list(1000)
     player_ids = [t["player_id"] for t in tracked]
@@ -5672,7 +5804,7 @@ async def get_tracked_players(current_user: dict = Depends(get_current_user)):
 # --- Scouting Groups ---
 @api_router.post("/scouting/groups")
 async def create_scouting_group(group: ScoutingGroupCreate, current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     org = await db.clubs.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.federations.find_one({"user_id": current_user['user_id']}, {"_id": 0}) or           await db.colleges.find_one({"user_id": current_user['user_id']}, {"_id": 0})
     org_name = org.get("name", "Unknown") if org else "Unknown"
@@ -5694,7 +5826,7 @@ async def create_scouting_group(group: ScoutingGroupCreate, current_user: dict =
 
 @api_router.get("/scouting/groups")
 async def get_scouting_groups(current_user: dict = Depends(get_current_user)):
-    if current_user['role'] not in ['club', 'federation', 'college']:
+    if current_user['role'] not in ['club', 'federation', 'college', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     groups = await db.scouting_groups.find({
         "$or": [
@@ -5772,7 +5904,7 @@ PIPELINE_STAGES = [
 
 @api_router.get("/pipeline")
 async def get_pipeline(current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college", "analyst", "academy"]:
+    if current_user["role"] not in ["club", "federation", "college", "analyst", "academy", "college_agency"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     pipeline_players = await db.pipeline.find({"org_id": current_user["user_id"]}, {"_id": 0}).to_list(1000)
     # Enrich with player data
@@ -5798,7 +5930,7 @@ async def get_pipeline(current_user: dict = Depends(get_current_user)):
 
 @api_router.post("/pipeline")
 async def add_to_pipeline(data: PipelinePlayerAdd, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college", "analyst", "academy"]:
+    if current_user["role"] not in ["club", "federation", "college", "analyst", "academy", "college_agency"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     existing = await db.pipeline.find_one({"org_id": current_user["user_id"], "player_id": data.player_id})
     if existing:
@@ -5938,7 +6070,7 @@ class TrialInvitation(BaseModel):
 
 @api_router.post("/trial-invitation")
 async def send_trial_invitation(invite: TrialInvitation, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["club", "federation", "college", "analyst", "academy"]:
+    if current_user["role"] not in ["club", "federation", "college", "analyst", "academy", "college_agency"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
                    await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
@@ -7653,6 +7785,9 @@ async def get_my_permissions(current_user: dict = Depends(get_current_user)):
     elif role in ["club"]:
         club = await db.clubs.find_one({"user_id": user_id}, {"_id": 0})
         user_data = club or {}
+    elif role == "college_agency":
+        agency = await db.college_agencies.find_one({"user_id": user_id}, {"_id": 0})
+        user_data = agency or {}
     elif role == "college":
         college = await db.colleges.find_one({"user_id": user_id}, {"_id": 0})
         if not college:
@@ -9372,6 +9507,10 @@ async def get_player_analytics(current_user: dict = Depends(get_current_user)):
                 org = await db.clubs.find_one({"user_id": viewer_id}, {"_id": 0, "playing_level": 1})
             elif viewer_role == "college":
                 org = await db.clubs.find_one({"user_id": viewer_id}, {"_id": 0, "playing_level": 1})
+            elif viewer_role == "college_agency":
+                level_label = "College Agency"
+                viewer_breakdown[level_label] = viewer_breakdown.get(level_label, 0) + 1
+                continue
             elif viewer_role == "federation":
                 level_label = "Federation"
                 viewer_breakdown[level_label] = viewer_breakdown.get(level_label, 0) + 1

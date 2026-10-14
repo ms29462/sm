@@ -90,6 +90,14 @@ export const api = {
   getBenchmarkStatus: () => axios.get(`${API}/admin/benchmark-status`, { headers: getAuthHeaders() }),
   getBenchmarkGenerationStatus: () => axios.get(`${API}/admin/benchmark-generation-status`, { headers: getAuthHeaders() }),
 
+  // College Agency
+  getCollegeAgencyProfile: () => axios.get(`${API}/college-agency/profile`, { headers: getAuthHeaders() }),
+  updateCollegeAgencyProfile: (data) => axios.put(`${API}/college-agency/profile`, data, { headers: getAuthHeaders() }),
+
+  // Admin - College Agencies
+  getAllCollegeAgencies: () => axios.get(`${API}/admin/college-agencies`, { headers: getAuthHeaders() }),
+  approveCollegeAgency: (userId, approved) => axios.put(`${API}/admin/college-agencies/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
+
   // Admin - Federations
   getAllFederations: () => axios.get(`${API}/admin/federations`, { headers: getAuthHeaders() }),
   approveFederation: (userId, approved) => axios.put(`${API}/admin/federations/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
