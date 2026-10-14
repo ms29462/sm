@@ -164,7 +164,7 @@ const Landing = () => {
               className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer flex flex-col"
               onClick={() => navigate(card.path)}
             >
-              <div className="mb-4"><img src={card.icon} alt={card.label} className="w-12 h-12 object-contain" /></div>
+              <div className="mb-4"><img src={card.icon} alt={card.label} className="w-16 h-16 object-contain" /></div>
               <h3 className="text-lg font-heading font-bold uppercase mb-3">{card.label}</h3>
               <p className="text-muted-foreground text-sm mb-4 flex-1">{card.desc}</p>
               <ul className="space-y-1.5 mb-5 text-sm">
