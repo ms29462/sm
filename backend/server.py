@@ -40,7 +40,7 @@ from email_service import (
     send_chat_request_received, send_chat_request_accepted, send_chat_request_declined, send_new_chat_message,
     send_admin_new_chat_request, send_admin_chat_request_accepted,
     send_opportunity_published, send_unread_messages_reminder,
-    send_new_application_received
+    send_new_application_received, send_admin_new_user_pending
 )
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -1463,6 +1463,12 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             await send_player_welcome(user.email, user.name, verification_link)
         except Exception as e:
             print(f"Welcome email error: {e}")
+        try:
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            if admin_email:
+                background_tasks.add_task(send_admin_new_user_pending, admin_email, user.name, "player")
+        except Exception as e:
+            print(f"Admin notification error: {e}")
     elif user.role == 'federation':
         federation_doc = {
             "user_id": user_id,
@@ -1494,6 +1500,12 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             await send_org_application_received(user.email, user.name, "federation")
         except Exception as e:
             print(f"Email error: {e}")
+        try:
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            if admin_email:
+                background_tasks.add_task(send_admin_new_user_pending, admin_email, user.name, "federation")
+        except Exception as e:
+            print(f"Admin notification error: {e}")
     elif user.role == 'academy':
         academy_doc = {
             "user_id": user_id,
@@ -1522,6 +1534,12 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             await send_org_application_received(user.email, user.name, "academy")
         except Exception as e:
             print(f"Email error: {e}")
+        try:
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            if admin_email:
+                background_tasks.add_task(send_admin_new_user_pending, admin_email, user.name, "academy")
+        except Exception as e:
+            print(f"Admin notification error: {e}")
     elif user.role == 'agent':
         agent_doc = {
             "user_id": user_id,
@@ -1552,6 +1570,12 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             await send_org_application_received(user.email, user.name, "agent")
         except Exception as e:
             print(f"Email error: {e}")
+        try:
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            if admin_email:
+                background_tasks.add_task(send_admin_new_user_pending, admin_email, user.name, "agent")
+        except Exception as e:
+            print(f"Admin notification error: {e}")
     elif user.role == 'analyst':
         analyst_doc = {
             "user_id": user_id,
@@ -1571,6 +1595,12 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             "badges": [],
         }
         await db.analysts.insert_one(analyst_doc)
+        try:
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            if admin_email:
+                background_tasks.add_task(send_admin_new_user_pending, admin_email, user.name, "analyst")
+        except Exception as e:
+            print(f"Admin notification error: {e}")
     elif user.role == 'specialist':
         specialist_doc = {
             "user_id": user_id,
@@ -1594,6 +1624,12 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             "discovery_call_status": "Not Contacted",
         }
         await db.specialists.insert_one(specialist_doc)
+        try:
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            if admin_email:
+                background_tasks.add_task(send_admin_new_user_pending, admin_email, user.name, "specialist")
+        except Exception as e:
+            print(f"Admin notification error: {e}")
     else:  # club
         club_doc = {
             "user_id": user_id,
@@ -1625,7 +1661,13 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             await send_org_application_received(user.rep_email or user.email, user.club_name or user.name, "club")
         except Exception as e:
             print(f"Email error: {e}")
-    
+        try:
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            if admin_email:
+                background_tasks.add_task(send_admin_new_user_pending, admin_email, user.club_name or user.name, user.role)
+        except Exception as e:
+            print(f"Admin notification error: {e}")
+
     token = create_token(user_id, user.email, user.role)
     return AuthResponse(token=token, role=user.role, user_id=user_id, email=user.email, name=getattr(user, "name", None) or getattr(user, "club_name", None) or getattr(user, "rep_first_name", None))
 
