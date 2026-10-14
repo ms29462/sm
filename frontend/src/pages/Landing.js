@@ -120,42 +120,42 @@ const Landing = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
           {[
             {
-              role: "player", label: t("landing.for_players"), icon: "👤", btn: t("landing.btn_player"), path: "/player-register",
+              role: "player", label: t("landing.for_players"), icon: "/icon-player.png", btn: t("landing.btn_player"), path: "/player-register",
               desc: t("landing.desc_player"),
               points: [t("landing.pt_player_1"), t("landing.pt_player_2"), t("landing.pt_player_3"), t("landing.pt_player_4")]
             },
             {
-              role: "club", label: t("landing.for_clubs"), icon: "🏟️", btn: t("landing.btn_club"), path: "/club-register",
+              role: "club", label: t("landing.for_clubs"), icon: "/icon-club.png", btn: t("landing.btn_club"), path: "/club-register",
               desc: t("landing.desc_club"),
               points: [t("landing.pt_club_1"), t("landing.pt_club_2"), t("landing.pt_club_3"), t("landing.pt_club_4")]
             },
             {
-              role: "college", label: t("landing.for_colleges"), icon: "🎓", btn: t("landing.btn_college"), path: "/college-register",
+              role: "college", label: t("landing.for_colleges"), icon: "/icon-college.png", btn: t("landing.btn_college"), path: "/college-register",
               desc: t("landing.desc_college"),
               points: [t("landing.pt_college_1"), t("landing.pt_college_2"), t("landing.pt_college_3"), t("landing.pt_college_4")]
             },
             {
-              role: "federation", label: t("landing.for_federations"), icon: "🌍", btn: t("landing.btn_federation"), path: "/federation-register",
+              role: "federation", label: t("landing.for_federations"), icon: "/icon-federation.png", btn: t("landing.btn_federation"), path: "/federation-register",
               desc: t("landing.desc_federation"),
               points: [t("landing.pt_fed_1"), t("landing.pt_fed_2"), t("landing.pt_fed_3"), t("landing.pt_fed_4")]
             },
             {
-              role: "academy", label: "For Academies", icon: "🏫", btn: "Join as Academy", path: "/academy-register",
+              role: "academy", label: "For Academies", icon: "/icon-academy.png", btn: "Join as Academy", path: "/academy-register",
               desc: "Register your academy and submit your players to professional opportunities worldwide.",
               points: ["Manage your player roster", "Apply to opportunities on behalf of your players", "Get discovered by clubs and federations", "Track all your applications in one place"]
             },
             {
-              role: "college_agency", label: "For College Agencies", icon: "🏛️", btn: "Join as College Agency", path: "/college-agency-register",
+              role: "college_agency", label: "For College Agencies", icon: "/icon-college-agency.png", btn: "Join as College Agency", path: "/college-agency-register",
               desc: "Connect student-athletes with NCAA, NAIA, NJCAA and other college-level programs worldwide.",
               points: ["Post college-level opportunities", "Browse and scout players", "Manage applications and pipeline", "Connect directly with players via chat"]
             },
             {
-              role: "agent", label: t("landing.for_agents"), icon: "🤝", btn: t("landing.btn_agent"), path: "/agent-register",
+              role: "agent", label: t("landing.for_agents"), icon: "/icon-agent.png", btn: t("landing.btn_agent"), path: "/agent-register",
               desc: t("landing.desc_agent"),
               points: [t("landing.pt_agent_1"), t("landing.pt_agent_2"), t("landing.pt_agent_3"), t("landing.pt_agent_4")]
             },
             {
-              role: "specialist", label: t("landing.for_specialists"), icon: "📊", btn: t("landing.btn_specialist"), path: "/specialist-register",
+              role: "specialist", label: t("landing.for_specialists"), icon: "/icon-specialist.png", btn: t("landing.btn_specialist"), path: "/specialist-register",
               desc: t("landing.desc_specialist"),
               points: [t("landing.pt_spec_1"), t("landing.pt_spec_2"), t("landing.pt_spec_3"), t("landing.pt_spec_4")]
             },
@@ -164,7 +164,7 @@ const Landing = () => {
               className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer flex flex-col"
               onClick={() => navigate(card.path)}
             >
-              <div className="text-3xl mb-4">{card.icon}</div>
+              <div className="mb-4"><img src={card.icon} alt={card.label} className="w-12 h-12 object-contain" /></div>
               <h3 className="text-lg font-heading font-bold uppercase mb-3">{card.label}</h3>
               <p className="text-muted-foreground text-sm mb-4 flex-1">{card.desc}</p>
               <ul className="space-y-1.5 mb-5 text-sm">
