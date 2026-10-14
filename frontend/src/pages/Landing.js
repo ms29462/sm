@@ -145,6 +145,11 @@ const Landing = () => {
               points: ["Manage your player roster", "Apply to opportunities on behalf of your players", "Get discovered by clubs and federations", "Track all your applications in one place"]
             },
             {
+              role: "college_agency", label: "For College Agencies", icon: "🏛️", btn: "Join as College Agency", path: "/college-agency-register",
+              desc: "Connect student-athletes with NCAA, NAIA, NJCAA and other college-level programs worldwide.",
+              points: ["Post college-level opportunities", "Browse and scout players", "Manage applications and pipeline", "Connect directly with players via chat"]
+            },
+            {
               role: "agent", label: t("landing.for_agents"), icon: "🤝", btn: t("landing.btn_agent"), path: "/agent-register",
               desc: t("landing.desc_agent"),
               points: [t("landing.pt_agent_1"), t("landing.pt_agent_2"), t("landing.pt_agent_3"), t("landing.pt_agent_4")]
