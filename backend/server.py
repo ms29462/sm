@@ -3331,6 +3331,17 @@ async def remove_favorite(player_id: str, current_user: dict = Depends(get_curre
     return {"message": "Removed"}
 
 # ============ ADMIN ENDPOINTS ============
+@api_router.post("/admin/bulk-grant-credits")
+async def bulk_grant_credits(current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    players = await db.players.find({}, {"_id": 0, "user_id": 1}).to_list(length=None)
+    count = 0
+    for p in players:
+        await add_credits(p["user_id"], 5, "bonus", "5 bonus credits granted to all players")
+        count += 1
+    return {"granted_to": count, "credits_each": 5}
+
 @api_router.get("/admin/stats", response_model=AdminStats)
 async def get_admin_stats(current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':

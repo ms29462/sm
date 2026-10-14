@@ -45,6 +45,7 @@ export const api = {
 
   // Admin
   getAdminStats: () => axios.get(`${API}/admin/stats`, { headers: getAuthHeaders() }),
+  bulkGrantCredits: () => axios.post(`${API}/admin/bulk-grant-credits`, {}, { headers: getAuthHeaders() }),
   getAllPlayers: () => axios.get(`${API}/admin/players`, { headers: getAuthHeaders() }),
   getAllClubs: () => axios.get(`${API}/admin/clubs`, { headers: getAuthHeaders() }),
   approvePlayer: (userId, approved) => axios.put(`${API}/admin/players/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
