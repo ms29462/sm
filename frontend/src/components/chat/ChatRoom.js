@@ -5,7 +5,7 @@ import { useNotifications } from "@/context/NotificationContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, ArrowLeft, Loader2 } from "lucide-react";
+import { Send, ArrowLeft, Loader2, Zap, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
@@ -33,6 +33,8 @@ const ChatRoom = () => {
   const [typingUser, setTypingUser] = useState(null);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [freeRemaining, setFreeRemaining] = useState(null);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const messagesEndRef = useRef(null);
   const scrollAreaRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -72,24 +74,16 @@ const ChatRoom = () => {
         }
       };
 
-      const handleMessageBlocked = (data) => {
-        toast.error(data.reason || "Upgrade to Premium to continue this conversation.", {
-          action: {
-            label: "Upgrade",
-            onClick: async () => {
-              try {
-                const res = await api.createPremiumCheckout();
-                window.location.href = res.data.checkout_url;
-              } catch (e) {
-                navigate("/player/credits");
-              }
-            }
-          },
-          duration: 8000
-        });
+      const handleMessageBlocked = () => {
+        setShowPremiumModal(true);
+      };
+
+      const handleMessagesRemaining = (data) => {
+        setFreeRemaining(data.remaining);
       };
 
       on("message_blocked", handleMessageBlocked);
+      on("messages_remaining", handleMessagesRemaining);
       on("previous_messages", handlePreviousMessages);
       on("new_chat_message", handleNewMessage);
       on("user_typing", handleUserTyping);
@@ -97,6 +91,7 @@ const ChatRoom = () => {
 
       return () => {
         off("message_blocked", handleMessageBlocked);
+        off("messages_remaining", handleMessagesRemaining);
         off("previous_messages", handlePreviousMessages);
         off("new_chat_message", handleNewMessage);
         off("user_typing", handleUserTyping);
@@ -258,6 +253,21 @@ const ChatRoom = () => {
         </div>
       </ScrollArea>
 
+      {/* Free messages countdown banner */}
+      {user?.role === "player" && freeRemaining !== null && freeRemaining >= 0 && (
+        <div className={`px-4 py-2 text-center text-xs font-medium border-t ${
+          freeRemaining === 0
+            ? "bg-red-500/10 border-red-500/30 text-red-400"
+            : freeRemaining === 1
+            ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
+            : "bg-primary/10 border-primary/20 text-primary"
+        }`}>
+          {freeRemaining === 0
+            ? "No free messages left — upgrade to Premium to keep chatting"
+            : `${freeRemaining} free message${freeRemaining === 1 ? "" : "s"} remaining`}
+        </div>
+      )}
+
       <div className="bg-card border-t border-border p-4">
         <div className="max-w-4xl mx-auto flex space-x-2">
           <Input
@@ -279,6 +289,44 @@ const ChatRoom = () => {
           </Button>
         </div>
       </div>
+
+      {/* Premium upgrade modal */}
+      {showPremiumModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border/50 rounded-sm p-6 max-w-sm w-full text-center">
+            <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageCircle className="w-7 h-7 text-primary" />
+            </div>
+            <h3 className="font-heading font-bold uppercase text-lg mb-2">Free limit reached</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              You've used your 3 free messages. Upgrade to Premium to send unlimited messages and unlock all features.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button
+                onClick={async () => {
+                  setShowPremiumModal(false);
+                  try {
+                    const res = await api.createPremiumCheckout();
+                    window.location.href = res.data.checkout_url;
+                  } catch {
+                    navigate("/player/credits");
+                  }
+                }}
+                className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
+              >
+                <Zap className="w-4 h-4 mr-2" /> Upgrade to Premium
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setShowPremiumModal(false)}
+                className="w-full text-muted-foreground hover:text-white rounded-sm"
+              >
+                Maybe later
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -7201,21 +7201,20 @@ async def send_chat_message(sid, data):
     message_text = data.get('message')
     
     if room_id and sender_id and message_text:
-        # Check messaging limits for free players
+        # Check messaging limits for free players (3 free messages across all chats)
+        FREE_MESSAGE_LIMIT = 3
         if sender_role == 'player':
             player = await db.players.find_one({"user_id": sender_id}, {"_id": 0})
             is_premium = player.get("is_premium", False) if player else False
-            
+
             if not is_premium:
-                room = await chat_room_manager.get_chat_room(room_id)
-                if room:
-                    player_message_count = sum(1 for m in room.messages if m.sender_id == sender_id)
-                    if player_message_count >= 1:
-                        await sio.emit('message_blocked', {
-                            'room_id': room_id,
-                            'reason': 'Upgrade to Premium to continue this conversation.'
-                        }, room=sid)
-                        return
+                used = player.get("free_messages_used", 0) if player else 0
+                if used >= FREE_MESSAGE_LIMIT:
+                    await sio.emit('message_blocked', {
+                        'room_id': room_id,
+                        'reason': 'free_limit_reached'
+                    }, room=sid)
+                    return
         
         message = ChatMessage(
             id=str(uuid.uuid4()),
@@ -7231,6 +7230,18 @@ async def send_chat_message(sid, data):
 
         # Broadcast to all in room
         await sio.emit('new_chat_message', message.model_dump(), room=room_id)
+
+        # Track free message usage and notify player of remaining count
+        if sender_role == 'player':
+            player = await db.players.find_one({"user_id": sender_id}, {"_id": 0})
+            if player and not player.get("is_premium", False):
+                new_used = player.get("free_messages_used", 0) + 1
+                await db.players.update_one({"user_id": sender_id}, {"$set": {"free_messages_used": new_used}})
+                remaining = FREE_MESSAGE_LIMIT - new_used
+                await sio.emit('messages_remaining', {
+                    'remaining': remaining,
+                    'limit': FREE_MESSAGE_LIMIT
+                }, room=sid)
 
         # Email notification to the other participant only if they are not currently in this chat room
         try:
