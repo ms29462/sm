@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { MessageCircle, CheckCircle, XCircle, Clock, Inbox } from "lucide-react";
+import { MessageCircle, CheckCircle, XCircle, Clock, Inbox, Zap } from "lucide-react";
 import { useNotifications } from "@/context/NotificationContext";
 import { useAuth } from "@/context/AuthContext";
+
+const FREE_MESSAGE_LIMIT = 3;
 
 const STATUS_STYLES = {
   pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
@@ -19,6 +21,7 @@ const UnifiedChats = () => {
   const [loadingChats, setLoadingChats] = useState(true);
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [deletionRequested, setDeletionRequested] = useState({});
+  const [freeMessagesUsed, setFreeMessagesUsed] = useState(null);
   const { unreadChats } = useNotifications();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -26,7 +29,15 @@ const UnifiedChats = () => {
   useEffect(() => {
     loadChats();
     loadRequests();
+    if (user?.role === "player") loadFreeMessageCount();
   }, []);
+
+  const loadFreeMessageCount = async () => {
+    try {
+      const res = await api.getPlayerProfile();
+      setFreeMessagesUsed(res.data.free_messages_used ?? 0);
+    } catch {}
+  };
 
   const loadChats = async () => {
     try {
@@ -75,8 +86,44 @@ const UnifiedChats = () => {
         : "border-transparent text-muted-foreground hover:text-white"
     }`;
 
+  const remaining = user?.role === "player" && freeMessagesUsed !== null
+    ? Math.max(0, FREE_MESSAGE_LIMIT - freeMessagesUsed)
+    : null;
+
   return (
     <div className="flex flex-col h-full">
+      {/* Free message banner for non-premium players */}
+      {remaining !== null && !user?.is_premium && (
+        <div className={`flex items-center justify-between px-4 py-2.5 text-xs font-medium border-b ${
+          remaining === 0
+            ? "bg-red-500/10 border-red-500/30 text-red-400"
+            : remaining === 1
+            ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
+            : "bg-primary/10 border-primary/20 text-primary"
+        }`}>
+          <span>
+            {remaining === 0
+              ? "No free messages left — upgrade to send more"
+              : `${remaining} free message${remaining === 1 ? "" : "s"} remaining across all chats`}
+          </span>
+          {remaining === 0 && (
+            <button
+              onClick={async () => {
+                try {
+                  const res = await api.createPremiumCheckout();
+                  window.location.href = res.data.checkout_url;
+                } catch {
+                  navigate("/player/credits");
+                }
+              }}
+              className="flex items-center gap-1 bg-primary text-black font-bold px-2 py-1 rounded-sm text-[10px] uppercase tracking-wide hover:bg-primary/90 transition-colors ml-3 flex-shrink-0"
+            >
+              <Zap className="w-3 h-3" /> Upgrade
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex border-b border-border/50 bg-background sticky top-0 z-10">
         <button className={tabClass("chats")} onClick={() => setActiveTab("chats")}>

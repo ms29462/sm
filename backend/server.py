@@ -246,6 +246,7 @@ class PlayerProfile(BaseModel):
     is_premium: Optional[bool] = False
     premium_status: Optional[str] = None
     credits: Optional[int] = 0
+    free_messages_used: Optional[int] = 0
     is_minor: Optional[bool] = False
     parental_consent: Optional[bool] = None
     parental_consent_form_received: Optional[bool] = False
