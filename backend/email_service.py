@@ -377,6 +377,31 @@ async def send_credit_purchase_confirmation(email: str, name: str, credits: int,
     """
     await send_email(email, f"Payment Confirmed - {pack_name} — Soccer Match", get_base_template(content))
 
+async def send_new_opportunity_match(email: str, player_name: str, position: str, league_level: str, org_name: str, opp_id: str):
+    label = f"{position} — {league_level}" if position and league_level else (position or league_level or "New opportunity")
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">New Opportunity Match</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {player_name},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        A new opportunity matching your level has just been published on Soccer Match. Be among the first to apply!
+      </p>
+      <div style="background-color:#1a1a1a;border:1px solid #333;border-left:3px solid #c8f135;padding:16px 20px;margin:0 0 24px;border-radius:4px;">
+        <p style="color:#c8f135;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 4px;">Opportunity</p>
+        <p style="color:#fff;font-size:16px;font-weight:700;margin:0 0 4px;">{label}</p>
+        <p style="color:#999;font-size:13px;margin:0;">Posted by {org_name}</p>
+      </div>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}/player/opportunities" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">View Opportunities</a>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#555;font-size:13px;">You are receiving this because your playing level matches this opportunity. Update your preferences in your profile settings.</p>
+    """
+    await send_email(email, f"New opportunity match: {label} — Soccer Match", get_base_template(content, "New Opportunity Match"))
+
+
 async def send_admin_new_user_pending(email: str, user_name: str, user_role: str):
     role_label = user_role.replace("_", " ").title()
     content = f"""

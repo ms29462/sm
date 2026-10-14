@@ -40,7 +40,8 @@ from email_service import (
     send_chat_request_received, send_chat_request_accepted, send_chat_request_declined, send_new_chat_message,
     send_admin_new_chat_request, send_admin_chat_request_accepted,
     send_opportunity_published, send_unread_messages_reminder,
-    send_new_application_received, send_admin_new_user_pending
+    send_new_application_received, send_admin_new_user_pending,
+    send_new_opportunity_match
 )
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -8030,6 +8031,30 @@ async def admin_approve_opportunity(opp_id: str, data: dict, background_tasks: B
             )
     except Exception as e:
         logger.error(f"Failed to schedule opportunity published email: {e}")
+
+    # Notify matching players by email
+    try:
+        opp_level = opp.get("league_level", "")
+        opp_position = opp.get("position") or (opp.get("positions") or [""])[0]
+        org_name = opp.get("club_name", "")
+        if opp_level:
+            matched_players = await db.players.find(
+                {"approved": True, "playing_level": opp_level, "email": {"$exists": True, "$ne": None}},
+                {"_id": 0, "user_id": 1, "name": 1, "email": 1}
+            ).to_list(length=None)
+            for player in matched_players:
+                if player.get("email") and player.get("name"):
+                    background_tasks.add_task(
+                        send_new_opportunity_match,
+                        player["email"],
+                        player["name"],
+                        opp_position,
+                        opp_level,
+                        org_name,
+                        opp_id
+                    )
+    except Exception as e:
+        logger.error(f"Failed to schedule opportunity match emails: {e}")
 
     return {"message": "Opportunity approved and published"}
 
