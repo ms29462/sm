@@ -212,6 +212,18 @@ async def send_chat_request_accepted(email: str, org_name: str, player_name: str
     await send_email(email, "Your chat request was accepted — Soccer Match", get_base_template(content, "Chat Request Accepted"))
 
 
+async def send_chat_request_player_accepted(email: str, org_name: str, player_name: str):
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Great News — Player Accepted! ✓</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {org_name},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        <strong style="color:#fff;">{player_name}</strong> has accepted your chat request on Soccer Match. Our team is setting up your chat room — you will receive another email as soon as it is ready.
+      </p>
+      <p style="color:#555;font-size:13px;">You are receiving this email because you have an account on Soccer Match. To manage your email preferences, visit your account settings.</p>
+    """
+    await send_email(email, f"{player_name} accepted your chat request — Soccer Match", get_base_template(content, "Chat Request Accepted"))
+
+
 async def send_chat_request_declined(email: str, org_name: str, player_name: str):
     content = f"""
       <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Chat Request Update</h1>
