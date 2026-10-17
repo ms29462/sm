@@ -1665,7 +1665,40 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
                 background_tasks.add_task(send_admin_new_user_pending, admin_email, user.name, "specialist")
         except Exception as e:
             print(f"Admin notification error: {e}")
-    else:  # club
+    elif user.role == 'college_agency':
+        agency_doc = {
+            "user_id": user_id,
+            "name": user.name,
+            "email": user.email,
+            "approved": False,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "country": user.country,
+            "city": getattr(user, 'city', None),
+            "description": user.description,
+            "website": user.website,
+            "instagram": user.instagram,
+            "facebook": user.facebook,
+            "linkedin": user.linkedin,
+            "rep_first_name": user.rep_first_name,
+            "rep_last_name": user.rep_last_name,
+            "rep_role": user.rep_role,
+            "rep_email": user.rep_email,
+            "rep_phone": user.rep_phone,
+            "discovery_call_status": "Not Contacted",
+        }
+        await db.college_agencies.insert_one(agency_doc)
+        try:
+            await send_org_application_received(user.rep_email or user.email, user.name, "college agency")
+        except Exception as e:
+            print(f"Email error: {e}")
+        try:
+            admin_email = os.environ.get("ADMIN_EMAIL")
+            if admin_email:
+                background_tasks.add_task(send_admin_new_user_pending, admin_email, user.name, "college_agency")
+        except Exception as e:
+            print(f"Admin notification error: {e}")
+    else:  # club, college, academy, agent (catch-all)
         club_doc = {
             "user_id": user_id,
             "name": user.club_name or user.name,
@@ -1700,40 +1733,6 @@ async def register(request: Request, user: UserRegister, background_tasks: Backg
             admin_email = os.environ.get("ADMIN_EMAIL")
             if admin_email:
                 background_tasks.add_task(send_admin_new_user_pending, admin_email, user.club_name or user.name, user.role)
-        except Exception as e:
-            print(f"Admin notification error: {e}")
-
-    if user.role == 'college_agency':
-        agency_doc = {
-            "user_id": user_id,
-            "name": user.name or user.club_name,
-            "email": user.email,
-            "approved": False,
-            "status": "pending",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "country": user.country,
-            "city": getattr(user, 'city', None),
-            "description": user.description,
-            "website": user.website,
-            "instagram": user.instagram,
-            "facebook": user.facebook,
-            "linkedin": getattr(user, 'linkedin', None),
-            "rep_first_name": user.rep_first_name,
-            "rep_last_name": user.rep_last_name,
-            "rep_role": user.rep_role,
-            "rep_email": user.rep_email,
-            "rep_phone": user.rep_phone,
-            "discovery_call_status": "Not Contacted",
-        }
-        await db.college_agencies.insert_one(agency_doc)
-        try:
-            await send_org_application_received(user.rep_email or user.email, user.name or user.club_name, "college agency")
-        except Exception as e:
-            print(f"Email error: {e}")
-        try:
-            admin_email = os.environ.get("ADMIN_EMAIL")
-            if admin_email:
-                background_tasks.add_task(send_admin_new_user_pending, admin_email, user.name or user.club_name, "college_agency")
         except Exception as e:
             print(f"Admin notification error: {e}")
 
@@ -3997,6 +3996,31 @@ async def approve_college_agency(user_id: str, approval: UserApproval, current_u
             except Exception:
                 pass
         await sio.emit("account_approved", {"approved": True, "message": "Your college agency account has been approved!"}, room=f"user_{user_id}")
+    return {"message": "Updated"}
+
+@api_router.put("/admin/college-agencies/{user_id}")
+async def update_college_agency_admin(user_id: str, update: dict, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403)
+    update.pop("_id", None)
+    await db.college_agencies.update_one({"user_id": user_id}, {"$set": update})
+    if update.get("approved") and update.get("status") == "approved":
+        try:
+            agency = await db.college_agencies.find_one({"user_id": user_id}, {"_id": 0})
+            if agency:
+                email = agency.get("rep_email") or agency.get("email")
+                name = agency.get("name", "")
+                await send_org_approved(email, name, "college agency")
+        except Exception as e:
+            print(f"Email error: {e}")
+    return {"message": "Updated"}
+
+@api_router.put("/admin/college-agencies/{user_id}/subscription")
+async def update_college_agency_subscription(user_id: str, update: dict, current_user: dict = Depends(get_current_user)):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403)
+    update.pop("_id", None)
+    await db.college_agencies.update_one({"user_id": user_id}, {"$set": update})
     return {"message": "Updated"}
 
 

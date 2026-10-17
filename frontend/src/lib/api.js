@@ -98,6 +98,8 @@ export const api = {
   // Admin - College Agencies
   getAllCollegeAgencies: () => axios.get(`${API}/admin/college-agencies`, { headers: getAuthHeaders() }),
   approveCollegeAgency: (userId, approved) => axios.put(`${API}/admin/college-agencies/${userId}/approve`, { user_id: userId, approved }, { headers: getAuthHeaders() }),
+  updateCollegeAgencyApplication: (userId, data) => axios.put(`${API}/admin/college-agencies/${userId}`, data, { headers: getAuthHeaders() }),
+  adminUpdateCollegeAgencySubscription: (userId, data) => axios.put(`${API}/admin/college-agencies/${userId}/subscription`, data, { headers: getAuthHeaders() }),
 
   // Admin - Federations
   getAllFederations: () => axios.get(`${API}/admin/federations`, { headers: getAuthHeaders() }),
