@@ -105,7 +105,7 @@ JWT_EXPIRATION_HOURS = 24 * 7
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
-    role: Literal['player', 'club', 'federation', 'agent', 'specialist', 'college', 'analyst', 'academy']
+    role: Literal['player', 'club', 'federation', 'agent', 'specialist', 'college', 'analyst', 'academy', 'college_agency']
     name: str
     # Player registration fields
     date_of_birth: Optional[str] = None
