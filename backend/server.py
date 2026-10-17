@@ -6359,6 +6359,16 @@ async def update_news_post(news_id: str, update: NewsPostUpdate, current_user: d
     await db.news.update_one({"id": news_id}, {"$set": update_data})
     return {"message": "Updated"}
 
+@api_router.post("/admin/news/add-role")
+async def migrate_news_add_role(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    role = data.get("role")
+    if not role:
+        raise HTTPException(status_code=400, detail="role required")
+    result = await db.news.update_many({}, {"$addToSet": {"target_roles": role}})
+    return {"updated": result.modified_count}
+
 @api_router.delete("/admin/news/{news_id}")
 async def delete_news_post(news_id: str, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":

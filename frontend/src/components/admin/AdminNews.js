@@ -29,6 +29,7 @@ const AdminNews = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [migrating, setMigrating] = useState(false);
 
   useEffect(() => { loadPosts(); }, []);
 
@@ -38,6 +39,17 @@ const AdminNews = () => {
       setPosts(res.data || []);
     } catch (e) { toast.error("Failed to load news"); }
     setLoading(false);
+  };
+
+  const handleMigrateRole = async (role) => {
+    if (!window.confirm(`Add "${role}" to all existing news posts?`)) return;
+    setMigrating(true);
+    try {
+      const res = await api.addRoleToAllNews(role);
+      toast.success(`Updated ${res.data.updated} posts`);
+      loadPosts();
+    } catch { toast.error("Migration failed"); }
+    setMigrating(false);
   };
 
   const openCreate = () => { setEditingPost(null); setForm(EMPTY_FORM); setShowForm(true); };
@@ -91,9 +103,15 @@ const AdminNews = () => {
           <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">News Feed</h1>
           <p className="text-muted-foreground text-sm mt-1">Publish updates and announcements</p>
         </div>
-        <Button onClick={openCreate} className="bg-primary text-black font-bold rounded-sm">
-          <Plus className="w-4 h-4 mr-2" /> New Post
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={() => handleMigrateRole("college_agency")} disabled={migrating}
+            className="text-xs border border-white/20 text-muted-foreground rounded-sm px-3 py-2 hover:border-white/40 hover:text-white transition-colors disabled:opacity-50">
+            {migrating ? "Updating..." : "Add College Agencies to all posts"}
+          </button>
+          <Button onClick={openCreate} className="bg-primary text-black font-bold rounded-sm">
+            <Plus className="w-4 h-4 mr-2" /> New Post
+          </Button>
+        </div>
       </div>
 
       {/* Form */}
