@@ -37,7 +37,7 @@ from subscription_plans import SUBSCRIPTION_PLANS, get_plan, get_plans_for_role,
 from email_service import (
     send_player_welcome, send_org_application_received, send_org_approved,
     send_analyst_invitation, send_application_status_update, send_credit_purchase_confirmation,
-    send_chat_request_received, send_chat_request_accepted, send_chat_request_player_accepted, send_chat_request_declined, send_new_chat_message,
+    send_chat_request_received, send_chat_request_accepted, send_chat_request_declined, send_new_chat_message,
     send_admin_new_chat_request, send_admin_chat_request_accepted,
     send_opportunity_published, send_unread_messages_reminder,
     send_new_application_received, send_admin_new_user_pending,
@@ -5353,19 +5353,6 @@ async def respond_to_chat_request(
                 )
         except Exception as e:
             logger.error(f"Failed to schedule admin chat accepted email: {e}")
-        # Email notification to requester (org) — player accepted, chat room pending
-        try:
-            if requester_id:
-                requester_email = await get_user_email(requester_id)
-                if requester_email:
-                    background_tasks.add_task(
-                        send_chat_request_player_accepted,
-                        requester_email,
-                        requester_name,
-                        player_name
-                    )
-        except Exception as e:
-            logger.error(f"Failed to schedule requester chat accepted email: {e}")
         return {"message": "Chat request accepted. Admin will create the chat room."}
     else:
         # Notify admin about rejection
