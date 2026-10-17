@@ -8888,6 +8888,20 @@ async def get_club_subscription_status(current_user: dict = Depends(get_current_
         "has_access": sub_status == "active",
     }
 
+@api_router.get("/college-agency/subscription-status")
+async def get_college_agency_subscription_status(current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "college_agency":
+        raise HTTPException(status_code=403)
+    org = await db.college_agencies.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+    if not org:
+        raise HTTPException(status_code=404)
+    sub_status = org.get("club_sub_status", "pending_review")
+    return {
+        "sub_status": sub_status,
+        "active_plan": org.get("active_plan"),
+        "has_access": sub_status == "active",
+    }
+
 @api_router.post("/stripe/create-club-checkout")
 @limiter.limit("20/minute")
 async def create_club_checkout(request: Request, data: dict, current_user: dict = Depends(get_current_user)):

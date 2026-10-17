@@ -8,7 +8,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import Badge from '@/components/ui/badge';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
-import { Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Target, Kanban, Newspaper, TrendingUp } from 'lucide-react';
+import { Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Target, Kanban, Newspaper, TrendingUp, CreditCard } from 'lucide-react';
 
 const CollegeAgencyLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -91,6 +91,11 @@ const CollegeAgencyLayout = ({ children }) => {
             <Button variant={isActive('/college-agency/chats') ? 'secondary' : 'ghost'} className="w-full justify-start relative">
               <MessageCircle className="w-4 h-4 mr-3" /> Chats
               <Badge count={totalUnread + unreadChatRequests} />
+            </Button>
+          </Link>
+          <Link to="/college-agency/subscribe">
+            <Button variant={isActive('/college-agency/subscribe') ? 'secondary' : 'ghost'} className="w-full justify-start">
+              <CreditCard className="w-4 h-4 mr-3" /> Subscription
             </Button>
           </Link>
         </nav>

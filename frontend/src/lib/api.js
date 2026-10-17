@@ -94,6 +94,7 @@ export const api = {
   // College Agency
   getCollegeAgencyProfile: () => axios.get(`${API}/college-agency/profile`, { headers: getAuthHeaders() }),
   updateCollegeAgencyProfile: (data) => axios.put(`${API}/college-agency/profile`, data, { headers: getAuthHeaders() }),
+  getCollegeAgencySubscriptionStatus: () => axios.get(`${API}/college-agency/subscription-status`, { headers: getAuthHeaders() }),
 
   // Admin - College Agencies
   getAllCollegeAgencies: () => axios.get(`${API}/admin/college-agencies`, { headers: getAuthHeaders() }),
