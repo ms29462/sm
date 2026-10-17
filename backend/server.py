@@ -3085,20 +3085,21 @@ async def get_player_verification_public(player_id: str, current_user: dict = De
 @api_router.get("/players/{player_id}", response_model=PlayerProfile)
 async def get_player_detail(player_id: str, current_user: dict = Depends(get_current_user)):
     """Get detailed player profile by user_id"""
-    if current_user['role'] not in ['club', 'admin', 'federation', 'college', 'agent', 'specialist', 'analyst', 'academy']:
+    if current_user['role'] not in ['club', 'admin', 'federation', 'college', 'agent', 'specialist', 'analyst', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     # Send profile viewed notification (not for academy viewing their own player)
-    if current_user["role"] in ["club", "federation", "college", "agent"] and current_user["user_id"] != player_id:
+    if current_user["role"] in ["club", "federation", "college", "agent", "college_agency"] and current_user["user_id"] != player_id:
         try:
             org = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
                    await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
                    await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
-                   await db.agents.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) #           await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0}) or                   await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+                   await db.agents.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "playing_level": 1, "country": 1}) or \
+                   await db.college_agencies.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1, "country": 1})
             org_name = org.get("name", "An organization") if org else "An organization"
             org_level = org.get("playing_level") or org.get("league_level", "") if org else ""
             org_country = org.get("country", "") if org else ""
-            role_label = "College" if current_user["role"] == "college" else current_user["role"].capitalize()
+            role_label = "College Agency" if current_user["role"] == "college_agency" else ("College" if current_user["role"] == "college" else current_user["role"].capitalize())
             level_info = f" ({org_level}" + (f" · {org_country}" if org_country else "") + ")" if org_level else (f" ({org_country})" if org_country else "")
             await create_notification(
                 player_id, "profile_viewed",
