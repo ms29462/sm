@@ -3494,13 +3494,14 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
 
-    await db.users.delete_one({"user_id": user_id})
+    await db.users.delete_one({"id": user_id})
     await db.players.delete_one({"user_id": user_id})
     await db.clubs.delete_one({"user_id": user_id})
     await db.federations.delete_one({"user_id": user_id})
     await db.agents.delete_one({"user_id": user_id})
     await db.specialists.delete_one({"user_id": user_id})
     await db.academies.delete_one({"user_id": user_id})
+    await db.college_agencies.delete_one({"user_id": user_id})
     await db.players.delete_many({"academy_id": user_id})
 
     # Cascade cleanup of associated data across the platform
