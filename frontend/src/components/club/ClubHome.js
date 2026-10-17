@@ -11,6 +11,7 @@ const ClubHome = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isCollege = user?.role === "college";
+  const isCollegeAgency = user?.role === "college_agency";
   const [profile, setProfile] = useState(null);
   const [recommended, setRecommended] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ const ClubHome = () => {
 
   const loadProfile = async () => {
     try {
-      const profileRes = isCollege ? await api.getCollegeProfile() : await api.getClubProfile();
+      const profileRes = isCollege ? await api.getCollegeProfile() : isCollegeAgency ? await api.getCollegeAgencyProfile() : await api.getClubProfile();
       setProfile(profileRes.data);
     } catch (error) {
       toast.error("Failed to load profile");
@@ -84,11 +85,11 @@ const ClubHome = () => {
           <div>
             <h3 className="font-heading font-bold text-lg mb-2">APPROVAL PENDING</h3>
             <p className="text-muted-foreground">
-              Your club profile is awaiting admin approval. Complete your profile to speed up the process.
+              Your {isCollegeAgency ? "agency" : isCollege ? "college" : "club"} profile is awaiting admin approval. Complete your profile to speed up the process.
             </p>
             <Button
               data-testid="complete-profile-btn"
-              onClick={() => navigate(isCollege ? "/college/profile" : "/club/profile")}
+              onClick={() => navigate(isCollege ? "/college/profile" : isCollegeAgency ? "/college-agency/profile" : "/club/profile")}
               className="mt-4 bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10 px-6"
             >
               COMPLETE PROFILE

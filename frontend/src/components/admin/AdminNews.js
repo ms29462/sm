@@ -11,12 +11,13 @@ const ROLES = [
   { id: "federation", label: "Federations" },
   { id: "agent", label: "Agents" },
   { id: "specialist", label: "Specialists" },
+  { id: "college_agency", label: "College Agencies" },
 ];
 
 const EMPTY_FORM = {
   title: "",
   content: "",
-  target_roles: ["player", "club", "college", "federation", "agent", "specialist"],
+  target_roles: ["player", "club", "college", "federation", "agent", "specialist", "college_agency"],
   pinned: false,
   media_url: "",
   media_type: null,

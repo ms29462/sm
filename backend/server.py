@@ -475,14 +475,14 @@ class NewsPost(BaseModel):
     title: str
     content: str
     author: str = "Soccer Match"
-    target_roles: List[str] = ["player", "club", "federation", "college", "agent", "specialist"]
+    target_roles: List[str] = ["player", "club", "federation", "college", "agent", "specialist", "college_agency"]
     pinned: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class NewsPostCreate(BaseModel):
     title: str
     content: str
-    target_roles: List[str] = ["player", "club", "federation", "college", "agent", "specialist"]
+    target_roles: List[str] = ["player", "club", "federation", "college", "agent", "specialist", "college_agency"]
     pinned: bool = False
     media_url: Optional[str] = None
     media_type: Optional[str] = None  # "image" or "youtube"
