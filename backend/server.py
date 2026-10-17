@@ -4740,7 +4740,7 @@ async def create_chat_room_admin(
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
     
-    # Get player and org info (club, specialist, agent, federation, college, analyst)
+    # Get player and org info (club, specialist, agent, federation, college, analyst, college_agency)
     player = await db.players.find_one({"user_id": player_id}, {"_id": 0})
     club = (
         await db.clubs.find_one({"user_id": club_id}, {"_id": 0}) or
@@ -4748,13 +4748,14 @@ async def create_chat_room_admin(
         await db.agents.find_one({"user_id": club_id}, {"_id": 0}) or
         await db.federations.find_one({"user_id": club_id}, {"_id": 0}) or
         await db.colleges.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.college_agencies.find_one({"user_id": club_id}, {"_id": 0}) or
         await db.analysts.find_one({"user_id": club_id}, {"_id": 0}) or
         await db.users.find_one({"user_id": club_id}, {"_id": 0})
     )
-    
+
     if not player or not club:
         raise HTTPException(status_code=404, detail="Player or club not found")
-    
+
     room_id = f"chat_{player_id}_{club_id}_{uuid.uuid4().hex[:8]}"
     room = await chat_room_manager.create_chat_room(
         room_id,
@@ -4840,7 +4841,7 @@ async def create_video_session_admin(
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
     
-    # Get player and org info (club, specialist, agent, federation, college, analyst)
+    # Get player and org info (club, specialist, agent, federation, college, analyst, college_agency)
     player = await db.players.find_one({"user_id": player_id}, {"_id": 0})
     club = (
         await db.clubs.find_one({"user_id": club_id}, {"_id": 0}) or
@@ -4848,13 +4849,14 @@ async def create_video_session_admin(
         await db.agents.find_one({"user_id": club_id}, {"_id": 0}) or
         await db.federations.find_one({"user_id": club_id}, {"_id": 0}) or
         await db.colleges.find_one({"user_id": club_id}, {"_id": 0}) or
+        await db.college_agencies.find_one({"user_id": club_id}, {"_id": 0}) or
         await db.analysts.find_one({"user_id": club_id}, {"_id": 0}) or
         await db.users.find_one({"user_id": club_id}, {"_id": 0})
     )
-    
+
     if not player or not club:
         raise HTTPException(status_code=404, detail="Player or club not found")
-    
+
     session_id = f"video_{player_id}_{club_id}_{uuid.uuid4().hex[:8]}"
     session = await video_session_manager.create_video_session(
         session_id,
