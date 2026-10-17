@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const ClubFavorites = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const basePath = location.pathname.startsWith('/federation') ? '/federation' : location.pathname.startsWith('/agent') ? '/agent' : '/club';
+  const basePath = location.pathname.startsWith('/federation') ? '/federation' : location.pathname.startsWith('/agent') ? '/agent' : location.pathname.startsWith('/college-agency') ? '/college-agency' : '/club';
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
 

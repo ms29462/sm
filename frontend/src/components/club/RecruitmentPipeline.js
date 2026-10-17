@@ -130,7 +130,7 @@ const RecruitmentPipeline = () => {
   const [trackedPlayers, setTrackedPlayers] = useState([]);
   const [editingPp, setEditingPp] = useState(null);
   const { user } = require("@/context/AuthContext").useAuth();
-  const scoutingBase = user?.role === "college" ? "/college/scouting" : user?.role === "federation" ? "/federation/scouting" : "/club/scouting";
+  const scoutingBase = user?.role === "college" ? "/college/scouting" : user?.role === "federation" ? "/federation/scouting" : user?.role === "college_agency" ? "/college-agency/scouting" : "/club/scouting";
 
   useEffect(() => {
     loadPipeline();

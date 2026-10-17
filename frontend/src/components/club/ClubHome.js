@@ -114,7 +114,7 @@ const ClubHome = () => {
             data-testid="view-all-players-btn"
             variant="ghost"
             className="text-primary hover:text-primary/80"
-            onClick={() => navigate(isCollege ? "/college/players" : "/club/players")}
+            onClick={() => navigate(isCollege ? "/college/players" : user?.role === 'college_agency' ? "/college-agency/players" : "/club/players")}
           >
             VIEW ALL
           </Button>
@@ -139,7 +139,7 @@ const ClubHome = () => {
               <div
                 key={player.user_id}
                 data-testid={`player-card-${player.user_id}`}
-                onClick={() => navigate(`/club/player/${player.user_id}`)}
+                onClick={() => navigate(user?.role === 'college_agency' ? `/college-agency/player/${player.user_id}` : `/club/player/${player.user_id}`)}
                 className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors cursor-pointer"
               >
                 <div className="flex items-start space-x-4 mb-4">
