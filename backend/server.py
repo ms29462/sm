@@ -10156,6 +10156,14 @@ async def create_db_indexes():
 async def start_background_jobs():
     asyncio.create_task(check_unread_messages_job())
 
+@fastapi_app.on_event("startup")
+async def migrate_news_college_agency():
+    """Idempotent: add college_agency to all existing news posts that don't have it."""
+    await db.news.update_many(
+        {"target_roles": {"$nin": ["college_agency"]}},
+        {"$addToSet": {"target_roles": "college_agency"}}
+    )
+
 
 @fastapi_app.on_event("shutdown")
 async def shutdown_db_client():
