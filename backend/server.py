@@ -2760,6 +2760,30 @@ async def create_application(app_create: ApplicationCreate, background_tasks: Ba
     except Exception as e:
         logger.error(f"Failed to schedule application received email: {e}")
 
+    # Auto-add player to the org's recruitment pipeline
+    try:
+        already_in_pipeline = await db.pipeline.find_one({
+            "org_id": opportunity["club_id"],
+            "player_id": acting_player_id
+        })
+        if not already_in_pipeline:
+            await db.pipeline.insert_one({
+                "id": str(uuid.uuid4()),
+                "org_id": opportunity["club_id"],
+                "player_id": acting_player_id,
+                "stage": "New Application",
+                "priority": "medium",
+                "opportunity_id": app_create.opportunity_id,
+                "scout_assigned": None,
+                "internal_rating": None,
+                "notes": [],
+                "tags": [],
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            })
+    except Exception as e:
+        logger.error(f"Failed to auto-add player to pipeline: {e}")
+
     return Application(**app_doc)
 
 @api_router.get("/applications/my", response_model=List[dict])
