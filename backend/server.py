@@ -41,7 +41,7 @@ from email_service import (
     send_admin_new_chat_request, send_admin_chat_request_accepted,
     send_opportunity_published, send_unread_messages_reminder,
     send_new_application_received, send_admin_new_user_pending,
-    send_new_opportunity_match
+    send_new_opportunity_match, send_admin_new_opportunity
 )
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -2808,7 +2808,7 @@ async def update_club_profile(update: ClubUpdate, current_user: dict = Depends(g
     return ClubProfile(**club)
 
 @api_router.post("/opportunities", response_model=Opportunity)
-async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depends(get_current_user)):
+async def create_opportunity(opp: OpportunityCreate, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
@@ -2851,6 +2851,24 @@ async def create_opportunity(opp: OpportunityCreate, current_user: dict = Depend
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.opportunities.insert_one(opp_doc)
+
+    # Email admin about new opportunity pending review
+    try:
+        admin_email = os.environ.get("ADMIN_EMAIL")
+        if admin_email:
+            org_name = opp_doc.get("club_name", "Unknown")
+            position = opp.position or ((opp.positions or [""])[0] if opp.positions else "")
+            background_tasks.add_task(
+                send_admin_new_opportunity,
+                admin_email,
+                org_name,
+                current_user["role"],
+                position,
+                opp.league_level or ""
+            )
+    except Exception as e:
+        logger.error(f"Failed to schedule admin new opportunity email: {e}")
+
     return Opportunity(**opp_doc)
 
 @api_router.get("/club/opportunities", response_model=List[Opportunity])

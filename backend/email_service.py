@@ -421,3 +421,25 @@ async def send_admin_new_user_pending(email: str, user_name: str, user_role: str
       </table>
     """
     await send_email(email, f"New Pending User: {user_name} ({role_label}) — Soccer Match", get_base_template(content))
+
+
+async def send_admin_new_opportunity(email: str, org_name: str, org_role: str, position: str, league_level: str):
+    role_label = org_role.replace("_", " ").title()
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">New Opportunity Pending Review</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">A new opportunity has been submitted and is awaiting your review.</p>
+      <div style="background-color:#1a1a1a;border:1px solid #333;border-left:3px solid #c8f135;padding:16px 20px;margin:0 0 24px;border-radius:4px;">
+        <p style="color:#c8f135;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Opportunity Details</p>
+        <p style="color:#fff;font-size:16px;font-weight:700;margin:0 0 4px;">{position or "—"}</p>
+        <p style="color:#999;font-size:13px;margin:0 0 4px;">Level: {league_level or "—"}</p>
+        <p style="color:#999;font-size:13px;margin:0;">Submitted by: {org_name} ({role_label})</p>
+      </div>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}/admin/dashboard" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Review in Admin Panel</a>
+          </td>
+        </tr>
+      </table>
+    """
+    await send_email(email, f"New Opportunity Pending: {org_name} — Soccer Match", get_base_template(content, "New Opportunity"))
