@@ -52,6 +52,21 @@
           gtag('config', 'G-LJ4916HR50', { send_page_view: false });
         </script>
 
+        <!-- Meta Pixel Code -->
+        <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '1587889615786374');
+        fbq('track', 'PageView');
+        </script>
+        <!-- End Meta Pixel Code -->
+
         <title>SoccerMatch</title>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         
@@ -108,6 +123,11 @@
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M3PG3PB5"
         height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- End Google Tag Manager (noscript) -->
+        <!-- Meta Pixel (noscript fallback) -->
+        <noscript><img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id=1587889615786374&ev=PageView&noscript=1"
+        /></noscript>
+        <!-- End Meta Pixel (noscript) -->
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
         <!--
