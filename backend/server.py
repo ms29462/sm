@@ -8112,14 +8112,26 @@ async def admin_approve_opportunity(opp_id: str, data: dict, background_tasks: B
     except Exception as e:
         logger.error(f"Failed to schedule opportunity published email: {e}")
 
-    # Notify matching players (email + in-app) based on their target level
+    # Notify matching players (email + in-app) based on their looking_for field
     try:
         opp_level = opp.get("league_level", "")
         opp_position = opp.get("position") or (opp.get("positions") or [""])[0]
         org_name = opp.get("club_name", "")
-        if opp_level:
+        # Map league_level prefix (e.g. "Professional / 1st Tier") to looking_for label
+        level_map = {
+            "College / University": "University Opportunities",
+            "Semi-Professional": "Semi-Professional Opportunities",
+            "Professional": "Professional Opportunities",
+            "Amateur": "Amateur Opportunities",
+            "National Team": "Professional Opportunities",
+        }
+        looking_for_label = next(
+            (label for prefix, label in level_map.items() if opp_level.startswith(prefix)),
+            None
+        )
+        if looking_for_label:
             matched_players = await db.players.find(
-                {"approved": True, "target_level": opp_level},
+                {"approved": True, "looking_for": {"$in": [looking_for_label, "All"]}},
                 {"_id": 0, "user_id": 1, "name": 1, "email": 1}
             ).to_list(length=None)
             for player in matched_players:
@@ -8137,7 +8149,7 @@ async def admin_approve_opportunity(opp_id: str, data: dict, background_tasks: B
                     await create_notification(
                         player["user_id"],
                         "opportunity_match",
-                        f"New opportunity matching your target level: {opp_position} — {opp_level} at {org_name}",
+                        f"New {looking_for_label.replace(' Opportunities', '')} opportunity: {opp_position} at {org_name}",
                         {"opportunity_id": opp_id, "league_level": opp_level, "position": opp_position, "org_name": org_name}
                     )
     except Exception as e:
