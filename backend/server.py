@@ -8113,11 +8113,11 @@ async def admin_approve_opportunity(opp_id: str, data: dict, background_tasks: B
         logger.error(f"Failed to schedule opportunity published email: {e}")
 
     # Notify matching players (email + in-app) based on their looking_for field
+    # Email is rate-limited to 1 per player per day to avoid spam
     try:
         opp_level = opp.get("league_level", "")
         opp_position = opp.get("position") or (opp.get("positions") or [""])[0]
         org_name = opp.get("club_name", "")
-        # Map league_level prefix (e.g. "Professional / 1st Tier") to looking_for label
         level_map = {
             "College / University": "University Opportunities",
             "Semi-Professional": "Semi-Professional Opportunities",
@@ -8134,17 +8134,9 @@ async def admin_approve_opportunity(opp_id: str, data: dict, background_tasks: B
                 {"approved": True, "looking_for": {"$in": [looking_for_label, "All"]}},
                 {"_id": 0, "user_id": 1, "name": 1, "email": 1}
             ).to_list(length=None)
+            today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             for player in matched_players:
-                if player.get("email") and player.get("name"):
-                    background_tasks.add_task(
-                        send_new_opportunity_match,
-                        player["email"],
-                        player["name"],
-                        opp_position,
-                        opp_level,
-                        org_name,
-                        opp_id
-                    )
+                # In-app notification always sent
                 if player.get("user_id"):
                     await create_notification(
                         player["user_id"],
@@ -8152,6 +8144,21 @@ async def admin_approve_opportunity(opp_id: str, data: dict, background_tasks: B
                         f"New {looking_for_label.replace(' Opportunities', '')} opportunity: {opp_position} at {org_name}",
                         {"opportunity_id": opp_id, "league_level": opp_level, "position": opp_position, "org_name": org_name}
                     )
+                # Email: max 1 per player per day
+                if player.get("email") and player.get("name") and player.get("user_id"):
+                    throttle_key = f"opp_match:{player['user_id']}:{today_str}"
+                    already_sent = await db.email_throttle.find_one({"key": throttle_key})
+                    if not already_sent:
+                        await db.email_throttle.insert_one({"key": throttle_key, "created_at": datetime.now(timezone.utc).isoformat()})
+                        background_tasks.add_task(
+                            send_new_opportunity_match,
+                            player["email"],
+                            player["name"],
+                            opp_position,
+                            opp_level,
+                            org_name,
+                            opp_id
+                        )
     except Exception as e:
         logger.error(f"Failed to schedule opportunity match notifications: {e}")
 
