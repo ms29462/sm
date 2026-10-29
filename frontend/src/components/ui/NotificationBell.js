@@ -7,6 +7,7 @@ const NOTIFICATION_ICONS = {
   profile_viewed: Eye,
   pipeline_update: Target,
   application_update: Briefcase,
+  opportunity_match: Briefcase,
   chat_request: MessageCircle,
   chat_request_rejected: MessageCircle,
   shortlisted: Star,
@@ -61,6 +62,8 @@ const NotificationBell = () => {
     switch (notif.type) {
       case "application_update":
         return data.opportunity_id ? `/player/opportunity/${data.opportunity_id}` : "/player/applications";
+      case "opportunity_match":
+        return data.opportunity_id ? `/player/opportunity/${data.opportunity_id}` : "/player/opportunities";
       case "chat_request":
       case "chat_request_accepted":
         return null; // handled per role by caller

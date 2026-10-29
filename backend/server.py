@@ -8112,14 +8112,14 @@ async def admin_approve_opportunity(opp_id: str, data: dict, background_tasks: B
     except Exception as e:
         logger.error(f"Failed to schedule opportunity published email: {e}")
 
-    # Notify matching players by email
+    # Notify matching players (email + in-app) based on their target level
     try:
         opp_level = opp.get("league_level", "")
         opp_position = opp.get("position") or (opp.get("positions") or [""])[0]
         org_name = opp.get("club_name", "")
         if opp_level:
             matched_players = await db.players.find(
-                {"approved": True, "playing_level": opp_level, "email": {"$exists": True, "$ne": None}},
+                {"approved": True, "target_level": opp_level},
                 {"_id": 0, "user_id": 1, "name": 1, "email": 1}
             ).to_list(length=None)
             for player in matched_players:
@@ -8133,8 +8133,15 @@ async def admin_approve_opportunity(opp_id: str, data: dict, background_tasks: B
                         org_name,
                         opp_id
                     )
+                if player.get("user_id"):
+                    await create_notification(
+                        player["user_id"],
+                        "opportunity_match",
+                        f"New opportunity matching your target level: {opp_position} — {opp_level} at {org_name}",
+                        {"opportunity_id": opp_id, "league_level": opp_level, "position": opp_position, "org_name": org_name}
+                    )
     except Exception as e:
-        logger.error(f"Failed to schedule opportunity match emails: {e}")
+        logger.error(f"Failed to schedule opportunity match notifications: {e}")
 
     return {"message": "Opportunity approved and published"}
 
