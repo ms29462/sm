@@ -186,6 +186,12 @@ const PlayerProfilePopup = ({ player, onClose, verifications = {} }) => {
 };
 
 const ClubApplications = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const basePath = location.pathname.startsWith('/federation') ? '/federation' :
+    location.pathname.startsWith('/college-agency') ? '/college-agency' :
+    location.pathname.startsWith('/college') ? '/college' :
+    location.pathname.startsWith('/agent') ? '/agent' : '/club';
   const [applications, setApplications] = useState([]);
   const [verifications, setVerifications] = useState({});
   const [matchScores, setMatchScores] = useState({});
