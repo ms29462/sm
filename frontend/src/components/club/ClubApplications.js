@@ -467,6 +467,14 @@ const ClubApplications = () => {
                   <span>GAMES: {app.player.games || 0}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                  {app.opportunity?.id && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigate(`${basePath}/opportunity/${app.opportunity.id}`); }}
+                      className="flex items-center gap-1.5 text-xs border border-white/20 text-muted-foreground rounded-sm px-3 py-1.5 hover:border-primary hover:text-primary transition-colors"
+                    >
+                      <ExternalLink className="w-3 h-3" /> View Opportunity
+                    </button>
+                  )}
                   <span className="text-xs text-muted-foreground uppercase tracking-wide">Update Status:</span>
                   <select
                     data-testid={"status-select-" + app.id}

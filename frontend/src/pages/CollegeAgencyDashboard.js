@@ -15,6 +15,7 @@ import ScoutingHub from "@/components/club/ScoutingHub";
 import RecruitmentPipeline from "@/components/club/RecruitmentPipeline";
 import TrackingOverview from "@/components/club/TrackingOverview";
 import ClubOpportunityAnalytics from "@/components/club/ClubOpportunityAnalytics";
+import OpportunityDetail from "@/pages/OpportunityDetail";
 
 const CollegeAgencyDashboard = () => (
   <CollegeAgencyLayout>
@@ -28,6 +29,7 @@ const CollegeAgencyDashboard = () => (
       <Route path="players" element={<CollegeAgencySubscriptionGate><ClubPlayers /></CollegeAgencySubscriptionGate>} />
       <Route path="player/:playerId" element={<CollegeAgencySubscriptionGate><PlayerDetailView /></CollegeAgencySubscriptionGate>} />
       <Route path="applications" element={<CollegeAgencySubscriptionGate><ClubApplications /></CollegeAgencySubscriptionGate>} />
+      <Route path="opportunity/:opportunityId" element={<CollegeAgencySubscriptionGate><OpportunityDetail /></CollegeAgencySubscriptionGate>} />
       <Route path="favorites" element={<CollegeAgencySubscriptionGate><ClubFavorites /></CollegeAgencySubscriptionGate>} />
       <Route path="chats" element={<CollegeAgencySubscriptionGate><UnifiedChats /></CollegeAgencySubscriptionGate>} />
       <Route path="scouting" element={<CollegeAgencySubscriptionGate><ScoutingHub /></CollegeAgencySubscriptionGate>} />

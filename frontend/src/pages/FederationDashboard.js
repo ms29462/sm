@@ -18,6 +18,7 @@ import RecruitmentPipeline from '@/components/club/RecruitmentPipeline';
 import UnifiedChats from '@/components/chat/UnifiedChats';
 import ChatRoom from '@/components/chat/ChatRoom';
 import FederationAccessGate from '@/components/federation/FederationAccessGate';
+import OpportunityDetail from '@/pages/OpportunityDetail';
 
 
 const FederationDashboard = () => {
@@ -39,6 +40,7 @@ const FederationDashboard = () => {
         <Route path="opportunities/analytics" element={<FederationAccessGate><ClubOpportunityAnalytics /></FederationAccessGate>} />
         <Route path="opportunities" element={<FederationAccessGate><ClubOpportunities /></FederationAccessGate>} />
         <Route path="applications" element={<FederationAccessGate><ClubApplications /></FederationAccessGate>} />
+        <Route path="opportunity/:opportunityId" element={<FederationAccessGate><OpportunityDetail /></FederationAccessGate>} />
         <Route path="pipeline" element={<FederationAccessGate><RecruitmentPipeline /></FederationAccessGate>} />
         <Route path="chats" element={<FederationAccessGate><UnifiedChats /></FederationAccessGate>} />
         <Route path="chat/:roomId" element={<FederationAccessGate><ChatRoom /></FederationAccessGate>} />

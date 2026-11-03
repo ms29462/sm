@@ -20,6 +20,7 @@ import ClubSubscribe from "@/components/club/ClubSubscribe";
 import ClubSubscriptionGate from "@/components/club/ClubSubscriptionGate";
 import CollegeSubscribe from "@/components/college/CollegeSubscribe";
 import CollegeSubscriptionGate from "@/components/college/CollegeSubscriptionGate";
+import OpportunityDetail from "@/pages/OpportunityDetail";
 
 const ClubDashboard = () => {
   const { user } = useAuth();
@@ -45,6 +46,7 @@ const ClubDashboard = () => {
         <Route path="players" element={<Gate><ClubPlayers /></Gate>} />
         <Route path="player/:playerId" element={<Gate><PlayerDetailView /></Gate>} />
         <Route path="applications" element={<Gate><ClubApplications /></Gate>} />
+        <Route path="opportunity/:opportunityId" element={<Gate><OpportunityDetail /></Gate>} />
         <Route path="favorites" element={<Gate><ClubFavorites /></Gate>} />
         <Route path="chats" element={<Gate><UnifiedChats /></Gate>} />
         <Route path="videos" element={<VideoList />} />
