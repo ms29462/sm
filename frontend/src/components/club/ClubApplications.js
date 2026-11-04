@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { FileText, X, User, Trophy, Activity, Flag, Ruler, Weight, Footprints, Building, ExternalLink } from "lucide-react";
 import RequestChatDialog from '@/components/club/RequestChatDialog';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 const STATUS_OPTIONS = ["submitted", "under_review", "interested", "rejected"];
 const STATUS_COLORS = {
@@ -203,6 +204,7 @@ const ClubApplications = () => {
   const [candidateSort, setCandidateSort] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [pendingStatus, setPendingStatus] = useState(null); // { applicationId, newStatus, playerName }
 
   useEffect(() => {
     loadApplications();
@@ -228,14 +230,20 @@ const ClubApplications = () => {
     }
   };
 
-  const handleStatusChange = async (applicationId, newStatus) => {
+  const confirmStatusChange = async () => {
+    if (!pendingStatus) return;
     try {
-      await api.updateApplicationStatus(applicationId, newStatus);
+      await api.updateApplicationStatus(pendingStatus.applicationId, pendingStatus.newStatus);
       toast.success("Status updated");
       loadApplications();
     } catch (error) {
       toast.error("Failed to update status");
     }
+    setPendingStatus(null);
+  };
+
+  const handleStatusChange = (applicationId, newStatus, playerName) => {
+    setPendingStatus({ applicationId, newStatus, playerName });
   };
 
   // Group applications by opportunity
@@ -485,7 +493,7 @@ const ClubApplications = () => {
                   <select
                     data-testid={"status-select-" + app.id}
                     value={app.status}
-                    onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                    onChange={(e) => handleStatusChange(app.id, e.target.value, app.player?.name)}
                     className="w-full sm:w-auto bg-black/20 border border-white/10 rounded-sm h-9 px-2 text-sm text-white outline-none cursor-pointer"
                   >
                     {STATUS_OPTIONS.map((status) => (
@@ -503,6 +511,16 @@ const ClubApplications = () => {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!pendingStatus}
+        onOpenChange={(open) => { if (!open) setPendingStatus(null); }}
+        title="Update Application Status"
+        description={pendingStatus ? `You are about to mark ${pendingStatus.playerName || "this player"}'s application as "${STATUS_LABELS[pendingStatus.newStatus] || pendingStatus.newStatus}". Do you confirm?` : ""}
+        confirmLabel="Confirm"
+        confirmVariant="primary"
+        onConfirm={confirmStatusChange}
+      />
     </div>
   );
 };
