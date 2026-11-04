@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { FileText, X, User, Trophy, Activity, Flag, Ruler, Weight, Footprints, Building, ExternalLink } from "lucide-react";
 import RequestChatDialog from '@/components/club/RequestChatDialog';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import RejectionFeedbackModal from '@/components/club/RejectionFeedbackModal';
 
 const STATUS_OPTIONS = ["submitted", "under_review", "interested", "rejected"];
 const STATUS_COLORS = {
@@ -206,7 +205,6 @@ const ClubApplications = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [pendingStatus, setPendingStatus] = useState(null); // { applicationId, newStatus, playerName }
-  const [rejectionTarget, setRejectionTarget] = useState(null); // { applicationId, playerName }
 
   useEffect(() => {
     loadApplications();
@@ -245,11 +243,7 @@ const ClubApplications = () => {
   };
 
   const handleStatusChange = (applicationId, newStatus, playerName) => {
-    if (newStatus === "rejected") {
-      setRejectionTarget({ applicationId, playerName });
-    } else {
-      setPendingStatus({ applicationId, newStatus, playerName });
-    }
+    setPendingStatus({ applicationId, newStatus, playerName });
   };
 
   // Group applications by opportunity
@@ -527,15 +521,6 @@ const ClubApplications = () => {
         confirmVariant="primary"
         onConfirm={confirmStatusChange}
       />
-
-      {rejectionTarget && (
-        <RejectionFeedbackModal
-          applicationId={rejectionTarget.applicationId}
-          playerName={rejectionTarget.playerName}
-          onConfirmed={() => { setRejectionTarget(null); loadApplications(); }}
-          onCancel={() => setRejectionTarget(null)}
-        />
-      )}
     </div>
   );
 };

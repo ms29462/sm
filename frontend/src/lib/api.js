@@ -36,7 +36,6 @@ export const api = {
   updateOpportunityStatus: (id, status) => axios.put(`${API}/opportunities/${id}/status`, { status }, { headers: getAuthHeaders() }),
   getClubApplications: () => axios.get(`${API}/club/applications`, { headers: getAuthHeaders() }),
   updateApplicationStatus: (id, status) => axios.put(`${API}/applications/${id}/status`, { status }, { headers: getAuthHeaders() }),
-  rejectApplicationWithFeedback: (id, data) => axios.post(`${API}/applications/${id}/reject`, data, { headers: getAuthHeaders() }),
   getPlayers: (filters) => axios.get(`${API}/players`, { params: filters, headers: getAuthHeaders() }),
   getPlayerDetail: (playerId) => axios.get(`${API}/players/${playerId}`, { headers: getAuthHeaders() }),
   getRecommendedPlayers: () => axios.get(`${API}/players/recommended-list`, { headers: getAuthHeaders() }),

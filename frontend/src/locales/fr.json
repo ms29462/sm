@@ -133,32 +133,7 @@
     "under_review": "En cours d'examen",
     "shortlisted": "Présélectionné",
     "rejected": "Non retenu",
-    "accepted": "Accepté",
-    "feedback_title": "Retour de l'organisation",
-    "feedback_reasons_label": "Raisons",
-    "feedback_tips_label": "Conseils pour améliorer votre profil",
-    "feedback_message_label": "Message de l'organisation",
-    "disclaimer": "Soumettre une candidature ne garantit pas un essai ou un contrat. Toutes les décisions de sélection sont prises par l'organisation."
-  },
-  "rejection_reasons": {
-    "position_not_needed": "Nous ne recrutons pas pour votre poste en ce moment",
-    "squad_complete": "Notre effectif est complet à ce poste",
-    "age_mismatch": "Votre catégorie d'âge ne correspond pas à cette opportunité",
-    "level_mismatch": "Votre niveau ne correspond pas à ce que nous recherchons en ce moment",
-    "physical_mismatch": "Votre profil physique ne correspond pas au rôle",
-    "foot_mismatch": "Le pied préférentiel ne correspond pas au besoin",
-    "eligibility": "Condition d'éligibilité non remplie (ex. passeport ou permis de travail)",
-    "insufficient_video": "Pas assez de vidéo pour évaluer votre profil",
-    "incomplete_profile": "Certaines informations de profil sont manquantes",
-    "availability_location": "La disponibilité ou la localisation ne correspond pas",
-    "opportunity_closed": "Cette opportunité a été pourvue ou clôturée",
-    "other": "Autre"
-  },
-  "rejection_tips": {
-    "add_video": "Ajoutez une vidéo plus longue ou de meilleure qualité",
-    "complete_profile": "Complétez votre profil (poste, pied, taille, statistiques)",
-    "keep_updated": "Gardez votre profil à jour",
-    "apply_others": "Postulez à d'autres opportunités correspondant à votre profil"
+    "accepted": "Accepté"
   },
   "credits": {
     "title": "CRÉDITS",

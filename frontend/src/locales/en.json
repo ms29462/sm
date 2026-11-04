@@ -133,32 +133,7 @@
     "under_review": "Under Review",
     "shortlisted": "Shortlisted",
     "rejected": "Not Selected",
-    "accepted": "Accepted",
-    "feedback_title": "Feedback from the organization",
-    "feedback_reasons_label": "Reasons",
-    "feedback_tips_label": "Tips to improve your profile",
-    "feedback_message_label": "Message from the organization",
-    "disclaimer": "Submitting an application does not guarantee a trial or a contract. All selection decisions are made by the organization."
-  },
-  "rejection_reasons": {
-    "position_not_needed": "We are not recruiting for your position right now",
-    "squad_complete": "Our squad is complete in this position",
-    "age_mismatch": "Your age group doesn't match this opportunity",
-    "level_mismatch": "Your level doesn't match what we need right now",
-    "physical_mismatch": "Your physical profile doesn't match the role",
-    "foot_mismatch": "Preferred foot doesn't match the need",
-    "eligibility": "Eligibility requirement not met (e.g. passport or work permit)",
-    "insufficient_video": "Not enough video to assess your profile",
-    "incomplete_profile": "Some profile information is missing",
-    "availability_location": "Availability or location doesn't match",
-    "opportunity_closed": "This opportunity has been filled or closed",
-    "other": "Other"
-  },
-  "rejection_tips": {
-    "add_video": "Add a longer or higher-quality video",
-    "complete_profile": "Complete your profile (position, foot, height, stats)",
-    "keep_updated": "Keep your profile up to date",
-    "apply_others": "Apply to other opportunities that fit your profile"
+    "accepted": "Accepted"
   },
   "credits": {
     "title": "CREDITS",
