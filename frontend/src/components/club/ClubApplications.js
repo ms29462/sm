@@ -436,7 +436,7 @@ const ClubApplications = () => {
                     <h3 className="text-xl font-heading font-bold uppercase">{app.player.name}</h3>
                     <span className="text-xs text-muted-foreground border border-border/50 px-2 py-0.5 rounded-sm">Click to view profile</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">Applied for: {app.opportunity.position} - {app.opportunity.league_level}</p>
+                  <p className="text-sm text-muted-foreground">Applied for: {app.opportunity.position} - {app.opportunity.league_level}{app.opportunity.country ? ` · ${app.opportunity.country}` : ""}</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 flex-shrink-0">
                   {app.match_score !== null && app.match_score !== undefined && (
