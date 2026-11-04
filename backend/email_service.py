@@ -1,5 +1,6 @@
 import resend
 import os
+import html as html_module
 from datetime import datetime
 
 resend.api_key = os.environ.get("RESEND_API_KEY", "")
@@ -443,3 +444,92 @@ async def send_admin_new_opportunity(email: str, org_name: str, org_role: str, p
       </table>
     """
     await send_email(email, f"New Opportunity Pending: {org_name} — Soccer Match", get_base_template(content, "New Opportunity"))
+
+
+REJECTION_REASON_LABELS = {
+    "position_not_needed": "We are not recruiting for your position right now",
+    "squad_complete": "Our squad is complete in this position",
+    "age_mismatch": "Your age group doesn't match this opportunity",
+    "level_mismatch": "Your level doesn't match what we need right now",
+    "physical_mismatch": "Your physical profile doesn't match the role",
+    "foot_mismatch": "Preferred foot doesn't match the need",
+    "eligibility": "Eligibility requirement not met (e.g. passport or work permit)",
+    "insufficient_video": "Not enough video to assess your profile",
+    "incomplete_profile": "Some profile information is missing",
+    "availability_location": "Availability or location doesn't match",
+    "opportunity_closed": "This opportunity has been filled or closed",
+}
+
+REJECTION_TIP_LABELS = {
+    "add_video": "Add a longer or higher-quality video",
+    "complete_profile": "Complete your profile (position, foot, height, stats)",
+    "keep_updated": "Keep your profile up to date",
+    "apply_others": "Apply to other opportunities that fit your profile",
+}
+
+
+async def send_rejection_with_feedback(
+    email: str,
+    player_name: str,
+    opportunity_title: str,
+    org_name: str,
+    org_is_anonymous: bool,
+    reasons: list,
+    other_text: str,
+    tips: list,
+    message: str,
+):
+    display_org = "The organization" if org_is_anonymous else html_module.escape(org_name)
+    safe_opp = html_module.escape(opportunity_title)
+
+    reasons_html = ""
+    for r in reasons:
+        if r == "other" and other_text:
+            label = html_module.escape(other_text)
+        else:
+            label = html_module.escape(REJECTION_REASON_LABELS.get(r, r))
+        reasons_html += f'<li style="color:#ccc;font-size:14px;margin:0 0 6px;">{label}</li>'
+
+    tips_html = ""
+    if tips:
+        tips_items = "".join(
+            f'<li style="color:#ccc;font-size:14px;margin:0 0 6px;">{html_module.escape(REJECTION_TIP_LABELS.get(t, t))}</li>'
+            for t in tips
+        )
+        tips_html = f"""
+      <p style="color:#aaa;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;">Suggestions to improve your chances</p>
+      <ul style="margin:0;padding:0 0 0 20px;">{tips_items}</ul>
+        """
+
+    message_html = ""
+    if message:
+        safe_msg = html_module.escape(message)
+        message_html = f"""
+      <p style="color:#aaa;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;">Message from the organization</p>
+      <p style="color:#ccc;font-size:14px;font-style:italic;border-left:3px solid #c8f135;padding-left:12px;margin:0;">"{safe_msg}"</p>
+        """
+
+    content = f"""
+      <h1 style="color:#ef4444;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Application Update</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {html_module.escape(player_name)},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">
+        {display_org} has reviewed your application for <strong style="color:#fff;">{safe_opp}</strong> and has decided not to move forward at this time.
+      </p>
+      <div style="background-color:#1a1a1a;border:1px solid #333;border-left:3px solid #ef4444;padding:16px 20px;margin:0 0 16px;border-radius:4px;">
+        <p style="color:#ef4444;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 10px;">Reasons</p>
+        <ul style="margin:0;padding:0 0 0 20px;">{reasons_html}</ul>
+        {tips_html}
+        {message_html}
+      </div>
+      <p style="color:#666;font-size:12px;line-height:1.6;margin:0 0 16px;">
+        Submitting an application does not guarantee a trial or a contract. All selection decisions are made by the organization.
+      </p>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}/player/applications" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">View My Applications</a>
+          </td>
+        </tr>
+      </table>
+    """
+    await send_email(email, "Application Update — Soccer Match", get_base_template(content, "Application Update"))

@@ -31,6 +31,27 @@ const STATUS_LABELS = {
   signed: 'Signed',
 };
 
+const REASON_LABELS = {
+  position_not_needed: "We are not recruiting for your position right now",
+  squad_complete: "Our squad is complete in this position",
+  age_mismatch: "Your age group doesn't match this opportunity",
+  level_mismatch: "Your level doesn't match what we need right now",
+  physical_mismatch: "Your physical profile doesn't match the role",
+  foot_mismatch: "Preferred foot doesn't match the need",
+  eligibility: "Eligibility requirement not met (e.g. passport or work permit)",
+  insufficient_video: "Not enough video to assess your profile",
+  incomplete_profile: "Some profile information is missing",
+  availability_location: "Availability or location doesn't match",
+  opportunity_closed: "This opportunity has been filled or closed",
+};
+
+const TIP_LABELS = {
+  add_video: "Add a longer or higher-quality video",
+  complete_profile: "Complete your profile (position, foot, height, stats)",
+  keep_updated: "Keep your profile up to date",
+  apply_others: "Apply to other opportunities that fit your profile",
+};
+
 const PlayerApplications = () => {
   const { socket, on, off } = useSocket();
   const [applications, setApplications] = useState([]);
@@ -202,6 +223,42 @@ const PlayerApplications = () => {
                   </p>
                 )}
               </div>
+              {app.status === "rejected" && app.feedback && (
+                <div className="bg-red-500/5 border border-red-500/20 rounded-sm p-4 mb-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-widest text-red-400">Feedback from the organization</p>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Reasons</p>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {(app.feedback.reasons || []).filter(r => r !== "other").map(r => (
+                        <li key={r} className="text-sm text-white/80">{REASON_LABELS[r] || r}</li>
+                      ))}
+                      {app.feedback.reasons?.includes("other") && app.feedback.other_text && (
+                        <li className="text-sm text-white/80">{app.feedback.other_text}</li>
+                      )}
+                    </ul>
+                  </div>
+                  {app.feedback.tips?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Suggestions</p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        {app.feedback.tips.map(tip => (
+                          <li key={tip} className="text-sm text-white/80">{TIP_LABELS[tip] || tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {app.feedback.message && (
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Message</p>
+                      <p className="text-sm text-white/80 italic">"{app.feedback.message}"</p>
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground/60 italic pt-1 border-t border-white/5">
+                    Submitting an application does not guarantee a trial or a contract. All selection decisions are made by the organization.
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 {app.opportunity.salary_range && (
                   <div>

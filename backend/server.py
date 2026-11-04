@@ -41,7 +41,8 @@ from email_service import (
     send_admin_new_chat_request, send_admin_chat_request_accepted,
     send_opportunity_published, send_unread_messages_reminder,
     send_new_application_received, send_admin_new_user_pending,
-    send_new_opportunity_match, send_admin_new_opportunity
+    send_new_opportunity_match, send_admin_new_opportunity,
+    send_rejection_with_feedback
 )
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -1285,6 +1286,19 @@ class Application(BaseModel):
 
 class ApplicationStatusUpdate(BaseModel):
     status: Literal['submitted', 'viewed', 'shortlisted', 'rejected', 'accepted', 'under_review', 'interested', 'interview_requested', 'offer_received']
+
+VALID_REJECTION_REASONS = {
+    "position_not_needed", "squad_complete", "age_mismatch", "level_mismatch",
+    "physical_mismatch", "foot_mismatch", "eligibility", "insufficient_video",
+    "incomplete_profile", "availability_location", "opportunity_closed", "other"
+}
+VALID_REJECTION_TIPS = {"add_video", "complete_profile", "keep_updated", "apply_others"}
+
+class RejectionFeedbackCreate(BaseModel):
+    reasons: List[str]
+    tips: Optional[List[str]] = []
+    message: Optional[str] = None
+    other_text: Optional[str] = None
 
 # ============ FAVORITE MODELS ============
 class FavoriteCreate(BaseModel):
@@ -2801,11 +2815,18 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
             if opp.get("visibility", "anonymous") != "public":
                 opp["club_name"] = "Club"
                 opp["club_id"] = "anonymous"
-            result.append({
-                **app,
-                "opportunity": opp,
-                "fit_score": app.get("fit_score", None)
-            })
+            entry = {**app, "opportunity": opp, "fit_score": app.get("fit_score", None)}
+            # Attach rejection feedback if available
+            if app.get("status") == "rejected":
+                fb = await db.application_feedback.find_one({"application_id": app["id"]}, {"_id": 0})
+                if fb:
+                    entry["feedback"] = {
+                        "reasons": fb.get("reasons", []),
+                        "tips": fb.get("tips", []),
+                        "message": fb.get("message"),
+                        "other_text": fb.get("other_text"),
+                    }
+            result.append(entry)
     return result
 
 # ============ CLUB ENDPOINTS ============
@@ -3114,6 +3135,114 @@ async def update_application_status(
     except Exception as e:
         print(f"Email error: {e}")
     return {"message": "Status updated"}
+
+
+@api_router.post("/applications/{application_id}/reject-with-feedback")
+async def reject_application_with_feedback(
+    application_id: str,
+    feedback: RejectionFeedbackCreate,
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user['role'] not in ['club', 'college', 'analyst', 'federation', 'agent', 'specialist', 'academy', 'college_agency']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Validate reasons
+    if not feedback.reasons:
+        raise HTTPException(status_code=400, detail="At least one reason is required")
+    invalid_reasons = [r for r in feedback.reasons if r not in VALID_REJECTION_REASONS]
+    if invalid_reasons:
+        raise HTTPException(status_code=400, detail=f"Invalid reason codes: {invalid_reasons}")
+    if "other" in feedback.reasons and not (feedback.other_text and feedback.other_text.strip()):
+        raise HTTPException(status_code=400, detail="other_text is required when 'other' is selected")
+    if feedback.other_text and len(feedback.other_text) > 200:
+        raise HTTPException(status_code=400, detail="other_text must be 200 characters or fewer")
+    if feedback.message and len(feedback.message) > 300:
+        raise HTTPException(status_code=400, detail="message must be 300 characters or fewer")
+    if feedback.tips:
+        invalid_tips = [t for t in feedback.tips if t not in VALID_REJECTION_TIPS]
+        if invalid_tips:
+            raise HTTPException(status_code=400, detail=f"Invalid tip codes: {invalid_tips}")
+
+    # Verify ownership
+    application = await db.applications.find_one({"id": application_id, "club_id": current_user["user_id"]}, {"_id": 0})
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Idempotency guard
+    existing_feedback = await db.application_feedback.find_one({"application_id": application_id}, {"_id": 0})
+    if existing_feedback:
+        raise HTTPException(status_code=409, detail="Feedback already submitted for this application")
+
+    # Save feedback
+    feedback_doc = {
+        "id": str(__import__("uuid").uuid4()),
+        "application_id": application_id,
+        "reasons": feedback.reasons,
+        "tips": feedback.tips or [],
+        "message": feedback.message,
+        "other_text": feedback.other_text if "other" in feedback.reasons else None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.application_feedback.insert_one(feedback_doc)
+
+    # Update application status to rejected
+    player_label = APPLICATION_STATUS_LABELS.get("rejected", "rejected")
+    await db.applications.update_one(
+        {"id": application_id},
+        {"$set": {
+            "status": "rejected",
+            "player_status_label": player_label,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        },
+        "$push": {
+            "status_history": {
+                "status": "rejected",
+                "label": player_label,
+                "changed_at": datetime.now(timezone.utc).isoformat()
+            }
+        }}
+    )
+
+    # In-app notification
+    try:
+        opp = await db.opportunities.find_one({"id": application.get("opportunity_id")}, {"_id": 0, "position": 1, "league_level": 1})
+        opp_label = f"{opp.get('position', '')} — {opp.get('league_level', '')}" if opp else "your application"
+        await create_notification(
+            application.get("player_id"),
+            "application_update",
+            f"Your application has been updated — {opp_label}",
+            {"application_id": application_id, "status": "rejected"}
+        )
+    except Exception as e:
+        print(f"Notification error: {e}")
+
+    # Send email with feedback in background
+    try:
+        player = await db.players.find_one({"user_id": application["player_id"]}, {"_id": 0})
+        if player and player.get("email"):
+            opp_for_email = await db.opportunities.find_one({"id": application.get("opportunity_id")}, {"_id": 0})
+            opp_title = f"{opp_for_email.get('position', '')} — {opp_for_email.get('league_level', '')}" if opp_for_email else "your application"
+            club = await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0})
+            org_name = club.get("name", "The organization") if club else "The organization"
+            org_is_anonymous = (opp_for_email or {}).get("visibility", "anonymous") != "public"
+            background_tasks.add_task(
+                send_rejection_with_feedback,
+                player["email"],
+                player.get("name", "Player"),
+                opp_title,
+                org_name,
+                org_is_anonymous,
+                feedback.reasons,
+                feedback.other_text if "other" in feedback.reasons else None,
+                feedback.tips or [],
+                feedback.message or "",
+            )
+    except Exception as e:
+        print(f"Email error: {e}")
+
+    return {"message": "Application rejected with feedback"}
+
 
 @api_router.get("/players/{player_id}/verification")
 async def get_player_verification_public(player_id: str, current_user: dict = Depends(get_current_user)):
