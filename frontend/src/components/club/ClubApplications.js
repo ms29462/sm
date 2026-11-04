@@ -375,7 +375,7 @@ const ClubApplications = () => {
                       {group.applications.length} applicant{group.applications.length !== 1 ? 's' : ''}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{group.opportunity?.league_level} · {group.opportunity?.salary_range || "Salary N/A"}</p>
+                  <p className="text-sm text-muted-foreground">{group.opportunity?.league_level}{group.opportunity?.country ? ` · ${group.opportunity.country}` : ""} · {group.opportunity?.salary_range || "Salary N/A"}</p>
                 </div>
                 <span className="text-muted-foreground text-sm">{expandedOpps[oppId] ? '▲ Collapse' : '▼ Expand'}</span>
               </button>
