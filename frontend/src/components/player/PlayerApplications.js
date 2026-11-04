@@ -3,6 +3,7 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { FileText } from 'lucide-react';
 import useSocket from '@/hooks/useSocket';
+import { useTranslation } from 'react-i18next';
 
 const STATUS_COLORS = {
   submitted: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
@@ -31,7 +32,30 @@ const STATUS_LABELS = {
   signed: 'Signed',
 };
 
+const REASON_LABELS = {
+  position_not_needed: "We are not recruiting for your position right now",
+  squad_complete: "Our squad is complete in this position",
+  age_mismatch: "Your age group doesn't match this opportunity",
+  level_mismatch: "Your level doesn't match what we need right now",
+  physical_mismatch: "Your physical profile doesn't match the role",
+  foot_mismatch: "Preferred foot doesn't match the need",
+  eligibility: "Eligibility requirement not met (e.g. passport or work permit)",
+  insufficient_video: "Not enough video to assess your profile",
+  incomplete_profile: "Some profile information is missing",
+  availability_location: "Availability or location doesn't match",
+  opportunity_closed: "This opportunity has been filled or closed",
+  other: "Other",
+};
+
+const TIP_LABELS = {
+  add_video: "Add a longer or higher-quality video",
+  complete_profile: "Complete your profile (position, foot, height, stats)",
+  keep_updated: "Keep your profile up to date",
+  apply_others: "Apply to other opportunities that fit your profile",
+};
+
 const PlayerApplications = () => {
+  const { t } = useTranslation();
   const { socket, on, off } = useSocket();
   const [applications, setApplications] = useState([]);
   const [matchScores, setMatchScores] = useState({});
@@ -202,6 +226,47 @@ const PlayerApplications = () => {
                   </p>
                 )}
               </div>
+              {/* Disclaimer for all applications */}
+              <p className="text-xs text-muted-foreground/60 italic mb-3">
+                {t("applications.disclaimer")}
+              </p>
+
+              {/* Rejection feedback block */}
+              {app.status === "rejected" && app.feedback && (
+                <div className="bg-red-500/5 border border-red-500/20 rounded-sm p-4 mb-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-widest text-red-400">
+                    {t("applications.feedback_title")}
+                  </p>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">{t("applications.feedback_reasons_label")}</p>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {(app.feedback.reasons || []).filter(r => r !== "other").map(r => (
+                        <li key={r} className="text-sm text-white/80">{REASON_LABELS[r] || r}</li>
+                      ))}
+                      {app.feedback.reasons?.includes("other") && app.feedback.other_text && (
+                        <li className="text-sm text-white/80">{app.feedback.other_text}</li>
+                      )}
+                    </ul>
+                  </div>
+                  {app.feedback.tips?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">{t("applications.feedback_tips_label")}</p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        {app.feedback.tips.map(tip => (
+                          <li key={tip} className="text-sm text-white/80">{TIP_LABELS[tip] || tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {app.feedback.message && (
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">{t("applications.feedback_message_label")}</p>
+                      <p className="text-sm text-white/80 italic">"{app.feedback.message}"</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 {app.opportunity.salary_range && (
                   <div>

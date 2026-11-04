@@ -41,7 +41,7 @@ from email_service import (
     send_admin_new_chat_request, send_admin_chat_request_accepted,
     send_opportunity_published, send_unread_messages_reminder,
     send_new_application_received, send_admin_new_user_pending,
-    send_new_opportunity_match, send_admin_new_opportunity
+    send_new_opportunity_match, send_admin_new_opportunity, send_rejection_with_feedback
 )
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -1285,6 +1285,53 @@ class Application(BaseModel):
 
 class ApplicationStatusUpdate(BaseModel):
     status: Literal['submitted', 'viewed', 'shortlisted', 'rejected', 'accepted', 'under_review', 'interested', 'interview_requested', 'offer_received']
+
+REJECTION_REASON_CODES = {
+    "position_not_needed", "squad_complete", "age_mismatch", "level_mismatch",
+    "physical_mismatch", "foot_mismatch", "eligibility", "insufficient_video",
+    "incomplete_profile", "availability_location", "opportunity_closed", "other",
+}
+REJECTION_TIP_CODES = {"add_video", "complete_profile", "keep_updated", "apply_others"}
+
+class RejectionFeedbackCreate(BaseModel):
+    reasons: List[str]
+    tips: List[str] = []
+    message: Optional[str] = None
+    other_text: Optional[str] = None
+
+    @validator("reasons")
+    def validate_reasons(cls, v):
+        if not v:
+            raise ValueError("At least one reason is required")
+        invalid = set(v) - REJECTION_REASON_CODES
+        if invalid:
+            raise ValueError(f"Unknown reason codes: {invalid}")
+        return v
+
+    @validator("tips")
+    def validate_tips(cls, v):
+        invalid = set(v) - REJECTION_TIP_CODES
+        if invalid:
+            raise ValueError(f"Unknown tip codes: {invalid}")
+        return v
+
+    @validator("message")
+    def validate_message(cls, v):
+        if v and len(v) > 300:
+            raise ValueError("Message must be 300 characters or fewer")
+        return v
+
+    @validator("other_text")
+    def validate_other_text(cls, v):
+        if v and len(v) > 200:
+            raise ValueError("Other text must be 200 characters or fewer")
+        return v
+
+    @validator("other_text", always=True)
+    def other_text_required_if_other(cls, v, values):
+        if "other" in values.get("reasons", []) and not v:
+            raise ValueError("other_text is required when 'other' is selected")
+        return v
 
 # ============ FAVORITE MODELS ============
 class FavoriteCreate(BaseModel):
@@ -2801,10 +2848,16 @@ async def get_my_applications(current_user: dict = Depends(get_current_user)):
             if opp.get("visibility", "anonymous") != "public":
                 opp["club_name"] = "Club"
                 opp["club_id"] = "anonymous"
+            feedback = None
+            if app.get("status") == "rejected":
+                fb_doc = await db.application_feedback.find_one({"application_id": app["id"]}, {"_id": 0})
+                if fb_doc:
+                    feedback = {k: v for k, v in fb_doc.items() if k not in ("created_by", "player_id")}
             result.append({
                 **app,
                 "opportunity": opp,
-                "fit_score": app.get("fit_score", None)
+                "fit_score": app.get("fit_score", None),
+                "feedback": feedback,
             })
     return result
 
@@ -3114,6 +3167,109 @@ async def update_application_status(
     except Exception as e:
         print(f"Email error: {e}")
     return {"message": "Status updated"}
+
+
+@api_router.post("/applications/{application_id}/reject")
+async def reject_application_with_feedback(
+    application_id: str,
+    feedback: RejectionFeedbackCreate,
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user),
+):
+    if current_user["role"] not in ["club", "college", "analyst", "federation", "agent", "specialist", "academy", "college_agency"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Verify this org owns the application
+    application = await db.applications.find_one(
+        {"id": application_id, "club_id": current_user["user_id"]}, {"_id": 0}
+    )
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Idempotency: reject only once
+    existing_feedback = await db.application_feedback.find_one({"application_id": application_id}, {"_id": 0})
+    if existing_feedback:
+        raise HTTPException(status_code=409, detail="Feedback already submitted for this application")
+
+    # Save feedback record first — only send email after successful save
+    feedback_doc = {
+        "id": str(uuid.uuid4()),
+        "application_id": application_id,
+        "player_id": application["player_id"],
+        "reasons": feedback.reasons,
+        "tips": feedback.tips,
+        "message": feedback.message,
+        "other_text": feedback.other_text,
+        "created_by": current_user["user_id"],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.application_feedback.insert_one(feedback_doc)
+
+    # Update application status to rejected
+    player_label = APPLICATION_STATUS_LABELS.get("rejected", "Not Selected")
+    await db.applications.update_one(
+        {"id": application_id},
+        {"$set": {
+            "status": "rejected",
+            "player_status_label": player_label,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        },
+        "$push": {
+            "status_history": {
+                "status": "rejected",
+                "label": player_label,
+                "changed_at": datetime.now(timezone.utc).isoformat(),
+            }
+        }}
+    )
+
+    # In-app notification
+    try:
+        opp = await db.opportunities.find_one({"id": application.get("opportunity_id")}, {"_id": 0, "position": 1, "league_level": 1})
+        opp_label = f"{opp.get('position', '')} — {opp.get('league_level', '')}" if opp else "your application"
+        await create_notification(
+            application["player_id"],
+            "application_update",
+            f"📋 Your application status has been updated — {opp_label}",
+            {"application_id": application_id, "status": "rejected", "opportunity_label": opp_label, "opportunity_id": application.get("opportunity_id")},
+        )
+    except Exception as e:
+        logger.error(f"Rejection notification error: {e}")
+
+    # Send email with feedback asynchronously (after save succeeded)
+    try:
+        player = await db.players.find_one({"user_id": application["player_id"]}, {"_id": 0})
+        opp_full = await db.opportunities.find_one({"id": application.get("opportunity_id")}, {"_id": 0})
+        if player and player.get("email"):
+            pos = (opp_full or {}).get("position") or ((opp_full or {}).get("positions") or [""])[0] if opp_full else ""
+            level = (opp_full or {}).get("league_level", "")
+            opp_title = f"{pos} — {level}".strip(" —") if (pos or level) else "your application"
+            org_is_anonymous = (opp_full or {}).get("visibility", "anonymous") != "public"
+            org_doc = (
+                await db.clubs.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1}) or
+                await db.colleges.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1}) or
+                await db.federations.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1}) or
+                await db.agents.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1}) or
+                await db.college_agencies.find_one({"user_id": current_user["user_id"]}, {"_id": 0, "name": 1}) or
+                {}
+            )
+            background_tasks.add_task(
+                send_rejection_with_feedback,
+                player["email"],
+                player.get("name", "Player"),
+                opp_title,
+                org_doc.get("name", ""),
+                org_is_anonymous,
+                feedback.reasons,
+                feedback.other_text or "",
+                feedback.tips,
+                feedback.message or "",
+            )
+    except Exception as e:
+        logger.error(f"Rejection email error: {e}")
+
+    return {"message": "Application rejected with feedback", "feedback_id": feedback_doc["id"]}
+
 
 @api_router.get("/players/{player_id}/verification")
 async def get_player_verification_public(player_id: str, current_user: dict = Depends(get_current_user)):
