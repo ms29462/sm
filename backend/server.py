@@ -2662,6 +2662,10 @@ async def create_application(app_create: ApplicationCreate, background_tasks: Ba
         acting_player_id = app_create.player_id
     else:
         acting_player_id = current_user['user_id']
+        # Block unapproved players who registered directly (not created by an academy)
+        player_check = await db.players.find_one({"user_id": acting_player_id}, {"_id": 0, "approved": 1, "academy_id": 1})
+        if not player_check or (not player_check.get("approved") and not player_check.get("academy_id")):
+            raise HTTPException(status_code=403, detail="Your profile must be approved by our team before you can apply to opportunities")
 
     # Get opportunity and check status
     opp = await db.opportunities.find_one({"id": app_create.opportunity_id}, {"_id": 0})
