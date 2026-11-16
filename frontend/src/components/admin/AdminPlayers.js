@@ -5,8 +5,9 @@ import { toast } from 'sonner';
 import {
   Users, Check, X, Trash2, CheckCircle, XCircle,
   ChevronDown, ChevronUp, ExternalLink, Play, Globe,
-  Instagram, Twitter, Linkedin, Phone, Mail, Calendar, MapPin
+  Instagram, Twitter, Linkedin, Phone, Mail, Calendar, MapPin, Ban
 } from 'lucide-react';
+import PlayerRejectionModal from '@/components/admin/PlayerRejectionModal';
 
 const Field = ({ label, value }) => {
   if (!value && value !== 0) return null;
@@ -43,6 +44,7 @@ const AdminPlayers = () => {
   const [ageFilter, setAgeFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expanded, setExpanded] = useState({});
+  const [rejectionTarget, setRejectionTarget] = useState(null);
 
   useEffect(() => { loadPlayers(); }, []);
 
@@ -108,7 +110,10 @@ const AdminPlayers = () => {
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const filteredPlayers = players
+  const activePlayers = players.filter(p => !p.rejected);
+  const rejectedPlayers = players.filter(p => p.rejected);
+
+  const filteredPlayers = (ageFilter === 'rejected' ? rejectedPlayers : activePlayers)
     .filter(p => {
       if (ageFilter === 'minors' && !p.is_minor) return false;
       if (ageFilter === 'adults' && p.is_minor) return false;
@@ -131,10 +136,11 @@ const AdminPlayers = () => {
     })
     .sort((a, b) => {
       if (ageFilter === 'new') return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      if (ageFilter === 'rejected') return new Date(b.rejected_at || 0) - new Date(a.rejected_at || 0);
       return 0;
     });
 
-  const newPlayersCount = players.filter(p => {
+  const newPlayersCount = activePlayers.filter(p => {
     const created = p.created_at ? new Date(p.created_at) : null;
     return created && created >= thirtyDaysAgo;
   }).length;
@@ -164,16 +170,21 @@ const AdminPlayers = () => {
       </div>
       <div className="flex flex-wrap gap-2 mb-6">
         {[
-          { id: 'all', label: 'All Players', count: players.length },
-          { id: 'new', label: 'New (30d)', count: newPlayersCount },
-          { id: 'minors', label: 'Minors', count: players.filter(p => p.is_minor).length },
-          { id: 'adults', label: 'Adults', count: players.filter(p => !p.is_minor).length },
+          { id: 'all',      label: 'All Players', count: activePlayers.length },
+          { id: 'new',      label: 'New (30d)',   count: newPlayersCount },
+          { id: 'minors',   label: 'Minors',      count: activePlayers.filter(p => p.is_minor).length },
+          { id: 'adults',   label: 'Adults',      count: activePlayers.filter(p => !p.is_minor).length },
+          { id: 'rejected', label: 'Rejected',    count: rejectedPlayers.length },
         ].map(f => (
           <button key={f.id} onClick={() => setAgeFilter(f.id)}
             className={`px-4 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${
               ageFilter === f.id
-                ? f.id === 'new' ? 'bg-green-500 text-black border-green-500' : 'bg-primary text-black border-primary'
-                : f.id === 'new' && f.count > 0 ? 'border-green-500/50 text-green-400 hover:border-green-500' : 'border-white/10 text-muted-foreground hover:border-white/30'
+                ? f.id === 'new'      ? 'bg-green-500 text-black border-green-500'
+                : f.id === 'rejected' ? 'bg-red-600 text-white border-red-600'
+                : 'bg-primary text-black border-primary'
+                : f.id === 'new'      && f.count > 0 ? 'border-green-500/50 text-green-400 hover:border-green-500'
+                : f.id === 'rejected' && f.count > 0 ? 'border-red-500/50 text-red-400 hover:border-red-500'
+                : 'border-white/10 text-muted-foreground hover:border-white/30'
             }`}>
             {f.label} ({f.count})
           </button>
@@ -210,11 +221,13 @@ const AdminPlayers = () => {
                         <h3 className="text-lg font-heading font-bold uppercase">{player.name}</h3>
                         <span data-testid={`status-${player.user_id}`}
                           className={`px-2 py-0.5 text-[10px] uppercase tracking-wider border rounded-sm ${
-                            player.approved
+                            player.rejected
+                              ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                              : player.approved
                               ? 'bg-green-500/10 text-green-500 border-green-500/20'
                               : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
                           }`}>
-                          {player.approved ? 'APPROVED' : 'PENDING'}
+                          {player.rejected ? 'REJECTED' : player.approved ? 'APPROVED' : 'PENDING'}
                         </span>
                         {player.verified && (
                           <span data-testid={`verified-badge-${player.user_id}`}
@@ -271,6 +284,14 @@ const AdminPlayers = () => {
                       title={player.approved ? 'Unapprove' : 'Approve'}>
                       {player.approved ? <X className="w-4 h-4" /> : <Check className="w-4 h-4" />}
                     </Button>
+                    {!player.rejected && !player.approved && (
+                      <Button size="icon"
+                        onClick={() => setRejectionTarget({ userId: player.user_id, playerName: player.name })}
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                        title="Reject registration">
+                        <Ban className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Button data-testid={`verify-btn-${player.user_id}`} size="icon"
                       onClick={() => handleVerify(player.user_id, player.verified)}
                       className={player.verified ? 'bg-gray-500 hover:bg-gray-600' : 'bg-blue-500 hover:bg-blue-600'}
@@ -289,6 +310,24 @@ const AdminPlayers = () => {
               {/* ── Expanded detail panel ── */}
               {expanded[player.user_id] && (
                 <div className="border-t border-border/50 px-6 pb-6 pt-5 space-y-6">
+
+                  {/* Rejection info */}
+                  {player.rejected && player.rejection_reasons?.length > 0 && (
+                    <div className="bg-red-500/5 border border-red-500/20 rounded-sm p-4">
+                      <p className="text-xs font-bold uppercase tracking-widest text-red-400 mb-2">Rejection Reasons</p>
+                      <ul className="list-disc pl-4 space-y-1 mb-2">
+                        {player.rejection_reasons.map(r => (
+                          <li key={r} className="text-sm text-white/80">{r.replace(/_/g, ' ')}</li>
+                        ))}
+                      </ul>
+                      {player.rejection_message && (
+                        <p className="text-sm text-muted-foreground italic border-t border-red-500/10 pt-2 mt-2">"{player.rejection_message}"</p>
+                      )}
+                      {player.rejected_at && (
+                        <p className="text-xs text-muted-foreground/50 mt-2">Rejected on {new Date(player.rejected_at).toLocaleDateString()}</p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Highlight video — most prominent */}
                   <div>
@@ -453,6 +492,15 @@ const AdminPlayers = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {rejectionTarget && (
+        <PlayerRejectionModal
+          userId={rejectionTarget.userId}
+          playerName={rejectionTarget.playerName}
+          onConfirmed={() => { setRejectionTarget(null); loadPlayers(); }}
+          onCancel={() => setRejectionTarget(null)}
+        />
       )}
     </div>
   );

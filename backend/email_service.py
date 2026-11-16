@@ -533,3 +533,56 @@ async def send_rejection_with_feedback(
       </table>
     """
     await send_email(email, "Application Update — Soccer Match", get_base_template(content, "Application Update"))
+
+
+REGISTRATION_REJECTION_LABELS = {
+    "incomplete_profile":  "Profile information is incomplete",
+    "missing_video":       "No highlight video was provided",
+    "invalid_video":       "Highlight video link is invalid or not accessible",
+    "not_football":        "Profile does not appear to be football-related",
+    "fake_profile":        "Profile contains incorrect or unverifiable information",
+    "duplicate_account":   "Duplicate account detected",
+    "quality_too_low":     "Video quality is insufficient to review the profile",
+    "criteria_not_met":    "Profile does not meet our current platform criteria",
+    "age_underage":        "Player does not meet the minimum age requirement",
+    "spam_bot":            "Profile has been flagged as spam",
+}
+
+
+async def send_player_registration_rejection(
+    email: str,
+    player_name: str,
+    reasons: list,
+    message: str = None,
+):
+    reasons_html = "".join(
+        f'<li style="color:#ccc;font-size:14px;margin:0 0 6px;">{html_module.escape(REGISTRATION_REJECTION_LABELS.get(r, r))}</li>'
+        for r in reasons
+    )
+    message_html = ""
+    if message:
+        safe_msg = html_module.escape(message)
+        message_html = f"""
+      <p style="color:#aaa;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;">Note from the team</p>
+      <p style="color:#ccc;font-size:14px;font-style:italic;border-left:3px solid #c8f135;padding-left:12px;margin:0;">"{safe_msg}"</p>
+        """
+
+    content = f"""
+      <h1 style="color:#ef4444;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Registration Update</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {html_module.escape(player_name)},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">
+        Thank you for registering on Soccer Match. After reviewing your profile, we are unable to approve your account at this time.
+      </p>
+      <div style="background-color:#1a1a1a;border:1px solid #333;border-left:3px solid #ef4444;padding:16px 20px;margin:0 0 16px;border-radius:4px;">
+        <p style="color:#ef4444;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 10px;">Reasons</p>
+        <ul style="margin:0;padding:0 0 0 20px;">{reasons_html}</ul>
+        {message_html}
+      </div>
+      <p style="color:#ccc;font-size:14px;line-height:1.6;margin:0 0 16px;">
+        If you believe this was a mistake or if you have updated your information, you are welcome to contact us at <a href="mailto:contact@soccermatch.ca" style="color:#c8f135;">contact@soccermatch.ca</a>.
+      </p>
+      <p style="color:#666;font-size:12px;line-height:1.6;margin:0;">
+        The Soccer Match Team
+      </p>
+    """
+    await send_email(email, "Registration Update — Soccer Match", get_base_template(content, "Registration Update"))

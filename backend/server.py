@@ -42,7 +42,7 @@ from email_service import (
     send_opportunity_published, send_unread_messages_reminder,
     send_new_application_received, send_admin_new_user_pending,
     send_new_opportunity_match, send_admin_new_opportunity,
-    send_rejection_with_feedback
+    send_rejection_with_feedback, send_player_registration_rejection
 )
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -3583,11 +3583,69 @@ async def approve_player(user_id: str, approval: UserApproval, current_user: dic
 async def verify_player(user_id: str, verified: bool, current_user: dict = Depends(get_current_user)):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Not an admin")
-    
+
     result = await db.players.update_one({"user_id": user_id}, {"$set": {"verified": verified}})
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Player not found")
     return {"message": "Updated"}
+
+VALID_PLAYER_REJECTION_REASONS = {
+    "incomplete_profile", "missing_video", "invalid_video", "not_football",
+    "fake_profile", "duplicate_account", "quality_too_low", "criteria_not_met",
+    "age_underage", "spam_bot",
+}
+
+class PlayerRejection(BaseModel):
+    reasons: List[str]
+    message: Optional[str] = None
+
+@api_router.post("/admin/players/{user_id}/reject")
+async def reject_player_registration(
+    user_id: str,
+    body: PlayerRejection,
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Not an admin")
+    if not body.reasons:
+        raise HTTPException(status_code=422, detail="At least one reason is required")
+    invalid = [r for r in body.reasons if r not in VALID_PLAYER_REJECTION_REASONS]
+    if invalid:
+        raise HTTPException(status_code=422, detail=f"Invalid reasons: {invalid}")
+    if body.message and len(body.message) > 500:
+        raise HTTPException(status_code=422, detail="Message must be 500 characters or less")
+
+    player = await db.players.find_one({"user_id": user_id}, {"_id": 0})
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    await db.players.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "rejected": True,
+            "approved": False,
+            "rejection_reasons": body.reasons,
+            "rejection_message": body.message,
+            "rejected_at": datetime.now(timezone.utc).isoformat(),
+        }}
+    )
+
+    player_email = player.get("email")
+    if not player_email:
+        user_doc = await db.users.find_one({"id": user_id}, {"_id": 0, "email": 1})
+        player_email = user_doc.get("email") if user_doc else None
+
+    if player_email:
+        background_tasks.add_task(
+            send_player_registration_rejection,
+            player_email,
+            player.get("name", "Player"),
+            body.reasons,
+            body.message,
+        )
+
+    return {"message": "Player rejected"}
 
 @api_router.put("/admin/clubs/{user_id}/approve")
 async def approve_club(user_id: str, approval: UserApproval, current_user: dict = Depends(get_current_user)):
