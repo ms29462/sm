@@ -266,6 +266,10 @@ class PlayerProfile(BaseModel):
     has_postsecondary: Optional[bool] = None
     postsecondary_start_date: Optional[str] = None
     annual_budget: Optional[str] = None
+    rejected: Optional[bool] = False
+    rejection_reasons: Optional[list] = None
+    rejection_message: Optional[str] = None
+    rejected_at: Optional[str] = None
 
 
 # Helper function to strip private info from player data
