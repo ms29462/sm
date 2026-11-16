@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
 import DeleteAccountSection from "./DeleteAccountSection";
 import { api } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 import LeagueLevelPicker from '@/components/shared/LeagueLevelPicker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +46,7 @@ const QUALITY_COLORS = {
 import AgentRepresentation from '@/components/player/AgentRepresentation';
 
 const PlayerProfile = () => {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -257,8 +259,8 @@ const PlayerProfile = () => {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">MY PROFILE</h1>
-        <p className="text-muted-foreground">Manage your player profile and information</p>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">{t('player_profile.title')}</h1>
+        <p className="text-muted-foreground">{t('player_profile.subtitle')}</p>
       </div>
 
       <div className="max-w-4xl">
@@ -303,7 +305,7 @@ const PlayerProfile = () => {
                       : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
                   }`}
                 >
-                  {profile?.approved ? 'APPROVED' : 'PENDING APPROVAL'}
+                  {profile?.approved ? t('player_profile.approved') : t('player_profile.pending_approval')}
                 </span>
                 {profile?.verified && (
                   <span
@@ -311,7 +313,7 @@ const PlayerProfile = () => {
                     className="inline-flex items-center px-2 py-1 text-[10px] uppercase tracking-wider rounded-sm bg-blue-500/10 text-blue-500 border border-blue-500/20"
                   >
                     <CheckCircle className="w-3 h-3 mr-1" />
-                    VERIFIED
+                    {t('player_profile.verified')}
                   </span>
                 )}
               </div>
@@ -324,7 +326,7 @@ const PlayerProfile = () => {
             <div className="bg-black/20 border border-white/10 rounded-sm p-4 mb-6">
               {verification?.quality_score > 0 && (
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wide whitespace-nowrap">Profile Score</span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide whitespace-nowrap">{t('player_profile.profile_score')}</span>
                   <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                     <div className="h-full bg-primary rounded-full" style={{width: `${verification.quality_score}%`}} />
                   </div>
@@ -352,7 +354,7 @@ const PlayerProfile = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="name" className="text-sm font-medium uppercase tracking-wide">
-                Full Name
+                {t('player_profile.full_name')}
               </Label>
               <Input
                 id="name"
@@ -366,7 +368,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="position" className="text-sm font-medium uppercase tracking-wide">
-                Position
+                {t('opportunities.position')}
               </Label>
               <Select value={formData.position || ''} onValueChange={(value) => handleChange('position', value)}>
                 <SelectTrigger
@@ -388,7 +390,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="age" className="text-sm font-medium uppercase tracking-wide">
-                Age
+                {t('player_profile.age')}
               </Label>
               <Input
                 id="age"
@@ -402,7 +404,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="nationality" className="text-sm font-medium uppercase tracking-wide">
-                Primary Nationality
+                {t('player_profile.primary_nationality')}
               </Label>
               <Select value={formData.nationality || ''} onValueChange={(value) => handleChange('nationality', value)}>
                 <SelectTrigger
@@ -424,8 +426,8 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="nationality_2" className="text-sm font-medium uppercase tracking-wide">
-                Second Nationality
-                <span className="text-muted-foreground text-xs ml-2">(Optional)</span>
+                {t('player_profile.second_nationality')}
+                <span className="text-muted-foreground text-xs ml-2">{t('player_profile.second_nationality_opt')}</span>
               </Label>
               <Select value={formData.nationality_2 || ''} onValueChange={(value) => handleChange('nationality_2', value)}>
                 <SelectTrigger
@@ -445,13 +447,13 @@ const PlayerProfile = () => {
                 </SelectContent>
               </Select>
               <p className="mt-1 text-xs text-muted-foreground">
-                Add a second nationality to be scouted by multiple federations
+                {t('player_profile.second_nationality_note')}
               </p>
             </div>
 
             <div>
               <Label htmlFor="residence_country" className="text-sm font-medium uppercase tracking-wide">
-                Country of Residence
+                {t('player_profile.residence_country')}
               </Label>
               <select
                 id="residence_country"
@@ -467,7 +469,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="height" className="text-sm font-medium uppercase tracking-wide">
-                Height (cm)
+                {t('player_profile.height')}
               </Label>
               <Input
                 id="height"
@@ -481,7 +483,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="weight" className="text-sm font-medium uppercase tracking-wide">
-                Weight (kg)
+                {t('player_profile.weight')}
               </Label>
               <Input
                 id="weight"
@@ -495,7 +497,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="preferred_foot" className="text-sm font-medium uppercase tracking-wide">
-                Preferred Foot
+                {t('player_profile.preferred_foot')}
               </Label>
               <Select value={formData.preferred_foot || ''} onValueChange={(value) => handleChange('preferred_foot', value)}>
                 <SelectTrigger
@@ -517,7 +519,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="current_club" className="text-sm font-medium uppercase tracking-wide">
-                Current Club
+                {t('player_profile.current_club')}
               </Label>
               <Input
                 id="current_club"
@@ -530,7 +532,7 @@ const PlayerProfile = () => {
             </div>
 <div>
   <Label htmlFor="contract_end_date" className="text-sm font-medium uppercase tracking-wide">
-    Contract Until
+    {t('player_profile.contract_until')}
   </Label>
   <Input
     id="contract_end_date"
@@ -543,7 +545,7 @@ const PlayerProfile = () => {
 </div>
 <div>
   <Label htmlFor="market_value" className="text-sm font-medium uppercase tracking-wide">
-    Market Value
+    {t('player_profile.market_value')}
   </Label>
   <Input
     id="market_value"
@@ -556,7 +558,7 @@ const PlayerProfile = () => {
 </div>
 <div>
   <Label htmlFor="visibility" className="text-sm font-medium uppercase tracking-wide">
-    Profile Visibility
+    {t('player_profile.profile_visibility')}
   </Label>
   <select
     id="visibility"
@@ -564,17 +566,17 @@ const PlayerProfile = () => {
     onChange={(e) => handleChange('visibility', e.target.value)}
     className="mt-2 w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white appearance-none cursor-pointer"
   >
-    <option value="public">Public — visible to everyone</option>
-    <option value="clubs_only">Clubs only</option>
-    <option value="agents_only">Agents only</option>
-    <option value="private">Private — only me</option>
+    <option value="public">{t('player_profile.visibility_public')}</option>
+    <option value="clubs_only">{t('player_profile.visibility_clubs')}</option>
+    <option value="agents_only">{t('player_profile.visibility_agents')}</option>
+    <option value="private">{t('player_profile.visibility_private')}</option>
   </select>
-  <p className="text-xs text-muted-foreground mt-1">Control who can see your profile</p>
+  <p className="text-xs text-muted-foreground mt-1">{t('player_profile.visibility_note')}</p>
 </div>
 
             <div>
               <Label htmlFor="playing_level" className="text-sm font-medium uppercase tracking-wide">
-                Playing Level
+                {t('player_profile.playing_level')}
               </Label>
               <div className="mt-2">
                 <LeagueLevelPicker
@@ -585,19 +587,25 @@ const PlayerProfile = () => {
             </div>
 
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">Looking For</Label>
-              <p className="text-xs text-muted-foreground mt-1 mb-2">Let organizations know what level you're targeting</p>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.looking_for')}</Label>
+              <p className="text-xs text-muted-foreground mt-1 mb-2">{t('player_profile.looking_for_note')}</p>
               <div className="flex flex-wrap gap-2 mt-2">
-                {["Professional Opportunities","Semi-Professional Opportunities","Amateur Opportunities","University Opportunities","All"].map(opt => {
-                  const active = (formData.looking_for || []).includes(opt);
+                {[
+                  { val: "Professional Opportunities", label: t('register.looking_for_professional') },
+                  { val: "Semi-Professional Opportunities", label: t('register.looking_for_semi') },
+                  { val: "Amateur Opportunities", label: t('register.looking_for_amateur') },
+                  { val: "University Opportunities", label: t('register.looking_for_university') },
+                  { val: "All", label: t('register.looking_for_all') },
+                ].map(opt => {
+                  const active = (formData.looking_for || []).includes(opt.val);
                   return (
-                    <button key={opt} type="button"
+                    <button key={opt.val} type="button"
                       onClick={() => {
                         const current = formData.looking_for || [];
-                        handleChange('looking_for', active ? current.filter(v => v !== opt) : [...current, opt]);
+                        handleChange('looking_for', active ? current.filter(v => v !== opt.val) : [...current, opt.val]);
                       }}
                       className={`px-3 py-2 text-xs rounded-sm border-2 transition-all font-medium ${active ? 'border-primary bg-primary/10 text-primary' : 'border-white/10 text-muted-foreground hover:border-white/30'}`}>
-                      {opt}
+                      {opt.label}
                     </button>
                   );
                 })}
@@ -606,7 +614,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="games" className="text-sm font-medium uppercase tracking-wide">
-                Career Games Played
+                {t('player_profile.games')}
               </Label>
               <Input
                 id="games"
@@ -620,7 +628,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="goals" className="text-sm font-medium uppercase tracking-wide">
-                Career Goals
+                {t('player_profile.goals')}
               </Label>
               <Input
                 id="goals"
@@ -634,7 +642,7 @@ const PlayerProfile = () => {
 
             <div>
               <Label htmlFor="assists" className="text-sm font-medium uppercase tracking-wide">
-                Career Assists
+                {t('player_profile.assists')}
               </Label>
               <Input
                 id="assists"
@@ -648,7 +656,7 @@ const PlayerProfile = () => {
 
             <div className="md:col-span-2">
               <Label htmlFor="highlight_video" className="text-sm font-medium uppercase tracking-wide flex items-center gap-2">
-                Highlight Video (YouTube/Vimeo URL) *
+                {t('player_profile.highlight_video')}
               </Label>
               <Input
                 id="highlight_video"
@@ -660,56 +668,56 @@ const PlayerProfile = () => {
                 placeholder="https://youtube.com/..."
               />
             </div>
-              <p className="text-xs text-yellow-400 mt-1">⚠️ Make sure your video link is set to <strong>Public</strong> — private or unlisted links cannot be viewed by clubs.</p>
+              <p className="text-xs text-yellow-400 mt-1">⚠️ {t('player_profile.highlight_public_note')}</p>
 
             <div className="md:col-span-2 border-t border-border/30 pt-4">
-              <p className="text-sm font-bold uppercase tracking-wide text-primary mb-3">Current Season Stats <span className="text-xs font-normal normal-case text-muted-foreground">(fill in your stats for the ongoing season)</span></p>
+              <p className="text-sm font-bold uppercase tracking-wide text-primary mb-3">{t('player_profile.season_stats')} <span className="text-xs font-normal normal-case text-muted-foreground">{t('player_profile.season_stats_note')}</span></p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
-                  <Label className="text-xs uppercase tracking-wide">Season Label</Label>
+                  <Label className="text-xs uppercase tracking-wide">{t('player_profile.season_label')}</Label>
                   <Input type="text" placeholder="e.g. 2024/25"
                     value={formData.season_label || ""}
                     onChange={e => handleChange("season_label", e.target.value)}
                     className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-wide">Games</Label>
+                  <Label className="text-xs uppercase tracking-wide">{t('player_profile.season_games')}</Label>
                   <Input type="number" value={formData.season_games || ""}
                     onChange={e => { const v = e.target.value; handleChange("season_games", v === "" ? null : parseInt(v)); }}
                     className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-wide">Goals</Label>
+                  <Label className="text-xs uppercase tracking-wide">{t('player_profile.season_goals')}</Label>
                   <Input type="number" value={formData.season_goals || ""}
                     onChange={e => { const v = e.target.value; handleChange("season_goals", v === "" ? null : parseInt(v)); }}
                     className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-wide">Assists</Label>
+                  <Label className="text-xs uppercase tracking-wide">{t('player_profile.season_assists')}</Label>
                   <Input type="number" value={formData.season_assists || ""}
                     onChange={e => { const v = e.target.value; handleChange("season_assists", v === "" ? null : parseInt(v)); }}
                     className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-wide">Minutes Played</Label>
+                  <Label className="text-xs uppercase tracking-wide">{t('player_profile.season_minutes')}</Label>
                   <Input type="number" value={formData.season_minutes_played || ""}
                     onChange={e => { const v = e.target.value; handleChange("season_minutes_played", v === "" ? null : parseInt(v)); }}
                     className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-wide">Clean Sheets</Label>
+                  <Label className="text-xs uppercase tracking-wide">{t('player_profile.season_clean_sheets')}</Label>
                   <Input type="number" value={formData.season_clean_sheets || ""}
                     onChange={e => { const v = e.target.value; handleChange("season_clean_sheets", v === "" ? null : parseInt(v)); }}
                     className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-wide">Yellow Cards</Label>
+                  <Label className="text-xs uppercase tracking-wide">{t('player_profile.season_yellow')}</Label>
                   <Input type="number" value={formData.season_yellow_cards || ""}
                     onChange={e => { const v = e.target.value; handleChange("season_yellow_cards", v === "" ? null : parseInt(v)); }}
                     className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-wide">Red Cards</Label>
+                  <Label className="text-xs uppercase tracking-wide">{t('player_profile.season_red')}</Label>
                   <Input type="number" value={formData.season_red_cards || ""}
                     onChange={e => { const v = e.target.value; handleChange("season_red_cards", v === "" ? null : parseInt(v)); }}
                     className="mt-1 bg-black/20 border-white/10 focus:border-primary rounded-sm h-10" />
@@ -719,7 +727,7 @@ const PlayerProfile = () => {
 
             <div className="md:col-span-2">
               <Label htmlFor="cv" className="text-sm font-medium uppercase tracking-wide">
-                CV / Resume (Base64 or URL)
+                {t('player_profile.cv_resume')}
               </Label>
               <div className="mt-2 flex items-center space-x-4">
                 <Input
@@ -729,11 +737,11 @@ const PlayerProfile = () => {
                   value={formData.cv || ''}
                   onChange={(e) => handleChange('cv', e.target.value)}
                   className="flex-1 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
-                  placeholder="Upload or paste URL"
+                  placeholder={t('player_profile.cv_placeholder')}
                 />
                 <label className="bg-muted hover:bg-muted/80 px-4 h-12 rounded-sm flex items-center cursor-pointer">
                   <Upload className="w-4 h-4 mr-2" />
-                  Upload
+                  {t('player_profile.cv_upload_btn')}
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx"
@@ -746,7 +754,7 @@ const PlayerProfile = () => {
 
             <div className="md:col-span-2">
               <Label htmlFor="transfermarkt_url" className="text-sm font-medium uppercase tracking-wide">
-                Transfermarkt Profile Link
+                {t('player_profile.transfermarkt')}
               </Label>
               <Input
                 id="transfermarkt_url"
@@ -758,7 +766,7 @@ const PlayerProfile = () => {
                 placeholder="https://www.transfermarkt.us/player/profil/spieler/12345"
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Add your Transfermarkt profile link so organizations can verify your career history
+                {t('player_profile.transfermarkt_note')}
               </p>
             </div>
           </div>
@@ -770,7 +778,7 @@ const PlayerProfile = () => {
               disabled={saving}
               className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12 px-8"
             >
-              {saving ? 'SAVING...' : 'SAVE CHANGES'}
+              {saving ? t('player_profile.saving_btn') : t('player_profile.save_btn')}
             </Button>
           </div>
         </div>
@@ -781,8 +789,8 @@ const PlayerProfile = () => {
             <div className="flex items-center space-x-3">
               <Video className="w-6 h-6 text-primary" />
               <div>
-                <h2 className="text-xl font-heading font-bold uppercase">MATCH ARCHIVE</h2>
-                <p className="text-sm text-muted-foreground">Add full game videos for clubs and scouts to review</p>
+                <h2 className="text-xl font-heading font-bold uppercase">{t('player_profile.match_archive')}</h2>
+                <p className="text-sm text-muted-foreground">{t('player_profile.match_archive_desc')}</p>
               </div>
             </div>
             <Dialog open={showAddMatchDialog} onOpenChange={setShowAddMatchDialog}>
@@ -792,16 +800,16 @@ const PlayerProfile = () => {
                   className="bg-primary text-black font-bold uppercase text-xs sm:text-sm tracking-normal hover:bg-primary/90 rounded-sm"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  ADD MATCH
+                  {t('player_profile.add_match_btn')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg">
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-heading uppercase">Add Match Video</DialogTitle>
+                  <DialogTitle className="text-xl font-heading uppercase">{t('player_profile.add_archive_dialog_title')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   <div>
-                    <Label className="text-sm font-medium uppercase tracking-wide">Video Link *</Label>
+                    <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.video_link')}</Label>
                     <Input
                       data-testid="match-video-link"
                       type="url"
@@ -813,7 +821,7 @@ const PlayerProfile = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-medium uppercase tracking-wide">Match Date *</Label>
+                      <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.match_date')}</Label>
                       <Input
                         data-testid="match-date"
                         type="date" style={{colorScheme: "dark"}}
@@ -823,7 +831,7 @@ const PlayerProfile = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium uppercase tracking-wide">Opponent *</Label>
+                      <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.opponent')}</Label>
                       <Input
                         data-testid="match-opponent"
                         type="text"
@@ -836,7 +844,7 @@ const PlayerProfile = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-medium uppercase tracking-wide">Competition Level *</Label>
+                      <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.comp_level')}</Label>
                       <Select
                         value={newMatch.competition_level}
                         onValueChange={(value) => handleNewMatchChange('competition_level', value)}
@@ -852,7 +860,7 @@ const PlayerProfile = () => {
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium uppercase tracking-wide">Position Played</Label>
+                      <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.position_played')}</Label>
                       <Select
                         value={newMatch.position_played}
                         onValueChange={(value) => handleNewMatchChange('position_played', value)}
@@ -869,7 +877,7 @@ const PlayerProfile = () => {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium uppercase tracking-wide">Description / Notes</Label>
+                    <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.desc_notes')}</Label>
                     <Textarea
                       data-testid="match-description"
                       value={newMatch.description}
@@ -884,7 +892,7 @@ const PlayerProfile = () => {
                     disabled={addingMatch}
                     className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 h-12"
                   >
-                    {addingMatch ? 'ADDING...' : 'ADD TO ARCHIVE'}
+                    {addingMatch ? t('player_profile.adding_btn') : t('player_profile.add_to_archive_btn')}
                   </Button>
                 </div>
               </DialogContent>
@@ -894,8 +902,8 @@ const PlayerProfile = () => {
           {matchArchive.length === 0 ? (
             <div className="text-center py-8 border border-dashed border-border rounded-sm">
               <Video className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No matches in your archive yet</p>
-              <p className="text-sm text-muted-foreground mt-1">Add full game videos to showcase your skills to scouts</p>
+              <p className="text-muted-foreground">{t('player_profile.no_archive')}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t('player_profile.no_archive_note')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -914,7 +922,7 @@ const PlayerProfile = () => {
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>{match.match_date}</span>
-                      {match.position_played && <span>Played as {match.position_played}</span>}
+                      {match.position_played && <span>{t('player_profile.played_as', { pos: match.position_played })}</span>}
                     </div>
                     {match.description && (
                       <p className="text-sm text-muted-foreground mt-1">{match.description}</p>
@@ -928,7 +936,7 @@ const PlayerProfile = () => {
                       className="border-primary text-primary hover:bg-primary hover:text-black"
                     >
                       <ExternalLink className="w-4 h-4 mr-1" />
-                      WATCH
+                      {t('player_profile.watch_btn')}
                     </Button>
                     <Button
                       variant="outline"
@@ -951,8 +959,8 @@ const PlayerProfile = () => {
             <div className="flex items-center space-x-3">
               <Calendar className="w-6 h-6 text-blue-500" />
               <div>
-                <h2 className="text-xl font-heading font-bold uppercase">UPCOMING MATCHES</h2>
-                <p className="text-sm text-muted-foreground">Share your schedule with clubs and scouts for live scouting</p>
+                <h2 className="text-xl font-heading font-bold uppercase">{t('player_profile.upcoming_matches')}</h2>
+                <p className="text-sm text-muted-foreground">{t('player_profile.upcoming_matches_desc')}</p>
               </div>
             </div>
             <Dialog open={showAddCalendarDialog} onOpenChange={setShowAddCalendarDialog}>
@@ -962,17 +970,17 @@ const PlayerProfile = () => {
                   className="bg-blue-500 text-white font-bold uppercase text-xs sm:text-sm tracking-normal hover:bg-blue-600 rounded-sm"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  ADD MATCH
+                  {t('player_profile.add_match_btn')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg">
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-heading uppercase">Add Upcoming Match</DialogTitle>
+                  <DialogTitle className="text-xl font-heading uppercase">{t('player_profile.add_calendar_dialog_title')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-medium uppercase tracking-wide">Match Date *</Label>
+                      <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.match_date')}</Label>
                       <Input
                         data-testid="calendar-match-date"
                         type="date" style={{colorScheme: "dark"}}
@@ -982,7 +990,7 @@ const PlayerProfile = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium uppercase tracking-wide">Kick-off Time</Label>
+                      <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.kickoff')}</Label>
                       <Input
                         data-testid="calendar-match-time"
                         type="time"
@@ -993,7 +1001,7 @@ const PlayerProfile = () => {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium uppercase tracking-wide">Opponent *</Label>
+                    <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.opponent')}</Label>
                     <Input
                       data-testid="calendar-opponent"
                       type="text"
@@ -1004,7 +1012,7 @@ const PlayerProfile = () => {
                     />
                   </div>
                   <div>
-                    <Label className="text-sm font-medium uppercase tracking-wide">Competition / League</Label>
+                    <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.comp_league')}</Label>
                     <Input
                       data-testid="calendar-competition"
                       type="text"
@@ -1016,7 +1024,7 @@ const PlayerProfile = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-medium uppercase tracking-wide">Stadium</Label>
+                      <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.stadium')}</Label>
                       <Input
                         data-testid="calendar-stadium"
                         type="text"
@@ -1027,7 +1035,7 @@ const PlayerProfile = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium uppercase tracking-wide">Location / City</Label>
+                      <Label className="text-sm font-medium uppercase tracking-wide">{t('player_profile.location')}</Label>
                       <Input
                         data-testid="calendar-location"
                         type="text"
@@ -1044,7 +1052,7 @@ const PlayerProfile = () => {
                     disabled={addingCalendarMatch}
                     className="w-full bg-blue-500 text-white font-bold uppercase tracking-wide hover:bg-blue-600 h-12"
                   >
-                    {addingCalendarMatch ? 'ADDING...' : 'ADD TO CALENDAR'}
+                    {addingCalendarMatch ? t('player_profile.adding_calendar_btn') : t('player_profile.add_to_calendar_btn')}
                   </Button>
                 </div>
               </DialogContent>
@@ -1054,8 +1062,8 @@ const PlayerProfile = () => {
           {matchCalendar.length === 0 ? (
             <div className="text-center py-8 border border-dashed border-border rounded-sm">
               <Calendar className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No upcoming matches scheduled</p>
-              <p className="text-sm text-muted-foreground mt-1">Add your upcoming games so scouts can plan live visits</p>
+              <p className="text-muted-foreground">{t('player_profile.no_upcoming')}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t('player_profile.no_upcoming_note')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -1076,7 +1084,7 @@ const PlayerProfile = () => {
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>{match.match_date}</span>
-                      {match.match_time && <span>at {match.match_time}</span>}
+                      {match.match_time && <span>{t('player_profile.at_time', { time: match.match_time })}</span>}
                     </div>
                     {(match.stadium || match.location) && (
                       <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">

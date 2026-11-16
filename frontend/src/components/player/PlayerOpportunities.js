@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Briefcase, Search, Target, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
 import OpportunityCard from '@/components/player/OpportunityCard';
+import { useTranslation } from 'react-i18next';
 
 const PlayerOpportunities = () => {
+  const { t } = useTranslation();
   const [opportunities, setOpportunities] = useState([]);
   const [matchScores, setMatchScores] = useState({});
   const [appliedIds, setAppliedIds] = useState(new Set());
@@ -112,8 +114,8 @@ const PlayerOpportunities = () => {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">OPPORTUNITIES</h1>
-        <p className="text-muted-foreground">Browse and apply to club opportunities</p>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">{t('opportunities.title')}</h1>
+        <p className="text-muted-foreground">{t('opportunities.subtitle')}</p>
       </div>
 
       <div className="mb-6 space-y-3">
@@ -123,7 +125,7 @@ const PlayerOpportunities = () => {
               <Input
                 data-testid="search-opportunities-input"
                 type="text"
-                placeholder="Search by club, position, or league..."
+                placeholder={t('opportunities.search_placeholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-12 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
@@ -131,40 +133,40 @@ const PlayerOpportunities = () => {
             </div>
             <Button variant="outline" onClick={() => setShowFilters(f => !f)}
               className={`rounded-sm h-12 px-4 border-white/20 ${showFilters ? "border-primary text-primary" : "text-muted-foreground"}`}>
-              Filters {(filterPosition || filterCountry || filterLeague) ? "●" : ""}
+              {t('opportunities.filters')} {(filterPosition || filterCountry || filterLeague) ? "●" : ""}
             </Button>
             {(filterPosition || filterCountry || filterLeague) && (
               <Button variant="ghost" onClick={() => { setFilterPosition(""); setFilterCountry(""); setFilterLeague(""); }}
-                className="rounded-sm h-12 text-muted-foreground hover:text-white">Clear</Button>
+                className="rounded-sm h-12 text-muted-foreground hover:text-white">{t('opportunities.clear')}</Button>
             )}
           </div>
           {showFilters && (
             <div className="bg-card border border-border/50 p-4 rounded-sm grid grid-cols-2 md:grid-cols-3 gap-3">
               <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Country</label>
+                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">{t('opportunities.country')}</label>
                 <select value={filterCountry} onChange={e => setFilterCountry(e.target.value)}
                   className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
-                  <option value="">All Countries</option>
+                  <option value="">{t('opportunities.all_countries')}</option>
                   {filterOptions.countries.map(c => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Position</label>
+                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">{t('opportunities.position')}</label>
                 <select value={filterPosition} onChange={e => setFilterPosition(e.target.value)}
                   className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
-                  <option value="">All Positions</option>
+                  <option value="">{t('opportunities.all_positions')}</option>
                   {filterOptions.positions.map(p => (
                     <option key={p} value={p}>{p}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">League</label>
+                <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">{t('opportunities.league')}</label>
                 <select value={filterLeague} onChange={e => setFilterLeague(e.target.value)}
                   className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none appearance-none cursor-pointer">
-                  <option value="">All Leagues</option>
+                  <option value="">{t('opportunities.all_leagues')}</option>
                   {filterOptions.leagues.map(l => (
                     <option key={l} value={l}>{l}</option>
                   ))}
@@ -185,7 +187,7 @@ const PlayerOpportunities = () => {
         return displayed.length === 0 ? (
           <div data-testid="no-opportunities" className="bg-card border border-border/50 p-12 rounded-sm text-center">
             <Briefcase className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No opportunities found</p>
+            <p className="text-muted-foreground">{t('opportunities.no_opportunities')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -208,12 +210,12 @@ const PlayerOpportunities = () => {
       <div className="flex items-center justify-center gap-3 mt-8">
         <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
           className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
-          Previous
+          {t('opportunities.previous')}
         </button>
-        <span className="text-sm text-muted-foreground">Page {page}{!hasMore ? ` / ${page}` : ""}</span>
+        <span className="text-sm text-muted-foreground">{t('opportunities.page')} {page}{!hasMore ? ` / ${page}` : ""}</span>
         <button onClick={() => setPage(p => p + 1)} disabled={!hasMore}
           className="px-4 py-2 text-sm border border-white/10 rounded-sm disabled:opacity-30 hover:border-white/30 transition-colors">
-          Next
+          {t('opportunities.next')}
         </button>
       </div>
     </div>

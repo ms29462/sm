@@ -2,18 +2,20 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Star, Check, Zap } from "lucide-react";
-
-const PREMIUM_FEATURES = [
-  { icon: "💬", label: "Unlimited Messaging", desc: "Reply and initiate conversations without limits" },
-  { icon: "🎓", label: "College Fit Assessment", desc: "Access detailed college matching and compatibility scores" },
-  { icon: "⭐", label: "Premium Badge", desc: "Stand out with a Premium Player badge on your profile" },
-  { icon: "📊", label: "Advanced Analytics", desc: "Profile views, opportunity matches, and performance insights" },
-  { icon: "🚀", label: "Featured Visibility", desc: "Boost your visibility in player search results" },
-  { icon: "🎯", label: "20 Credits Included", desc: "20 application credits included every year" },
-];
+import { useTranslation } from "react-i18next";
 
 const PremiumUpgrade = ({ onClose, compact = false }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
+
+  const PREMIUM_FEATURES = [
+    { icon: "💬", label: t('premium_features.messaging_label'), desc: t('premium_features.messaging_desc') },
+    { icon: "🎓", label: t('premium_features.college_label'), desc: t('premium_features.college_desc') },
+    { icon: "⭐", label: t('premium_features.badge_label'), desc: t('premium_features.badge_desc') },
+    { icon: "📊", label: t('premium_features.analytics_label'), desc: t('premium_features.analytics_desc') },
+    { icon: "🚀", label: t('premium_features.visibility_label'), desc: t('premium_features.visibility_desc') },
+    { icon: "🎯", label: t('premium_features.credits_label'), desc: t('premium_features.credits_desc') },
+  ];
 
   const handleUpgrade = async () => {
     setLoading(true);
@@ -31,12 +33,12 @@ const PremiumUpgrade = ({ onClose, compact = false }) => {
       <div className="p-4 bg-primary/5 border border-primary/20 rounded-sm">
         <div className="flex items-center gap-2 mb-2">
           <Star className="w-4 h-4 text-primary fill-primary" />
-          <p className="text-sm font-bold text-primary">Premium Feature</p>
+          <p className="text-sm font-bold text-primary">{t('premium.feature_label')}</p>
         </div>
-        <p className="text-xs text-muted-foreground mb-3">This feature requires Player Premium.</p>
+        <p className="text-xs text-muted-foreground mb-3">{t('premium_features.feature_required')}</p>
         <button onClick={handleUpgrade} disabled={loading}
           className="w-full bg-primary text-black font-bold rounded-sm py-2 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-          {loading ? "Loading..." : "Upgrade to Premium"}
+          {loading ? t('premium.loading') : t('premium.upgrade_btn')}
         </button>
       </div>
     );
@@ -49,8 +51,8 @@ const PremiumUpgrade = ({ onClose, compact = false }) => {
           <div className="w-14 h-14 bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
             <Star className="w-7 h-7 text-primary fill-primary" />
           </div>
-          <h2 className="text-2xl font-heading font-bold uppercase mb-1">Player Premium</h2>
-          <p className="text-sm text-muted-foreground">Unlock your full recruiting potential</p>
+          <h2 className="text-2xl font-heading font-bold uppercase mb-1">{t('premium.title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('premium.subtitle')}</p>
           <div className="mt-3">
             
             <span className="text-4xl font-heading font-bold text-primary">$49.99</span>
@@ -72,11 +74,11 @@ const PremiumUpgrade = ({ onClose, compact = false }) => {
 
         <button onClick={handleUpgrade} disabled={loading}
           className="w-full bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 mb-3">
-          {loading ? "Loading..." : "Upgrade to Player Premium"}
+          {loading ? t('premium.loading') : t('premium.upgrade_title')}
         </button>
         {onClose && (
           <button onClick={onClose} className="w-full text-muted-foreground text-sm hover:text-white transition-colors">
-            Maybe later
+            {t('premium.maybe_later')}
           </button>
         )}
       </div>

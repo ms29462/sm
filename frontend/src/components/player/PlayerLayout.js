@@ -10,8 +10,11 @@ import { api } from '@/lib/api';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
 import { Star, Trophy, User, Briefcase, FileText, LogOut, Home, MessageCircle, Video, MessageSquare, Target, Sparkles, GraduationCap, CalendarCheck , Newspaper, TrendingUp, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 const PlayerLayout = ({ children }) => {
+  const { t } = useTranslation();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useAuth();
   const [creditBalance, setCreditBalance] = useState(null);
@@ -42,10 +45,10 @@ const PlayerLayout = ({ children }) => {
         <div className="md:hidden flex items-center justify-between px-4 py-2 bg-card border-b border-border/50">
           <div className="flex items-center gap-2">
             <Star className="w-3.5 h-3.5 text-primary fill-primary" />
-            <span className="text-sm font-bold text-primary">{creditBalance ?? 0} credits</span>
+            <span className="text-sm font-bold text-primary">{creditBalance ?? 0} {t('layout.credits')}</span>
           </div>
           <Link to="/player/credits?tab=buy" className="text-xs font-bold text-black bg-primary px-3 py-1 rounded-sm hover:bg-primary/90 transition-colors">
-            Buy Credits
+            {t('layout.buy_credits')}
           </Link>
         </div>
         {/* Mobile Header */}
@@ -58,7 +61,7 @@ const PlayerLayout = ({ children }) => {
             
             <div>
               <h1 className="text-xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-8 w-auto" /></h1>
-              <p className="text-xs text-muted-foreground uppercase">Player Portal</p>
+              <p className="text-xs text-muted-foreground uppercase">{t('layout.player_portal')}</p>
             </div>
           </div>
           <NotificationBell />
@@ -68,7 +71,7 @@ const PlayerLayout = ({ children }) => {
           <Link to="/player/news">
             <Button variant={isActive('/player/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <Newspaper className="w-4 h-4 mr-3" />
-              News Feed
+              {t('layout.news_feed')}
             </Button>
           </Link>
           <Link to="/player/dashboard">
@@ -78,7 +81,7 @@ const PlayerLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <Home className="w-4 h-4 mr-3" />
-              Dashboard
+              {t('layout.dashboard')}
             </Button>
           </Link>
           <Link to="/player/profile">
@@ -88,7 +91,7 @@ const PlayerLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <User className="w-4 h-4 mr-3" />
-              My Profile
+              {t('layout.my_profile')}
             </Button>
           </Link>
           <Link to="/player/opportunities">
@@ -98,7 +101,7 @@ const PlayerLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <Briefcase className="w-4 h-4 mr-3" />
-              Opportunities
+              {t('layout.opportunities')}
             </Button>
           </Link>
           <Link to="/player/kato">
@@ -108,7 +111,7 @@ const PlayerLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <GraduationCap className="w-4 h-4 mr-3" />
-              College Fit
+              {t('layout.college_fit')}
             </Button>
           </Link>
           <Link to="/player/match-scores">
@@ -118,19 +121,19 @@ const PlayerLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <Target className="w-4 h-4 mr-3" />
-              Match Scores
+              {t('layout.match_scores')}
             </Button>
           </Link>
           <Link to="/player/specialists">
             <Button variant={isActive('/player/specialists') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <Users className="w-4 h-4 mr-3" />
-              Specialists
+              {t('layout.specialists')}
             </Button>
           </Link>
           <Link to="/player/agents">
             <Button variant={isActive('/player/agents') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <Briefcase className="w-4 h-4 mr-3" />
-              Agents
+              {t('layout.agents')}
             </Button>
           </Link>
           <Link to="/player/masterclass">
@@ -140,7 +143,7 @@ const PlayerLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <GraduationCap className="w-4 h-4 mr-3" />
-              Masterclass
+              {t('layout.masterclass')}
             </Button>
           </Link>
           <Link to="/player/applications">
@@ -150,12 +153,12 @@ const PlayerLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <FileText className="w-4 h-4 mr-3" />
-              My Applications
+              {t('layout.my_applications')}
             </Button>
           </Link>
           <Link to="/player/credits">
             <Button variant={location.pathname === "/player/credits" ? "secondary" : "ghost"} className="w-full justify-start justify-between">
-              <span className="flex items-center"><Star className="w-4 h-4 mr-3" /> Credits</span>
+              <span className="flex items-center"><Star className="w-4 h-4 mr-3" /> {t('layout.credits')}</span>
               {creditBalance !== null && (
                 <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-sm">{creditBalance}</span>
               )}
@@ -163,7 +166,7 @@ const PlayerLayout = ({ children }) => {
           </Link>
           <Link to="/player/analytics">
             <Button variant={location.pathname === "/player/analytics" ? "secondary" : "ghost"} className="w-full justify-start">
-              <TrendingUp className="w-4 h-4 mr-3" /> Analytics
+              <TrendingUp className="w-4 h-4 mr-3" /> {t('layout.analytics')}
             </Button>
           </Link>
           <Link to="/player/chats">
@@ -173,13 +176,16 @@ const PlayerLayout = ({ children }) => {
               className="w-full justify-start relative"
             >
               <MessageCircle className="w-4 h-4 mr-3" />
-              Chats
+              {t('layout.chats')}
               <Badge count={totalUnread + unreadChatRequests} />
             </Button>
           </Link>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border space-y-2">
+          <div className="flex justify-center">
+            <LanguageSwitcher />
+          </div>
           <Button
             data-testid="logout-btn"
             variant="ghost"
@@ -187,7 +193,7 @@ const PlayerLayout = ({ children }) => {
             onClick={confirmLogout}
           >
             <LogOut className="w-4 h-4 mr-3" />
-            Logout
+            {t('layout.logout')}
           </Button>
         </div>
       </aside>
@@ -206,9 +212,9 @@ const PlayerLayout = ({ children }) => {
       <ConfirmDialog
         open={showLogoutConfirm}
         onOpenChange={setShowLogoutConfirm}
-        title="Sign Out"
-        description="Are you sure you want to sign out?"
-        confirmLabel="Sign Out"
+        title={t('layout.sign_out')}
+        description={t('layout.sign_out_confirm')}
+        confirmLabel={t('layout.sign_out')}
         confirmVariant="destructive"
         onConfirm={handleLogout}
       />

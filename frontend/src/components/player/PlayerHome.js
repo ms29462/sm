@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Briefcase, TrendingUp, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
 import ProfileCompletionBanner from '@/components/player/ProfileCompletionBanner';
 
 const PlayerHome = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [recommended, setRecommended] = useState([]);
@@ -55,8 +56,8 @@ const PlayerHome = () => {
     <div className="p-4 md:p-8">
       <ProfileCompletionBanner />
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">DASHBOARD</h1>
-        <p className="text-muted-foreground">Welcome back, {profile?.name}</p>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">{t('home.dashboard')}</h1>
+        <p className="text-muted-foreground">{t('home.welcome_back', { name: profile?.name })}</p>
       </div>
 
       {!profile?.approved && (
@@ -66,16 +67,16 @@ const PlayerHome = () => {
         >
           <AlertCircle className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1" />
           <div>
-            <h3 className="font-heading font-bold text-lg mb-2">APPROVAL PENDING</h3>
+            <h3 className="font-heading font-bold text-lg mb-2">{t('home.approval_pending')}</h3>
             <p className="text-muted-foreground">
-              Your profile is awaiting admin approval. Complete your profile to speed up the process.
+              {t('home.approval_body')}
             </p>
             <Button
               data-testid="complete-profile-btn"
               onClick={() => navigate('/player/profile')}
               className="mt-4 bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-10 px-6"
             >
-              COMPLETE PROFILE
+              {t('home.complete_profile')}
             </Button>
           </div>
         </div>
@@ -85,7 +86,7 @@ const PlayerHome = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
           <div className="flex items-center space-x-3">
             <TrendingUp className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-heading font-bold uppercase">RECOMMENDED FOR YOU</h2>
+            <h2 className="text-2xl font-heading font-bold uppercase">{t('home.recommended')}</h2>
           </div>
           <Button
             data-testid="view-all-opportunities-btn"
@@ -93,7 +94,7 @@ const PlayerHome = () => {
             className="text-primary hover:text-primary/80"
             onClick={() => navigate('/player/opportunities')}
           >
-            VIEW ALL
+            {t('home.view_all')}
           </Button>
         </div>
 
@@ -101,7 +102,7 @@ const PlayerHome = () => {
           <div data-testid="no-recommendations" className="bg-card border border-border/50 p-12 rounded-sm text-center">
             <Briefcase className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">
-              Complete your profile to get personalized recommendations
+              {t('home.empty_recommended')}
             </p>
           </div>
         ) : (

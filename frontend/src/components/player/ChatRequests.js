@@ -3,8 +3,10 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { MessageCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const ChatRequests = () => {
+  const { t } = useTranslation();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,21 +41,21 @@ const ChatRequests = () => {
         return (
           <span className="inline-flex items-center px-3 py-1 text-xs uppercase tracking-wider rounded-sm bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
             <Clock className="w-3 h-3 mr-1" />
-            PENDING
+            {t('chat_requests.pending')}
           </span>
         );
       case 'accepted':
         return (
           <span className="inline-flex items-center px-3 py-1 text-xs uppercase tracking-wider rounded-sm bg-green-500/10 text-green-500 border border-green-500/20">
             <CheckCircle className="w-3 h-3 mr-1" />
-            ACCEPTED
+            {t('chat_requests.accepted')}
           </span>
         );
       case 'rejected':
         return (
           <span className="inline-flex items-center px-3 py-1 text-xs uppercase tracking-wider rounded-sm bg-red-500/10 text-red-500 border border-red-500/20">
             <XCircle className="w-3 h-3 mr-1" />
-            REJECTED
+            {t('chat_requests.rejected')}
           </span>
         );
       default:
@@ -72,14 +74,14 @@ const ChatRequests = () => {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">CHAT REQUESTS</h1>
-        <p className="text-muted-foreground">Clubs, agents and specialists that want to connect with you</p>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">{t('chat_requests.title')}</h1>
+        <p className="text-muted-foreground">{t('chat_requests.subtitle')}</p>
       </div>
 
       {requests.length === 0 ? (
         <div className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <MessageCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No chat requests yet</p>
+          <p className="text-muted-foreground">{t('chat_requests.empty')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -107,7 +109,7 @@ const ChatRequests = () => {
                     <p className="text-muted-foreground mb-3">"{request.message}"</p>
                   )}
                   <p className="text-sm text-muted-foreground">
-                    Received: {new Date(request.created_at).toLocaleDateString()}
+                    {t('chat_requests.received')} {new Date(request.created_at).toLocaleDateString()}
                   </p>
                 </div>
                 
@@ -119,7 +121,7 @@ const ChatRequests = () => {
                       className="bg-green-500 text-white font-bold uppercase tracking-wide hover:bg-green-600 rounded-sm"
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      ACCEPT
+                      {t('chat_requests.accept')}
                     </Button>
                     <Button
                       data-testid={`reject-request-${request.id}`}
@@ -128,7 +130,7 @@ const ChatRequests = () => {
                       className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-bold uppercase tracking-wide rounded-sm"
                     >
                       <XCircle className="w-4 h-4 mr-2" />
-                      REJECT
+                      {t('chat_requests.reject')}
                     </Button>
                   </div>
                 )}

@@ -5,6 +5,7 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { toast } from "sonner";
 import { Target, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from 'react-i18next';
 
 const getFitScoreColor = (score) => {
   if (score >= 80) return "text-green-400";
@@ -22,6 +23,7 @@ const getFitScoreBg = (score) => {
 
 const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [showConfirm, setShowConfirm] = useState(false);
   const [applying, setApplying] = useState(false);
   const handleApply = async () => {
@@ -64,7 +66,7 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
             <span className={`uppercase text-[10px] tracking-wider px-2 py-1 border rounded-sm font-bold ${
               opp.status === "filled" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"
             }`}>
-              {opp.status === "filled" ? "Position Filled" : "Opportunity Closed"}
+              {opp.status === "filled" ? t('opp_card.position_filled') : t('opp_card.closed')}
             </span>
           )}
         </div>
@@ -76,7 +78,7 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <Target className="w-3 h-3 text-muted-foreground" />
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">Match Score</span>
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">{t('opp_card.match_score')}</span>
             </div>
             <div className="flex items-center gap-1">
               <span className={`text-xl font-heading font-bold ${getFitScoreColor(displayScore)}`}>
@@ -95,7 +97,7 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
             <span className="text-muted-foreground">{scoreLabel}</span>
             {fullScore?.position_match && (
               <span className="text-primary flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" /> Position match
+                <CheckCircle className="w-3 h-3" /> {t('opp_card.position_match')}
               </span>
             )}
           </div>
@@ -105,18 +107,18 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
       {/* Details */}
       <div className="space-y-2 mb-4 text-sm flex-1">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">League Level:</span>
+          <span className="text-muted-foreground">{t('opp_card.league_level')}</span>
           <span className="font-medium">{opp.league_level}</span>
         </div>
           {opp.credit_cost && (
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Application Cost:</span>
+              <span className="text-muted-foreground">{t('opp_card.app_cost')}</span>
               <span className="font-bold text-primary">⭐ {opp.credit_cost} credit{opp.credit_cost > 1 ? "s" : ""}</span>
             </div>
           )}
           {opp.max_applicants && (
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Spots Remaining:</span>
+              <span className="text-muted-foreground">{t('opp_card.spots_remaining')}</span>
               <span className={`font-bold ${(opp.max_applicants - (opp.applicants_count ?? 0)) <= 0 ? "text-red-400" : "text-green-400"}`}>
                 {Math.max(opp.max_applicants - (opp.applicants_count ?? 0), 0)}/{opp.max_applicants}
               </span>
@@ -124,13 +126,13 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
           )}
         {opp.salary_range && (
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Salary:</span>
+            <span className="text-muted-foreground">{t('opp_card.salary')}</span>
             <span className="font-medium font-mono">{opp.salary_range}</span>
           </div>
         )}
         {opp.contract_duration && (
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Duration:</span>
+            <span className="text-muted-foreground">{t('opp_card.duration')}</span>
             <span className="font-medium">{opp.contract_duration}</span>
           </div>
         )}
@@ -142,14 +144,14 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
       {/* Requirements */}
       {opp.requirements && opp.requirements.length > 0 && (
         <div className="mb-3 p-2 bg-yellow-500/5 border border-yellow-500/20 rounded-sm">
-          <p className="text-xs font-bold text-yellow-400 mb-1">Required to apply:</p>
+          <p className="text-xs font-bold text-yellow-400 mb-1">{t('opp_card.required')}</p>
           <div className="flex flex-wrap gap-1">
             {opp.requirements.map(req => (
               <span key={req} className="text-[10px] px-2 py-0.5 bg-yellow-500/10 text-yellow-400 rounded-sm">
-                {req === 'highlight_video' ? '🎥 Highlight Video' :
-                 req === 'full_match' ? '📹 Full Match Video' :
-                 req === 'profile_picture' ? '📸 Profile Photo' :
-                 req === 'cv' ? '📄 CV/Resume' : req}
+                {req === 'highlight_video' ? `🎥 ${t('opp_card.req_highlight')}` :
+                 req === 'full_match' ? `📹 ${t('opp_card.req_full_match')}` :
+                 req === 'profile_picture' ? `📸 ${t('opp_card.req_photo')}` :
+                 req === 'cv' ? `📄 ${t('opp_card.req_cv')}` : req}
               </span>
             ))}
           </div>
@@ -163,11 +165,11 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
           variant="outline"
           className="flex-1 border-white/20 text-white hover:bg-white/10 rounded-sm h-12 font-bold uppercase tracking-wide"
         >
-          View Details
+          {t('opp_card.view_details')}
         </Button>
         {hasApplied ? (
           <Button disabled className="flex-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-sm h-12 font-bold uppercase tracking-wide cursor-not-allowed">
-            ✓ Applied
+            ✓ {t('opp_card.applied')}
           </Button>
         ) : (!opp.status || opp.status === "open" || opp.status === "published") ? (
           <Button
@@ -175,20 +177,20 @@ const OpportunityCard = ({ opp, matchScore, score, onApply, testId, hasApplied }
             onClick={() => setShowConfirm(true)}
             className="flex-1 bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
           >
-            Apply Now
+            {t('opp_card.apply_now')}
           </Button>
         ) : (
           <Button disabled className="flex-1 bg-muted text-muted-foreground rounded-sm h-12 font-bold uppercase tracking-wide cursor-not-allowed">
-            {opp.status === "filled" ? "Position Filled" : "Closed"}
+            {opp.status === "filled" ? t('opp_card.position_filled') : t('opp_card.closed')}
           </Button>
         )}
       </div>
       <ConfirmDialog
         open={showConfirm}
         onOpenChange={setShowConfirm}
-        title="Apply to Opportunity"
-        description={opp.credit_cost ? `This application costs ${opp.credit_cost} credit${opp.credit_cost > 1 ? "s" : ""}. Confirm to spend credits and apply.` : `Are you sure you want to apply to this ${opp.position} position?`}
-        confirmLabel="Apply Now"
+        title={t('opp_card.apply_confirm_title')}
+        description={opp.credit_cost ? t('opp_card.apply_confirm_body', { credits: opp.credit_cost }) : t('opp_card.apply_confirm_body_free', { position: opp.position })}
+        confirmLabel={t('opp_card.apply_now')}
         confirmVariant="primary"
         onConfirm={handleApply}
         loading={applying}

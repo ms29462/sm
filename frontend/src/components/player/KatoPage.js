@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import PremiumUpgrade from "@/components/player/PremiumUpgrade";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { GraduationCap } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const DIVISIONS = [
   { id: "NCAA Division I", label: "NCAA D1", description: "Top tier — highest standards", cost: "$30k-$70k USD/yr" },
@@ -208,6 +209,7 @@ const runAnalysis = (form, division) => {
 };
 
 const CollegeFitPage = () => {
+  const { t } = useTranslation();
   const [isPremium, setIsPremium] = useState(null);
   const [division, setDivision] = useState("");
   const [form, setForm] = useState({
@@ -235,7 +237,7 @@ const CollegeFitPage = () => {
   const handleChange = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
   const analyze = () => {
-    if (!division) { alert("Please select a target division"); return; }
+    if (!division) { alert(t('college_fit.select_division_alert')); return; }
     setLoading(true);
     setResult(null);
     setTimeout(() => {
@@ -249,13 +251,13 @@ const CollegeFitPage = () => {
   return (
     <div className="min-h-screen p-6 max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-2xl md:text-4xl font-heading font-bold uppercase tracking-tight mb-2">COLLEGE FIT</h1>
-        <p className="text-muted-foreground text-sm max-w-md mx-auto">Your personal college soccer eligibility advisor. Fill in your details and let College Fit analyze your compatibility.</p>
+        <h1 className="text-2xl md:text-4xl font-heading font-bold uppercase tracking-tight mb-2">{t('college_fit.title')}</h1>
+        <p className="text-muted-foreground text-sm max-w-md mx-auto">{t('college_fit.subtitle')}</p>
       </div>
 
       {/* Division */}
       <div className="mb-6">
-        <label className={labelClass}>Target Division *</label>
+        <label className={labelClass}>{t('college_fit.target_division')}</label>
         <div className="grid grid-cols-2 gap-3 mt-2">
           {DIVISIONS.map(d => (
             <div key={d.id} onClick={() => { setDivision(d.id); setResult(null); }}
@@ -272,99 +274,99 @@ const CollegeFitPage = () => {
       <div className="bg-card border border-border/50 rounded-sm p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          <SectionTitle>Personal Info</SectionTitle>
+          <SectionTitle>{t('college_fit.personal_info')}</SectionTitle>
           <div>
-            <label className={labelClass}>Country of Origin</label>
+            <label className={labelClass}>{t('college_fit.country_of_origin')}</label>
             <select value={form.country} onChange={e => handleChange("country", e.target.value)} className={selectClass}>
-              <option value="">Select...</option>
+              <option value="">{t('college_fit.select')}</option>
               <option value="France">France</option>
               <option value="Canada">Canada</option>
               <option value="Other">Other</option>
             </select>
           </div>
           <div>
-            <label className={labelClass}>Age</label>
+            <label className={labelClass}>{t('college_fit.age')}</label>
             <input type="number" value={form.age} onChange={e => handleChange("age", e.target.value)} placeholder="e.g. 19" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Playing Level</label>
+            <label className={labelClass}>{t('college_fit.playing_level')}</label>
             <select value={form.playing_level} onChange={e => handleChange("playing_level", e.target.value)} className={selectClass}>
-              <option value="">Select...</option>
+              <option value="">{t('college_fit.select')}</option>
               {PLAYING_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
             </select>
           </div>
 
-          <SectionTitle>Academic Background</SectionTitle>
+          <SectionTitle>{t('college_fit.academic_bg')}</SectionTitle>
           <div>
-            <label className={labelClass}>Baccalauréat / Secondary Diploma</label>
+            <label className={labelClass}>{t('college_fit.has_bac')}</label>
             <select value={form.has_bac} onChange={e => handleChange("has_bac", e.target.value)} className={selectClass}>
-              <option value="">Select...</option>
-              <option value="yes">Yes — obtained</option>
-              <option value="in_progress">In progress</option>
-              <option value="no">No</option>
+              <option value="">{t('college_fit.select')}</option>
+              <option value="yes">{t('college_fit.field_bac_yes')}</option>
+              <option value="in_progress">{t('college_fit.field_bac_progress')}</option>
+              <option value="no">{t('college_fit.field_bac_no')}</option>
             </select>
           </div>
           <div>
-            <label className={labelClass}>Year Bac Obtained</label>
+            <label className={labelClass}>{t('college_fit.bac_year')}</label>
             <input type="number" value={form.bac_year} onChange={e => handleChange("bac_year", e.target.value)} placeholder="e.g. 2022" className={inputClass} />
-            <p className="text-xs text-muted-foreground mt-1">Used to calculate your 5-year NCAA clock</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('college_fit.bac_year_note')}</p>
           </div>
           <div>
-            <label className={labelClass}>GPA (US scale 0-4.0)</label>
+            <label className={labelClass}>{t('college_fit.gpa')}</label>
             <input type="number" step="0.1" min="0" max="4" value={form.gpa} onChange={e => handleChange("gpa", e.target.value)} placeholder="e.g. 3.2" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>SAT Score (optional)</label>
+            <label className={labelClass}>{t('college_fit.sat_score')}</label>
             <input type="number" value={form.sat_score} onChange={e => handleChange("sat_score", e.target.value)} placeholder="e.g. 1050" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>English Level (1-10)</label>
+            <label className={labelClass}>{t('college_fit.english_level')}</label>
             <input type="number" min="1" max="10" value={form.english_level} onChange={e => handleChange("english_level", e.target.value)} placeholder="1=basic, 10=fluent" className={inputClass} />
           </div>
 
-          <SectionTitle>University Enrollment History</SectionTitle>
+          <SectionTitle>{t('college_fit.enrollment')}</SectionTitle>
           <div>
-            <label className={labelClass}>Post-Secondary Studies?</label>
+            <label className={labelClass}>{t('college_fit.postsecondary')}</label>
             <select value={form.has_postsecondary} onChange={e => handleChange("has_postsecondary", e.target.value)} className={selectClass}>
-              <option value="">Select...</option>
-              <option value="yes">Yes (Cégep, University, BTS...)</option>
-              <option value="no">No</option>
+              <option value="">{t('college_fit.select')}</option>
+              <option value="yes">{t('college_fit.field_postsec_yes')}</option>
+              <option value="no">{t('college_fit.field_postsec_no')}</option>
             </select>
           </div>
           <div>
-            <label className={labelClass}>Semesters Enrolled (full-time)</label>
+            <label className={labelClass}>{t('college_fit.semesters')}</label>
             <input type="number" min="0" value={form.semesters_enrolled} onChange={e => handleChange("semesters_enrolled", e.target.value)} placeholder="e.g. 2" className={inputClass} />
-            <p className="text-xs text-muted-foreground mt-1">Affects D2 (max 10) and NJCAA eligibility</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('college_fit.semesters_note')}</p>
           </div>
           <div>
-            <label className={labelClass}>Collegiate Soccer Seasons Used</label>
+            <label className={labelClass}>{t('college_fit.seasons_used')}</label>
             <input type="number" min="0" max="4" value={form.seasons_used} onChange={e => handleChange("seasons_used", e.target.value)} placeholder="e.g. 1" className={inputClass} />
-            <p className="text-xs text-muted-foreground mt-1">Seasons already played in college programs</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('college_fit.seasons_note')}</p>
           </div>
 
-          <SectionTitle>Amateur Status</SectionTitle>
+          <SectionTitle>{t('college_fit.amateur_status')}</SectionTitle>
           <div>
-            <label className={labelClass}>Ever signed a pro contract?</label>
+            <label className={labelClass}>{t('college_fit.signed_pro')}</label>
             <select value={form.signed_pro} onChange={e => handleChange("signed_pro", e.target.value)} className={selectClass}>
-              <option value="">Select...</option>
-              <option value="no">No</option>
-              <option value="yes">Yes</option>
+              <option value="">{t('college_fit.select')}</option>
+              <option value="no">{t('college_fit.no')}</option>
+              <option value="yes">{t('college_fit.yes')}</option>
             </select>
           </div>
           <div>
-            <label className={labelClass}>Ever received payment for playing?</label>
+            <label className={labelClass}>{t('college_fit.received_payment')}</label>
             <select value={form.received_payment} onChange={e => handleChange("received_payment", e.target.value)} className={selectClass}>
-              <option value="">Select...</option>
-              <option value="no">No</option>
-              <option value="yes">Yes</option>
+              <option value="">{t('college_fit.select')}</option>
+              <option value="no">{t('college_fit.no')}</option>
+              <option value="yes">{t('college_fit.yes')}</option>
             </select>
           </div>
 
-          <SectionTitle>Financial</SectionTitle>
+          <SectionTitle>{t('college_fit.financial')}</SectionTitle>
           <div className="md:col-span-2">
-            <label className={labelClass}>Annual Budget (personal contribution)</label>
+            <label className={labelClass}>{t('college_fit.annual_budget')}</label>
             <input type="text" value={form.annual_budget} onChange={e => handleChange("annual_budget", e.target.value)} placeholder="e.g. $5,000 or $15,000" className={inputClass} />
-            <p className="text-xs text-muted-foreground mt-1">Amount you can contribute beyond any scholarship received</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('college_fit.budget_note')}</p>
           </div>
         </div>
       </div>
@@ -377,7 +379,7 @@ const CollegeFitPage = () => {
             <GraduationCap className="w-10 h-10 text-primary" />
           </div>
           <p className="text-center text-xs uppercase tracking-widest text-primary mt-3 font-bold">
-            {loading ? "Analyzing..." : "Run College Fit"}
+            {loading ? t('college_fit.analyzing') : t('college_fit.run_btn')}
           </p>
         </button>
       </div>
@@ -387,12 +389,12 @@ const CollegeFitPage = () => {
         <Dialog open={!!result} onOpenChange={() => setResult(null)}>
           <DialogContent className="bg-card border border-border/50 max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="font-heading uppercase text-center">College Fit Analysis — {result.division}</DialogTitle>
+              <DialogTitle className="font-heading uppercase text-center">{t('college_fit.analysis_title')} — {result.division}</DialogTitle>
             </DialogHeader>
 
             {/* Overall Score */}
             <div className="text-center py-4 border-b border-border">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">Compatibility Score</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">{t('college_fit.compatibility')}</p>
               <div className="text-7xl font-heading font-bold mb-2" style={{ color: result.verdict.color }}>
                 {result.overall}%
               </div>
@@ -401,17 +403,17 @@ const CollegeFitPage = () => {
 
             {/* Score Breakdown */}
             <div className="py-4 border-b border-border">
-              <h3 className="font-heading font-bold uppercase mb-4 text-xs tracking-wide text-muted-foreground">Score Breakdown</h3>
-              <ScoreBar score={result.scores.academic} label="Academic Eligibility" />
-              <ScoreBar score={result.scores.english} label="English Proficiency" />
-              <ScoreBar score={result.scores.athletic} label="Athletic Level" />
-              <ScoreBar score={result.scores.eligibility} label="Eligibility Window" />
-              <ScoreBar score={result.scores.budget} label="Financial Readiness" />
+              <h3 className="font-heading font-bold uppercase mb-4 text-xs tracking-wide text-muted-foreground">{t('college_fit.score_breakdown')}</h3>
+              <ScoreBar score={result.scores.academic} label={t('college_fit.academic_eligibility')} />
+              <ScoreBar score={result.scores.english} label={t('college_fit.english_proficiency')} />
+              <ScoreBar score={result.scores.athletic} label={t('college_fit.athletic_level')} />
+              <ScoreBar score={result.scores.eligibility} label={t('college_fit.eligibility_window')} />
+              <ScoreBar score={result.scores.budget} label={t('college_fit.financial_readiness')} />
             </div>
 
             {/* Insights */}
             <div className="py-4">
-              <h3 className="font-heading font-bold uppercase mb-3 text-xs tracking-wide text-muted-foreground">College Fit Insights</h3>
+              <h3 className="font-heading font-bold uppercase mb-3 text-xs tracking-wide text-muted-foreground">{t('college_fit.insights')}</h3>
               <div className="space-y-2">
                 {result.insights.map((ins, i) => (
                   <div key={i} className="flex items-start gap-2 text-sm">

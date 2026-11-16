@@ -3,32 +3,42 @@ import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Star, Check, Clock, ShoppingCart, History } from "lucide-react";
 import PremiumUpgrade from "@/components/player/PremiumUpgrade";
-
-const REWARDS = [
-  { type: "email_verification", label: "Verify Email", credits: 1, description: "Verify your email address in your profile settings" },
-  { type: "profile_completion", label: "Complete Profile", credits: 1, description: "Reach 100% profile completion. Required: Date of Birth, Nationality, Profile Photo, Position, Preferred Foot, Competition Level, Height, Weight, Current Club, Current Country, Residence Country, Highlight Video, Contract Status, Looking For, and Bio.", auto: true },
-  { type: "highlights_uploaded", label: "Upload Highlights", credits: 1, description: "Add a highlight video to your profile. Credit is automatically granted when you save your video.", auto: true },
-];
+import { useTranslation } from 'react-i18next';
 
 const PACKS = [
-  { id: "starter", name: "Starter Pack", credits: 10, price: "$4.99", color: "border-blue-500/30 bg-blue-500/5" },
-  { id: "standard", name: "Standard Pack", credits: 25, price: "$9.99", color: "border-primary/30 bg-primary/5", popular: true },
-  { id: "pro", name: "Pro Pack", credits: 75, price: "$24.99", color: "border-purple-500/30 bg-purple-500/5" },
-  { id: "elite", name: "Elite Pack", credits: 200, price: "$59.99", color: "border-orange-500/30 bg-orange-500/5" },
+  { id: "starter", credits: 10, price: "$4.99", color: "border-blue-500/30 bg-blue-500/5" },
+  { id: "standard", credits: 25, price: "$9.99", color: "border-primary/30 bg-primary/5", popular: true },
+  { id: "pro", credits: 75, price: "$24.99", color: "border-purple-500/30 bg-purple-500/5" },
+  { id: "elite", credits: 200, price: "$59.99", color: "border-orange-500/30 bg-orange-500/5" },
 ];
 
-const TRANSACTION_LABELS = {
-  email_verification: "Email verification reward",
-  profile_completion: "Profile completion reward",
-  highlights_uploaded: "Highlights uploaded reward",
-  referral_reward: "Referral reward",
-  credit_purchase: "Credit pack purchase",
-  application_spend: "Application",
-  refund: "Refund",
-  admin_adjustment: "Admin adjustment",
-};
-
 const PlayerCredits = () => {
+  const { t } = useTranslation();
+
+  const REWARDS = [
+    { type: "email_verification", label: t('credits.reward_email_label'), credits: 1, description: t('credits.reward_email_desc') },
+    { type: "profile_completion", label: t('credits.reward_profile_label'), credits: 1, description: t('credits.reward_profile_desc'), auto: true },
+    { type: "highlights_uploaded", label: t('credits.reward_highlights_label'), credits: 1, description: t('credits.reward_highlights_desc'), auto: true },
+  ];
+
+  const TRANSACTION_LABELS = {
+    email_verification: t('credits.tx_email_verification'),
+    profile_completion: t('credits.tx_profile_completion'),
+    highlights_uploaded: t('credits.tx_highlights_uploaded'),
+    referral_reward: t('credits.tx_referral_reward'),
+    credit_purchase: t('credits.tx_credit_purchase'),
+    application_spend: t('credits.tx_application_spend'),
+    refund: t('credits.tx_refund'),
+    admin_adjustment: t('credits.tx_admin_adjustment'),
+  };
+
+  const PACK_NAMES = {
+    starter: t('credits.pack_starter'),
+    standard: t('credits.pack_standard'),
+    pro: t('credits.pack_pro'),
+    elite: t('credits.pack_elite'),
+  };
+
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [claimedRewards, setClaimedRewards] = useState([]);
@@ -104,30 +114,30 @@ const PlayerCredits = () => {
       {/* Balance Header */}
       <div className="bg-card border border-border/50 rounded-sm p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Credit Balance</p>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">{t('credits.credit_balance')}</p>
           <div className="flex items-center gap-2">
             <Star className="w-6 h-6 text-primary fill-primary" />
             <p className="text-4xl font-heading font-bold text-primary">{balance}</p>
-            <p className="text-sm text-muted-foreground">credits</p>
+            <p className="text-sm text-muted-foreground">{t('opportunities.credits')}</p>
           </div>
         </div>
         <button onClick={() => setTab("buy")}
           className="flex items-center gap-2 bg-primary text-black font-bold rounded-sm px-4 py-2.5 text-sm hover:bg-primary/90 transition-colors">
-          <ShoppingCart className="w-4 h-4" /> Buy Credits
+          <ShoppingCart className="w-4 h-4" /> {t('credits.buy')}
         </button>
       </div>
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 mb-5">
         {[
-          { id: "overview", label: "Overview" },
-          { id: "earn", label: "Earn" },
-          { id: "buy", label: "Buy" },
-          { id: "history", label: "History" },
-        ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`px-3 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${tab === t.id ? "bg-primary text-black border-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
-            {t.label}
+          { id: "overview", label: t('credits.tab_overview') },
+          { id: "earn", label: t('credits.tab_earn') },
+          { id: "buy", label: t('credits.tab_buy') },
+          { id: "history", label: t('credits.tab_history') },
+        ].map(tab_ => (
+          <button key={tab_.id} onClick={() => setTab(tab_.id)}
+            className={`px-3 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${tab === tab_.id ? "bg-primary text-black border-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+            {tab_.label}
           </button>
         ))}
       </div>
@@ -138,28 +148,28 @@ const PlayerCredits = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-card border border-border/50 rounded-sm p-4 text-center">
               <p className="text-2xl font-heading font-bold text-primary">{balance}</p>
-              <p className="text-xs text-muted-foreground mt-1">Available Credits</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('credits.available_credits')}</p>
             </div>
             <div className="bg-card border border-border/50 rounded-sm p-4 text-center">
               <p className="text-2xl font-heading font-bold text-green-400">
                 +{transactions.filter(t => t.amount > 0).reduce((a, t) => a + t.amount, 0)}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">Total Earned</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('credits.total_earned')}</p>
             </div>
             <div className="bg-card border border-border/50 rounded-sm p-4 text-center">
               <p className="text-2xl font-heading font-bold text-red-400">
                 {transactions.filter(t => t.amount < 0).reduce((a, t) => a + t.amount, 0)}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">Total Spent</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('credits.total_spent')}</p>
             </div>
           </div>
           <div className="bg-card border border-border/50 rounded-sm p-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">How Credits Work</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('credits.how_work_title')}</p>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>⭐ Credits are required to apply to opportunities</p>
-              <p>🎁 Earn free credits by completing your profile</p>
-              <p>💳 Buy credit packs for instant access</p>
-              <p>🔄 Unused credits are refunded if an opportunity is removed</p>
+              <p>{t('credits.how_work_1')}</p>
+              <p>{t('credits.how_work_2')}</p>
+              <p>{t('credits.how_work_3')}</p>
+              <p>{t('credits.how_work_4')}</p>
             </div>
           </div>
         </div>
@@ -169,12 +179,12 @@ const PlayerCredits = () => {
       {tab === "overview" && !isPremium && (
         <div className="bg-primary/5 border border-primary/20 rounded-sm p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
           <div>
-            <p className="font-bold text-primary flex items-center gap-2"><Star className="w-4 h-4 fill-primary" /> Player Premium</p>
-            <p className="text-xs text-muted-foreground mt-1">Unlock unlimited messaging, College Fit, analytics + 20 credits/year</p>
+            <p className="font-bold text-primary flex items-center gap-2"><Star className="w-4 h-4 fill-primary" /> {t('credits.player_premium')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('credits.premium_desc')}</p>
           </div>
           <button onClick={() => setShowPremium(true)}
             className="flex-shrink-0 bg-primary text-black font-bold rounded-sm px-4 py-2 text-sm hover:bg-primary/90 transition-colors">
-            Upgrade
+            {t('credits.upgrade_btn')}
           </button>
         </div>
       )}
@@ -182,7 +192,7 @@ const PlayerCredits = () => {
       {/* Earn Free Credits */}
       {tab === "earn" && (
         <div className="space-y-3">
-          <p className="text-xs text-muted-foreground mb-4">Complete these actions to earn free credits. Each reward can only be claimed once.</p>
+          <p className="text-xs text-muted-foreground mb-4">{t('credits.earn_intro')}</p>
           {REWARDS.map(reward => {
             const claimed = claimedRewards.includes(reward.type);
             return (
@@ -199,17 +209,17 @@ const PlayerCredits = () => {
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-bold text-primary">+{reward.credits} cr.</span>
                   {claimed ? (
-                    <span className="text-xs text-green-400 font-bold">Claimed ✓</span>
+                    <span className="text-xs text-green-400 font-bold">{t('credits.claimed')}</span>
                   ) : (
                     reward.type === "email_verification" ? (
                       <button onClick={handleSendVerification}
                         className="px-3 py-1.5 bg-blue-500 text-white font-bold rounded-sm text-xs hover:bg-blue-400 transition-colors">
-                        Resend Email
+                        {t('credits.resend_email')}
                       </button>
                     ) : (
                       <button onClick={() => handleClaimReward(reward.type)} disabled={claiming === reward.type}
                         className="px-3 py-1.5 bg-primary text-black font-bold rounded-sm text-xs hover:bg-primary/90 transition-colors disabled:opacity-50">
-                        {claiming === reward.type ? "..." : "Claim"}
+                        {claiming === reward.type ? "..." : t('credits.claim')}
                       </button>
                     )
                   )}
@@ -223,28 +233,28 @@ const PlayerCredits = () => {
       {/* Buy Credits */}
       {tab === "buy" && (
         <div className="space-y-4">
-          <p className="text-xs text-muted-foreground mb-4">Purchase credit packs instantly with Stripe. Credits never expire.</p>
+          <p className="text-xs text-muted-foreground mb-4">{t('credits.buy_intro')}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {PACKS.map(pack => (
               <div key={pack.id} className={`border rounded-sm p-5 relative ${pack.color}`}>
                 {pack.popular && (
-                  <span className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 bg-primary text-black rounded-sm">POPULAR</span>
+                  <span className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 bg-primary text-black rounded-sm">{t('credits.popular')}</span>
                 )}
-                <p className="font-heading font-bold text-lg uppercase mb-1">{pack.name}</p>
+                <p className="font-heading font-bold text-lg uppercase mb-1">{PACK_NAMES[pack.id]}</p>
                 <div className="flex items-baseline gap-1 mb-3">
                   <Star className="w-4 h-4 text-primary fill-primary" />
                   <p className="text-3xl font-bold text-primary">{pack.credits}</p>
-                  <p className="text-sm text-muted-foreground">credits</p>
+                  <p className="text-sm text-muted-foreground">{t('opportunities.credits')}</p>
                 </div>
                 <p className="text-xl font-bold mb-4">{pack.price}</p>
                 <button onClick={() => handleBuyPack(pack.id)}
                   className="w-full bg-primary text-black font-bold rounded-sm py-2.5 text-sm hover:bg-primary/90 transition-colors">
-                  Buy Now
+                  {t('credits.buy_now')}
                 </button>
               </div>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground text-center">Secure payment powered by Stripe. Credits added instantly after payment.</p>
+          <p className="text-xs text-muted-foreground text-center">{t('credits.stripe_note')}</p>
         </div>
       )}
 
@@ -253,7 +263,7 @@ const PlayerCredits = () => {
         <div className="space-y-2">
           {transactions.length === 0 && (
             <div className="bg-card border border-border/50 rounded-sm p-8 text-center text-muted-foreground text-sm">
-              No credit transactions yet
+              {t('credits.no_transactions')}
             </div>
           )}
           {transactions.map(tx => (

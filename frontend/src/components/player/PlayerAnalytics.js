@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import PremiumUpgrade from "@/components/player/PremiumUpgrade";
 import { Eye, Heart, Target, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const StatCard = ({ icon: Icon, label, value, accent }) => (
   <div className="bg-card border border-border/50 rounded-sm p-5">
@@ -14,6 +15,7 @@ const StatCard = ({ icon: Icon, label, value, accent }) => (
 );
 
 const PlayerAnalytics = () => {
+  const { t } = useTranslation();
   const [isPremium, setIsPremium] = useState(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -54,22 +56,22 @@ const PlayerAnalytics = () => {
     <div className="p-4 md:p-8">
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1 flex items-center gap-2">
-          <TrendingUp className="w-6 h-6 text-primary" /> Profile Analytics
+          <TrendingUp className="w-6 h-6 text-primary" /> {t('analytics.title')}
         </h1>
-        <p className="text-muted-foreground text-sm">See how organizations are engaging with your profile</p>
+        <p className="text-muted-foreground text-sm">{t('analytics.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <StatCard icon={Eye} label="Total Profile Views" value={data?.total_views ?? 0} />
-        <StatCard icon={Eye} label="Views (Last 30 Days)" value={data?.views_last_30_days ?? 0} accent="text-blue-400" />
-        <StatCard icon={Heart} label="Favorited By Orgs" value={data?.favorites_count ?? 0} accent="text-red-400" />
-        <StatCard icon={Target} label="Matching Opportunities" value={data?.matching_opportunities ?? 0} accent="text-green-400" />
+        <StatCard icon={Eye} label={t('analytics.total_views')} value={data?.total_views ?? 0} />
+        <StatCard icon={Eye} label={t('analytics.views_30')} value={data?.views_last_30_days ?? 0} accent="text-blue-400" />
+        <StatCard icon={Heart} label={t('analytics.favorited')} value={data?.favorites_count ?? 0} accent="text-red-400" />
+        <StatCard icon={Target} label={t('analytics.matching')} value={data?.matching_opportunities ?? 0} accent="text-green-400" />
       </div>
 
       <div className="bg-card border border-border/50 rounded-sm p-5">
-        <p className="text-xs font-bold uppercase tracking-widests text-muted-foreground mb-4">Views — Last 30 Days</p>
+        <p className="text-xs font-bold uppercase tracking-widests text-muted-foreground mb-4">{t('analytics.views_chart')}</p>
         {sortedDays.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No views recorded yet in this period.</p>
+          <p className="text-sm text-muted-foreground">{t('analytics.no_views')}</p>
         ) : (
           <div className="flex items-end gap-1 h-32">
             {sortedDays.map(([day, count]) => (
@@ -87,7 +89,7 @@ const PlayerAnalytics = () => {
 
       {data?.viewer_breakdown && Object.keys(data.viewer_breakdown).length > 0 && (
         <div className="bg-card border border-border/50 rounded-sm p-5">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Who Viewed Your Profile</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">{t('analytics.who_viewed')}</p>
           <div className="space-y-3">
             {Object.entries(data.viewer_breakdown)
               .sort((a, b) => b[1] - a[1])
@@ -112,14 +114,14 @@ const PlayerAnalytics = () => {
 
       {data?.playing_level && (
         <div className="mt-6 bg-card border border-border/50 rounded-sm p-5">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Your Playing Level</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">{t('analytics.your_level')}</p>
           <p className="text-lg font-heading font-bold text-primary">{data.playing_level}</p>
           <p className="text-xs text-muted-foreground mt-1">This is the level organizations see when browsing your profile</p>
         </div>
       )}
 
       <div className="mt-6 bg-card border border-border/50 rounded-sm p-5">
-        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Profile Completion</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">{t('analytics.completion')}</p>
         <div className="h-2 bg-white/10 rounded-full overflow-hidden">
           <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${data?.profile_completion ?? 0}%` }} />
         </div>

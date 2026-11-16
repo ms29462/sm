@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle, CheckCircle, ChevronRight } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const FIELD_LABELS = {
   date_of_birth: "Date of Birth",
@@ -22,6 +23,7 @@ const FIELD_LABELS = {
 };
 
 const ProfileCompletionBanner = () => {
+  const { t } = useTranslation();
   const [completion, setCompletion] = useState(null);
   const navigate = useNavigate();
 
@@ -48,12 +50,12 @@ const ProfileCompletionBanner = () => {
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="font-bold text-sm uppercase tracking-wide">
-              Profile {score}% Complete
-              {!completion.is_visible && <span className="ml-2 text-xs font-normal normal-case">— Not visible to organizations</span>}
+              {t('profile_banner.complete_pct', { score })}
+              {!completion.is_visible && <span className="ml-2 text-xs font-normal normal-case">{t('profile_banner.not_visible')}</span>}
             </p>
             <p className="text-xs mt-1 opacity-80">
-              Complete your profile to increase your visibility with clubs, federations and universities.
-              {score >= 90 && <span className="font-bold"> Reach 100% to earn +1 free credit!</span>}
+              {t('profile_banner.body')}
+              {score >= 90 && <span className="font-bold"> {t('profile_banner.credit_incentive')}</span>}
             </p>
             {missing.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
@@ -77,7 +79,7 @@ const ProfileCompletionBanner = () => {
           onClick={() => navigate('/player/profile')}
           className="flex items-center gap-1 text-xs font-bold uppercase border border-current rounded-sm px-3 py-2 hover:bg-white/10 transition-colors whitespace-nowrap flex-shrink-0"
         >
-          Complete Profile <ChevronRight className="w-3 h-3" />
+          {t('profile_banner.complete_btn')} <ChevronRight className="w-3 h-3" />
         </button>
       </div>
     </div>
