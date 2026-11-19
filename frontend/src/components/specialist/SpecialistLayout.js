@@ -8,6 +8,8 @@ import Badge from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 import { Trophy, Activity, Users, Heart, LogOut, Home, UserCircle , Newspaper , MessageCircle } from 'lucide-react';
 
 const SpecialistLayout = ({ children }) => {
@@ -16,6 +18,7 @@ const SpecialistLayout = ({ children }) => {
   const { totalUnread, unreadChatRequests } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -23,9 +26,6 @@ const SpecialistLayout = ({ children }) => {
   };
 
   const confirmLogout = () => setShowLogoutConfirm(true);
-
-  const _unused = () => {
-  };
 
   const isActive = (path) => location.pathname.includes(path);
 
@@ -44,7 +44,7 @@ const SpecialistLayout = ({ children }) => {
               <h1 className="text-xl font-heading font-bold tracking-tight">SOCCERMATCH</h1>
               <p className="text-xs text-muted-foreground uppercase flex items-center">
                 <Activity className="w-3 h-3 mr-1" />
-                Specialist Portal
+                {t('specialist.layout.portal')}
               </p>
             </div>
           </div>
@@ -55,7 +55,7 @@ const SpecialistLayout = ({ children }) => {
           <Link to="/specialist/news">
             <Button variant={isActive('/specialist/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <Newspaper className="w-4 h-4 mr-3" />
-              News Feed
+              {t('specialist.layout.news_feed')}
             </Button>
           </Link>
           <Link to="/specialist/dashboard">
@@ -65,7 +65,7 @@ const SpecialistLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <Home className="w-4 h-4 mr-3" />
-              Dashboard
+              {t('specialist.layout.dashboard')}
             </Button>
           </Link>
           <Link to="/specialist/profile">
@@ -75,7 +75,7 @@ const SpecialistLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <UserCircle className="w-4 h-4 mr-3" />
-              My Profile
+              {t('specialist.layout.my_profile')}
             </Button>
           </Link>
           <Link to="/specialist/players">
@@ -83,7 +83,7 @@ const SpecialistLayout = ({ children }) => {
               variant={isActive('/specialist/players') ? 'secondary' : 'ghost'}
               className="w-full justify-start"
             >
-              <Users className="w-4 h-4 mr-3" /> Find Players
+              <Users className="w-4 h-4 mr-3" /> {t('specialist.layout.find_players')}
             </Button>
           </Link>
           <Link to="/specialist/clients">
@@ -93,7 +93,7 @@ const SpecialistLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <Heart className="w-4 h-4 mr-3" />
-              My Clients
+              {t('specialist.layout.my_clients')}
             </Button>
           </Link>
         </nav>
@@ -101,12 +101,13 @@ const SpecialistLayout = ({ children }) => {
           <Link to="/specialist/chats">
             <Button variant={isActive('/specialist/chats') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <MessageCircle className="w-4 h-4 mr-3" />
-              Chats
+              {t('specialist.layout.chats')}
               <Badge count={totalUnread + unreadChatRequests} />
             </Button>
           </Link>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border space-y-2">
+          <LanguageSwitcher />
           <Button
             data-testid="logout-btn"
             variant="ghost"
@@ -114,7 +115,7 @@ const SpecialistLayout = ({ children }) => {
             onClick={confirmLogout}
           >
             <LogOut className="w-4 h-4 mr-3" />
-            Logout
+            {t('specialist.layout.logout')}
           </Button>
         </div>
       </aside>
@@ -127,15 +128,13 @@ const SpecialistLayout = ({ children }) => {
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav role="specialist" />
     </div>
-  );
-};
 
       <ConfirmDialog
         open={showLogoutConfirm}
         onOpenChange={setShowLogoutConfirm}
-        title="Sign Out"
-        description="Are you sure you want to sign out?"
-        confirmLabel="Sign Out"
+        title={t('specialist.layout.sign_out')}
+        description={t('specialist.layout.sign_out_confirm')}
+        confirmLabel={t('specialist.layout.sign_out')}
         confirmVariant="destructive"
         onConfirm={handleLogout}
       />

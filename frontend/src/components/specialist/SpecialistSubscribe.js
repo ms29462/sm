@@ -3,21 +3,23 @@ import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 import { trackBeginCheckout } from "@/lib/analytics";
-
-const FEATURES = [
-  "Public Specialist Profile",
-  "Verified Specialist Badge",
-  "Messaging",
-  "Receive Inquiries",
-  "Specialist Directory Listing",
-  "Portfolio & Experience Display",
-  "Website & Social Media Links",
-];
+import { useTranslation } from "react-i18next";
 
 const SpecialistSubscribe = () => {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [checkingOut, setCheckingOut] = useState(false);
+  const { t } = useTranslation();
+
+  const FEATURES = [
+    t('specialist.subscribe.feature_1'),
+    t('specialist.subscribe.feature_2'),
+    t('specialist.subscribe.feature_3'),
+    t('specialist.subscribe.feature_4'),
+    t('specialist.subscribe.feature_5'),
+    t('specialist.subscribe.feature_6'),
+    t('specialist.subscribe.feature_7'),
+  ];
 
   useEffect(() => { loadStatus(); }, []);
 
@@ -26,7 +28,7 @@ const SpecialistSubscribe = () => {
       const res = await api.getSpecialistSubscriptionStatus();
       setStatus(res.data);
     } catch (e) {
-      toast.error("Failed to load subscription status");
+      toast.error(t('specialist.subscribe.load_error'));
     } finally {
       setLoading(false);
     }
@@ -39,19 +41,19 @@ const SpecialistSubscribe = () => {
       trackBeginCheckout('specialist_standard', 'specialist');
       window.location.href = res.data.checkout_url;
     } catch (e) {
-      toast.error(e.response?.data?.detail || "Failed to start checkout");
+      toast.error(e.response?.data?.detail || t('specialist.subscribe.checkout_error'));
       setCheckingOut(false);
     }
   };
 
-  if (loading) return <div className="p-8 text-primary font-heading">LOADING...</div>;
+  if (loading) return <div className="p-8 text-primary font-heading">{t('specialist.subscribe.loading')}</div>;
 
   if (status?.sub_status !== "approved_awaiting_payment" && status?.sub_status !== "active" && status?.sub_status !== "past_due" && status?.sub_status !== "cancelled" && status?.sub_status !== "expired") {
     return (
       <div className="p-4 md:p-8 flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <h1 className="text-2xl font-heading font-bold uppercase mb-3">Application Under Review</h1>
+        <h1 className="text-2xl font-heading font-bold uppercase mb-3">{t('specialist.subscribe.reviewing_title')}</h1>
         <p className="text-sm text-muted-foreground max-w-md">
-          Your specialist profile is currently in our review process. Once approved, you'll be able to activate your subscription here.
+          {t('specialist.subscribe.reviewing_body')}
         </p>
       </div>
     );
@@ -63,8 +65,8 @@ const SpecialistSubscribe = () => {
         <div className="w-14 h-14 bg-green-500/10 border border-green-500/20 rounded-full flex items-center justify-center mb-4">
           <Check className="w-7 h-7 text-green-400" />
         </div>
-        <h1 className="text-2xl font-heading font-bold uppercase mb-2">Subscription Active</h1>
-        <p className="text-sm text-muted-foreground">Your profile is now visible on Soccer Match.</p>
+        <h1 className="text-2xl font-heading font-bold uppercase mb-2">{t('specialist.subscribe.active_title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('specialist.subscribe.active_body')}</p>
       </div>
     );
   }
@@ -72,14 +74,14 @@ const SpecialistSubscribe = () => {
   return (
     <div className="p-4 md:p-8 flex flex-col items-center justify-center min-h-[70vh]">
       <div className="bg-card border border-border/50 rounded-sm p-6 md:p-8 max-w-md w-full text-center">
-        <h1 className="text-2xl font-heading font-bold uppercase mb-2">Specialist Plan</h1>
+        <h1 className="text-2xl font-heading font-bold uppercase mb-2">{t('specialist.subscribe.plan_title')}</h1>
         <div className="mb-6">
           <span className="text-4xl font-bold text-primary">$99</span>
-          <span className="text-sm text-muted-foreground">/year</span>
+          <span className="text-sm text-muted-foreground">{t('specialist.subscribe.per_year')}</span>
         </div>
         <ul className="space-y-2 mb-6 text-left">
-          {FEATURES.map(f => (
-            <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+          {FEATURES.map((f, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
               <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
               {f}
             </li>
@@ -87,7 +89,7 @@ const SpecialistSubscribe = () => {
         </ul>
         <button onClick={handleSubscribe} disabled={checkingOut}
           className="w-full bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-          {checkingOut ? "Loading..." : "Activate Subscription"}
+          {checkingOut ? t('specialist.subscribe.loading_btn') : t('specialist.subscribe.activate_btn')}
         </button>
       </div>
     </div>

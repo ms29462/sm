@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { User, MapPin, Star, Globe, ArrowLeft, Briefcase, Clock, Languages, Award } from 'lucide-react';
 
 const SpecialistProfilePage = () => {
   const { specialistId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [specialist, setSpecialist] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +19,7 @@ const SpecialistProfilePage = () => {
       const res = await api.getSpecialistById(specialistId);
       setSpecialist(res.data);
     } catch (e) {
-      toast.error('Failed to load specialist profile');
+      toast.error(t('specialist.public_profile.load_error'));
     } finally {
       setLoading(false);
     }
@@ -25,18 +27,18 @@ const SpecialistProfilePage = () => {
 
   if (loading) return (
     <div className="p-8 flex items-center justify-center">
-      <div className="text-primary text-xl font-heading">LOADING...</div>
+      <div className="text-primary text-xl font-heading">{t('specialist.public_profile.loading')}</div>
     </div>
   );
 
   if (!specialist) return (
-    <div className="p-8 text-center text-muted-foreground">Specialist not found.</div>
+    <div className="p-8 text-center text-muted-foreground">{t('specialist.public_profile.not_found')}</div>
   );
 
   return (
     <div className="p-4 md:p-8">
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-white mb-6 transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back
+        <ArrowLeft className="w-4 h-4" /> {t('specialist.public_profile.back')}
       </button>
 
       {/* Hero Header */}
@@ -66,7 +68,7 @@ const SpecialistProfilePage = () => {
               {specialist.years_experience && (
                 <div className="flex items-center gap-2 text-sm">
                   <Star className="w-4 h-4 text-primary" />
-                  <span className="text-muted-foreground">{specialist.years_experience} years experience</span>
+                  <span className="text-muted-foreground">{t('specialist.public_profile.years_exp', { n: specialist.years_experience })}</span>
                 </div>
               )}
               {specialist.availability && (
@@ -90,7 +92,7 @@ const SpecialistProfilePage = () => {
               {specialist.current_club && (
                 <div className="flex items-center gap-2 text-sm">
                   <Briefcase className="w-4 h-4 text-primary" />
-                  <span className="text-muted-foreground">Works with: {specialist.current_club}</span>
+                  <span className="text-muted-foreground">{t('specialist.public_profile.works_with')} {specialist.current_club}</span>
                 </div>
               )}
             </div>
@@ -102,7 +104,7 @@ const SpecialistProfilePage = () => {
         {/* Bio */}
         {specialist.bio && (
           <div className="bg-card border border-border/50 rounded-sm p-6 md:col-span-2">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">About</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('specialist.public_profile.about')}</h2>
             <p className="text-sm leading-relaxed">{specialist.bio}</p>
           </div>
         )}
@@ -110,7 +112,7 @@ const SpecialistProfilePage = () => {
         {/* Services */}
         {specialist.services_offered?.length > 0 && (
           <div className="bg-card border border-border/50 rounded-sm p-6">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Services</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('specialist.public_profile.services')}</h2>
             <div className="flex flex-wrap gap-2">
               {specialist.services_offered.map((s, i) => (
                 <span key={i} className="text-xs bg-white/5 border border-white/10 px-3 py-1.5 rounded-sm">{s}</span>
@@ -122,7 +124,7 @@ const SpecialistProfilePage = () => {
         {/* Certifications */}
         {specialist.certifications?.length > 0 && (
           <div className="bg-card border border-border/50 rounded-sm p-6">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Certifications</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('specialist.public_profile.certifications')}</h2>
             <div className="flex flex-wrap gap-2">
               {specialist.certifications.map((c, i) => (
                 <span key={i} className="text-xs bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded-sm">{c}</span>
@@ -134,7 +136,7 @@ const SpecialistProfilePage = () => {
         {/* Website / LinkedIn */}
         {(specialist.website || specialist.linkedin || specialist.instagram || specialist.facebook) && (
           <div className="bg-card border border-border/50 rounded-sm p-6">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Links</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('specialist.public_profile.links')}</h2>
             <div className="space-y-2">
               {specialist.website && (
                 <a href={specialist.website} target="_blank" rel="noopener noreferrer"

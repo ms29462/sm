@@ -4,15 +4,17 @@ import { api } from '@/lib/api';
 import ReportUserDialog from '@/components/shared/ReportUserDialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import RequestChatDialog from '@/components/shared/RequestChatDialog';
-import { 
-  ArrowLeft, User, MapPin, Calendar, Trophy, 
+import {
+  ArrowLeft, User, MapPin, Calendar, Trophy,
   Heart, ExternalLink, Video, FileText
 } from 'lucide-react';
 
 const SpecialistPlayerDetail = () => {
   const { playerId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [player, setPlayer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -27,7 +29,7 @@ const SpecialistPlayerDetail = () => {
       const response = await api.getSpecialistPlayerDetail(playerId);
       setPlayer(response.data);
     } catch (error) {
-      toast.error('Failed to load player');
+      toast.error(t('specialist.player_detail.load_error'));
       navigate('/specialist/players');
     } finally {
       setLoading(false);
@@ -48,21 +50,21 @@ const SpecialistPlayerDetail = () => {
       if (isFavorite) {
         await api.removeSpecialistFavorite(playerId);
         setIsFavorite(false);
-        toast.success('Removed from client list');
+        toast.success(t('specialist.player_detail.removed_client'));
       } else {
         await api.addSpecialistFavorite(playerId);
         setIsFavorite(true);
-        toast.success('Added to client list');
+        toast.success(t('specialist.player_detail.added_client'));
       }
     } catch (error) {
-      toast.error('Failed to update client list');
+      toast.error(t('specialist.player_detail.client_error'));
     }
   };
 
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('specialist.player_detail.loading')}</div>
       </div>
     );
   }
@@ -78,7 +80,7 @@ const SpecialistPlayerDetail = () => {
         className="flex items-center text-muted-foreground hover:text-primary mb-6"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to players
+        {t('specialist.player_detail.back')}
       </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -87,9 +89,9 @@ const SpecialistPlayerDetail = () => {
           <div className="bg-card border border-border/50 p-6 rounded-sm">
             <div className="flex items-start gap-6">
               {player.profile_picture ? (
-                <img 
-                  src={player.profile_picture} 
-                  alt={player.name} 
+                <img
+                  src={player.profile_picture}
+                  alt={player.name}
                   className="w-32 h-32 rounded-sm object-cover"
                 />
               ) : (
@@ -101,7 +103,7 @@ const SpecialistPlayerDetail = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h1 className="text-3xl font-heading font-bold uppercase">{player.name}</h1>
-                    <p className="text-xl text-primary">{player.position || 'Position N/A'}</p>
+                    <p className="text-xl text-primary">{player.position || t('specialist.player_detail.position_na')}</p>
                   </div>
                   <button
                     onClick={toggleFavorite}
@@ -119,7 +121,7 @@ const SpecialistPlayerDetail = () => {
                   )}
                   {player.age && (
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" /> {player.age} years old
+                      <Calendar className="w-4 h-4" /> {t('specialist.player_detail.years_old', { age: player.age })}
                     </span>
                   )}
                 </div>
@@ -131,32 +133,32 @@ const SpecialistPlayerDetail = () => {
           <div className="bg-card border border-border/50 p-6 rounded-sm">
             <h2 className="font-heading font-bold uppercase mb-4 flex items-center gap-2">
               <Trophy className="w-5 h-5 text-primary" />
-              PHYSICAL & PERFORMANCE DATA
+              {t('specialist.player_detail.section_physical')}
             </h2>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
               <div className="text-center p-4 bg-black/20 rounded-sm">
                 <p className="text-2xl font-heading font-bold">{player.height || '-'}</p>
-                <p className="text-xs text-muted-foreground uppercase">Height</p>
+                <p className="text-xs text-muted-foreground uppercase">{t('specialist.player_detail.height')}</p>
               </div>
               <div className="text-center p-4 bg-black/20 rounded-sm">
                 <p className="text-2xl font-heading font-bold">{player.weight || '-'}</p>
-                <p className="text-xs text-muted-foreground uppercase">Weight</p>
+                <p className="text-xs text-muted-foreground uppercase">{t('specialist.player_detail.weight')}</p>
               </div>
               <div className="text-center p-4 bg-black/20 rounded-sm">
                 <p className="text-2xl font-heading font-bold">{player.preferred_foot || '-'}</p>
-                <p className="text-xs text-muted-foreground uppercase">Foot</p>
+                <p className="text-xs text-muted-foreground uppercase">{t('specialist.player_detail.foot')}</p>
               </div>
               <div className="text-center p-4 bg-black/20 rounded-sm">
                 <p className="text-2xl font-heading font-bold text-primary">{player.games || 0}</p>
-                <p className="text-xs text-muted-foreground uppercase">Games</p>
+                <p className="text-xs text-muted-foreground uppercase">{t('specialist.player_detail.games')}</p>
               </div>
               <div className="text-center p-4 bg-black/20 rounded-sm">
                 <p className="text-2xl font-heading font-bold text-green-500">{player.goals || 0}</p>
-                <p className="text-xs text-muted-foreground uppercase">Goals</p>
+                <p className="text-xs text-muted-foreground uppercase">{t('specialist.player_detail.goals')}</p>
               </div>
               <div className="text-center p-4 bg-black/20 rounded-sm">
                 <p className="text-2xl font-heading font-bold text-blue-500">{player.assists || 0}</p>
-                <p className="text-xs text-muted-foreground uppercase">Assists</p>
+                <p className="text-xs text-muted-foreground uppercase">{t('specialist.player_detail.assists')}</p>
               </div>
             </div>
           </div>
@@ -164,7 +166,7 @@ const SpecialistPlayerDetail = () => {
           {/* Bio */}
           {player.bio && (
             <div className="bg-card border border-border/50 p-6 rounded-sm">
-              <h2 className="font-heading font-bold uppercase mb-4">ABOUT THE PLAYER</h2>
+              <h2 className="font-heading font-bold uppercase mb-4">{t('specialist.player_detail.about')}</h2>
               <p className="text-muted-foreground whitespace-pre-wrap">{player.bio}</p>
             </div>
           )}
@@ -174,16 +176,16 @@ const SpecialistPlayerDetail = () => {
             <div className="bg-card border border-border/50 p-6 rounded-sm">
               <h2 className="font-heading font-bold uppercase mb-4 flex items-center gap-2">
                 <Video className="w-5 h-5 text-primary" />
-                HIGHLIGHT VIDEO
+                {t('specialist.player_detail.highlight_video')}
               </h2>
-              <a 
+              <a
                 href={player.video_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline flex items-center gap-2"
               >
                 <ExternalLink className="w-4 h-4" />
-                Watch Highlights
+                {t('specialist.player_detail.watch_highlights')}
               </a>
             </div>
           )}
@@ -193,23 +195,23 @@ const SpecialistPlayerDetail = () => {
         <div className="space-y-6">
           {/* Quick Info */}
           <div className="bg-card border border-border/50 p-6 rounded-sm">
-            <h2 className="font-heading font-bold uppercase mb-4">PLAYER INFO</h2>
+            <h2 className="font-heading font-bold uppercase mb-4">{t('specialist.player_detail.player_info')}</h2>
             <div className="space-y-3 text-sm">
               {player.current_club && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Current Club</span>
+                  <span className="text-muted-foreground">{t('specialist.player_detail.current_club')}</span>
                   <span>{player.current_club}</span>
                 </div>
               )}
               {player.playing_level && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Level</span>
+                  <span className="text-muted-foreground">{t('specialist.player_detail.level')}</span>
                   <span>{player.playing_level}</span>
                 </div>
               )}
               {player.position && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Position</span>
+                  <span className="text-muted-foreground">{t('specialist.player_detail.position')}</span>
                   <span>{player.position}</span>
                 </div>
               )}
@@ -218,13 +220,13 @@ const SpecialistPlayerDetail = () => {
 
           {/* Actions */}
           <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-            <h2 className="font-heading font-bold uppercase">OFFER SERVICES</h2>
-            
-            <RequestChatDialog 
-  playerId={playerId}
-  playerName={player.name}
-  requesterType="specialist"
-/>
+            <h2 className="font-heading font-bold uppercase">{t('specialist.player_detail.offer_services')}</h2>
+
+            <RequestChatDialog
+              playerId={playerId}
+              playerName={player.name}
+              requesterType="specialist"
+            />
 
             <Button
               onClick={toggleFavorite}
@@ -232,14 +234,14 @@ const SpecialistPlayerDetail = () => {
               className="w-full border-primary text-primary"
             >
               <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current' : ''}`} />
-              {isFavorite ? 'REMOVE FROM CLIENTS' : 'ADD TO CLIENTS'}
+              {isFavorite ? t('specialist.player_detail.remove_clients') : t('specialist.player_detail.add_clients')}
             </Button>
 
             {player.cv_url && (
               <a href={player.cv_url} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" className="w-full border-white/20">
                   <FileText className="w-4 h-4 mr-2" />
-                  VIEW CV
+                  {t('specialist.player_detail.view_cv')}
                 </Button>
               </a>
             )}
@@ -248,7 +250,7 @@ const SpecialistPlayerDetail = () => {
           {/* Specialist Note */}
           <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-sm">
             <p className="text-sm text-blue-400">
-              <strong>Tip:</strong> When reaching out to players, mention specific services you can offer based on their position and physical profile.
+              <strong>Tip:</strong> {t('specialist.player_detail.tip')}
             </p>
           </div>
         </div>

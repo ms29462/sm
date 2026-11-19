@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { User, Save, CheckCircle, Activity, Plus, X } from 'lucide-react';
 
 const COUNTRIES = [
@@ -45,6 +46,7 @@ const SpecialistProfile = () => {
   const [saving, setSaving] = useState(false);
   const [newService, setNewService] = useState('');
   const [newLanguage, setNewLanguage] = useState('');
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     specialist_type: '',
@@ -113,7 +115,7 @@ const SpecialistProfile = () => {
         linkedin: response.data.linkedin || ''
       });
     } catch (error) {
-      toast.error('Failed to load profile');
+      toast.error(t('specialist.profile.load_error'));
     } finally {
       setLoading(false);
     }
@@ -128,12 +130,11 @@ const SpecialistProfile = () => {
         years_experience: formData.years_experience && formData.years_experience !== '' ? parseInt(formData.years_experience) : null,
         certifications: Array.isArray(formData.certifications) ? formData.certifications : (formData.certifications ? [formData.certifications] : [])
       };
-      console.log('Sending:', JSON.stringify(updateData));
       await api.updateSpecialistProfile(updateData);
-      toast.success('Profile updated successfully');
+      toast.success(t('specialist.profile.update_success'));
       loadProfile();
     } catch (error) {
-      toast.error('Failed to update profile');
+      toast.error(t('specialist.profile.update_error'));
     } finally {
       setSaving(false);
     }
@@ -185,7 +186,7 @@ const SpecialistProfile = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('specialist.profile.loading')}</div>
       </div>
     );
   }
@@ -195,9 +196,9 @@ const SpecialistProfile = () => {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <User className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-heading font-bold uppercase">SPECIALIST PROFILE</h1>
+          <h1 className="text-3xl font-heading font-bold uppercase">{t('specialist.profile.title')}</h1>
         </div>
-        <p className="text-muted-foreground">Manage your professional profile and services</p>
+        <p className="text-muted-foreground">{t('specialist.profile.subtitle')}</p>
       </div>
 
       {/* Verification Badge */}
@@ -205,8 +206,8 @@ const SpecialistProfile = () => {
         <div className="bg-green-500/10 border border-green-500/20 rounded-sm p-4 mb-6 flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-500" />
           <div>
-            <p className="font-medium text-green-500">Verified Specialist</p>
-            <p className="text-sm text-muted-foreground">Your credentials have been verified by our team.</p>
+            <p className="font-medium text-green-500">{t('specialist.profile.verified_title')}</p>
+            <p className="text-sm text-muted-foreground">{t('specialist.profile.verified_desc')}</p>
           </div>
         </div>
       )}
@@ -216,12 +217,12 @@ const SpecialistProfile = () => {
         <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
           <h2 className="font-heading font-bold uppercase flex items-center gap-2">
             <Activity className="w-5 h-5 text-primary" />
-            PROFESSIONAL INFORMATION
+            {t('specialist.profile.section_professional')}
           </h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Full Name *</Label>
+              <Label>{t('specialist.profile.full_name')} *</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -230,10 +231,10 @@ const SpecialistProfile = () => {
               />
             </div>
             <div>
-              <Label>Specialist Type *</Label>
+              <Label>{t('specialist.profile.specialist_type')} *</Label>
               <Select value={formData.specialist_type} onValueChange={(v) => setFormData({ ...formData, specialist_type: v })}>
                 <SelectTrigger className="mt-1 bg-black/20 border-white/10">
-                  <SelectValue placeholder="Select your specialization" />
+                  <SelectValue placeholder={t('specialist.profile.select_type')} />
                 </SelectTrigger>
                 <SelectContent>
                   {SPECIALIST_TYPES.map(type => (
@@ -246,10 +247,10 @@ const SpecialistProfile = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Country</Label>
+              <Label>{t('specialist.profile.country')}</Label>
               <Select value={formData.country} onValueChange={(v) => setFormData({ ...formData, country: v })}>
                 <SelectTrigger className="mt-1 bg-black/20 border-white/10">
-                  <SelectValue placeholder="Select country" />
+                  <SelectValue placeholder={t('specialist.profile.select_country')} />
                 </SelectTrigger>
                 <SelectContent>
                   {COUNTRIES.map(c => (
@@ -259,7 +260,7 @@ const SpecialistProfile = () => {
               </Select>
             </div>
             <div>
-              <Label>City</Label>
+              <Label>{t('specialist.profile.city')}</Label>
               <Input
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
@@ -271,7 +272,7 @@ const SpecialistProfile = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Years of Experience</Label>
+              <Label>{t('specialist.profile.years_experience')}</Label>
               <Input
                 type="number"
                 value={formData.years_experience}
@@ -281,7 +282,7 @@ const SpecialistProfile = () => {
               />
             </div>
             <div>
-              <Label>Current Club (if any)</Label>
+              <Label>{t('specialist.profile.current_club')}</Label>
               <Input
                 value={formData.current_club}
                 onChange={(e) => setFormData({ ...formData, current_club: e.target.value })}
@@ -292,11 +293,11 @@ const SpecialistProfile = () => {
           </div>
 
           <div>
-            <Label>Bio / Description</Label>
+            <Label>{t('specialist.profile.bio')}</Label>
             <Textarea
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              placeholder="Tell players about your experience and expertise..."
+              placeholder={t('specialist.profile.bio_placeholder')}
               className="mt-1 bg-black/20 border-white/10 min-h-[100px]"
             />
           </div>
@@ -304,11 +305,11 @@ const SpecialistProfile = () => {
 
         {/* Contact */}
         <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">CONTACT & ONLINE</h2>
+          <h2 className="font-heading font-bold uppercase">{t('specialist.profile.section_contact')}</h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Phone</Label>
+              <Label>{t('specialist.profile.phone')}</Label>
               <Input
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -317,20 +318,20 @@ const SpecialistProfile = () => {
               />
             </div>
             <div>
-              <Label>Profile Picture URL</Label>
+              <Label>{t('specialist.profile.profile_picture')}</Label>
               <div className="mt-1 flex items-center gap-3">
                 {formData.profile_picture && (
                   <img src={formData.profile_picture} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-white/10" />
                 )}
                 <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-black/20 border border-white/10 rounded-sm hover:border-primary transition-colors text-sm">
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                  {formData.profile_picture ? "Change Photo" : "Upload Photo"}
+                  {formData.profile_picture ? t('specialist.profile.change_photo') : t('specialist.profile.upload_photo')}
                 </label>
               </div>
               <Input
                 value={formData.profile_picture}
                 onChange={(e) => setFormData({ ...formData, profile_picture: e.target.value })}
-                placeholder="Or paste image URL..."
+                placeholder={t('specialist.profile.paste_url')}
                 className="mt-1 bg-black/20 border-white/10"
               />
             </div>
@@ -338,7 +339,7 @@ const SpecialistProfile = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Website</Label>
+              <Label>{t('specialist.profile.website')}</Label>
               <Input
                 value={formData.website}
                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
@@ -347,7 +348,7 @@ const SpecialistProfile = () => {
               />
             </div>
             <div>
-              <Label>LinkedIn</Label>
+              <Label>{t('specialist.profile.linkedin')}</Label>
               <Input
                 value={formData.linkedin}
                 onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
@@ -360,14 +361,14 @@ const SpecialistProfile = () => {
 
         {/* Availability & Rates */}
         <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">AVAILABILITY & RATES</h2>
+          <h2 className="font-heading font-bold uppercase">{t('specialist.profile.section_availability')}</h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Availability</Label>
+              <Label>{t('specialist.profile.availability')}</Label>
               <Select value={formData.availability} onValueChange={(v) => setFormData({ ...formData, availability: v })}>
                 <SelectTrigger className="mt-1 bg-black/20 border-white/10">
-                  <SelectValue placeholder="Select availability" />
+                  <SelectValue placeholder={t('specialist.profile.select_availability')} />
                 </SelectTrigger>
                 <SelectContent>
                   {AVAILABILITY_OPTIONS.map(opt => (
@@ -377,7 +378,7 @@ const SpecialistProfile = () => {
               </Select>
             </div>
             <div>
-              <Label>Hourly Rate</Label>
+              <Label>{t('specialist.profile.hourly_rate')}</Label>
               <Input
                 value={formData.hourly_rate}
                 onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
@@ -390,7 +391,7 @@ const SpecialistProfile = () => {
 
         {/* Certifications */}
         <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">CERTIFICATIONS</h2>
+          <h2 className="font-heading font-bold uppercase">{t('specialist.profile.section_certifications')}</h2>
           <div className="flex flex-wrap gap-2">
             {CERTIFICATIONS.map(cert => (
               <button
@@ -411,12 +412,12 @@ const SpecialistProfile = () => {
 
         {/* Services */}
         <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">SERVICES OFFERED</h2>
+          <h2 className="font-heading font-bold uppercase">{t('specialist.profile.section_services')}</h2>
           <div className="flex gap-2">
             <Input
               value={newService}
               onChange={(e) => setNewService(e.target.value)}
-              placeholder="Add a service (e.g., ACL Rehab Program)"
+              placeholder={t('specialist.profile.add_service_placeholder')}
               className="bg-black/20 border-white/10"
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addService())}
             />
@@ -438,12 +439,12 @@ const SpecialistProfile = () => {
 
         {/* Languages */}
         <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">LANGUAGES</h2>
+          <h2 className="font-heading font-bold uppercase">{t('specialist.profile.section_languages')}</h2>
           <div className="flex gap-2">
             <Input
               value={newLanguage}
               onChange={(e) => setNewLanguage(e.target.value)}
-              placeholder="Add a language (e.g., English)"
+              placeholder={t('specialist.profile.add_language_placeholder')}
               className="bg-black/20 border-white/10"
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
             />
@@ -465,7 +466,7 @@ const SpecialistProfile = () => {
 
         <Button type="submit" disabled={saving} className="w-full bg-primary text-black font-bold h-12">
           <Save className="w-4 h-4 mr-2" />
-          {saving ? 'SAVING...' : 'SAVE PROFILE'}
+          {saving ? t('specialist.profile.saving') : t('specialist.profile.save')}
         </Button>
       </form>
     </div>

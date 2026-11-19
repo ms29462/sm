@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { Users, Search, Heart, Eye, MapPin, User } from 'lucide-react';
 
 const POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Striker', 'Winger'];
@@ -14,6 +15,7 @@ const SpecialistPlayers = () => {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState(new Set());
+  const { t } = useTranslation();
   const [filters, setFilters] = useState({
     name: '',
     position: '',
@@ -38,7 +40,7 @@ const SpecialistPlayers = () => {
       const response = await api.getSpecialistPlayers(params);
       setPlayers(response.data || []);
     } catch (error) {
-      toast.error('Failed to load players');
+      toast.error(t('specialist.players.load_error'));
     } finally {
       setLoading(false);
     }
@@ -70,14 +72,14 @@ const SpecialistPlayers = () => {
           next.delete(playerId);
           return next;
         });
-        toast.success('Removed from client list');
+        toast.success(t('specialist.players.removed_client'));
       } else {
         await api.addSpecialistFavorite(playerId);
         setFavorites(prev => new Set(prev).add(playerId));
-        toast.success('Added to client list');
+        toast.success(t('specialist.players.added_client'));
       }
     } catch (error) {
-      toast.error('Failed to update client list');
+      toast.error(t('specialist.players.client_error'));
     }
   };
 
@@ -86,9 +88,9 @@ const SpecialistPlayers = () => {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Users className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-heading font-bold uppercase">FIND PLAYERS</h1>
+          <h1 className="text-3xl font-heading font-bold uppercase">{t('specialist.players.title')}</h1>
         </div>
-        <p className="text-muted-foreground">Find players who may need your specialized services</p>
+        <p className="text-muted-foreground">{t('specialist.players.subtitle')}</p>
       </div>
 
       {/* Filters */}
@@ -98,17 +100,17 @@ const SpecialistPlayers = () => {
             <Input
               value={filters.name}
               onChange={(e) => setFilters({ ...filters, name: e.target.value })}
-              placeholder="Player name..."
+              placeholder={t('specialist.players.search_placeholder')}
               className="bg-black/20 border-white/10"
             />
           </div>
           <div>
             <Select value={filters.position} onValueChange={(v) => setFilters({ ...filters, position: v })}>
               <SelectTrigger className="bg-black/20 border-white/10">
-                <SelectValue placeholder="Position" />
+                <SelectValue placeholder={t('specialist.players.position')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Positions</SelectItem>
+                <SelectItem value="all">{t('specialist.players.all_positions')}</SelectItem>
                 {POSITIONS.map(p => (
                   <SelectItem key={p} value={p}>{p}</SelectItem>
                 ))}
@@ -119,17 +121,17 @@ const SpecialistPlayers = () => {
             <Input
               value={filters.nationality}
               onChange={(e) => setFilters({ ...filters, nationality: e.target.value })}
-              placeholder="Nationality..."
+              placeholder={t('specialist.players.nationality_placeholder')}
               className="bg-black/20 border-white/10"
             />
           </div>
           <div>
             <Select value={filters.level} onValueChange={(v) => setFilters({ ...filters, level: v })}>
               <SelectTrigger className="bg-black/20 border-white/10">
-                <SelectValue placeholder="Level" />
+                <SelectValue placeholder={t('specialist.players.level')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="all">{t('specialist.players.all_levels')}</SelectItem>
                 {LEVELS.map(l => (
                   <SelectItem key={l} value={l}>{l}</SelectItem>
                 ))}
@@ -139,10 +141,10 @@ const SpecialistPlayers = () => {
           <div className="flex gap-2">
             <Button onClick={handleSearch} className="bg-primary text-black font-bold flex-1">
               <Search className="w-4 h-4 mr-2" />
-              SEARCH
+              {t('specialist.players.search_btn')}
             </Button>
             <Button onClick={handleClearFilters} variant="outline" className="border-white/10">
-              Clear
+              {t('specialist.players.clear')}
             </Button>
           </div>
         </div>
@@ -151,12 +153,12 @@ const SpecialistPlayers = () => {
       {/* Results */}
       {loading ? (
         <div className="text-center py-12">
-          <div className="text-primary text-xl font-heading">LOADING...</div>
+          <div className="text-primary text-xl font-heading">{t('specialist.players.loading')}</div>
         </div>
       ) : players.length === 0 ? (
         <div className="bg-card border border-border p-12 rounded-sm text-center">
           <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No players found matching your criteria</p>
+          <p className="text-muted-foreground">{t('specialist.players.no_players')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -177,7 +179,7 @@ const SpecialistPlayers = () => {
                     )}
                     <div>
                       <h3 className="font-heading font-bold uppercase">{player.name}</h3>
-                      <p className="text-sm text-primary">{player.position || 'Position N/A'}</p>
+                      <p className="text-sm text-primary">{player.position || t('specialist.players.position_na')}</p>
                     </div>
                   </div>
                   <button
@@ -194,14 +196,14 @@ const SpecialistPlayers = () => {
                     <span>{player.nationality || "—"}</span>
                     {player.nationality_2 && <span>/ {player.nationality_2}</span>}
                   </div>
-                  <p>Age: {player.age || "—"}</p>
-                  <p>Club: {player.current_club || "—"}</p>
+                  <p>{t('specialist.players.age')} {player.age || "—"}</p>
+                  <p>{t('specialist.players.club')} {player.current_club || "—"}</p>
                 </div>
 
                 <Link to={`/specialist/player/${player.user_id}`}>
                   <Button variant="outline" className="w-full border-primary text-primary">
                     <Eye className="w-4 h-4 mr-2" />
-                    VIEW PROFILE
+                    {t('specialist.players.view_profile')}
                   </Button>
                 </Link>
               </div>
