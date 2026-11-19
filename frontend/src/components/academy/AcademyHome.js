@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { Users, Briefcase, FileText, GraduationCap } from 'lucide-react';
@@ -6,6 +7,7 @@ import { Users, Briefcase, FileText, GraduationCap } from 'lucide-react';
 const AcademyHome = () => {
   const [profile, setProfile] = useState(null);
   const [players, setPlayers] = useState([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     api.getAcademyProfile().then(r => setProfile(r.data)).catch(() => {});
@@ -18,19 +20,19 @@ const AcademyHome = () => {
         <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">
           {profile?.name || "Academy Dashboard"}
         </h1>
-        <p className="text-muted-foreground">Manage your academy and submit players to opportunities</p>
+        <p className="text-muted-foreground">{t('academy_home.subtitle')}</p>
         {profile && !profile.approved && (
           <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-sm">
-            <p className="text-yellow-500 text-sm font-medium">Your academy is pending admin approval. You can add players in the meantime.</p>
+            <p className="text-yellow-500 text-sm font-medium">{t('academy_home.pending_approval')}</p>
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {[
-          { label: "Academy Players", value: players.length, icon: Users, to: "/academy/players", color: "text-primary" },
-          { label: "Opportunities", value: "Browse", icon: Briefcase, to: "/academy/opportunities", color: "text-blue-400" },
-          { label: "Applications", value: "View", icon: FileText, to: "/academy/applications", color: "text-green-400" },
+          { label: t('academy_home.stat_players'), value: players.length, icon: Users, to: "/academy/players", color: "text-primary" },
+          { label: t('academy_home.stat_opportunities'), value: "Browse", icon: Briefcase, to: "/academy/opportunities", color: "text-blue-400" },
+          { label: t('academy_home.stat_applications'), value: "View", icon: FileText, to: "/academy/applications", color: "text-green-400" },
         ].map(stat => (
           <Link key={stat.label} to={stat.to} className="bg-card border border-border/50 p-6 rounded-sm hover:border-primary/50 transition-colors">
             <div className="flex items-center justify-between mb-4">
@@ -45,14 +47,14 @@ const AcademyHome = () => {
       {players.length === 0 ? (
         <div className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <GraduationCap className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">No players added yet</p>
+          <p className="text-muted-foreground mb-4">{t('academy_home.no_players')}</p>
           <Link to="/academy/players" className="inline-block px-6 py-2 bg-primary text-black font-bold text-sm rounded-sm hover:bg-primary/90 transition-colors uppercase tracking-wide">
-            Add Your First Player
+            {t('academy_home.add_first_player')}
           </Link>
         </div>
       ) : (
         <div>
-          <h2 className="text-lg font-heading font-bold uppercase mb-4">Recent Players</h2>
+          <h2 className="text-lg font-heading font-bold uppercase mb-4">{t('academy_home.recent_players')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {players.slice(0, 6).map(p => (
               <Link key={p.user_id} to={`/academy/player/${p.user_id}`}
@@ -73,7 +75,7 @@ const AcademyHome = () => {
           </div>
           {players.length > 6 && (
             <Link to="/academy/players" className="mt-4 inline-block text-sm text-primary hover:underline">
-              View all {players.length} players →
+              {t('academy_home.view_all', { count: players.length })}
             </Link>
           )}
         </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -12,6 +13,7 @@ const STATUS_COLORS = {
 };
 
 const AcademyApplications = () => {
+  const { t } = useTranslation();
   const [applications, setApplications] = useState([]);
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,12 +34,12 @@ const AcademyApplications = () => {
       ]);
       setApplications(appsRes.data || []);
       setPlayers(playersRes.data || []);
-    } catch { toast.error('Failed to load data'); }
+    } catch { toast.error(t('academy_applications.load_error')); }
     finally { setLoading(false); }
   };
 
   const openApplyModal = (opportunityId) => {
-    if (players.length === 0) { toast.error('Add players to your academy before applying'); return; }
+    if (players.length === 0) { toast.error(t('academy_applications.error_no_players')); return; }
     setPendingOpportunityId(opportunityId);
     setSelectedPlayerId(players[0]?.user_id || '');
     setShowPlayerModal(true);
@@ -48,28 +50,28 @@ const AcademyApplications = () => {
     setApplying(true);
     try {
       await api.createAcademyApplication({ opportunity_id: pendingOpportunityId, player_id: selectedPlayerId });
-      toast.success('Application submitted!');
+      toast.success(t('academy_applications.apply_success'));
       setShowPlayerModal(false);
       loadAll();
     } catch (e) {
-      toast.error(e.response?.data?.detail || 'Failed to apply');
+      toast.error(e.response?.data?.detail || t('academy_applications.apply_error'));
     } finally { setApplying(false); }
   };
 
-  if (loading) return <div className="p-8 flex items-center justify-center"><div className="text-primary text-xl font-heading">LOADING...</div></div>;
+  if (loading) return <div className="p-8 flex items-center justify-center"><div className="text-primary text-xl font-heading">{t('academy_applications.loading')}</div></div>;
 
   return (
     <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">APPLICATIONS</h1>
-        <p className="text-muted-foreground">Track applications submitted on behalf of your players</p>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">{t('academy_applications.title')}</h1>
+        <p className="text-muted-foreground">{t('academy_applications.subtitle')}</p>
       </div>
 
       {applications.length === 0 ? (
         <div className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No applications yet</p>
-          <p className="text-xs text-muted-foreground mt-2">Apply to opportunities from the Opportunities page</p>
+          <p className="text-muted-foreground">{t('academy_applications.no_applications')}</p>
+          <p className="text-xs text-muted-foreground mt-2">{t('academy_applications.no_applications_hint')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -95,10 +97,10 @@ const AcademyApplications = () => {
                     )}
                   </div>
                   {app.player_name && (
-                    <p className="text-xs text-primary font-medium">Player: {app.player_name}</p>
+                    <p className="text-xs text-primary font-medium">{t('academy_applications.player_label')} {app.player_name}</p>
                   )}
                   <p className="text-xs text-muted-foreground mt-1">
-                    Submitted {new Date(app.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {t('academy_applications.submitted')} {new Date(app.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
                 </div>
                 <span className={`px-3 py-1 text-xs uppercase tracking-wider border rounded-sm font-bold ${STATUS_COLORS[app.status] || STATUS_COLORS.submitted}`}>
@@ -115,11 +117,11 @@ const AcademyApplications = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)' }}>
           <div className="bg-card border border-border/50 rounded-sm w-full max-w-md">
             <div className="flex items-center justify-between p-6 border-b border-border">
-              <h2 className="text-lg font-heading font-bold uppercase">Select Player to Apply</h2>
+              <h2 className="text-lg font-heading font-bold uppercase">{t('academy_applications.modal_title')}</h2>
               <button onClick={() => setShowPlayerModal(false)} className="text-muted-foreground hover:text-white p-1"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6">
-              <p className="text-sm text-muted-foreground mb-4">Choose which player from your academy to submit for this opportunity.</p>
+              <p className="text-sm text-muted-foreground mb-4">{t('academy_applications.modal_desc')}</p>
               <div className="relative mb-6">
                 <select
                   value={selectedPlayerId}
@@ -152,9 +154,9 @@ const AcademyApplications = () => {
                 );
               })()}
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setShowPlayerModal(false)} className="flex-1 rounded-sm border-white/20">Cancel</Button>
+                <Button variant="outline" onClick={() => setShowPlayerModal(false)} className="flex-1 rounded-sm border-white/20">{t('academy_applications.cancel')}</Button>
                 <Button onClick={handleApply} disabled={applying || !selectedPlayerId} className="flex-1 bg-primary text-black font-bold rounded-sm hover:bg-primary/90">
-                  {applying ? 'Submitting...' : 'Submit Application'}
+                  {applying ? t('academy_applications.submitting') : t('academy_applications.submit')}
                 </Button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,18 +22,12 @@ const EMPTY_FORM = {
   full_game_videos: [''],
 };
 
-const Field = ({ label, children }) => (
-  <div>
-    <Label className="text-xs font-bold uppercase tracking-wide mb-1 block">{label}</Label>
-    {children}
-  </div>
-);
-
-const inp = "bg-black/20 border-white/10 focus:border-primary rounded-sm h-10 text-sm";
 const sel = "w-full bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none appearance-none cursor-pointer focus:border-primary";
+const inp = "bg-black/20 border-white/10 focus:border-primary rounded-sm h-10 text-sm";
 
 const AcademyPlayers = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -55,7 +50,7 @@ const AcademyPlayers = () => {
     try {
       const res = await api.getAcademyPlayers();
       setPlayers(res.data || []);
-    } catch { toast.error('Failed to load players'); }
+    } catch { toast.error(t('academy_players.load_error')); }
     finally { setLoading(false); }
   };
 
@@ -97,9 +92,9 @@ const AcademyPlayers = () => {
   const removeVideoLink = (i) => set('full_game_videos', form.full_game_videos.filter((_, idx) => idx !== i));
 
   const handleSave = async () => {
-    if (!form.name) { toast.error('Player name is required'); return; }
+    if (!form.name) { toast.error(t('academy_players.error_name')); return; }
     if (!form.highlight_video || !form.highlight_video.trim()) {
-      toast.error('Highlight video is required');
+      toast.error(t('academy_players.error_video'));
       return;
     }
     setSaving(true);
@@ -120,25 +115,25 @@ const AcademyPlayers = () => {
       };
       if (editingId) {
         await api.updateAcademyPlayer(editingId, payload);
-        toast.success('Player updated!');
+        toast.success(t('academy_players.update_success'));
       } else {
         await api.createAcademyPlayer(payload);
-        toast.success('Player added!');
+        toast.success(t('academy_players.add_success'));
       }
       setShowModal(false);
       loadPlayers();
     } catch (e) {
-      toast.error(e.response?.data?.detail || 'Failed to save player');
+      toast.error(e.response?.data?.detail || t('academy_players.save_error'));
     } finally { setSaving(false); }
   };
 
   const handleDelete = async (playerId, name) => {
-    if (!window.confirm(`Delete ${name}? This cannot be undone.`)) return;
+    if (!window.confirm(t('academy_players.delete_confirm', { name }))) return;
     try {
       await api.deleteAcademyPlayer(playerId);
-      toast.success('Player deleted');
+      toast.success(t('academy_players.delete_success'));
       setPlayers(prev => prev.filter(p => p.user_id !== playerId));
-    } catch { toast.error('Failed to delete player'); }
+    } catch { toast.error(t('academy_players.delete_error')); }
   };
 
   const activeFilterCount = [filterPosition, filterAgeMin, filterAgeMax, filterNationality, filterLevel, filterGender, filterFoot].filter(Boolean).length;
@@ -163,24 +158,31 @@ const AcademyPlayers = () => {
     return true;
   }), [players, search, filterPosition, filterAgeMin, filterAgeMax, filterNationality, filterLevel, filterGender, filterFoot]);
 
-  if (loading) return <div className="p-8 flex items-center justify-center"><div className="text-primary text-xl font-heading">LOADING...</div></div>;
+  const Field = ({ label, children }) => (
+    <div>
+      <Label className="text-xs font-bold uppercase tracking-wide mb-1 block">{label}</Label>
+      {children}
+    </div>
+  );
+
+  if (loading) return <div className="p-8 flex items-center justify-center"><div className="text-primary text-xl font-heading">{t('academy_players.loading')}</div></div>;
 
   return (
     <div className="p-4 md:p-8">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1">MY PLAYERS</h1>
-          <p className="text-muted-foreground">Manage your academy's player roster</p>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1">{t('academy_players.title')}</h1>
+          <p className="text-muted-foreground">{t('academy_players.subtitle')}</p>
         </div>
         <Button onClick={openAdd} className="bg-primary text-black font-bold uppercase text-xs rounded-sm h-10 px-4 hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" /> Add Player
+          <Plus className="w-4 h-4 mr-2" /> {t('academy_players.add_player')}
         </Button>
       </div>
 
       {/* Search + filter toggle */}
       <div className="flex gap-2 mb-3">
         <Input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Search by name, position, nationality..."
+          placeholder={t('academy_players.search_placeholder')}
           className="bg-black/20 border-white/10 focus:border-primary rounded-sm h-10 flex-1" />
         <button onClick={() => setShowFilters(v => !v)}
           className={`flex items-center gap-2 h-10 px-3 rounded-sm border text-sm font-medium transition-colors flex-shrink-0 ${
@@ -189,7 +191,7 @@ const AcademyPlayers = () => {
               : 'border-white/10 text-muted-foreground hover:border-white/30 hover:text-white'
           }`}>
           <SlidersHorizontal className="w-4 h-4" />
-          <span className="hidden sm:inline">Filters</span>
+          <span className="hidden sm:inline">{t('academy_players.filters')}</span>
           {activeFilterCount > 0 && (
             <span className="bg-primary text-black text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
               {activeFilterCount}
@@ -203,54 +205,49 @@ const AcademyPlayers = () => {
       {showFilters && (
         <div className="bg-card border border-border/50 rounded-sm p-4 mb-4 space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {/* Position */}
             <div>
-              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Position</label>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">{t('academy_players.filter_position')}</label>
               <select value={filterPosition} onChange={e => setFilterPosition(e.target.value)} className={sel}>
-                <option value="">All</option>
+                <option value="">{t('academy_players.filter_all')}</option>
                 {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
-            {/* Level */}
             <div>
-              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Playing Level</label>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">{t('academy_players.filter_level')}</label>
               <select value={filterLevel} onChange={e => setFilterLevel(e.target.value)} className={sel}>
-                <option value="">All</option>
+                <option value="">{t('academy_players.filter_all')}</option>
                 {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
               </select>
             </div>
-            {/* Nationality */}
             <div>
-              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Nationality</label>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">{t('academy_players.filter_nationality')}</label>
               <select value={filterNationality} onChange={e => setFilterNationality(e.target.value)} className={sel}>
-                <option value="">All</option>
+                <option value="">{t('academy_players.filter_all')}</option>
                 {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
-            {/* Preferred foot */}
             <div>
-              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Preferred Foot</label>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">{t('academy_players.filter_foot')}</label>
               <select value={filterFoot} onChange={e => setFilterFoot(e.target.value)} className={sel}>
-                <option value="">All</option>
+                <option value="">{t('academy_players.filter_all')}</option>
                 {FEET.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
           </div>
 
-          {/* Age range + Gender on the same row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 items-end">
             <div>
-              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Min Age</label>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">{t('academy_players.filter_min_age')}</label>
               <Input type="number" value={filterAgeMin} onChange={e => setFilterAgeMin(e.target.value)}
                 placeholder="e.g. 15" className={inp} />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Max Age</label>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">{t('academy_players.filter_max_age')}</label>
               <Input type="number" value={filterAgeMax} onChange={e => setFilterAgeMax(e.target.value)}
                 placeholder="e.g. 23" className={inp} />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">Gender</label>
+              <label className="text-xs text-muted-foreground uppercase tracking-wide mb-1 block">{t('academy_players.filter_gender')}</label>
               <div className="flex gap-1">
                 {['', ...GENDERS].map(g => (
                   <button key={g} onClick={() => setFilterGender(g)}
@@ -259,7 +256,7 @@ const AcademyPlayers = () => {
                         ? 'border-primary bg-primary/10 text-primary'
                         : 'border-white/10 text-muted-foreground hover:border-white/30'
                     }`}>
-                    {g || 'All'}
+                    {g || t('academy_players.filter_all')}
                   </button>
                 ))}
               </div>
@@ -268,7 +265,7 @@ const AcademyPlayers = () => {
               {activeFilterCount > 0 && (
                 <button onClick={clearFilters}
                   className="w-full h-10 rounded-sm border border-white/10 text-xs text-muted-foreground hover:border-red-500/30 hover:text-red-400 transition-colors flex items-center justify-center gap-1.5">
-                  <X className="w-3.5 h-3.5" /> Reset all
+                  <X className="w-3.5 h-3.5" /> {t('academy_players.reset_all')}
                 </button>
               )}
             </div>
@@ -278,17 +275,19 @@ const AcademyPlayers = () => {
 
       {/* Result count */}
       <p className="text-xs text-muted-foreground mb-3">
-        {filtered.length} of {players.length} player{players.length !== 1 ? 's' : ''}
-        {(search || activeFilterCount > 0) ? ' matching' : ''}
+        {filtered.length === 1
+          ? t('academy_players.result_count_one', { total: players.length })
+          : t('academy_players.result_count', { count: filtered.length, total: players.length })}
+        {(search || activeFilterCount > 0) ? t('academy_players.result_matching') : ''}
       </p>
 
       {filtered.length === 0 ? (
         <div className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">{players.length === 0 ? "No players added yet" : "No players match your filters"}</p>
+          <p className="text-muted-foreground mb-4">{players.length === 0 ? t('academy_players.no_players') : t('academy_players.no_match')}</p>
           {players.length === 0 && (
             <Button onClick={openAdd} className="bg-primary text-black font-bold uppercase text-sm rounded-sm h-10 px-6">
-              Add First Player
+              {t('academy_players.add_first')}
             </Button>
           )}
         </div>
@@ -333,7 +332,7 @@ const AcademyPlayers = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)' }}>
           <div className="bg-card border border-border/50 rounded-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-border">
-              <h2 className="text-xl font-heading font-bold uppercase">{editingId ? 'Edit Player' : 'Add Player'}</h2>
+              <h2 className="text-xl font-heading font-bold uppercase">{editingId ? t('academy_players.modal_edit') : t('academy_players.modal_add')}</h2>
               <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-white p-1"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-5">
@@ -347,79 +346,79 @@ const AcademyPlayers = () => {
                   </div>
                 )}
                 <label className="bg-muted hover:bg-muted/80 px-4 h-10 rounded-sm flex items-center cursor-pointer text-sm">
-                  <Upload className="w-4 h-4 mr-2" /> Upload Photo
+                  <Upload className="w-4 h-4 mr-2" /> {t('academy_players.upload_photo')}
                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                 </label>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Full Name *">
+                <Field label={t('academy_players.full_name')}>
                   <Input value={form.name} onChange={e => set('name', e.target.value)} className={inp} placeholder="Player's full name" />
                 </Field>
-                <Field label="Gender">
+                <Field label={t('academy_players.gender')}>
                   <select value={form.gender} onChange={e => set('gender', e.target.value)} className={sel}>
-                    <option value="">Select</option>
+                    <option value="">{t('academy_players.select')}</option>
                     {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
                 </Field>
-                <Field label="Position">
+                <Field label={t('academy_players.position')}>
                   <select value={form.position} onChange={e => set('position', e.target.value)} className={sel}>
-                    <option value="">Select</option>
+                    <option value="">{t('academy_players.select')}</option>
                     {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </Field>
-                <Field label="Secondary Position">
+                <Field label={t('academy_players.secondary_position')}>
                   <select value={form.secondary_position} onChange={e => set('secondary_position', e.target.value)} className={sel}>
-                    <option value="">Select</option>
+                    <option value="">{t('academy_players.select')}</option>
                     {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </Field>
-                <Field label="Nationality">
+                <Field label={t('academy_players.nationality')}>
                   <select value={form.nationality} onChange={e => set('nationality', e.target.value)} className={sel}>
-                    <option value="">Select</option>
+                    <option value="">{t('academy_players.select')}</option>
                     {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </Field>
-                <Field label="Nationality 2">
+                <Field label={t('academy_players.nationality_2')}>
                   <select value={form.nationality_2} onChange={e => set('nationality_2', e.target.value)} className={sel}>
-                    <option value="">Select (optional)</option>
+                    <option value="">{t('academy_players.select_optional')}</option>
                     {NATIONALITIES.map(n => <option key={n} value={n}>{n}</option>)}
                   </select>
                 </Field>
-                <Field label="Age">
+                <Field label={t('academy_players.age')}>
                   <Input type="number" value={form.age} onChange={e => set('age', e.target.value)} className={inp} placeholder="e.g., 18" />
                 </Field>
-                <Field label="Preferred Foot">
+                <Field label={t('academy_players.preferred_foot')}>
                   <select value={form.preferred_foot} onChange={e => set('preferred_foot', e.target.value)} className={sel}>
-                    <option value="">Select</option>
+                    <option value="">{t('academy_players.select')}</option>
                     {FEET.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </Field>
-                <Field label="Height (cm)">
+                <Field label={t('academy_players.height')}>
                   <Input type="number" value={form.height} onChange={e => set('height', e.target.value)} className={inp} placeholder="e.g., 178" />
                 </Field>
-                <Field label="Weight (kg)">
+                <Field label={t('academy_players.weight')}>
                   <Input type="number" value={form.weight} onChange={e => set('weight', e.target.value)} className={inp} placeholder="e.g., 75" />
                 </Field>
-                <Field label="Current Club">
+                <Field label={t('academy_players.current_club')}>
                   <Input value={form.current_club} onChange={e => set('current_club', e.target.value)} className={inp} placeholder="e.g., AS Monaco" />
                 </Field>
-                <Field label="Playing Level">
+                <Field label={t('academy_players.playing_level')}>
                   <select value={form.playing_level} onChange={e => set('playing_level', e.target.value)} className={sel}>
-                    <option value="">Select</option>
+                    <option value="">{t('academy_players.select')}</option>
                     {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </Field>
-                <Field label="League">
+                <Field label={t('academy_players.league')}>
                   <select value={form.league} onChange={e => set('league', e.target.value)} className={sel}>
-                    <option value="">Select</option>
+                    <option value="">{t('academy_players.select')}</option>
                     {LEAGUES.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </Field>
               </div>
 
-              {/* Highlight Video — required */}
-              <Field label="Highlight Video (YouTube/Vimeo) *">
+              {/* Highlight Video */}
+              <Field label={t('academy_players.highlight_video')}>
                 <Input
                   value={form.highlight_video}
                   onChange={e => set('highlight_video', e.target.value)}
@@ -431,9 +430,9 @@ const AcademyPlayers = () => {
               {/* Full Match Videos */}
               <div>
                 <Label className="text-xs font-bold uppercase tracking-wide mb-1 block">
-                  Full Match Videos <span className="text-muted-foreground font-normal normal-case">(optional)</span>
+                  {t('academy_players.full_match_videos')} <span className="text-muted-foreground font-normal normal-case">{t('academy_players.full_match_optional')}</span>
                 </Label>
-                <p className="text-xs text-muted-foreground mb-2">Add links to full match recordings</p>
+                <p className="text-xs text-muted-foreground mb-2">{t('academy_players.full_match_desc')}</p>
                 {form.full_game_videos.map((v, i) => (
                   <div key={i} className="flex gap-2 mb-2">
                     <Input
@@ -454,14 +453,14 @@ const AcademyPlayers = () => {
                   onClick={addVideoLink}
                   className="text-xs text-primary border border-primary/20 rounded-sm px-3 py-1.5 hover:bg-primary/10 transition-colors"
                 >
-                  + Add another match
+                  {t('academy_players.add_match')}
                 </button>
               </div>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">Career Stats</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">{t('academy_players.career_stats')}</p>
                 <div className="grid grid-cols-3 gap-3">
-                  {[['games','Games'],['goals','Goals'],['assists','Assists']].map(([k,l]) => (
+                  {[['games', t('academy_players.games')], ['goals', t('academy_players.goals')], ['assists', t('academy_players.assists')]].map(([k, l]) => (
                     <Field key={k} label={l}>
                       <Input type="number" value={form[k]} onChange={e => set(k, e.target.value)} className={inp} placeholder="0" />
                     </Field>
@@ -469,9 +468,9 @@ const AcademyPlayers = () => {
                 </div>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">This Season</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">{t('academy_players.this_season')}</p>
                 <div className="grid grid-cols-3 gap-3">
-                  {[['season_games','Games'],['season_goals','Goals'],['season_assists','Assists']].map(([k,l]) => (
+                  {[['season_games', t('academy_players.games')], ['season_goals', t('academy_players.goals')], ['season_assists', t('academy_players.assists')]].map(([k, l]) => (
                     <Field key={k} label={l}>
                       <Input type="number" value={form[k]} onChange={e => set(k, e.target.value)} className={inp} placeholder="0" />
                     </Field>
@@ -479,16 +478,16 @@ const AcademyPlayers = () => {
                 </div>
               </div>
 
-              <Field label="Notes / Description">
+              <Field label={t('academy_players.notes')}>
                 <textarea value={form.description} onChange={e => set('description', e.target.value)}
                   className="w-full bg-black/20 border border-white/10 rounded-sm p-3 text-sm text-white outline-none focus:border-primary min-h-[80px]"
-                  placeholder="Additional notes about this player..." />
+                  placeholder={t('academy_players.notes_placeholder')} />
               </Field>
             </div>
             <div className="flex gap-3 p-6 border-t border-border">
-              <Button variant="outline" onClick={() => setShowModal(false)} className="flex-1 rounded-sm h-11 border-white/20">Cancel</Button>
+              <Button variant="outline" onClick={() => setShowModal(false)} className="flex-1 rounded-sm h-11 border-white/20">{t('academy_players.cancel')}</Button>
               <Button onClick={handleSave} disabled={saving} className="flex-1 bg-primary text-black font-bold rounded-sm h-11 hover:bg-primary/90">
-                {saving ? 'Saving...' : editingId ? 'Update Player' : 'Add Player'}
+                {saving ? t('academy_players.saving') : editingId ? t('academy_players.update_player') : t('academy_players.add_player')}
               </Button>
             </div>
           </div>
