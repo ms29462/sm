@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { trackRegistration } from "@/lib/analytics";
 import { ChevronRight, ChevronLeft, Check, Eye, EyeOff } from "lucide-react";
 import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 const STEP_IDS = [1, 2, 3, 4, 5, 6];
 
@@ -184,7 +185,10 @@ const PlayerRegister = () => {
       {/* Header */}
       <div className="border-b border-border/50 p-4 flex items-center justify-between">
         <img src="/logo.png" alt="Soccer Match" className="h-8 w-auto" />
-        <Link to="/login" className="text-xs text-muted-foreground hover:text-white">{t('register.already_account')}</Link>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <Link to="/login" className="text-xs text-muted-foreground hover:text-white">{t('register.already_account')}</Link>
+        </div>
       </div>
 
       {/* Progress */}
