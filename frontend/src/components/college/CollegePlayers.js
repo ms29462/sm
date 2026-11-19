@@ -5,8 +5,10 @@ import { Users, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const CollegePlayers = () => {
+  const { t } = useTranslation();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -35,7 +37,7 @@ const CollegePlayers = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t("college_players.loading")}</div>
       </div>
     );
   }
@@ -43,33 +45,33 @@ const CollegePlayers = () => {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold uppercase mb-2">SEARCH PLAYERS</h1>
-        <p className="text-muted-foreground">Find players for your college program</p>
+        <h1 className="text-3xl font-heading font-bold uppercase mb-2">{t("college_players.title")}</h1>
+        <p className="text-muted-foreground">{t("college_players.subtitle")}</p>
       </div>
 
       <div className="flex gap-3 mb-6">
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name..."
+          placeholder={t("college_players.search_placeholder")}
           className="bg-black/20 border-white/10 focus:border-primary rounded-sm h-12"
           onKeyPress={(e) => e.key === "Enter" && handleSearch()}
         />
         <Input
           value={position}
           onChange={(e) => setPosition(e.target.value)}
-          placeholder="Position..."
+          placeholder={t("college_players.position_placeholder")}
           className="bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 w-40"
         />
         <Button onClick={handleSearch} className="bg-primary text-black font-bold uppercase rounded-sm h-12 px-6">
-          <Search className="w-4 h-4 mr-2" /> Search
+          <Search className="w-4 h-4 mr-2" /> {t("college_players.search_btn")}
         </Button>
       </div>
 
       {players.length === 0 ? (
         <div className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No players found</p>
+          <p className="text-muted-foreground">{t("college_players.no_players")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -85,7 +87,7 @@ const CollegePlayers = () => {
                 )}
                 <div className="flex-1">
                   <h3 className="font-heading font-bold uppercase">{player.name}</h3>
-                  <p className="text-sm text-muted-foreground">{player.position} · {player.age ? player.age + " yrs" : ""}</p>
+                  <p className="text-sm text-muted-foreground">{player.position} · {player.age ? player.age + ` ${t("college_players.yrs")}` : ""}</p>
                   <p className="text-xs text-muted-foreground">{player.nationality}</p>
                 </div>
               </div>

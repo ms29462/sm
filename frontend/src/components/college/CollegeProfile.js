@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { GraduationCap, Camera, Globe, MapPin, CheckCircle, Instagram, Linkedin, Facebook } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const COUNTRIES = ["Afghanistan","Albania","Algeria","Angola","Argentina","Australia","Austria","Belgium","Bolivia","Brazil","Cameroon","Canada","Chile","China","Colombia","Congo","Costa Rica","Croatia","Czech Republic","Denmark","DR Congo","Ecuador","Egypt","England","Ethiopia","Finland","France","Germany","Ghana","Greece","Guinea","Honduras","Hungary","India","Indonesia","Iran","Ireland","Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan","Kenya","Mali","Mexico","Morocco","Netherlands","New Zealand","Nigeria","Norway","Panama","Paraguay","Peru","Poland","Portugal","Romania","Russia","Saudi Arabia","Scotland","Senegal","Serbia","South Africa","South Korea","Spain","Sweden","Switzerland","Tunisia","Turkey","Uganda","Ukraine","United Kingdom","United States","Uruguay","Venezuela","Wales","Zambia","Zimbabwe"];
 
@@ -34,6 +35,7 @@ const DIVISIONS = [
 ];
 
 const CollegeProfile = () => {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -102,7 +104,7 @@ const CollegeProfile = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t("college_profile.loading")}</div>
       </div>
     );
   }
@@ -111,14 +113,14 @@ const CollegeProfile = () => {
     <div className="p-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-heading font-bold uppercase">COLLEGE PROFILE</h1>
+          <h1 className="text-3xl font-heading font-bold uppercase">{t("college_profile.title")}</h1>
           {profile?.verified && (
             <span className="flex items-center gap-1 px-3 py-1 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-sm text-xs uppercase tracking-wide">
-              <CheckCircle className="w-3 h-3" /> Verified
+              <CheckCircle className="w-3 h-3" /> {t("college_profile.verified")}
             </span>
           )}
         </div>
-        <p className="text-muted-foreground">Manage your college program information</p>
+        <p className="text-muted-foreground">{t("college_profile.subtitle")}</p>
       </div>
 
       <div className="max-w-4xl">
@@ -143,82 +145,82 @@ const CollegeProfile = () => {
               <h3 className="text-xl font-heading font-bold">{profile?.name}</h3>
               <p className="text-sm text-muted-foreground">{profile?.email}</p>
               <span className={`inline-block mt-2 px-2 py-1 text-[10px] uppercase tracking-wider rounded-sm ${profile?.approved ? "bg-green-500/10 text-green-500 border border-green-500/20" : "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"}`}>
-                {profile?.approved ? "APPROVED" : "PENDING APPROVAL"}
+                {profile?.approved ? t("college_profile.approved") : t("college_profile.pending")}
               </span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">College / University Name</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.institution_name")}</Label>
               <Input value={formData.name} onChange={(e) => handleChange("name", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">Country</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.country")}</Label>
               <select value={formData.country} onChange={(e) => handleChange("country", e.target.value)} className="mt-2 w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white appearance-none cursor-pointer">
-                <option value="">Select country...</option>
+                <option value="">{t("college_profile.select_country")}</option>
                 {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">Division</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.division")}</Label>
               <select value={formData.division} onChange={(e) => handleChange("division", e.target.value)} className="mt-2 w-full bg-black/20 border border-white/10 focus:border-primary rounded-sm h-12 px-3 text-sm text-white appearance-none cursor-pointer">
-                <option value="">Select division...</option>
+                <option value="">{t("college_profile.select_division")}</option>
                 {DIVISIONS.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">Conference</Label>
-              <Input value={formData.conference} onChange={(e) => handleChange("conference", e.target.value)} placeholder="e.g., ACC, Big Ten, Pac-12" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.conference")}</Label>
+              <Input value={formData.conference} onChange={(e) => handleChange("conference", e.target.value)} placeholder={t("college_profile.conference_placeholder")} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">State / Province</Label>
-              <Input value={formData.state} onChange={(e) => handleChange("state", e.target.value)} placeholder="e.g., California" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.state")}</Label>
+              <Input value={formData.state} onChange={(e) => handleChange("state", e.target.value)} placeholder={t("college_profile.state_placeholder")} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">City</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.city")}</Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
                 <Input value={formData.city} onChange={(e) => handleChange("city", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9" />
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">Website</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.website")}</Label>
               <div className="relative">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
-                <Input value={formData.website} onChange={(e) => handleChange("website", e.target.value)} placeholder="https://athletics.university.edu" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9" />
+                <Input value={formData.website} onChange={(e) => handleChange("website", e.target.value)} placeholder={t("college_profile.website_placeholder")} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9" />
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">Instagram</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.instagram")}</Label>
               <div className="relative">
                 <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
                 <Input value={formData.instagram} onChange={(e) => handleChange("instagram", e.target.value)} placeholder="https://instagram.com/yourprogram" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9" />
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">Facebook</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.facebook")}</Label>
               <div className="relative">
                 <Facebook className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
                 <Input value={formData.facebook} onChange={(e) => handleChange("facebook", e.target.value)} placeholder="https://facebook.com/yourprogram" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9" />
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">LinkedIn</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.linkedin")}</Label>
               <div className="relative">
                 <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
                 <Input value={formData.linkedin} onChange={(e) => handleChange("linkedin", e.target.value)} placeholder="https://linkedin.com/school/yourprogram" className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9" />
               </div>
             </div>
             <div className="md:col-span-2">
-              <Label className="text-sm font-medium uppercase tracking-wide">Description</Label>
-              <Textarea value={formData.description} onChange={(e) => handleChange("description", e.target.value)} placeholder="Tell players about your program..." className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[100px]" />
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_profile.description")}</Label>
+              <Textarea value={formData.description} onChange={(e) => handleChange("description", e.target.value)} placeholder={t("college_profile.description_placeholder")} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[100px]" />
             </div>
           </div>
 
           <div className="mt-8 flex justify-end">
             <Button onClick={handleSave} disabled={saving} className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12 px-8">
-              {saving ? "SAVING..." : "SAVE CHANGES"}
+              {saving ? t("college_profile.saving") : t("college_profile.save")}
             </Button>
           </div>
         </div>

@@ -7,12 +7,15 @@ import { useAuth } from "@/context/AuthContext";
 import MobileBottomNav from "@/components/mobile/MobileBottomNav";
 import MobileHeader from "@/components/mobile/MobileHeader";
 import { Trophy, Users, Home, UserCircle, LogOut, GraduationCap, Newspaper, Briefcase } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 
 const CollegeLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -33,7 +36,7 @@ const CollegeLayout = ({ children }) => {
                 <h1 className="text-xl font-heading font-bold tracking-tight">SOCCERMATCH</h1>
                 <p className="text-xs text-muted-foreground uppercase flex items-center">
                   <GraduationCap className="w-3 h-3 mr-1" />
-                  College Portal
+                  {t("college_layout.portal")}
                 </p>
               </div>
             </div>
@@ -43,33 +46,36 @@ const CollegeLayout = ({ children }) => {
             <Link to="/college/news">
               <Button variant={isActive('/college/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
                 <Newspaper className="w-4 h-4 mr-3" />
-                News Feed
+                {t("college_layout.news_feed")}
               </Button>
             </Link>
             <Link to="/college/dashboard">
               <Button variant={isActive("/college/dashboard") ? "secondary" : "ghost"} className="w-full justify-start">
-                <Home className="w-4 h-4 mr-3" />Dashboard
+                <Home className="w-4 h-4 mr-3" />{t("college_layout.dashboard")}
               </Button>
             </Link>
             <Link to="/college/profile">
               <Button variant={isActive("/college/profile") ? "secondary" : "ghost"} className="w-full justify-start">
-                <UserCircle className="w-4 h-4 mr-3" />My Profile
+                <UserCircle className="w-4 h-4 mr-3" />{t("college_layout.my_profile")}
               </Button>
             </Link>
             <Link to="/college/players">
               <Button variant={isActive("/college/players") ? "secondary" : "ghost"} className="w-full justify-start">
-                <Users className="w-4 h-4 mr-3" />Search Players
+                <Users className="w-4 h-4 mr-3" />{t("college_layout.search_players")}
               </Button>
             </Link>
             <Link to="/college/opportunities">
               <Button variant={isActive("/college/opportunities") ? "secondary" : "ghost"} className="w-full justify-start">
-                <Briefcase className="w-4 h-4 mr-3" />Opportunities
+                <Briefcase className="w-4 h-4 mr-3" />{t("college_layout.opportunities")}
               </Button>
             </Link>
           </nav>
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border space-y-2">
+            <div className="flex justify-center">
+              <LanguageSwitcher />
+            </div>
             <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setShowLogoutConfirm(true)}>
-              <LogOut className="w-4 h-4 mr-3" />Logout
+              <LogOut className="w-4 h-4 mr-3" />{t("college_layout.logout")}
             </Button>
           </div>
         </aside>
@@ -79,9 +85,9 @@ const CollegeLayout = ({ children }) => {
       <ConfirmDialog
         open={showLogoutConfirm}
         onOpenChange={setShowLogoutConfirm}
-        title="Sign Out"
-        description="Are you sure you want to sign out?"
-        confirmLabel="Sign Out"
+        title={t("college_layout.sign_out")}
+        description={t("college_layout.sign_out_confirm")}
+        confirmLabel={t("college_layout.sign_out")}
         confirmVariant="destructive"
         onConfirm={handleLogout}
       />
