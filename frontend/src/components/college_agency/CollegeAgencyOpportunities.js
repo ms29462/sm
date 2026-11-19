@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Briefcase, Plus, Trash2, Pencil, ChevronRight, Users, CalendarDays, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { POSITIONS } from "@/lib/constants";
+import { useTranslation } from "react-i18next";
 
 const COLLEGE_LEVELS = [
   "NCAA Division I", "NCAA Division II", "NCAA Division III",
@@ -33,6 +34,7 @@ const TABS = [{ id: "all", label: "All" }, { id: "published", label: "Published"
 
 const CollegeAgencyOpportunities = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -105,7 +107,7 @@ const CollegeAgencyOpportunities = () => {
   const filteredOpps = activeTab === "all" ? opportunities : opportunities.filter(o => { const s = o.status || "open"; if (activeTab === "published") return s === "published" || s === "open"; return s === activeTab; });
   const spotsLeft = (opp) => opp.max_applicants ? Math.max(opp.max_applicants - (opp.applicants_count ?? 0), 0) : null;
 
-  if (loading) return <div className="p-8 flex items-center justify-center"><div className="text-primary text-xl font-heading">LOADING...</div></div>;
+  if (loading) return <div className="p-8 flex items-center justify-center"><div className="text-primary text-xl font-heading">{t("college_agency_opps.loading")}</div></div>;
 
   return (
     <div className="flex flex-col h-full">
@@ -113,10 +115,10 @@ const CollegeAgencyOpportunities = () => {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border/50 rounded-sm p-6 max-w-md w-full">
             <div className="w-12 h-12 bg-yellow-500/10 border border-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4"><span className="text-2xl">⏳</span></div>
-            <h3 className="font-heading font-bold uppercase text-lg mb-3 text-center">Opportunity Submitted</h3>
-            <p className="text-sm text-muted-foreground text-center mb-3 leading-relaxed">Your opportunity has been submitted and is currently under review.</p>
-            <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-sm mb-5"><p className="text-xs text-yellow-400 font-bold text-center">You will receive a response within 24 hours.</p></div>
-            <button onClick={() => setShowReviewPopup(false)} className="w-full bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors">Got it</button>
+            <h3 className="font-heading font-bold uppercase text-lg mb-3 text-center">{t("college_agency_opps.review_title")}</h3>
+            <p className="text-sm text-muted-foreground text-center mb-3 leading-relaxed">{t("college_agency_opps.review_body")}</p>
+            <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-sm mb-5"><p className="text-xs text-yellow-400 font-bold text-center">{t("college_agency_opps.review_note")}</p></div>
+            <button onClick={() => setShowReviewPopup(false)} className="w-full bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors">{t("college_agency_opps.review_ok")}</button>
           </div>
         </div>
       )}
@@ -124,26 +126,26 @@ const CollegeAgencyOpportunities = () => {
       {editingOpp && (
         <Dialog open={!!editingOpp} onOpenChange={(open) => !open && setEditingOpp(null)}>
           <DialogContent className="bg-card border border-border/50 max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle className="font-heading uppercase">Edit Opportunity</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle className="font-heading uppercase">{t("college_agency_opps.edit_title")}</DialogTitle></DialogHeader>
             <div className="space-y-4 mt-2">
               <div>
-                <Label className="text-sm font-medium uppercase tracking-wide">League Level</Label>
+                <Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.league_level")}</Label>
                 <select value={editForm.league_level} onChange={(e) => setEditForm(f => ({...f, league_level: e.target.value}))}
                   className="mt-2 w-full bg-black/20 border border-white/10 rounded-sm h-12 px-3 text-sm text-white outline-none cursor-pointer">
-                  <option value="">Select level...</option>
+                  <option value="">{t("college_agency_opps.select_level")}</option>
                   {COLLEGE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><Label className="text-sm font-medium uppercase tracking-wide">Salary / Scholarship</Label><Input value={editForm.salary_range} onChange={(e) => setEditForm(f => ({...f, salary_range: e.target.value}))} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. Full scholarship" /></div>
-                <div><Label className="text-sm font-medium uppercase tracking-wide">Contract Duration</Label><Input value={editForm.contract_duration} onChange={(e) => setEditForm(f => ({...f, contract_duration: e.target.value}))} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. 4 years" /></div>
+                <div><Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.scholarship")}</Label><Input value={editForm.salary_range} onChange={(e) => setEditForm(f => ({...f, salary_range: e.target.value}))} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder={t("college_agency_opps.scholarship_placeholder")} /></div>
+                <div><Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.duration")}</Label><Input value={editForm.contract_duration} onChange={(e) => setEditForm(f => ({...f, contract_duration: e.target.value}))} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder={t("college_agency_opps.duration_placeholder")} /></div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div><Label className="text-sm font-medium uppercase tracking-wide">Deadline</Label><Input type="date" style={{colorScheme:"dark"}} value={editForm.deadline} onChange={(e) => setEditForm(f => ({...f, deadline: e.target.value}))} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" /></div>
-                <div><Label className="text-sm font-medium uppercase tracking-wide">Max Applicants</Label><Input type="number" value={editForm.max_applicants} onChange={(e) => setEditForm(f => ({...f, max_applicants: e.target.value}))} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" /></div>
+                <div><Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.deadline_label")}</Label><Input type="date" style={{colorScheme:"dark"}} value={editForm.deadline} onChange={(e) => setEditForm(f => ({...f, deadline: e.target.value}))} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" /></div>
+                <div><Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.max_applicants")}</Label><Input type="number" value={editForm.max_applicants} onChange={(e) => setEditForm(f => ({...f, max_applicants: e.target.value}))} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" /></div>
               </div>
-              <div><Label className="text-sm font-medium uppercase tracking-wide">Description</Label><Textarea value={editForm.description} onChange={(e) => setEditForm(f => ({...f, description: e.target.value}))} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" /></div>
-              <Button onClick={handleEditSave} className="w-full bg-primary text-black font-bold uppercase rounded-sm h-12">Save Changes</Button>
+              <div><Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.description_field")}</Label><Textarea value={editForm.description} onChange={(e) => setEditForm(f => ({...f, description: e.target.value}))} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" /></div>
+              <Button onClick={handleEditSave} className="w-full bg-primary text-black font-bold uppercase rounded-sm h-12">{t("college_agency_opps.save_changes")}</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -151,77 +153,77 @@ const CollegeAgencyOpportunities = () => {
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent className="bg-card border border-border/50">
-          <AlertDialogHeader><AlertDialogTitle className="font-heading uppercase">Delete Opportunity</AlertDialogTitle><AlertDialogDescription className="text-muted-foreground">Are you sure you want to delete this opportunity?</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogHeader><AlertDialogTitle className="font-heading uppercase">{t("college_agency_opps.delete_title")}</AlertDialogTitle><AlertDialogDescription className="text-muted-foreground">{t("college_agency_opps.delete_confirm")}</AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-sm uppercase text-xs tracking-wide">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirmed} className="bg-destructive text-white hover:bg-destructive/90 rounded-sm uppercase text-xs tracking-wide">Delete</AlertDialogAction>
+            <AlertDialogCancel className="rounded-sm uppercase text-xs tracking-wide">{t("college_agency_opps.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirmed} className="bg-destructive text-white hover:bg-destructive/90 rounded-sm uppercase text-xs tracking-wide">{t("college_agency_opps.delete_btn")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="bg-card border border-border/50 max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="text-2xl font-heading font-bold uppercase">POST COLLEGE OPPORTUNITY</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-2xl font-heading font-bold uppercase">{t("college_agency_opps.post_title")}</DialogTitle></DialogHeader>
           <div className="space-y-4 mt-4">
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">Position *</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.position")}</Label>
               {errors.position && <p className="text-xs text-red-400 mt-1">⚠ {errors.position}</p>}
               <Select value={formData.position} onValueChange={(v) => handleChange("position", v)}>
-                <SelectTrigger className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12"><SelectValue placeholder="Select position" /></SelectTrigger>
+                <SelectTrigger className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12"><SelectValue placeholder={t("college_agency_opps.select_level")} /></SelectTrigger>
                 <SelectContent>{POSITIONS.map((pos) => <SelectItem key={pos} value={pos}>{pos}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">League Level *</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.league_level")}</Label>
               {errors.league_level && <p className="text-xs text-red-400 mt-1">⚠ {errors.league_level}</p>}
               <select value={formData.league_level} onChange={(e) => handleChange("league_level", e.target.value)}
                 className="mt-2 w-full bg-black/20 border border-white/10 rounded-sm h-12 px-3 text-sm text-white outline-none cursor-pointer">
-                <option value="">Select college level...</option>
+                <option value="">{t("college_agency_opps.select_level")}</option>
                 {COLLEGE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
               </select>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><Label className="text-sm font-medium uppercase tracking-wide">Salary / Scholarship</Label><Input value={formData.salary_range} onChange={(e) => handleChange("salary_range", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. Full scholarship" /></div>
+              <div><Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.scholarship")}</Label><Input value={formData.salary_range} onChange={(e) => handleChange("salary_range", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder={t("college_agency_opps.scholarship_placeholder")} /></div>
               <div>
-                <Label className="text-sm font-medium uppercase tracking-wide">Country</Label>
+                <Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.country")}</Label>
                 <select value={formData.country} onChange={(e) => handleChange("country", e.target.value)} className="mt-2 w-full bg-black/20 border border-white/10 rounded-sm h-12 px-3 text-sm text-white outline-none cursor-pointer">
-                  <option value="">Select country...</option>
+                  <option value="">{t("college_agency_opps.select_country")}</option>
                   {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
-              <div><Label className="text-sm font-medium uppercase tracking-wide">Duration</Label><Input value={formData.contract_duration} onChange={(e) => handleChange("contract_duration", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. 4 years" /></div>
+              <div><Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.duration")}</Label><Input value={formData.contract_duration} onChange={(e) => handleChange("contract_duration", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder={t("college_agency_opps.duration_placeholder")} /></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><Label className="text-sm font-medium uppercase tracking-wide">Age Min</Label><Input type="number" value={formData.age_min} onChange={(e) => handleChange("age_min", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. 17" /></div>
-              <div><Label className="text-sm font-medium uppercase tracking-wide">Age Max</Label><Input type="number" value={formData.age_max} onChange={(e) => handleChange("age_max", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. 22" /></div>
+              <div><Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.age_min")}</Label><Input type="number" value={formData.age_min} onChange={(e) => handleChange("age_min", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="17" /></div>
+              <div><Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.age_max")}</Label><Input type="number" value={formData.age_max} onChange={(e) => handleChange("age_max", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="22" /></div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm font-medium uppercase tracking-wide">Deadline *</Label>
+                <Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.deadline_label")}</Label>
                 {errors.deadline && <p className="text-xs text-red-400 mt-1">⚠ {errors.deadline}</p>}
                 <Input type="date" style={{colorScheme:"dark"}} value={formData.deadline} onChange={(e) => handleChange("deadline", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" />
               </div>
               <div>
-                <Label className="text-sm font-medium uppercase tracking-wide">Max Applicants *</Label>
+                <Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.max_applicants")}</Label>
                 {errors.max_applicants && <p className="text-xs text-red-400 mt-1">⚠ {errors.max_applicants}</p>}
-                <Input type="number" value={formData.max_applicants} onChange={(e) => handleChange("max_applicants", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="e.g. 20" />
+                <Input type="number" value={formData.max_applicants} onChange={(e) => handleChange("max_applicants", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12" placeholder="20" />
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium uppercase tracking-wide">Visibility *</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.visibility")}</Label>
               <div className="grid grid-cols-2 gap-2 mt-2 mb-4">
-                {[{id:"public", label:"Public", desc:"Agency name visible to players"},{id:"anonymous", label:"Anonymous", desc:"Identity hidden from players"}].map(opt => (
+                {[{id:"public", label: t("college_agency_opps.vis_public_label"), desc: t("college_agency_opps.vis_public_desc")},{id:"anonymous", label: t("college_agency_opps.vis_anon_label"), desc: t("college_agency_opps.vis_anon_desc")}].map(opt => (
                   <button key={opt.id} type="button" onClick={() => handleChange("visibility", opt.id)}
                     className={`px-3 py-3 text-sm rounded-sm border-2 transition-all text-left ${formData.visibility === opt.id ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
                     <p className="font-bold">{opt.label}</p><p className="text-xs opacity-70">{opt.desc}</p>
                   </button>
                 ))}
               </div>
-              <Label className="text-sm font-medium uppercase tracking-wide">Description *</Label>
+              <Label className="text-sm font-medium uppercase tracking-wide">{t("college_agency_opps.description_field")}</Label>
               {errors.description && <p className="text-xs text-red-400 mt-1">⚠ {errors.description}</p>}
-              <Textarea value={formData.description} onChange={(e) => handleChange("description", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" placeholder="Describe the college opportunity..." />
+              <Textarea value={formData.description} onChange={(e) => handleChange("description", e.target.value)} className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[120px]" placeholder={t("college_agency_opps.description_placeholder")} />
             </div>
-            <Button onClick={handleCreate} className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12">POST OPPORTUNITY</Button>
+            <Button onClick={handleCreate} className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12">{t("college_agency_opps.post_opportunity")}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -229,8 +231,8 @@ const CollegeAgencyOpportunities = () => {
       <div className="flex flex-1 overflow-hidden h-full">
         <div className={`flex flex-col border-r border-border/50 w-full md:w-80 lg:w-96 flex-shrink-0 ${showMobileDetail ? "hidden md:flex" : "flex"}`}>
           <div className="p-4 border-b border-border/50 flex items-center justify-between gap-3 flex-shrink-0">
-            <div><h1 className="font-heading font-bold uppercase text-lg leading-tight">Opportunities</h1><p className="text-xs text-muted-foreground">{opportunities.length} posted</p></div>
-            <Button onClick={() => setShowDialog(true)} className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-9 px-4 text-xs flex-shrink-0"><Plus className="w-3.5 h-3.5 mr-1.5" /> Post</Button>
+            <div><h1 className="font-heading font-bold uppercase text-lg leading-tight">{t("college_agency_opps.title")}</h1><p className="text-xs text-muted-foreground">{t("college_agency_opps.posted", { count: opportunities.length })}</p></div>
+            <Button onClick={() => setShowDialog(true)} className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-9 px-4 text-xs flex-shrink-0"><Plus className="w-3.5 h-3.5 mr-1.5" /> {t("college_agency_opps.post_btn")}</Button>
           </div>
           <div className="flex gap-1 p-2 border-b border-border/50 overflow-x-auto flex-shrink-0 no-scrollbar">
             {TABS.map(tab => {
@@ -241,7 +243,7 @@ const CollegeAgencyOpportunities = () => {
           </div>
           <div className="flex-1 overflow-y-auto">
             {filteredOpps.length === 0 ? (
-              <div className="p-8 text-center"><Briefcase className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" /><p className="text-sm text-muted-foreground">No opportunities here</p></div>
+              <div className="p-8 text-center"><Briefcase className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" /><p className="text-sm text-muted-foreground">{t("college_agency_opps.no_opps")}</p></div>
             ) : filteredOpps.map(opp => {
               const status = opp.status || "open";
               const spots = spotsLeft(opp);
@@ -266,40 +268,40 @@ const CollegeAgencyOpportunities = () => {
 
         <div className={`flex-1 overflow-y-auto ${showMobileDetail ? "flex flex-col" : "hidden md:flex md:flex-col"}`}>
           {!selected ? (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground p-8"><div className="text-center"><Briefcase className="w-12 h-12 mx-auto mb-4 opacity-30" /><p className="font-heading uppercase text-sm">Select an opportunity</p></div></div>
+            <div className="flex-1 flex items-center justify-center text-muted-foreground p-8"><div className="text-center"><Briefcase className="w-12 h-12 mx-auto mb-4 opacity-30" /><p className="font-heading uppercase text-sm">{t("college_agency_opps.select_opp")}</p></div></div>
           ) : (
             <div className="p-6 max-w-2xl w-full mx-auto space-y-6">
-              <button onClick={() => setShowMobileDetail(false)} className="md:hidden flex items-center gap-2 text-muted-foreground hover:text-primary text-sm mb-2 transition-colors"><ArrowLeft className="w-4 h-4" /> Back</button>
+              <button onClick={() => setShowMobileDetail(false)} className="md:hidden flex items-center gap-2 text-muted-foreground hover:text-primary text-sm mb-2 transition-colors"><ArrowLeft className="w-4 h-4" /> {t("college_agency_opps.back_btn")}</button>
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <h2 className="text-2xl font-heading font-bold uppercase">{selected.position}</h2>
                   <p className="text-muted-foreground text-sm mt-1">{selected.league_level}{selected.country ? ` · ${selected.country}` : ""}</p>
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <span className={`text-xs px-2 py-1 rounded-sm border ${STATUS_BADGE[selected.status || "open"]}`}>{STATUS_LABEL[selected.status || "open"]}</span>
-                    {selected.visibility === "anonymous" && <span className="text-xs px-2 py-1 rounded-sm border border-white/10 text-muted-foreground">Anonymous</span>}
+                    {selected.visibility === "anonymous" && <span className="text-xs px-2 py-1 rounded-sm border border-white/10 text-muted-foreground">{t("college_agency_opps.anonymous_badge")}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {selected.status !== "published" && <Button onClick={() => openEdit(selected)} variant="outline" size="sm" className="rounded-sm border-white/20 text-white hover:bg-white/10 text-xs"><Pencil className="w-3.5 h-3.5 mr-1.5" /> Edit</Button>}
-                  <Button onClick={() => setDeleteId(selected.id)} variant="outline" size="sm" className="rounded-sm border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs"><Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete</Button>
+                  {selected.status !== "published" && <Button onClick={() => openEdit(selected)} variant="outline" size="sm" className="rounded-sm border-white/20 text-white hover:bg-white/10 text-xs"><Pencil className="w-3.5 h-3.5 mr-1.5" /> {t("college_agency_opps.edit_btn")}</Button>}
+                  <Button onClick={() => setDeleteId(selected.id)} variant="outline" size="sm" className="rounded-sm border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs"><Trash2 className="w-3.5 h-3.5 mr-1.5" /> {t("college_agency_opps.delete_btn")}</Button>
                 </div>
               </div>
-              {selected.status === "pending_review" && <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-sm"><p className="text-sm text-yellow-400 font-medium">⏳ Under review — you'll hear back within 24 hours.</p></div>}
-              {selected.status === "published" && <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-sm"><p className="text-sm text-green-400">✓ Published and visible to players.</p></div>}
+              {selected.status === "pending_review" && <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-sm"><p className="text-sm text-yellow-400 font-medium">{t("college_agency_opps.under_review_note")}</p></div>}
+              {selected.status === "published" && <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-sm"><p className="text-sm text-green-400">{t("college_agency_opps.published_note")}</p></div>}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {[
-                  { label: "Deadline", value: selected.deadline ? new Date(selected.deadline).toLocaleDateString("en-US", {year:"numeric", month:"short", day:"numeric"}) : "—" },
-                  { label: "Spots Left", value: spotsLeft(selected) !== null ? `${spotsLeft(selected)} / ${selected.max_applicants}` : "—" },
-                  { label: "Scholarship", value: selected.salary_range || "—" },
-                  { label: "Duration", value: selected.contract_duration || "—" },
-                  { label: "Age Range", value: (selected.age_min && selected.age_max) ? `${selected.age_min} – ${selected.age_max} yrs` : "—" },
+                  { label: t("college_agency_opps.deadline_label"), value: selected.deadline ? new Date(selected.deadline).toLocaleDateString("en-US", {year:"numeric", month:"short", day:"numeric"}) : "—" },
+                  { label: t("college_agency_opps.spots_label"), value: spotsLeft(selected) !== null ? `${spotsLeft(selected)} / ${selected.max_applicants}` : "—" },
+                  { label: t("college_agency_opps.scholarship_label"), value: selected.salary_range || "—" },
+                  { label: t("college_agency_opps.duration_label"), value: selected.contract_duration || "—" },
+                  { label: t("college_agency_opps.age_range_label"), value: (selected.age_min && selected.age_max) ? `${selected.age_min} – ${selected.age_max} ${t("college_agency_opps.yrs")}` : "—" },
                 ].filter(s => s.value !== "—").map(({ label, value }) => (
                   <div key={label} className="bg-card border border-border/50 rounded-sm p-3"><p className="text-xs text-muted-foreground uppercase mb-1">{label}</p><p className="font-medium text-sm">{value}</p></div>
                 ))}
               </div>
-              <div className="bg-card border border-border/50 rounded-sm p-4"><h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Description</h3><p className="text-sm leading-relaxed whitespace-pre-wrap">{selected.description}</p></div>
+              <div className="bg-card border border-border/50 rounded-sm p-4"><h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t("college_agency_opps.description_section")}</h3><p className="text-sm leading-relaxed whitespace-pre-wrap">{selected.description}</p></div>
               <div className="bg-card border border-border/50 rounded-sm p-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Change Status</h3>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t("college_agency_opps.change_status")}</h3>
                 <div className="flex flex-wrap gap-2">
                   {["open","closed","filled"].map(s => (
                     <button key={s} onClick={() => handleStatusChange(selected.id, s)} className={`px-3 py-1.5 text-xs rounded-sm border transition-colors font-medium ${(selected.status || "open") === s ? `${STATUS_BADGE[s]} font-bold` : "border-white/10 text-muted-foreground hover:border-white/30"}`}>{STATUS_LABEL[s]}</button>
