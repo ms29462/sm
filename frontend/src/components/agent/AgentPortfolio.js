@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import {
   Users, User, Plus, X, Trash2, Eye, Calendar, FileText,
   CheckCircle, XCircle, Clock, MapPin, ChevronDown, ChevronUp, Save
@@ -21,6 +22,7 @@ const APP_STATUS_COLORS = {
 };
 
 const AgentPortfolio = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [portfolio, setPortfolio] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ const AgentPortfolio = () => {
       const res = await api.getAgentPortfolio();
       setPortfolio(res.data || []);
     } catch {
-      toast.error('Failed to load portfolio');
+      toast.error(t('agent.toast_portfolio_error'));
     } finally {
       setLoading(false);
     }
@@ -86,7 +88,7 @@ const AgentPortfolio = () => {
   };
 
   const handleAdd = async () => {
-    if (!addPlayerId) { toast.error('Please select a player'); return; }
+    if (!addPlayerId) { toast.error(t('agent.label_player')); return; }
     setAdding(true);
     try {
       await api.addPortfolioPlayer({
@@ -96,27 +98,27 @@ const AgentPortfolio = () => {
         notes: addNotes || null,
         status: 'active',
       });
-      toast.success('Player added to portfolio');
+      toast.success(t('agent.toast_player_added'));
       setShowAddModal(false);
       setAddPlayerId(''); setAddPlayerName(''); setPlayerSearch('');
       setAddSignedDate(''); setAddContractEnd(''); setAddNotes('');
       loadPortfolio();
     } catch (e) {
-      toast.error(e.response?.data?.detail || 'Failed to add player');
+      toast.error(e.response?.data?.detail || t('agent.toast_remove_error'));
     } finally {
       setAdding(false);
     }
   };
 
   const handleDelete = async (entryId, name) => {
-    if (!window.confirm(`Remove ${name} from portfolio?`)) return;
+    if (!window.confirm(t('agent.confirm_remove', { name }))) return;
     try {
       await api.deletePortfolioEntry(entryId);
-      toast.success('Player removed from portfolio');
+      toast.success(t('agent.toast_player_removed'));
       setPortfolio(prev => prev.filter(e => e.id !== entryId));
       if (selectedEntry?.id === entryId) setSelectedEntry(null);
     } catch {
-      toast.error('Failed to remove player');
+      toast.error(t('agent.toast_remove_error'));
     }
   };
 
@@ -135,11 +137,11 @@ const AgentPortfolio = () => {
         contract_end_date: editContractEnd || null,
         status: editStatus,
       });
-      toast.success('Updated');
+      toast.success(t('agent.toast_profile_updated'));
       setEditingEntry(null);
       loadPortfolio();
     } catch {
-      toast.error('Failed to save');
+      toast.error(t('agent.toast_save_error'));
     } finally {
       setSaving(false);
     }
@@ -163,7 +165,7 @@ const AgentPortfolio = () => {
 
   if (loading) return (
     <div className="p-8 flex items-center justify-center">
-      <div className="text-primary text-xl font-heading">LOADING...</div>
+      <div className="text-primary text-xl font-heading">{t('agent.loading')}</div>
     </div>
   );
 
@@ -174,17 +176,17 @@ const AgentPortfolio = () => {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <Users className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">My Portfolio</h1>
+            <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">{t('agent.portfolio_title')}</h1>
           </div>
           <p className="text-muted-foreground text-sm">
-            {activeCount} active · {portfolio.length} total
+            {t('agent.portfolio_summary', { active: activeCount, total: portfolio.length })}
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 bg-primary text-black font-bold uppercase text-sm px-4 py-2.5 rounded-sm hover:bg-primary/90 transition-colors"
         >
-          <Plus className="w-4 h-4" /> Add Player
+          <Plus className="w-4 h-4" /> {t('agent.btn_add_player')}
         </button>
       </div>
 
@@ -192,12 +194,12 @@ const AgentPortfolio = () => {
       {portfolio.length === 0 ? (
         <div className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">No players in your portfolio yet</p>
+          <p className="text-muted-foreground mb-4">{t('agent.portfolio_empty')}</p>
           <button
             onClick={() => setShowAddModal(true)}
             className="inline-flex items-center gap-2 bg-primary text-black font-bold uppercase text-sm px-4 py-2.5 rounded-sm hover:bg-primary/90 transition-colors"
           >
-            <Plus className="w-4 h-4" /> Add First Player
+            <Plus className="w-4 h-4" /> {t('agent.btn_add_first')}
           </button>
         </div>
       ) : (
@@ -222,7 +224,7 @@ const AgentPortfolio = () => {
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-heading font-bold uppercase truncate">{p.name || entry.player_name}</h3>
                         <span className={`text-xs px-2 py-0.5 rounded-sm border ${STATUS_COLORS[entry.status] || STATUS_COLORS.inactive}`}>
-                          {entry.status === 'active' ? 'Active' : 'Inactive'}
+                          {entry.status === 'active' ? t('agent.status_active') : t('agent.status_inactive')}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
@@ -237,12 +239,12 @@ const AgentPortfolio = () => {
                       <div className="flex flex-wrap gap-x-3 mt-0.5">
                         {entry.signed_date && (
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="w-2.5 h-2.5" /> Signed: {entry.signed_date}
+                            <Calendar className="w-2.5 h-2.5" /> {t('agent.portfolio_signed')} {entry.signed_date}
                           </span>
                         )}
                         {entry.contract_end_date && !isEditing && (
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="w-2.5 h-2.5" /> Ends: {entry.contract_end_date}
+                            <Clock className="w-2.5 h-2.5" /> {t('agent.portfolio_ends')} {entry.contract_end_date}
                           </span>
                         )}
                       </div>
@@ -255,19 +257,19 @@ const AgentPortfolio = () => {
                       onClick={() => openPlayerModal(entry)}
                       className="flex items-center gap-1.5 text-xs border border-white/20 px-3 py-1.5 rounded-sm hover:bg-white/5 transition-colors"
                     >
-                      <Eye className="w-3.5 h-3.5" /> Details
+                      <Eye className="w-3.5 h-3.5" /> {t('agent.btn_details')}
                     </button>
                     <button
                       onClick={() => navigate(`/agent/player/${entry.player_id}`)}
                       className="flex items-center gap-1.5 text-xs border border-primary/40 text-primary px-3 py-1.5 rounded-sm hover:bg-primary/10 transition-colors"
                     >
-                      <Eye className="w-3.5 h-3.5" /> Profile
+                      <Eye className="w-3.5 h-3.5" /> {t('agent.btn_profile')}
                     </button>
                     <button
                       onClick={() => isEditing ? setEditingEntry(null) : openEditInline(entry)}
                       className="flex items-center gap-1.5 text-xs border border-white/20 px-3 py-1.5 rounded-sm hover:bg-white/5 transition-colors"
                     >
-                      <FileText className="w-3.5 h-3.5" /> {isEditing ? 'Cancel' : 'Edit'}
+                      <FileText className="w-3.5 h-3.5" /> {isEditing ? t('agent.btn_cancel') : t('agent.btn_edit')}
                     </button>
                     <button
                       onClick={() => handleDelete(entry.id, p.name || entry.player_name)}
@@ -283,7 +285,7 @@ const AgentPortfolio = () => {
                   <div className="border-t border-border/50 p-4 bg-black/20">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                       <div>
-                        <label className="text-xs font-bold uppercase tracking-wide mb-1 block text-muted-foreground">Contract End Date</label>
+                        <label className="text-xs font-bold uppercase tracking-wide mb-1 block text-muted-foreground">{t('agent.portfolio_contract_end')}</label>
                         <input
                           type="date"
                           value={editContractEnd}
@@ -292,14 +294,14 @@ const AgentPortfolio = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-bold uppercase tracking-wide mb-1 block text-muted-foreground">Status</label>
+                        <label className="text-xs font-bold uppercase tracking-wide mb-1 block text-muted-foreground">{t('agent.portfolio_status')}</label>
                         <select
                           value={editStatus}
                           onChange={e => setEditStatus(e.target.value)}
                           className="w-full bg-black/30 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-primary"
                         >
-                          <option value="active">Active</option>
-                          <option value="inactive">Inactive</option>
+                          <option value="active">{t('agent.status_active')}</option>
+                          <option value="inactive">{t('agent.status_inactive')}</option>
                         </select>
                       </div>
                       <div className="sm:col-span-1 flex items-end">
@@ -308,17 +310,17 @@ const AgentPortfolio = () => {
                           disabled={saving}
                           className="w-full flex items-center justify-center gap-2 bg-primary text-black font-bold text-sm px-4 py-2 rounded-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
                         >
-                          <Save className="w-3.5 h-3.5" /> {saving ? 'Saving...' : 'Save'}
+                          <Save className="w-3.5 h-3.5" /> {saving ? t('agent.btn_saving_short') : t('agent.btn_save_short')}
                         </button>
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-bold uppercase tracking-wide mb-1 block text-muted-foreground">Notes</label>
+                      <label className="text-xs font-bold uppercase tracking-wide mb-1 block text-muted-foreground">{t('agent.portfolio_notes')}</label>
                       <textarea
                         value={editNotes}
                         onChange={e => setEditNotes(e.target.value)}
                         rows={3}
-                        placeholder="Private notes about this player..."
+                        placeholder={t('agent.portfolio_notes_placeholder')}
                         className="w-full bg-black/30 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-primary resize-none"
                       />
                     </div>
@@ -342,23 +344,23 @@ const AgentPortfolio = () => {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border/50 rounded-sm p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-heading font-bold uppercase">Add Player to Portfolio</h3>
+              <h3 className="font-heading font-bold uppercase">{t('agent.modal_add_title')}</h3>
               <button onClick={() => { setShowAddModal(false); setPlayerSearch(''); setAddPlayerId(''); setPlayerSearchResults([]); setShowPlayerDropdown(false); }} className="text-muted-foreground hover:text-white p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="space-y-3">
               <div className="relative">
-                <label className="text-xs font-bold uppercase tracking-wide mb-1 block">Player *</label>
+                <label className="text-xs font-bold uppercase tracking-wide mb-1 block">{t('agent.label_player')} *</label>
                 <input
                   value={playerSearch}
                   onChange={e => { searchPlayers(e.target.value); setAddPlayerId(''); setAddPlayerName(''); }}
-                  placeholder="Type player name to search..."
+                  placeholder={t('agent.player_search_placeholder')}
                   className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-primary"
                   autoComplete="off"
                 />
                 {playerSearchLoading && (
-                  <p className="text-xs text-muted-foreground mt-1">Searching...</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('agent.searching')}</p>
                 )}
                 {showPlayerDropdown && playerSearchResults.length > 0 && (
                   <div className="absolute z-10 w-full bg-card border border-border/50 rounded-sm mt-1 max-h-48 overflow-y-auto shadow-lg">
@@ -382,11 +384,11 @@ const AgentPortfolio = () => {
                   </div>
                 )}
                 {showPlayerDropdown && playerSearchResults.length === 0 && !playerSearchLoading && playerSearch.length >= 2 && (
-                  <p className="text-xs text-muted-foreground mt-1">No players found</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('agent.portfolio_no_players')}</p>
                 )}
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wide mb-1 block">Signed Date</label>
+                <label className="text-xs font-bold uppercase tracking-wide mb-1 block">{t('agent.portfolio_signed_date')}</label>
                 <input
                   type="date"
                   value={addSignedDate}
@@ -395,7 +397,7 @@ const AgentPortfolio = () => {
                 />
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wide mb-1 block">Contract End Date</label>
+                <label className="text-xs font-bold uppercase tracking-wide mb-1 block">{t('agent.portfolio_contract_end')}</label>
                 <input
                   type="date"
                   value={addContractEnd}
@@ -404,12 +406,12 @@ const AgentPortfolio = () => {
                 />
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wide mb-1 block">Notes</label>
+                <label className="text-xs font-bold uppercase tracking-wide mb-1 block">{t('agent.portfolio_notes')}</label>
                 <textarea
                   value={addNotes}
                   onChange={e => setAddNotes(e.target.value)}
                   rows={3}
-                  placeholder="Private notes..."
+                  placeholder={t('agent.portfolio_notes_private')}
                   className="w-full bg-black/20 border border-white/10 rounded-sm px-3 py-2 text-sm text-white outline-none focus:border-primary resize-none"
                 />
               </div>
@@ -417,11 +419,11 @@ const AgentPortfolio = () => {
             <div className="flex gap-3 mt-4">
               <button onClick={() => { setShowAddModal(false); setPlayerSearch(''); setAddPlayerId(''); setPlayerSearchResults([]); setShowPlayerDropdown(false); }}
                 className="flex-1 border border-white/20 rounded-sm py-2.5 text-sm hover:bg-white/5 transition-colors">
-                Cancel
+                {t('agent.btn_cancel')}
               </button>
               <button onClick={handleAdd} disabled={adding}
                 className="flex-1 bg-primary text-black font-bold rounded-sm py-2.5 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-                {adding ? 'Adding...' : 'Add Player'}
+                {adding ? t('agent.btn_adding') : t('agent.btn_add_player')}
               </button>
             </div>
           </div>
@@ -455,7 +457,7 @@ const AgentPortfolio = () => {
                   onClick={() => navigate(`/agent/player/${selectedEntry.player_id}`)}
                   className="text-xs border border-primary/40 text-primary px-3 py-1.5 rounded-sm hover:bg-primary/10 transition-colors"
                 >
-                  Full Profile
+                  {t('agent.btn_full_profile')}
                 </button>
                 <button onClick={() => setSelectedEntry(null)} className="text-muted-foreground hover:text-white p-1">
                   <X className="w-5 h-5" />
@@ -468,21 +470,21 @@ const AgentPortfolio = () => {
               {/* Contract info */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-black/20 rounded-sm p-3">
-                  <p className="text-xs text-muted-foreground mb-0.5">Signed Date</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">{t('agent.modal_signed_date')}</p>
                   <p className="text-sm font-medium">{selectedEntry.signed_date || '—'}</p>
                 </div>
                 <div className="bg-black/20 rounded-sm p-3">
-                  <p className="text-xs text-muted-foreground mb-0.5">Contract End</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">{t('agent.modal_contract_end')}</p>
                   <p className="text-sm font-medium">{selectedEntry.contract_end_date || '—'}</p>
                 </div>
                 <div className="bg-black/20 rounded-sm p-3">
-                  <p className="text-xs text-muted-foreground mb-0.5">Status</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">{t('agent.modal_portfolio_status')}</p>
                   <span className={`text-xs px-2 py-0.5 rounded-sm border ${STATUS_COLORS[selectedEntry.status] || STATUS_COLORS.inactive}`}>
-                    {selectedEntry.status === 'active' ? 'Active' : 'Inactive'}
+                    {selectedEntry.status === 'active' ? t('agent.status_active') : t('agent.status_inactive')}
                   </span>
                 </div>
                 <div className="bg-black/20 rounded-sm p-3">
-                  <p className="text-xs text-muted-foreground mb-0.5">Club</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">{t('agent.modal_club')}</p>
                   <p className="text-sm font-medium">{selectedEntry.player?.current_club || '—'}</p>
                 </div>
               </div>
@@ -490,18 +492,18 @@ const AgentPortfolio = () => {
               {/* Notes */}
               {selectedEntry.notes && (
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Notes</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">{t('agent.portfolio_notes')}</p>
                   <p className="text-sm text-white/80 whitespace-pre-wrap">{selectedEntry.notes}</p>
                 </div>
               )}
 
               {/* Applications */}
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Applications</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('agent.modal_applications')}</p>
                 {appsLoading ? (
-                  <p className="text-sm text-muted-foreground">Loading...</p>
+                  <p className="text-sm text-muted-foreground">{t('agent.modal_loading')}</p>
                 ) : playerApplications.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No applications found.</p>
+                  <p className="text-sm text-muted-foreground">{t('agent.modal_no_applications')}</p>
                 ) : (
                   <div className="space-y-2">
                     {playerApplications.map((app, i) => (
@@ -515,7 +517,7 @@ const AgentPortfolio = () => {
                           </p>
                           {app.created_at && (
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              Applied: {new Date(app.created_at).toLocaleDateString()}
+                              {t('agent.modal_applied')} {new Date(app.created_at).toLocaleDateString()}
                             </p>
                           )}
                         </div>

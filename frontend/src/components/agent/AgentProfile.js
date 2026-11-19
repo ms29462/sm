@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { User, Save, CheckCircle, Briefcase } from 'lucide-react';
 
 const COUNTRIES = [
@@ -25,6 +26,7 @@ const SPECIALIZATIONS = [
 ];
 
 const AgentProfile = () => {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -85,7 +87,7 @@ const AgentProfile = () => {
         linkedin: response.data.linkedin || ''
       });
     } catch (error) {
-      toast.error('Failed to load profile');
+      toast.error(t('agent.toast_profile_load_error'));
     } finally {
       setLoading(false);
     }
@@ -102,10 +104,10 @@ const AgentProfile = () => {
         successful_transfers: formData.successful_transfers ? parseInt(formData.successful_transfers) : null
       };
       await api.updateAgentProfile(updateData);
-      toast.success('Profile updated successfully');
+      toast.success(t('agent.toast_profile_updated'));
       loadProfile();
     } catch (error) {
-      toast.error('Failed to update profile');
+      toast.error(t('agent.toast_profile_error'));
     } finally {
       setSaving(false);
     }
@@ -123,7 +125,7 @@ const AgentProfile = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('agent.loading')}</div>
       </div>
     );
   }
@@ -133,9 +135,9 @@ const AgentProfile = () => {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <User className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-heading font-bold uppercase">AGENT PROFILE</h1>
+          <h1 className="text-3xl font-heading font-bold uppercase">{t('agent.profile_title')}</h1>
         </div>
-        <p className="text-muted-foreground">Manage your professional profile and credentials</p>
+        <p className="text-muted-foreground">{t('agent.profile_subtitle')}</p>
       </div>
 
       {/* Verification Badge */}
@@ -143,8 +145,8 @@ const AgentProfile = () => {
         <div className="bg-green-500/10 border border-green-500/20 rounded-sm p-4 mb-4 flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-500" />
           <div>
-            <p className="font-medium text-green-500">Verified Agent</p>
-            <p className="text-sm text-muted-foreground">Your credentials have been verified by our team.</p>
+            <p className="font-medium text-green-500">{t('agent.profile_verified')}</p>
+            <p className="text-sm text-muted-foreground">{t('agent.profile_verified_desc')}</p>
           </div>
         </div>
       )}
@@ -154,8 +156,8 @@ const AgentProfile = () => {
         <div className="bg-green-500/10 border border-green-500/20 rounded-sm p-4 mb-6 flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-500" />
           <div>
-            <p className="font-medium text-green-400">Licensed Agent{profile.license_type ? ` — ${profile.license_type}` : ''}</p>
-            <p className="text-sm text-muted-foreground">{profile.license_type ? `Your ${profile.license_type} license has` : 'Your license has'} been verified by our team.</p>
+            <p className="font-medium text-green-400">{t('agent.profile_licensed')}{profile.license_type ? ` — ${profile.license_type}` : ''}</p>
+            <p className="text-sm text-muted-foreground">{t('agent.profile_license_verified_desc')}</p>
           </div>
         </div>
       )}
@@ -165,12 +167,12 @@ const AgentProfile = () => {
         <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
           <h2 className="font-heading font-bold uppercase flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-primary" />
-            AGENCY INFORMATION
+            {t('agent.agency_info')}
           </h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Full Name *</Label>
+              <Label>{t('agent.label_full_name')} *</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -179,7 +181,7 @@ const AgentProfile = () => {
               />
             </div>
             <div>
-              <Label>Agency Name</Label>
+              <Label>{t('agent.label_agency_name')}</Label>
               <Input
                 value={formData.agency_name}
                 onChange={(e) => setFormData({ ...formData, agency_name: e.target.value })}
@@ -191,7 +193,7 @@ const AgentProfile = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>License Number</Label>
+              <Label>{t('agent.label_license_number')}</Label>
               <Input
                 value={formData.license_number}
                 onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
@@ -200,13 +202,13 @@ const AgentProfile = () => {
               />
             </div>
             <div>
-              <Label>License Type</Label>
+              <Label>{t('agent.label_license_type')}</Label>
               <Select value={formData.license_type} onValueChange={(v) => setFormData({ ...formData, license_type: v })}>
                 <SelectTrigger className="mt-1 bg-black/20 border-white/10">
-                  <SelectValue placeholder="Select type" />
+                  <SelectValue placeholder={t('agent.label_select_type')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {LICENSE_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {LICENSE_TYPES.map(lt => <SelectItem key={lt} value={lt}>{lt}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -214,10 +216,10 @@ const AgentProfile = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Country</Label>
+              <Label>{t('agent.label_country')}</Label>
               <Select value={formData.country} onValueChange={(v) => setFormData({ ...formData, country: v })}>
                 <SelectTrigger className="mt-1 bg-black/20 border-white/10">
-                  <SelectValue placeholder="Select country" />
+                  <SelectValue placeholder={t('agent.label_select_country')} />
                 </SelectTrigger>
                 <SelectContent>
                   {COUNTRIES.map(c => (
@@ -236,17 +238,17 @@ const AgentProfile = () => {
               onChange={(e) => setFormData({ ...formData, fifa_registered: e.target.checked })}
               className="w-4 h-4"
             />
-            <Label htmlFor="fifa_registered">FIFA Registered Agent</Label>
+            <Label htmlFor="fifa_registered">{t('agent.label_fifa_registered')}</Label>
           </div>
         </div>
 
         {/* Contact & Online */}
         <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">CONTACT & ONLINE PRESENCE</h2>
+          <h2 className="font-heading font-bold uppercase">{t('agent.contact_online')}</h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Phone</Label>
+              <Label>{t('agent.label_phone')}</Label>
               <Input
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -255,20 +257,20 @@ const AgentProfile = () => {
               />
             </div>
             <div>
-              <Label>Profile Picture URL</Label>
+              <Label>{t('agent.label_profile_picture')}</Label>
               <div className="mt-1 flex items-center gap-3">
                 {formData.profile_picture && (
                   <img src={formData.profile_picture} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-white/10" />
                 )}
                 <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-black/20 border border-white/10 rounded-sm hover:border-primary transition-colors text-sm">
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                  {formData.profile_picture ? "Change Photo" : "Upload Photo"}
+                  {formData.profile_picture ? t('agent.btn_change_photo') : t('agent.btn_upload_photo')}
                 </label>
               </div>
               <Input
                 value={formData.profile_picture}
                 onChange={(e) => setFormData({ ...formData, profile_picture: e.target.value })}
-                placeholder="Or paste image URL..."
+                placeholder={t('agent.label_paste_url')}
                 className="mt-1 bg-black/20 border-white/10"
               />
             </div>
@@ -276,7 +278,7 @@ const AgentProfile = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Website</Label>
+              <Label>{t('agent.label_website')}</Label>
               <Input
                 value={formData.website}
                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
@@ -285,7 +287,7 @@ const AgentProfile = () => {
               />
             </div>
             <div>
-              <Label>LinkedIn</Label>
+              <Label>{t('agent.label_linkedin')}</Label>
               <Input
                 value={formData.linkedin}
                 onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
@@ -298,11 +300,11 @@ const AgentProfile = () => {
 
         {/* Experience */}
         <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">EXPERIENCE & TRACK RECORD</h2>
+          <h2 className="font-heading font-bold uppercase">{t('agent.experience_section')}</h2>
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label>Years of Experience</Label>
+              <Label>{t('agent.label_years_exp')}</Label>
               <Input
                 type="number"
                 value={formData.years_experience}
@@ -312,7 +314,7 @@ const AgentProfile = () => {
               />
             </div>
             <div>
-              <Label>Players Represented</Label>
+              <Label>{t('agent.label_players_rep')}</Label>
               <Input
                 type="number"
                 value={formData.players_represented}
@@ -322,7 +324,7 @@ const AgentProfile = () => {
               />
             </div>
             <div>
-              <Label>Successful Transfers</Label>
+              <Label>{t('agent.label_transfers')}</Label>
               <Input
                 type="number"
                 value={formData.successful_transfers}
@@ -334,11 +336,11 @@ const AgentProfile = () => {
           </div>
 
           <div>
-            <Label>Bio / Description</Label>
+            <Label>{t('agent.label_bio')}</Label>
             <Textarea
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              placeholder="Tell players about your experience and how you can help them..."
+              placeholder={t('agent.bio_placeholder')}
               className="mt-1 bg-black/20 border-white/10 min-h-[100px]"
             />
           </div>
@@ -346,7 +348,7 @@ const AgentProfile = () => {
 
         {/* Specializations */}
         <div className="bg-card border border-border/50 p-6 rounded-sm space-y-4">
-          <h2 className="font-heading font-bold uppercase">SPECIALIZATIONS</h2>
+          <h2 className="font-heading font-bold uppercase">{t('agent.specializations')}</h2>
           <div className="flex flex-wrap gap-2">
             {SPECIALIZATIONS.map(spec => (
               <button
@@ -367,7 +369,7 @@ const AgentProfile = () => {
 
         <Button type="submit" disabled={saving} className="w-full bg-primary text-black font-bold h-12">
           <Save className="w-4 h-4 mr-2" />
-          {saving ? 'SAVING...' : 'SAVE PROFILE'}
+          {saving ? t('agent.btn_saving_profile') : t('agent.btn_save_profile')}
         </Button>
       </form>
     <DeleteOrgAccountSection />

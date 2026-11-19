@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { User, MapPin, Star, Globe, ArrowLeft, Briefcase, Award, CheckCircle } from 'lucide-react';
 
 const AgentProfilePage = () => {
+  const { t } = useTranslation();
   const { agentId } = useParams();
   const navigate = useNavigate();
   const [agent, setAgent] = useState(null);
@@ -17,7 +19,7 @@ const AgentProfilePage = () => {
       const res = await api.getAgentById(agentId);
       setAgent(res.data);
     } catch {
-      toast.error('Failed to load agent profile');
+      toast.error(t('agent.public_profile_load_error'));
     } finally {
       setLoading(false);
     }
@@ -25,18 +27,18 @@ const AgentProfilePage = () => {
 
   if (loading) return (
     <div className="p-8 flex items-center justify-center">
-      <div className="text-primary text-xl font-heading">LOADING...</div>
+      <div className="text-primary text-xl font-heading">{t('agent.loading')}</div>
     </div>
   );
 
   if (!agent) return (
-    <div className="p-8 text-center text-muted-foreground">Agent not found.</div>
+    <div className="p-8 text-center text-muted-foreground">{t('agent.public_profile_not_found')}</div>
   );
 
   return (
     <div className="p-4 md:p-8">
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-white mb-6 transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back
+        <ArrowLeft className="w-4 h-4" /> {t('agent.public_profile_back')}
       </button>
 
       {/* Hero Header */}
@@ -58,12 +60,12 @@ const AgentProfilePage = () => {
             <div className="flex flex-wrap gap-2 mb-3">
               {agent.license_verified && (
                 <span className="inline-flex items-center gap-1.5 text-xs bg-green-500/10 text-green-400 border border-green-500/30 px-3 py-1.5 rounded-sm font-medium">
-                  <CheckCircle className="w-3.5 h-3.5" /> Licensed Agent{agent.license_type ? ` — ${agent.license_type}` : ''}
+                  <CheckCircle className="w-3.5 h-3.5" /> {t('agent.public_profile_licensed')}{agent.license_type ? ` — ${agent.license_type}` : ''}
                 </span>
               )}
               {agent.fifa_registered && (
                 <span className="inline-flex items-center gap-1 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-sm">
-                  FIFA Registered
+                  {t('agent.public_profile_fifa')}
                 </span>
               )}
             </div>
@@ -76,19 +78,19 @@ const AgentProfilePage = () => {
               {agent.years_experience && (
                 <div className="flex items-center gap-2 text-sm">
                   <Star className="w-4 h-4 text-primary" />
-                  <span className="text-muted-foreground">{agent.years_experience} years experience</span>
+                  <span className="text-muted-foreground">{t('agent.public_profile_years_exp', { n: agent.years_experience })}</span>
                 </div>
               )}
               {agent.players_represented > 0 && (
                 <div className="flex items-center gap-2 text-sm">
                   <Award className="w-4 h-4 text-primary" />
-                  <span className="text-muted-foreground">{agent.players_represented} players represented</span>
+                  <span className="text-muted-foreground">{t('agent.public_profile_players_rep', { n: agent.players_represented })}</span>
                 </div>
               )}
               {agent.successful_transfers > 0 && (
                 <div className="flex items-center gap-2 text-sm">
                   <Briefcase className="w-4 h-4 text-primary" />
-                  <span className="text-muted-foreground">{agent.successful_transfers} successful transfers</span>
+                  <span className="text-muted-foreground">{t('agent.public_profile_transfers', { n: agent.successful_transfers })}</span>
                 </div>
               )}
               {agent.primary_market && (
@@ -106,7 +108,7 @@ const AgentProfilePage = () => {
         {/* Bio */}
         {agent.bio && (
           <div className="bg-card border border-border/50 rounded-sm p-6 md:col-span-2">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">About</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('agent.public_profile_about')}</h2>
             <p className="text-sm leading-relaxed">{agent.bio}</p>
           </div>
         )}
@@ -114,7 +116,7 @@ const AgentProfilePage = () => {
         {/* Specializations */}
         {agent.specializations?.length > 0 && (
           <div className="bg-card border border-border/50 rounded-sm p-6">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Specializations</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('agent.public_profile_specializations')}</h2>
             <div className="flex flex-wrap gap-2">
               {agent.specializations.map((s, i) => (
                 <span key={i} className="text-xs bg-white/5 border border-white/10 px-3 py-1.5 rounded-sm">{s}</span>
@@ -126,11 +128,11 @@ const AgentProfilePage = () => {
         {/* Markets */}
         {(agent.primary_market || agent.secondary_markets?.length > 0) && (
           <div className="bg-card border border-border/50 rounded-sm p-6">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Markets</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('agent.public_profile_markets')}</h2>
             <div className="flex flex-wrap gap-2">
               {agent.primary_market && (
                 <span className="text-xs bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded-sm">
-                  {agent.primary_market} (Primary)
+                  {agent.primary_market} {t('agent.public_profile_primary')}
                 </span>
               )}
               {(agent.secondary_markets || []).map((m, i) => (
@@ -143,16 +145,16 @@ const AgentProfilePage = () => {
         {/* Licensing */}
         {(agent.license_type || agent.licensing_authority) && (
           <div className="bg-card border border-border/50 rounded-sm p-6">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Licensing</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('agent.public_profile_licensing')}</h2>
             <div className="space-y-2">
               {agent.license_type && (
-                <p className="text-sm"><span className="text-muted-foreground">Type: </span>{agent.license_type}</p>
+                <p className="text-sm"><span className="text-muted-foreground">{t('agent.label_type')} </span>{agent.license_type}</p>
               )}
               {agent.licensing_authority && (
-                <p className="text-sm"><span className="text-muted-foreground">Authority: </span>{agent.licensing_authority}</p>
+                <p className="text-sm"><span className="text-muted-foreground">{t('agent.label_authority')} </span>{agent.licensing_authority}</p>
               )}
               {agent.license_number && (
-                <p className="text-sm"><span className="text-muted-foreground">Number: </span>{agent.license_number}</p>
+                <p className="text-sm"><span className="text-muted-foreground">{t('agent.label_number')} </span>{agent.license_number}</p>
               )}
             </div>
           </div>
@@ -161,7 +163,7 @@ const AgentProfilePage = () => {
         {/* Links */}
         {(agent.website || agent.linkedin || agent.instagram) && (
           <div className="bg-card border border-border/50 rounded-sm p-6">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Links</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{t('agent.public_profile_links')}</h2>
             <div className="space-y-2">
               {agent.website && (
                 <a href={agent.website} target="_blank" rel="noopener noreferrer"

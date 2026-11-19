@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { FileText, Building, MapPin, DollarSign, Clock, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AgentOpportunities = () => {
+  const { t } = useTranslation();
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +19,7 @@ const AgentOpportunities = () => {
       const response = await api.getAgentOpportunities();
       setOpportunities(response.data || []);
     } catch (error) {
-      toast.error('Failed to load opportunities');
+      toast.error(t('agent.toast_opportunities_error'));
     } finally {
       setLoading(false);
     }
@@ -26,7 +28,7 @@ const AgentOpportunities = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('agent.loading')}</div>
       </div>
     );
   }
@@ -36,15 +38,15 @@ const AgentOpportunities = () => {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <FileText className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-heading font-bold uppercase">OPPORTUNITIES</h1>
+          <h1 className="text-3xl font-heading font-bold uppercase">{t('agent.opportunities_title')}</h1>
         </div>
-        <p className="text-muted-foreground">Browse available positions to match with your players</p>
+        <p className="text-muted-foreground">{t('agent.opportunities_subtitle')}</p>
       </div>
 
       {opportunities.length === 0 ? (
         <div className="bg-card border border-border p-12 rounded-sm text-center">
           <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No opportunities available at the moment</p>
+          <p className="text-muted-foreground">{t('agent.no_opportunities')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -73,13 +75,13 @@ const AgentOpportunities = () => {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">League Level</p>
+                  <p className="text-muted-foreground">{t('agent.label_league_level')}</p>
                   <p className="font-medium">{opp.league_level}</p>
                 </div>
                 {opp.salary_range && (
                   <div>
                     <p className="text-muted-foreground flex items-center gap-1">
-                      <DollarSign className="w-3 h-3" /> Salary
+                      <DollarSign className="w-3 h-3" /> {t('agent.label_salary')}
                     </p>
                     <p className="font-medium">{opp.salary_range}</p>
                   </div>
@@ -87,7 +89,7 @@ const AgentOpportunities = () => {
                 {opp.contract_duration && (
                   <div>
                     <p className="text-muted-foreground flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> Duration
+                      <Clock className="w-3 h-3" /> {t('agent.label_duration')}
                     </p>
                     <p className="font-medium">{opp.contract_duration}</p>
                   </div>
@@ -98,7 +100,7 @@ const AgentOpportunities = () => {
               <div className="mt-4 flex justify-end">
                 <Link to={`/agent/opportunity/${opp.id}`}
                   className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 transition-colors">
-                  <ExternalLink className="w-3.5 h-3.5" /> View Details
+                  <ExternalLink className="w-3.5 h-3.5" /> {t('agent.btn_view_details')}
                 </Link>
               </div>
             </div>

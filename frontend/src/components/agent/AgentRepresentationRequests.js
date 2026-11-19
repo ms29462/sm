@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { User, Clock, CheckCircle, X, Send, Briefcase } from 'lucide-react';
 
 const STATUS_STYLE = {
@@ -10,6 +11,7 @@ const STATUS_STYLE = {
 };
 
 const AgentRepresentationRequests = () => {
+  const { t } = useTranslation();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +22,7 @@ const AgentRepresentationRequests = () => {
       const res = await api.getRepresentationRequests();
       setRequests(res.data || []);
     } catch {
-      toast.error('Failed to load representation requests');
+      toast.error(t('agent.toast_requests_error'));
     } finally {
       setLoading(false);
     }
@@ -28,7 +30,7 @@ const AgentRepresentationRequests = () => {
 
   if (loading) return (
     <div className="p-8 flex items-center justify-center">
-      <div className="text-primary text-xl font-heading">LOADING...</div>
+      <div className="text-primary text-xl font-heading">{t('agent.loading')}</div>
     </div>
   );
 
@@ -66,18 +68,18 @@ const AgentRepresentationRequests = () => {
                       </div>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-sm border flex items-center gap-1 flex-shrink-0 ${st.cls}`}>
-                      <StatusIcon className="w-3 h-3" /> {st.label}
+                      <StatusIcon className="w-3 h-3" /> {t(`agent.requests_${req.status}`)}
                     </span>
                   </div>
                   {req.message && (
                     <div className="bg-background border border-border/30 rounded-sm p-3 mt-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your message</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">{t('agent.requests_your_message')}</p>
                       <p className="text-sm">{req.message}</p>
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground mt-2">
-                    Sent {new Date(req.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                    {req.responded_at && ` · Responded ${new Date(req.responded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                    {t('agent.requests_sent')} {new Date(req.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    {req.responded_at && ` · ${t('agent.requests_responded')} ${new Date(req.responded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
                   </p>
                 </div>
               </div>
@@ -91,21 +93,21 @@ const AgentRepresentationRequests = () => {
   return (
     <div className="p-4 md:p-8 max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1">Representation Requests</h1>
-        <p className="text-muted-foreground text-sm">Players you've sent representation requests to</p>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-1">{t('agent.requests_title')}</h1>
+        <p className="text-muted-foreground text-sm">{t('agent.requests_subtitle')}</p>
       </div>
 
       {requests.length === 0 ? (
         <div className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <Send className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
-          <p className="text-muted-foreground">No requests sent yet</p>
-          <p className="text-xs text-muted-foreground mt-2">Browse players and send representation requests from their profiles</p>
+          <p className="text-muted-foreground">{t('agent.requests_empty')}</p>
+          <p className="text-xs text-muted-foreground mt-2">{t('agent.requests_empty_hint')}</p>
         </div>
       ) : (
         <div>
-          <Section title="Pending" items={pending} icon={Clock} color="text-yellow-400" />
-          <Section title="Accepted" items={accepted} icon={CheckCircle} color="text-green-400" />
-          <Section title="Declined" items={declined} icon={X} color="text-red-400" />
+          <Section title={t('agent.requests_pending')} items={pending} icon={Clock} color="text-yellow-400" />
+          <Section title={t('agent.requests_accepted')} items={accepted} icon={CheckCircle} color="text-green-400" />
+          <Section title={t('agent.requests_declined')} items={declined} icon={X} color="text-red-400" />
         </div>
       )}
     </div>

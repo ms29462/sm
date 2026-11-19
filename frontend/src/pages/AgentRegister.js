@@ -4,15 +4,10 @@ import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { trackRegistration } from "@/lib/analytics";
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
-const STEPS = [
-  { id: 1, title: "Agent Info" },
-  { id: 2, title: "Licensing" },
-  { id: 3, title: "Agency" },
-  { id: 4, title: "Profile" },
-  { id: 5, title: "Contact" },
-  { id: 6, title: "Terms" },
-];
+const STEP_KEYS = ['reg_step1', 'reg_step2', 'reg_step3', 'reg_step4', 'reg_step5', 'reg_step6'];
 
 const COUNTRIES = ["Afghanistan","Albania","Algeria","Angola","Argentina","Australia","Austria","Belgium","Bolivia","Brazil","Cameroon","Canada","Chile","China","Colombia","Congo","Costa Rica","Croatia","Czech Republic","Denmark","DR Congo","Ecuador","Egypt","England","Ethiopia","Finland","France","Germany","Ghana","Greece","Guinea","Honduras","Hungary","India","Indonesia","Iran","Ireland","Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan","Kenya","Mali","Mexico","Morocco","Netherlands","New Zealand","Nigeria","Norway","Panama","Paraguay","Peru","Poland","Portugal","Romania","Russia","Saudi Arabia","Scotland","Senegal","Serbia","South Africa","South Korea","Spain","Sweden","Switzerland","Tunisia","Turkey","Uganda","Ukraine","United Kingdom","United States","Uruguay","Venezuela","Wales","Zambia","Zimbabwe"];
 const LICENSE_TYPES = ["FIFA Football Agent","National Football Agent License","Other Recognized Football Agent License"];
@@ -26,6 +21,7 @@ const labelClass = "text-xs font-bold uppercase tracking-widest text-muted-foreg
 
 const AgentRegister = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -47,31 +43,31 @@ const AgentRegister = () => {
     switch (step) {
       case 1:
         if (!form.first_name || !form.last_name || !form.country) {
-          toast.error("Please fill in all required fields"); return false;
+          toast.error(t('player.fill_required')); return false;
         }
         return true;
       case 2:
         if (!form.license_type || !form.licensing_authority || !form.license_number) {
-          toast.error("Please fill in all licensing information"); return false;
+          toast.error(t('player.fill_required')); return false;
         }
         return true;
       case 3:
-        if (!form.agency_name) { toast.error("Please enter your agency name"); return false; }
+        if (!form.agency_name) { toast.error(t('player.fill_required')); return false; }
         return true;
       case 4:
         if (!form.bio || !form.experience || !form.primary_market) {
-          toast.error("Please fill in all profile information"); return false;
+          toast.error(t('player.fill_required')); return false;
         }
         return true;
       case 5:
         if (!form.email || !form.phone || !form.password || !form.confirm_password) {
-          toast.error("Please fill in all contact information"); return false;
+          toast.error(t('player.fill_required')); return false;
         }
-        if (form.password !== form.confirm_password) { toast.error("Passwords do not match"); return false; }
-        if (form.password.length < 8) { toast.error("Password must be at least 8 characters"); return false; }
+        if (form.password !== form.confirm_password) { toast.error(t('agent.reg_pass_mismatch')); return false; }
+        if (form.password.length < 8) { toast.error(t('player.pass_too_short')); return false; }
         return true;
       case 6:
-        if (!form.terms_accepted || !form.certified) { toast.error("Please accept both checkboxes"); return false; }
+        if (!form.terms_accepted || !form.certified) { toast.error(t('player.accept_terms')); return false; }
         return true;
       default: return true;
     }
@@ -124,54 +120,58 @@ const AgentRegister = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="border-b border-border/50 p-4 flex items-center justify-between">
         <img src="/logo.png" alt="Soccer Match" className="h-8 w-auto" />
-        <Link to="/" className="text-xs text-muted-foreground hover:text-white">Back to home</Link>
+        <LanguageSwitcher />
+        <Link to="/" className="text-xs text-muted-foreground hover:text-white">{t('agent.reg_back_home')}</Link>
       </div>
 
       <div className="px-4 pt-5 max-w-lg mx-auto w-full">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs text-muted-foreground font-medium">Step {step} of 6</p>
+          <p className="text-xs text-muted-foreground font-medium">{t('agent.reg_step_of', { step })}</p>
           <p className="text-xs text-primary font-bold">{Math.round(progress)}%</p>
         </div>
         <div className="h-1 bg-white/10 rounded-full overflow-hidden mb-4">
           <div className="h-full bg-primary rounded-full transition-all duration-500" style={{width: `${progress}%`}} />
         </div>
         <div className="flex justify-between">
-          {STEPS.map(s => (
-            <div key={s.id} className="flex flex-col items-center gap-1">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
-                s.id < step ? "bg-primary border-primary text-black" :
-                s.id === step ? "border-primary text-primary bg-primary/10" :
-                "border-white/20 text-muted-foreground"
-              }`}>
-                {s.id < step ? <Check className="w-3.5 h-3.5" /> : s.id}
+          {STEP_KEYS.map((key, idx) => {
+            const id = idx + 1;
+            return (
+              <div key={id} className="flex flex-col items-center gap-1">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
+                  id < step ? "bg-primary border-primary text-black" :
+                  id === step ? "border-primary text-primary bg-primary/10" :
+                  "border-white/20 text-muted-foreground"
+                }`}>
+                  {id < step ? <Check className="w-3.5 h-3.5" /> : id}
+                </div>
+                <p className="text-[9px] text-muted-foreground hidden sm:block">{t(`agent.${key}`)}</p>
               </div>
-              <p className="text-[9px] text-muted-foreground hidden sm:block">{s.title}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       <div className="flex-1 px-4 pb-8 mt-6">
         <div className="max-w-lg mx-auto">
-          <h2 className="text-2xl font-heading font-bold uppercase mb-1">{STEPS[step-1].title}</h2>
+          <h2 className="text-2xl font-heading font-bold uppercase mb-1">{t(`agent.${STEP_KEYS[step-1]}`)}</h2>
           <div className="h-0.5 w-12 bg-primary mb-5" />
 
           {step === 1 && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelClass}>First Name *</label>
+                  <label className={labelClass}>{t('agent.reg_first_name')} *</label>
                   <input value={form.first_name} onChange={e => set("first_name", e.target.value)} placeholder="John" className={inputClass} />
                 </div>
                 <div>
-                  <label className={labelClass}>Last Name *</label>
+                  <label className={labelClass}>{t('agent.reg_last_name')} *</label>
                   <input value={form.last_name} onChange={e => set("last_name", e.target.value)} placeholder="Smith" className={inputClass} />
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Country *</label>
+                <label className={labelClass}>{t('agent.reg_country')} *</label>
                 <select value={form.country} onChange={e => set("country", e.target.value)} className={inputClass + " cursor-pointer"}>
-                  <option value="">Select country...</option>
+                  <option value="">{t('agent.reg_select_country')}</option>
                   {COUNTRIES.map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
@@ -181,34 +181,34 @@ const AgentRegister = () => {
           {step === 2 && (
             <div className="space-y-4">
               <div className="p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-sm">
-                <p className="text-xs text-yellow-400">Soccer Match only accepts licensed football agents. Your license will be verified before access is granted.</p>
+                <p className="text-xs text-yellow-400">{t('agent.reg_license_notice')}</p>
               </div>
               <div>
-                <label className={labelClass}>License Type *</label>
+                <label className={labelClass}>{t('agent.reg_license_type')} *</label>
                 <div className="space-y-2">
-                  {LICENSE_TYPES.map(t => (
-                    <button key={t} onClick={() => set("license_type", t)} type="button"
-                      className={`w-full text-left px-4 py-3 text-sm rounded-sm border-2 transition-all ${form.license_type === t ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
-                      {t}
+                  {LICENSE_TYPES.map(lt => (
+                    <button key={lt} onClick={() => set("license_type", lt)} type="button"
+                      className={`w-full text-left px-4 py-3 text-sm rounded-sm border-2 transition-all ${form.license_type === lt ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+                      {lt}
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Issuing Body *</label>
+                <label className={labelClass}>{t('agent.reg_issuing_body')} *</label>
                 <input type="text" value={form.licensing_authority}
                   onChange={e => set("licensing_authority", e.target.value)}
                   placeholder="e.g. French Football Federation, CAF, CONCACAF..."
                   className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>License Number *</label>
+                <label className={labelClass}>{t('agent.reg_license_number')} *</label>
                 <input value={form.license_number} onChange={e => set("license_number", e.target.value)} placeholder="e.g. FIFA-2024-12345" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>License Document <span className="text-muted-foreground font-normal normal-case">(URL to PDF/image)</span></label>
+                <label className={labelClass}>{t('agent.reg_license_doc')} <span className="text-muted-foreground font-normal normal-case">{t('agent.reg_license_doc_hint')}</span></label>
                 <input value={form.license_document} onChange={e => set("license_document", e.target.value)} placeholder="https://..." className={inputClass} />
-                <p className="text-xs text-muted-foreground mt-1">Upload to Google Drive or Dropbox and paste the link</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('agent.reg_license_doc_note')}</p>
               </div>
             </div>
           )}
@@ -216,24 +216,24 @@ const AgentRegister = () => {
           {step === 3 && (
             <div className="space-y-4">
               <div>
-                <label className={labelClass}>Agency Name *</label>
+                <label className={labelClass}>{t('agent.reg_agency_name')} *</label>
                 <input value={form.agency_name} onChange={e => set("agency_name", e.target.value)} placeholder="e.g. Elite Sports Agency" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Agency Logo URL <span className="text-muted-foreground font-normal normal-case">(optional)</span></label>
+                <label className={labelClass}>{t('agent.reg_agency_logo')} <span className="text-muted-foreground font-normal normal-case">{t('agent.reg_optional')}</span></label>
                 <input value={form.agency_logo} onChange={e => set("agency_logo", e.target.value)} placeholder="https://..." className={inputClass} />
                 {form.agency_logo && <img src={form.agency_logo} alt="Logo" className="mt-2 w-16 h-16 object-contain border border-white/10 rounded-sm" />}
               </div>
               <div>
-                <label className={labelClass}>Website <span className="text-muted-foreground font-normal normal-case">(optional)</span></label>
+                <label className={labelClass}>{t('agent.reg_website')} <span className="text-muted-foreground font-normal normal-case">{t('agent.reg_optional')}</span></label>
                 <input value={form.website} onChange={e => set("website", e.target.value)} placeholder="https://youragency.com" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Instagram <span className="text-muted-foreground font-normal normal-case">(optional)</span></label>
+                <label className={labelClass}>{t('agent.reg_instagram')} <span className="text-muted-foreground font-normal normal-case">{t('agent.reg_optional')}</span></label>
                 <input value={form.instagram} onChange={e => set("instagram", e.target.value)} placeholder="https://instagram.com/..." className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>LinkedIn <span className="text-muted-foreground font-normal normal-case">(optional)</span></label>
+                <label className={labelClass}>{t('agent.reg_linkedin')} <span className="text-muted-foreground font-normal normal-case">{t('agent.reg_optional')}</span></label>
                 <input value={form.linkedin} onChange={e => set("linkedin", e.target.value)} placeholder="https://linkedin.com/..." className={inputClass} />
               </div>
             </div>
@@ -242,24 +242,24 @@ const AgentRegister = () => {
           {step === 4 && (
             <div className="space-y-4">
               <div>
-                <label className={labelClass}>Professional Bio *</label>
+                <label className={labelClass}>{t('agent.reg_bio')} *</label>
                 <textarea value={form.bio} onChange={e => set("bio", e.target.value)}
                   placeholder="e.g. Licensed football agent representing professional and aspiring players across Europe and North America..."
                   rows={4} className={inputClass + " h-auto py-3"} />
               </div>
               <div>
-                <label className={labelClass}>Years of Experience *</label>
+                <label className={labelClass}>{t('agent.reg_experience')} *</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {EXPERIENCE_OPTIONS.map(e => (
-                    <button key={e} onClick={() => set("experience", e)} type="button"
-                      className={`py-3 text-sm rounded-sm border-2 transition-all ${form.experience === e ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
-                      {e}
+                  {EXPERIENCE_OPTIONS.map(exp => (
+                    <button key={exp} onClick={() => set("experience", exp)} type="button"
+                      className={`py-3 text-sm rounded-sm border-2 transition-all ${form.experience === exp ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-white/30"}`}>
+                      {exp}
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Primary Market *</label>
+                <label className={labelClass}>{t('agent.reg_primary_market')} *</label>
                 <div className="space-y-2">
                   {MARKETS.map(m => (
                     <button key={m} onClick={() => set("primary_market", m)} type="button"
@@ -270,7 +270,7 @@ const AgentRegister = () => {
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Regions of Operation <span className="text-muted-foreground font-normal normal-case">(optional)</span></label>
+                <label className={labelClass}>{t('agent.reg_regions')} <span className="text-muted-foreground font-normal normal-case">{t('agent.reg_optional')}</span></label>
                 <div className="flex flex-wrap gap-2">
                   {REGIONS.map(r => (
                     <button key={r} onClick={() => toggleArr("regions", r)} type="button"
@@ -286,25 +286,25 @@ const AgentRegister = () => {
           {step === 5 && (
             <div className="space-y-4">
               <div className="p-3 bg-blue-500/5 border border-blue-500/20 rounded-sm">
-                <p className="text-xs text-blue-400">Contact information is private and only accessible to Soccer Match administrators.</p>
+                <p className="text-xs text-blue-400">{t('agent.reg_contact_note')}</p>
               </div>
               <div>
-                <label className={labelClass}>Email Address *</label>
+                <label className={labelClass}>{t('agent.reg_email')} *</label>
                 <input type="email" value={form.email} onChange={e => set("email", e.target.value)} placeholder="you@agency.com" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Phone Number *</label>
+                <label className={labelClass}>{t('agent.reg_phone')} *</label>
                 <input type="tel" value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="+1 234 567 8900" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Password *</label>
-                <input type="password" value={form.password} onChange={e => set("password", e.target.value)} placeholder="Min. 8 characters" className={inputClass} />
+                <label className={labelClass}>{t('agent.reg_password')} *</label>
+                <input type="password" value={form.password} onChange={e => set("password", e.target.value)} placeholder={t('agent.reg_pass_min')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Confirm Password *</label>
-                <input type="password" value={form.confirm_password} onChange={e => set("confirm_password", e.target.value)} placeholder="Repeat password" className={inputClass} />
+                <label className={labelClass}>{t('agent.reg_confirm_password')} *</label>
+                <input type="password" value={form.confirm_password} onChange={e => set("confirm_password", e.target.value)} placeholder={t('agent.reg_pass_repeat')} className={inputClass} />
                 {form.confirm_password && form.password !== form.confirm_password && (
-                  <p className="text-xs text-red-400 mt-1">Passwords do not match</p>
+                  <p className="text-xs text-red-400 mt-1">{t('agent.reg_pass_mismatch')}</p>
                 )}
               </div>
             </div>
@@ -313,26 +313,30 @@ const AgentRegister = () => {
           {step === 6 && (
             <div className="space-y-5">
               <div className="p-4 bg-card border border-border/50 rounded-sm">
-                <h3 className="font-bold text-sm uppercase tracking-wide mb-3">Application Summary</h3>
+                <h3 className="font-bold text-sm uppercase tracking-wide mb-3">{t('agent.reg_summary')}</h3>
                 <div className="space-y-1 text-sm text-muted-foreground">
-                  <p>Name: <span className="text-white">{form.first_name} {form.last_name}</span></p>
-                  <p>Country: <span className="text-white">{form.country}</span></p>
-                  <p>Agency: <span className="text-white">{form.agency_name}</span></p>
-                  <p>License: <span className="text-white">{form.license_type}</span></p>
-                  <p>Authority: <span className="text-white">{form.licensing_authority}</span></p>
+                  <p>{t('agent.reg_name_label')} <span className="text-white">{form.first_name} {form.last_name}</span></p>
+                  <p>{t('agent.reg_country_label')} <span className="text-white">{form.country}</span></p>
+                  <p>{t('agent.reg_agency_label')} <span className="text-white">{form.agency_name}</span></p>
+                  <p>{t('agent.reg_license_label')} <span className="text-white">{form.license_type}</span></p>
+                  <p>{t('agent.reg_authority_label')} <span className="text-white">{form.licensing_authority}</span></p>
                 </div>
               </div>
               <div className="space-y-3">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input type="checkbox" checked={form.terms_accepted} onChange={e => set("terms_accepted", e.target.checked)} className="accent-primary w-5 h-5 mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-muted-foreground">
-                    I have read and accept the <Link to="/cgu" className="text-primary hover:underline">Terms of Use</Link> and <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+                    {t('agent.reg_terms_text').split('Terms of Use').map((part, i) =>
+                      i === 0 ? <span key={i}>{part}<Link to="/cgu" className="text-primary hover:underline">Terms of Use</Link></span> : <span key={i}>{part.split('Privacy Policy').map((p, j) =>
+                        j === 0 ? <span key={j}>{p}<Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link></span> : <span key={j}>{p}</span>
+                      )}</span>
+                    )}
                   </span>
                 </label>
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input type="checkbox" checked={form.certified} onChange={e => set("certified", e.target.checked)} className="accent-primary w-5 h-5 mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-muted-foreground">
-                    I certify that I hold a valid football agent license and that all information provided is accurate.
+                    {t('agent.reg_certify')}
                   </span>
                 </label>
               </div>
@@ -343,12 +347,12 @@ const AgentRegister = () => {
             {step > 1 && (
               <button onClick={() => setStep(s => s-1)} type="button"
                 className="flex items-center gap-2 px-4 py-3 border border-white/10 rounded-sm text-sm text-muted-foreground hover:text-white hover:border-white/30 transition-colors">
-                <ChevronLeft className="w-4 h-4" /> Back
+                <ChevronLeft className="w-4 h-4" /> {t('agent.btn_back')}
               </button>
             )}
             <button onClick={next} disabled={saving} type="button"
               className="flex-1 flex items-center justify-center gap-2 bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-              {saving ? "Submitting..." : step === 6 ? "Submit Application" : "Continue"}
+              {saving ? t('agent.btn_submitting') : step === 6 ? t('agent.btn_submit') : t('agent.btn_continue')}
               {!saving && <ChevronRight className="w-4 h-4" />}
             </button>
           </div>
@@ -358,22 +362,22 @@ const AgentRegister = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border/50 rounded-sm p-6 max-w-md w-full">
-            <h3 className="font-heading font-bold uppercase text-lg mb-4 text-primary">Agent Application Submitted</h3>
-            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">Thank you for registering on Soccer Match. Your application has been submitted and is under review.</p>
-            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">A member of our team will contact you within 48 hours to:</p>
+            <h3 className="font-heading font-bold uppercase text-lg mb-4 text-primary">{t('agent.modal_title')}</h3>
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{t('agent.modal_body1')}</p>
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{t('agent.modal_body2')}</p>
             <ul className="text-sm text-muted-foreground mb-4 space-y-1">
-              <li>• Verify your licensing credentials</li>
-              <li>• Understand your representation activities</li>
-              <li>• Present the platform</li>
-              <li>• Determine the most appropriate subscription plan</li>
+              <li>• {t('agent.modal_li1')}</li>
+              <li>• {t('agent.modal_li2')}</li>
+              <li>• {t('agent.modal_li3')}</li>
+              <li>• {t('agent.modal_li4')}</li>
             </ul>
             <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-sm mb-5">
-              <p className="text-xs text-yellow-400 font-bold">Current Status: Pending Review</p>
+              <p className="text-xs text-yellow-400 font-bold">{t('agent.reg_modal_status')}</p>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setShowModal(false)} className="flex-1 border border-white/10 text-muted-foreground hover:text-white rounded-sm py-3 text-sm transition-colors">Go Back</button>
+              <button onClick={() => setShowModal(false)} className="flex-1 border border-white/10 text-muted-foreground hover:text-white rounded-sm py-3 text-sm transition-colors">{t('agent.modal_go_back')}</button>
               <button onClick={handleSubmit} disabled={saving} className="flex-1 bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-                {saving ? "Submitting..." : "Finish"}
+                {saving ? t('agent.btn_submitting') : t('agent.modal_finish')}
               </button>
             </div>
           </div>

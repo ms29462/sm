@@ -8,6 +8,8 @@ import Badge from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 import { Trophy, Briefcase, Users, Heart, LogOut, Home, UserCircle, FileText, Newspaper, Star, MessageCircle } from 'lucide-react';
 
 const AgentLayout = ({ children }) => {
@@ -16,6 +18,7 @@ const AgentLayout = ({ children }) => {
   const { totalUnread, unreadChatRequests } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const handleLogout = () => { logout(); navigate('/'); };
   const confirmLogout = () => setShowLogoutConfirm(true);
@@ -35,7 +38,7 @@ const AgentLayout = ({ children }) => {
               <div>
                 <h1 className="text-xl font-heading font-bold tracking-tight">SOCCERMATCH</h1>
                 <p className="text-xs text-muted-foreground uppercase flex items-center">
-                  <Briefcase className="w-3 h-3 mr-1" /> Agent Portal
+                  <Briefcase className="w-3 h-3 mr-1" /> {t('agent.portal')}
                 </p>
               </div>
             </div>
@@ -45,52 +48,53 @@ const AgentLayout = ({ children }) => {
           <nav className="p-4 space-y-2">
             <Link to="/agent/news">
               <Button variant={isActive('/agent/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
-                <Newspaper className="w-4 h-4 mr-3" /> News Feed
+                <Newspaper className="w-4 h-4 mr-3" /> {t('agent.nav_news')}
               </Button>
             </Link>
             <Link to="/agent/dashboard">
               <Button data-testid="nav-dashboard-btn" variant={isActive('/agent/dashboard') ? 'secondary' : 'ghost'} className="w-full justify-start">
-                <Home className="w-4 h-4 mr-3" /> Dashboard
+                <Home className="w-4 h-4 mr-3" /> {t('agent.nav_dashboard')}
               </Button>
             </Link>
             <Link to="/agent/profile">
               <Button data-testid="nav-profile-btn" variant={isActive('/agent/profile') ? 'secondary' : 'ghost'} className="w-full justify-start">
-                <UserCircle className="w-4 h-4 mr-3" /> My Profile
+                <UserCircle className="w-4 h-4 mr-3" /> {t('agent.nav_profile')}
               </Button>
             </Link>
             <Link to="/agent/players">
               <Button data-testid="nav-players-btn" variant={isActive('/agent/players') ? 'secondary' : 'ghost'} className="w-full justify-start">
-                <Users className="w-4 h-4 mr-3" /> Search Players
+                <Users className="w-4 h-4 mr-3" /> {t('agent.nav_players')}
               </Button>
             </Link>
             <Link to="/agent/watchlist">
               <Button data-testid="nav-watchlist-btn" variant={isActive('/agent/watchlist') ? 'secondary' : 'ghost'} className="w-full justify-start">
-                <Heart className="w-4 h-4 mr-3" /> Watchlist
+                <Heart className="w-4 h-4 mr-3" /> {t('agent.nav_watchlist')}
               </Button>
             </Link>
             <Link to="/agent/opportunities">
               <Button data-testid="nav-opportunities-btn" variant={isActive('/agent/opportunities') ? 'secondary' : 'ghost'} className="w-full justify-start">
-                <FileText className="w-4 h-4 mr-3" /> Opportunities
+                <FileText className="w-4 h-4 mr-3" /> {t('agent.nav_opportunities')}
               </Button>
             </Link>
             <Link to="/agent/portfolio">
               <Button variant={isActive('/agent/portfolio') ? 'secondary' : 'ghost'} className="w-full justify-start">
-                <Star className="w-4 h-4 mr-3" /> Portfolio
+                <Star className="w-4 h-4 mr-3" /> {t('agent.nav_portfolio')}
               </Button>
             </Link>
             <Link to="/agent/chats">
               <Button variant={isActive('/agent/chats') ? 'secondary' : 'ghost'} className="w-full justify-start relative">
-                <MessageCircle className="w-4 h-4 mr-3" /> My Chats
+                <MessageCircle className="w-4 h-4 mr-3" /> {t('agent.nav_chats')}
                 <Badge count={totalUnread} />
               </Button>
             </Link>
           </nav>
 
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border space-y-2">
+            <LanguageSwitcher className="w-full" />
             <Button data-testid="logout-btn" variant="ghost"
               className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={confirmLogout}>
-              <LogOut className="w-4 h-4 mr-3" /> Logout
+              <LogOut className="w-4 h-4 mr-3" /> {t('agent.logout')}
             </Button>
           </div>
         </aside>
@@ -107,9 +111,9 @@ const AgentLayout = ({ children }) => {
       <ConfirmDialog
         open={showLogoutConfirm}
         onOpenChange={setShowLogoutConfirm}
-        title="Sign Out"
-        description="Are you sure you want to sign out?"
-        confirmLabel="Sign Out"
+        title={t('agent.logout_title')}
+        description={t('agent.logout_desc')}
+        confirmLabel={t('agent.logout_btn')}
         confirmVariant="destructive"
         onConfirm={handleLogout}
       />

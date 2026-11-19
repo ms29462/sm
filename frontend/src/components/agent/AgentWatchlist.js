@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { Heart, Eye, MapPin, User, Trash2 } from 'lucide-react';
 
 const AgentWatchlist = () => {
+  const { t } = useTranslation();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,7 +20,7 @@ const AgentWatchlist = () => {
       const response = await api.getAgentFavorites();
       setPlayers(response.data || []);
     } catch (error) {
-      toast.error('Failed to load watchlist');
+      toast.error(t('agent.toast_watchlist_load_error'));
     } finally {
       setLoading(false);
     }
@@ -28,16 +30,16 @@ const AgentWatchlist = () => {
     try {
       await api.removeAgentFavorite(playerId);
       setPlayers(players.filter(p => p.user_id !== playerId));
-      toast.success('Removed from watchlist');
+      toast.success(t('agent.toast_watchlist_removed'));
     } catch (error) {
-      toast.error('Failed to remove from watchlist');
+      toast.error(t('agent.toast_watchlist_remove_error'));
     }
   };
 
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('agent.loading')}</div>
       </div>
     );
   }
@@ -47,17 +49,17 @@ const AgentWatchlist = () => {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <Heart className="w-8 h-8 text-red-500" />
-          <h1 className="text-3xl font-heading font-bold uppercase">WATCHLIST</h1>
+          <h1 className="text-3xl font-heading font-bold uppercase">{t('agent.watchlist_title')}</h1>
         </div>
-        <p className="text-muted-foreground">Players you're interested in representing</p>
+        <p className="text-muted-foreground">{t('agent.watchlist_subtitle')}</p>
       </div>
 
       {players.length === 0 ? (
         <div className="bg-card border border-border p-12 rounded-sm text-center">
           <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">Your watchlist is empty</p>
+          <p className="text-muted-foreground mb-4">{t('agent.watchlist_empty')}</p>
           <Link to="/agent/players">
-            <Button className="bg-primary text-black font-bold">SEARCH PLAYERS</Button>
+            <Button className="bg-primary text-black font-bold">{t('agent.btn_search_players')}</Button>
           </Link>
         </div>
       ) : (
@@ -79,7 +81,7 @@ const AgentWatchlist = () => {
                     )}
                     <div>
                       <h3 className="font-heading font-bold uppercase">{player.name}</h3>
-                      <p className="text-sm text-primary">{player.position || 'Position N/A'}</p>
+                      <p className="text-sm text-primary">{player.position || t('agent.position_na')}</p>
                     </div>
                   </div>
                   <button
@@ -97,26 +99,26 @@ const AgentWatchlist = () => {
                     <span>{player.nationality || "—"}</span>
                     {player.nationality_2 && <span>/ {player.nationality_2}</span>}
                   </div>
-                  <p>Age: {player.age || "—"}</p>
-                  <p>Club: {player.current_club || "—"}</p>
+                  <p>{t('agent.label_age')} {player.age || "—"}</p>
+                  <p>{t('agent.label_club')} {player.current_club || "—"}</p>
                 </div>
 
                 <div className="flex gap-2 text-xs mb-4">
                   <span className="px-2 py-1 bg-primary/10 text-primary rounded-sm">
-                    {player.games || 0} Games
+                    {player.games || 0} {t('agent.label_games')}
                   </span>
                   <span className="px-2 py-1 bg-green-500/10 text-green-500 rounded-sm">
-                    {player.goals || 0} Goals
+                    {player.goals || 0} {t('agent.label_goals')}
                   </span>
                   <span className="px-2 py-1 bg-blue-500/10 text-blue-500 rounded-sm">
-                    {player.assists || 0} Assists
+                    {player.assists || 0} {t('agent.label_assists')}
                   </span>
                 </div>
 
                 <Link to={`/agent/player/${player.user_id}`}>
                   <Button variant="outline" className="w-full border-primary text-primary">
                     <Eye className="w-4 h-4 mr-2" />
-                    VIEW PROFILE
+                    {t('agent.btn_view_profile')}
                   </Button>
                 </Link>
               </div>
