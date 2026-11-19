@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Plus, X, ChevronDown, Star, Flag, User, FileText, Trash2, ExternalLink } from "lucide-react";
@@ -111,6 +112,7 @@ const PipelineCard = ({ pp, onDragStart, onUpdate, onRemove, onOpenDetail, scout
 };
 
 const RecruitmentPipeline = () => {
+  const { t } = useTranslation();
   const [pipeline, setPipeline] = useState([]);
   const [loading, setLoading] = useState(true);
   const [draggedItem, setDraggedItem] = useState(null);

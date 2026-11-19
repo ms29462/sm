@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { ApprovedGate } from '@/components/ui/PermissionGate';
@@ -24,6 +25,7 @@ const QUALITY_COLORS = {
 };
 
 const ClubPlayers = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [players, setPlayers] = useState([]);
@@ -145,7 +147,7 @@ const ClubPlayers = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('club_players.loading')}</div>
       </div>
     );
   }
@@ -153,13 +155,13 @@ const ClubPlayers = () => {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">BROWSE PLAYERS</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">{t('club_players.title')}</h1>
         <p className="text-muted-foreground">Find and save talented players</p>
       </div>
 
       <div className="bg-card border border-border/50 p-4 md:p-6 rounded-sm mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-heading font-bold uppercase">FILTERS</h3>
+          <h3 className="text-lg font-heading font-bold uppercase">{t('club_players.filters')}</h3>
           {hasActiveFilters && (
             <button onClick={clearAllFilters}
               className="text-xs text-primary border border-primary/30 rounded-sm px-3 py-1.5 hover:bg-primary/10 transition-colors">

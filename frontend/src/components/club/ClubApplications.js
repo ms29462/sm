@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -188,6 +189,7 @@ const PlayerProfilePopup = ({ player, onClose, verifications = {} }) => {
 };
 
 const ClubApplications = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const basePath = location.pathname.startsWith('/federation') ? '/federation' :
@@ -324,7 +326,7 @@ const ClubApplications = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('club_applications.loading')}</div>
       </div>
     );
   }
@@ -333,13 +335,13 @@ const ClubApplications = () => {
     <div className="p-4 md:p-8">
       {selectedPlayer && <PlayerProfilePopup player={selectedPlayer} onClose={() => setSelectedPlayer(null)} verifications={verifications} />}
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">APPLICATIONS</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">{t('club_applications.title')}</h1>
         <p className="text-muted-foreground">Review and manage player applications - click a card to view full profile</p>
       </div>
       {applications.length === 0 ? (
         <div data-testid="no-applications" className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No applications received yet</p>
+          <p className="text-muted-foreground">{t('club_applications.no_applications')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -348,7 +350,7 @@ const ClubApplications = () => {
             <input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search by opportunity, position, player..."
+              placeholder={t('club_applications.search_placeholder')}
               className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-4 text-sm text-white outline-none focus:border-primary"
             />
           </div>
@@ -356,16 +358,16 @@ const ClubApplications = () => {
           <div className="flex flex-wrap gap-2 mb-2">
             <select value={filterPosition} onChange={e => setFilterPosition(e.target.value)}
               className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
-              <option value="">All Positions</option>
+              <option value="">{t('club_applications.all_positions')}</option>
               {allPositions.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
             <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
               className="bg-black/20 border border-white/10 rounded-sm h-9 px-3 text-sm text-white outline-none cursor-pointer">
-              <option value="">All Statuses</option>
-              <option value="submitted">Submitted</option>
-              <option value="under_review">Under Review</option>
-              <option value="interested">Interested</option>
-              <option value="rejected">Rejected</option>
+              <option value="">{t('club_applications.all_statuses')}</option>
+              <option value="submitted">{t('club_applications.submitted')}</option>
+              <option value="under_review">{t('club_applications.under_review')}</option>
+              <option value="interested">{t('club_applications.interested')}</option>
+              <option value="rejected">{t('club_applications.rejected')}</option>
             </select>
             {(filterPosition || filterStatus || searchQuery) && (
               <button onClick={() => { setFilterPosition(''); setFilterStatus(''); setSearchQuery(''); }}

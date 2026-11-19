@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ const textareaClass = "w-full bg-black/20 border border-white/10 focus:border-pr
 const labelClass = "text-xs text-muted-foreground uppercase tracking-wide";
 
 const ScoutingHub = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const basePath = location.pathname.startsWith('/federation') ? '/federation' : location.pathname.startsWith('/agent') ? '/agent' : location.pathname.startsWith('/college-agency') ? '/college-agency' : '/club';

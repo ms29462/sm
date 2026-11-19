@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import LeagueLevelPicker from '@/components/shared/LeagueLevelPicker';
 import DeleteOrgAccountSection from "@/components/shared/DeleteOrgAccountSection";
 import { api } from '@/lib/api';
@@ -24,6 +25,7 @@ const PLAYING_LEVELS = ['Amateur', 'Semi-Professional', 'Professional'];
 const selectClass = "mt-2 w-full bg-black/20 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12 px-3 text-sm text-white appearance-none cursor-pointer";
 
 const ClubProfile = () => {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -76,7 +78,7 @@ const ClubProfile = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('club_profile.loading')}</div>
       </div>
     );
   }
@@ -84,8 +86,8 @@ const ClubProfile = () => {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">CLUB PROFILE</h1>
-        <p className="text-muted-foreground">Manage your club profile and information</p>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">{t('club_profile.title')}</h1>
+        <p className="text-muted-foreground">{t('club_profile.subtitle')}</p>
       </div>
 
       <div className="max-w-4xl">
@@ -131,7 +133,7 @@ const ClubProfile = () => {
                     : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
                 }`}
               >
-                {profile?.approved ? 'APPROVED' : 'PENDING APPROVAL'}
+                {profile?.approved ? t('club_profile.approved') : t('club_profile.pending')}
               </span>
             </div>
           </div>
@@ -142,7 +144,7 @@ const ClubProfile = () => {
             {/* Club Name */}
             <div>
               <Label htmlFor="name" className="text-sm font-medium uppercase tracking-wide">
-                Club Name
+                {t('club_profile.club_name')}
               </Label>
               <Input
                 id="name"
@@ -157,7 +159,7 @@ const ClubProfile = () => {
             {/* Country */}
             <div>
               <Label htmlFor="country" className="text-sm font-medium uppercase tracking-wide">
-                Country
+                {t('club_profile.country')}
               </Label>
               <select
                 id="country"
@@ -166,7 +168,7 @@ const ClubProfile = () => {
                 onChange={(e) => handleChange('country', e.target.value)}
                 className="w-full bg-black/20 border border-white/10 rounded-sm h-10 px-3 text-sm text-white outline-none cursor-pointer mt-1"
               >
-                <option value="">Select country...</option>
+                <option value="">{t('club_profile.select_country')}</option>
                 <option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Angola</option><option>Argentina</option>
                 <option>Australia</option><option>Austria</option><option>Belgium</option><option>Bolivia</option><option>Brazil</option>
                 <option>Cameroon</option><option>Canada</option><option>Chile</option><option>China</option><option>Colombia</option>
@@ -187,7 +189,7 @@ const ClubProfile = () => {
             </div>
 <div>
   <Label htmlFor="city" className="text-sm font-medium uppercase tracking-wide">
-    City
+    {t('club_profile.city')}
   </Label>
   <Input
     id="city"
@@ -199,7 +201,7 @@ const ClubProfile = () => {
 </div>
 <div>
   <Label htmlFor="stadium" className="text-sm font-medium uppercase tracking-wide">
-    Stadium
+    {t('club_profile.stadium')}
   </Label>
   <Input
     id="stadium"
@@ -211,21 +213,21 @@ const ClubProfile = () => {
 </div>
 <div>
   <Label htmlFor="founded_year" className="text-sm font-medium uppercase tracking-wide">
-    Founded Year
+    {t('club_profile.founded_year')}
   </Label>
   <Input
     id="founded_year"
     type="number"
     value={formData.founded_year || ''}
     onChange={(e) => handleChange('founded_year', parseInt(e.target.value))}
-    placeholder="e.g. 1905"
+    placeholder={t('club_profile.founded_placeholder')}
     className="mt-2 bg-black/20 border-white/10 focus:border-primary focus:ring-1 focus:ring-primary rounded-sm h-12"
   />
 </div>
             {/* League dropdown */}
             <div>
               <Label htmlFor="league" className="text-sm font-medium uppercase tracking-wide">
-                League
+                {t('club_profile.league')}
               </Label>
               <select
                 id="league"
@@ -234,7 +236,7 @@ const ClubProfile = () => {
                 onChange={(e) => handleChange('league', e.target.value)}
                 className={selectClass}
               >
-                <option value="">Select a league...</option>
+                <option value="">{t('club_profile.select_league')}</option>
                 <optgroup label="Europe â€” Top 5">
                   {['Premier League','La Liga','Bundesliga','Serie A','Ligue 1'].map(l => (
                     <option key={l} value={l}>{l}</option>
@@ -276,7 +278,7 @@ const ClubProfile = () => {
             {/* Playing Level dropdown */}
             <div>
               <Label htmlFor="playing_level" className="text-sm font-medium uppercase tracking-wide">
-                Playing Level
+                {t('club_profile.playing_level')}
               </Label>
               <div className="mt-2">
                 <LeagueLevelPicker
@@ -285,7 +287,7 @@ const ClubProfile = () => {
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Used by the player matching algorithm to find suitable candidates
+                {t('club_profile.level_note')}
               </p>
             </div>
 
@@ -295,11 +297,10 @@ const ClubProfile = () => {
           {formData.league && formData.playing_level && (
             <div className="mt-6 bg-primary/10 border border-primary/20 rounded-sm p-4">
               <p className="text-sm text-primary font-medium uppercase tracking-wide mb-1">
-                Matching Algorithm Active
+                {t('club_profile.matching_active')}
               </p>
               <p className="text-xs text-muted-foreground">
-                Your club is set to <strong className="text-white">{formData.league}</strong> at <strong className="text-white">{formData.playing_level}</strong> level.
-                The algorithm will automatically rank players based on their suitability for your league and level.
+                {t('club_profile.matching_desc', { league: formData.league, level: formData.playing_level })}
               </p>
             </div>
           )}
@@ -311,7 +312,7 @@ const ClubProfile = () => {
               disabled={saving}
               className="bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12 px-8"
             >
-              {saving ? 'SAVING...' : 'SAVE CHANGES'}
+              {saving ? t('club_profile.saving') : t('club_profile.save')}
             </Button>
           </div>
         </div>

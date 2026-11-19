@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -6,6 +7,7 @@ import { Heart, Users } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const ClubFavorites = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const basePath = location.pathname.startsWith('/federation') ? '/federation' : location.pathname.startsWith('/agent') ? '/agent' : location.pathname.startsWith('/college-agency') ? '/college-agency' : '/club';
@@ -40,7 +42,7 @@ const ClubFavorites = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('club_favorites.loading')}</div>
       </div>
     );
   }
@@ -48,14 +50,14 @@ const ClubFavorites = () => {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">FAVORITE PLAYERS</h1>
+        <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase mb-2">{t('club_favorites.title')}</h1>
         <p className="text-muted-foreground">Your saved players</p>
       </div>
 
       {favorites.length === 0 ? (
         <div data-testid="no-favorites" className="bg-card border border-border/50 p-12 rounded-sm text-center">
           <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No favorite players yet</p>
+          <p className="text-muted-foreground">{t('club_favorites.no_favorites')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

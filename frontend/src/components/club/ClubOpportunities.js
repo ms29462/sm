@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { api } from "@/lib/api";
 import LeagueLevelPicker from "@/components/shared/LeagueLevelPicker";
 import { Button } from "@/components/ui/button";
@@ -54,16 +55,17 @@ const STATUS_LABEL = {
 };
 
 const TABS = [
-  { id: "all",              label: "All" },
-  { id: "published",        label: "Published" },
-  { id: "pending_review",   label: "Under Review" },
-  { id: "changes_requested",label: "Changes Req." },
-  { id: "closed",           label: "Closed" },
-  { id: "filled",           label: "Filled" },
-  { id: "rejected",         label: "Rejected" },
+  { id: "all",               tKey: "all" },
+  { id: "published",         tKey: "published" },
+  { id: "pending_review",    tKey: "under_review" },
+  { id: "changes_requested", tKey: "changes_req" },
+  { id: "closed",            tKey: "closed" },
+  { id: "filled",            tKey: "filled" },
+  { id: "rejected",          tKey: "rejected" },
 ];
 
 const ClubOpportunities = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -200,7 +202,7 @@ const ClubOpportunities = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('club_opportunities.loading')}</div>
       </div>
     );
   }
@@ -429,7 +431,7 @@ const ClubOpportunities = () => {
           {/* Header */}
           <div className="p-4 border-b border-border/50 flex items-center justify-between gap-3 flex-shrink-0">
             <div>
-              <h1 className="font-heading font-bold uppercase text-lg leading-tight">Opportunities</h1>
+              <h1 className="font-heading font-bold uppercase text-lg leading-tight">{t('club_opportunities.title')}</h1>
               <p className="text-xs text-muted-foreground">{opportunities.length} posted</p>
             </div>
             <Button onClick={() => setShowDialog(true)} data-testid="create-opportunity-btn"
@@ -454,7 +456,7 @@ const ClubOpportunities = () => {
                   className={`flex-shrink-0 px-2.5 py-1 rounded-sm text-xs font-medium transition-colors whitespace-nowrap ${
                     activeTab === tab.id ? "bg-primary text-black" : "text-muted-foreground hover:text-white hover:bg-white/5"
                   }`}>
-                  {tab.label}
+                  {t(`club_opportunities.${tab.tKey}`)}
                   <span className={`ml-1.5 text-[10px] ${activeTab === tab.id ? "text-black/60" : "text-muted-foreground"}`}>
                     {count}
                   </span>

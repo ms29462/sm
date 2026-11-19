@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
-﻿import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import NotificationBell from '@/components/ui/NotificationBell';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import MobileHeader from '@/components/mobile/MobileHeader';
 import { Trophy, Building, Briefcase, Users, FileText, Heart, LogOut, Home, MessageCircle, Video, Sparkles , Target , Kanban, CalendarCheck , Newspaper, TrendingUp } from 'lucide-react';
 
 const ClubLayout = ({ children, isCollege = false }) => {
+  const { t } = useTranslation();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -43,7 +45,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
             
             <div>
               <h1 className="text-xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-8 w-auto" /></h1>
-              <p className="text-xs text-muted-foreground uppercase">{isCollege ? "College Portal" : "Club Portal"}</p>
+              <p className="text-xs text-muted-foreground uppercase">{isCollege ? t('club_layout.college_portal') : t('club_layout.club_portal')}</p>
             </div>
           </div>
           <NotificationBell />
@@ -53,7 +55,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
           <Link to={isCollege ? "/college/news" : "/club/news"}>
             <Button variant={isActive("/club/news") || isActive("/college/news") ? "secondary" : "ghost"} className="w-full justify-start">
               <Newspaper className="w-4 h-4 mr-3" />
-              News Feed
+              {t('club_layout.news_feed')}
             </Button>
           </Link>
           <Link to={isCollege ? "/college/dashboard" : "/club/dashboard"}>
@@ -63,7 +65,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
               className="w-full justify-start"
             >
               <Home className="w-4 h-4 mr-3" />
-              Dashboard
+              {t('club_layout.dashboard')}
             </Button>
           </Link>
           <Link to={isCollege ? "/college/profile" : "/club/profile"}>
@@ -73,7 +75,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
               className="w-full justify-start"
             >
               <Building className="w-4 h-4 mr-3" />
-              Club Profile
+              {t('club_layout.club_profile')}
             </Button>
           </Link>
           <Link to={isCollege ? "/college/opportunities" : "/club/opportunities"}>
@@ -83,7 +85,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
               className="w-full justify-start"
             >
               <Briefcase className="w-4 h-4 mr-3" />
-              Opportunities
+              {t('club_layout.opportunities')}
             </Button>
           </Link>
           <Link to={isCollege ? "/college/opportunities/analytics" : "/club/opportunities/analytics"}>
@@ -92,7 +94,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
               className="w-full justify-start"
             >
               <TrendingUp className="w-4 h-4 mr-3" />
-              Analytics
+              {t('club_layout.analytics')}
             </Button>
           </Link>
           <Link to={isCollege ? "/college/players" : "/club/players"}>
@@ -102,7 +104,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
               className="w-full justify-start"
             >
               <Users className="w-4 h-4 mr-3" />
-              Browse Players
+              {t('club_layout.browse_players')}
             </Button>
           </Link>
           <Link to={isCollege ? "/college/applications" : "/club/applications"}>
@@ -112,7 +114,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
               className="w-full justify-start"
             >
               <FileText className="w-4 h-4 mr-3" />
-              Applications
+              {t('club_layout.applications')}
             </Button>
           </Link>
           <Link to={isCollege ? "/college/favorites" : "/club/favorites"}>
@@ -122,7 +124,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
               className="w-full justify-start"
             >
               <Heart className="w-4 h-4 mr-3" />
-              Favorites
+              {t('club_layout.favorites')}
             </Button>
           </Link>
           <Link to={isCollege ? "/college/pipeline" : "/club/pipeline"}>
@@ -131,7 +133,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
               className="w-full justify-start"
             >
               <Kanban className="w-4 h-4 mr-3" />
-              Pipeline
+              {t('club_layout.pipeline')}
             </Button>
           </Link>
           <Link to={isCollege ? "/college/scouting" : "/club/scouting"}>
@@ -140,7 +142,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
               className="w-full justify-start"
             >
               <Target className="w-4 h-4 mr-3" />
-              Scouting Hub
+              {t('club_layout.scouting_hub')}
             </Button>
           </Link>
           <Link to={isCollege ? "/college/chats" : "/club/chats"}>
@@ -150,13 +152,16 @@ const ClubLayout = ({ children, isCollege = false }) => {
               className="w-full justify-start relative"
             >
               <MessageCircle className="w-4 h-4 mr-3" />
-              Chats
+              {t('club_layout.chats')}
               <Badge count={totalUnread + unreadChatRequests} />
             </Button>
           </Link>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border space-y-2">
+          <div className="flex justify-center">
+            <LanguageSwitcher />
+          </div>
           <Button
             data-testid="logout-btn"
             variant="ghost"
@@ -164,7 +169,7 @@ const ClubLayout = ({ children, isCollege = false }) => {
             onClick={confirmLogout}
           >
             <LogOut className="w-4 h-4 mr-3" />
-            Logout
+            {t('club_layout.logout')}
           </Button>
         </div>
       </aside>
@@ -183,9 +188,9 @@ const ClubLayout = ({ children, isCollege = false }) => {
       <ConfirmDialog
         open={showLogoutConfirm}
         onOpenChange={setShowLogoutConfirm}
-        title="Sign Out"
-        description="Are you sure you want to sign out?"
-        confirmLabel="Sign Out"
+        title={t('club_layout.sign_out')}
+        description={t('club_layout.sign_out_confirm')}
+        confirmLabel={t('club_layout.sign_out')}
         confirmVariant="destructive"
         onConfirm={handleLogout}
       />
