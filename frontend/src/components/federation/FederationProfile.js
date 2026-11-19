@@ -8,11 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Flag, Upload, CheckCircle, Globe, Calendar, MapPin } from "lucide-react";
 import { NATIONALITIES } from "@/lib/constants";
+import { useTranslation } from 'react-i18next';
 
 const FederationProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "", country: "", city: "", logo: "",
     description: "", website: "", founded_year: ""
@@ -36,7 +38,7 @@ const FederationProfile = () => {
         founded_year: response.data.founded_year || ""
       });
     } catch (error) {
-      toast.error("Failed to load profile");
+      toast.error(t('federation_profile.load_error'));
     } finally {
       setLoading(false);
     }
@@ -61,10 +63,10 @@ const FederationProfile = () => {
     setSaving(true);
     try {
       await api.updateFederationProfile(formData);
-      toast.success("Profile updated successfully!");
+      toast.success(t('federation_profile.save_success'));
       loadProfile();
     } catch (error) {
-      toast.error("Failed to update profile");
+      toast.error(t('federation_profile.save_error'));
     } finally {
       setSaving(false);
     }
@@ -73,7 +75,7 @@ const FederationProfile = () => {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="text-primary text-xl font-heading">LOADING...</div>
+        <div className="text-primary text-xl font-heading">{t('federation_profile.loading')}</div>
       </div>
     );
   }
@@ -82,23 +84,23 @@ const FederationProfile = () => {
     <div className="p-4 md:p-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">FEDERATION PROFILE</h1>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold uppercase">{t('federation_profile.title')}</h1>
           {profile?.verified && (
             <span className="flex items-center gap-1 px-3 py-1 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-sm text-xs uppercase tracking-wide">
               <CheckCircle className="w-3 h-3" />
-              Verified
+              {t('federation_profile.verified_badge')}
             </span>
           )}
         </div>
-        <p className="text-muted-foreground">Manage your federation information</p>
+        <p className="text-muted-foreground">{t('federation_profile.subtitle')}</p>
         {!profile?.approved && (
           <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 p-4 rounded-sm">
-            <p className="text-yellow-500 text-sm">Your federation is pending admin approval.</p>
+            <p className="text-yellow-500 text-sm">{t('federation_profile.pending_approval')}</p>
           </div>
         )}
         {profile?.approved && !profile?.verified && (
           <div className="mt-4 bg-blue-500/10 border border-blue-500/20 p-4 rounded-sm">
-            <p className="text-blue-400 text-sm">Your federation is approved. Contact admin to get verified status.</p>
+            <p className="text-blue-400 text-sm">{t('federation_profile.approved_not_verified')}</p>
           </div>
         )}
       </div>
@@ -107,13 +109,13 @@ const FederationProfile = () => {
         <div className="bg-card border border-border/50 p-8 rounded-sm mb-6">
           <div className="flex items-center space-x-4 mb-6">
             <Flag className="w-8 h-8 text-primary" />
-            <h2 className="text-xl font-heading font-bold uppercase">Federation Details</h2>
+            <h2 className="text-xl font-heading font-bold uppercase">{t('federation_profile.federation_details')}</h2>
           </div>
 
           <div className="space-y-6">
             <div>
               <Label htmlFor="name" className="text-sm font-medium uppercase tracking-wide">
-                Federation Name *
+                {t('federation_profile.federation_name_label')}
               </Label>
               <Input
                 id="name"
@@ -121,7 +123,7 @@ const FederationProfile = () => {
                 value={formData.name}
                 onChange={(e) => handleChange("name", e.target.value)}
                 className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12"
-                placeholder="e.g., Cameroon Football Federation"
+                placeholder={t('federation_profile.federation_name_placeholder')}
                 required
               />
             </div>
@@ -129,7 +131,7 @@ const FederationProfile = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="country" className="text-sm font-medium uppercase tracking-wide">
-                  Country *
+                  {t('federation_profile.country_label')}
                 </Label>
                 <Select value={formData.country} onValueChange={(value) => handleChange("country", value)}>
                   <SelectTrigger
@@ -137,7 +139,7 @@ const FederationProfile = () => {
                     data-testid="country-select"
                     className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12"
                   >
-                    <SelectValue placeholder="Select country" />
+                    <SelectValue placeholder={t('federation_profile.select_country')} />
                   </SelectTrigger>
                   <SelectContent>
                     {NATIONALITIES.map((nat) => (
@@ -146,13 +148,13 @@ const FederationProfile = () => {
                   </SelectContent>
                 </Select>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Players with this nationality will be recommended to you
+                  {t('federation_profile.country_hint')}
                 </p>
               </div>
 
               <div>
                 <Label htmlFor="city" className="text-sm font-medium uppercase tracking-wide">
-                  City
+                  {t('federation_profile.city_label')}
                 </Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
@@ -161,7 +163,7 @@ const FederationProfile = () => {
                     value={formData.city}
                     onChange={(e) => handleChange("city", e.target.value)}
                     className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9"
-                    placeholder="e.g., Yaounde"
+                    placeholder={t('federation_profile.city_placeholder')}
                   />
                 </div>
               </div>
@@ -170,7 +172,7 @@ const FederationProfile = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="website" className="text-sm font-medium uppercase tracking-wide">
-                  Website
+                  {t('federation_profile.website_label')}
                 </Label>
                 <div className="relative">
                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
@@ -179,14 +181,14 @@ const FederationProfile = () => {
                     value={formData.website}
                     onChange={(e) => handleChange("website", e.target.value)}
                     className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9"
-                    placeholder="https://www.federation.com"
+                    placeholder={t('federation_profile.website_placeholder')}
                   />
                 </div>
               </div>
 
               <div>
                 <Label htmlFor="founded_year" className="text-sm font-medium uppercase tracking-wide">
-                  Founded Year
+                  {t('federation_profile.founded_year_label')}
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mt-1" />
@@ -196,7 +198,7 @@ const FederationProfile = () => {
                     value={formData.founded_year}
                     onChange={(e) => handleChange("founded_year", parseInt(e.target.value))}
                     className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm h-12 pl-9"
-                    placeholder="e.g., 1959"
+                    placeholder={t('federation_profile.founded_year_placeholder')}
                   />
                 </div>
               </div>
@@ -204,7 +206,7 @@ const FederationProfile = () => {
 
             <div>
               <Label htmlFor="logo" className="text-sm font-medium uppercase tracking-wide">
-                Federation Logo
+                {t('federation_profile.logo_label')}
               </Label>
               <div className="mt-2 flex items-center space-x-4">
                 {formData.logo && (
@@ -216,7 +218,7 @@ const FederationProfile = () => {
                 )}
                 <label className="bg-muted hover:bg-muted/80 px-4 h-12 rounded-sm flex items-center cursor-pointer">
                   <Upload className="w-4 h-4 mr-2" />
-                  Upload Logo
+                  {t('federation_profile.upload_logo')}
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                 </label>
               </div>
@@ -224,7 +226,7 @@ const FederationProfile = () => {
 
             <div>
               <Label htmlFor="description" className="text-sm font-medium uppercase tracking-wide">
-                Description
+                {t('federation_profile.description_label')}
               </Label>
               <Textarea
                 id="description"
@@ -232,7 +234,7 @@ const FederationProfile = () => {
                 value={formData.description}
                 onChange={(e) => handleChange("description", e.target.value)}
                 className="mt-2 bg-black/20 border-white/10 focus:border-primary rounded-sm min-h-[100px]"
-                placeholder="Brief description of your federation..."
+                placeholder={t('federation_profile.description_placeholder')}
               />
             </div>
           </div>
@@ -244,7 +246,7 @@ const FederationProfile = () => {
           disabled={saving}
           className="w-full bg-primary text-black font-bold uppercase tracking-wide hover:bg-primary/90 rounded-sm h-12"
         >
-          {saving ? "SAVING..." : "SAVE PROFILE"}
+          {saving ? t('federation_profile.saving') : t('federation_profile.save_profile')}
         </Button>
       </form>
     </div>

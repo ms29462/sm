@@ -9,6 +9,8 @@ import { useAuth } from '@/context/AuthContext';
 import MobileBottomNav from '@/components/mobile/MobileBottomNav';
 import MobileHeader from '@/components/mobile/MobileHeader';
 import { Trophy, Flag, Users, Heart, Briefcase, LogOut, Home, UserCircle, FolderOpen, Sparkles, Newspaper, FileText, Kanban, MessageCircle, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 const FederationLayout = ({ children }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -16,6 +18,7 @@ const FederationLayout = ({ children }) => {
   const { totalUnread, unreadChatRequests } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -44,7 +47,7 @@ const FederationLayout = ({ children }) => {
               <h1 className="text-xl font-heading font-bold tracking-tight"><img src="/logo.png" alt="Soccer Match" className="h-8 w-auto" /></h1>
               <p className="text-xs text-muted-foreground uppercase flex items-center">
                 <Flag className="w-3 h-3 mr-1" />
-                Federation Portal
+                {t('federation_layout.portal_label')}
               </p>
             </div>
           </div>
@@ -55,7 +58,7 @@ const FederationLayout = ({ children }) => {
           <Link to="/federation/news">
             <Button variant={isActive('/federation/news') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <Newspaper className="w-4 h-4 mr-3" />
-              News Feed
+              {t('federation_layout.news_feed')}
             </Button>
           </Link>
           <Link to="/federation/dashboard">
@@ -65,7 +68,7 @@ const FederationLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <Home className="w-4 h-4 mr-3" />
-              Dashboard
+              {t('federation_layout.dashboard')}
             </Button>
           </Link>
           <Link to="/federation/profile">
@@ -75,7 +78,7 @@ const FederationLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <UserCircle className="w-4 h-4 mr-3" />
-              Federation Profile
+              {t('federation_layout.federation_profile')}
             </Button>
           </Link>
           <Link to="/federation/players">
@@ -85,7 +88,7 @@ const FederationLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <Users className="w-4 h-4 mr-3" />
-              Search Players
+              {t('federation_layout.search_players')}
             </Button>
           </Link>
           <Link to="/federation/recommended">
@@ -95,7 +98,7 @@ const FederationLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <Briefcase className="w-4 h-4 mr-3" />
-              Recommended Players
+              {t('federation_layout.recommended_players')}
             </Button>
           </Link>
           <Link to="/federation/scouting">
@@ -105,43 +108,43 @@ const FederationLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <Heart className="w-4 h-4 mr-3" />
-              Scouting List
+              {t('federation_layout.scouting_list')}
             </Button>
           </Link>
           <Link to="/federation/favorites">
             <Button variant={isActive('/federation/favorites') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <Heart className="w-4 h-4 mr-3" />
-              Favorites
+              {t('federation_layout.favorites')}
             </Button>
           </Link>
           <Link to="/federation/opportunities/analytics">
             <Button variant={isActive('/federation/opportunities/analytics') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <TrendingUp className="w-4 h-4 mr-3" />
-              Analytics
+              {t('federation_layout.analytics')}
             </Button>
           </Link>
           <Link to="/federation/opportunities">
             <Button variant={isActive('/federation/opportunities') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <Briefcase className="w-4 h-4 mr-3" />
-              Opportunities
+              {t('federation_layout.opportunities')}
             </Button>
           </Link>
           <Link to="/federation/applications">
             <Button variant={isActive('/federation/applications') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <FileText className="w-4 h-4 mr-3" />
-              Applications
+              {t('federation_layout.applications')}
             </Button>
           </Link>
           <Link to="/federation/pipeline">
             <Button variant={isActive('/federation/pipeline') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <Kanban className="w-4 h-4 mr-3" />
-              Pipeline
+              {t('federation_layout.pipeline')}
             </Button>
           </Link>
           <Link to="/federation/chats">
             <Button variant={isActive('/federation/chats') ? 'secondary' : 'ghost'} className="w-full justify-start">
               <MessageCircle className="w-4 h-4 mr-3" />
-              Chats
+              {t('federation_layout.chats')}
               <Badge count={totalUnread + unreadChatRequests} />
             </Button>
           </Link>
@@ -152,12 +155,15 @@ const FederationLayout = ({ children }) => {
               className="w-full justify-start"
             >
               <FolderOpen className="w-4 h-4 mr-3" />
-              Team Groups
+              {t('federation_layout.team_groups')}
             </Button>
           </Link>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border space-y-2">
+          <div className="flex justify-center">
+            <LanguageSwitcher />
+          </div>
           <Button
             data-testid="logout-btn"
             variant="ghost"
@@ -165,7 +171,7 @@ const FederationLayout = ({ children }) => {
             onClick={confirmLogout}
           >
             <LogOut className="w-4 h-4 mr-3" />
-            Logout
+            {t('federation_layout.logout')}
           </Button>
         </div>
       </aside>
@@ -184,9 +190,9 @@ const FederationLayout = ({ children }) => {
       <ConfirmDialog
         open={showLogoutConfirm}
         onOpenChange={setShowLogoutConfirm}
-        title="Sign Out"
-        description="Are you sure you want to sign out?"
-        confirmLabel="Sign Out"
+        title={t('federation_layout.sign_out')}
+        description={t('federation_layout.sign_out_confirm')}
+        confirmLabel={t('federation_layout.sign_out')}
         confirmVariant="destructive"
         onConfirm={handleLogout}
       />

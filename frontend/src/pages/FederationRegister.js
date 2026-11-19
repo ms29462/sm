@@ -4,16 +4,10 @@ import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { trackRegistration } from "@/lib/analytics";
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 
-const STEPS = [
-  { id: 1, title: "Federation" },
-  { id: 2, title: "Representative" },
-  { id: 3, title: "Activities" },
-  { id: 4, title: "Nationalities" },
-  { id: 5, title: "Profile" },
-  { id: 6, title: "Verification" },
-  { id: 7, title: "Terms" },
-];
+const STEP_KEYS = ["federation", "representative", "activities", "nationalities", "profile", "verification", "terms"];
 
 const COUNTRIES = ["Afghanistan","Albania","Algeria","Angola","Argentina","Australia","Austria","Belgium","Bolivia","Brazil","Cameroon","Canada","Chile","China","Colombia","Congo","Costa Rica","Croatia","Czech Republic","Denmark","DR Congo","Ecuador","Egypt","England","Ethiopia","Finland","France","Germany","Ghana","Greece","Guinea","Honduras","Hungary","India","Indonesia","Iran","Ireland","Israel","Italy","Ivory Coast","Jamaica","Japan","Jordan","Kenya","Mali","Mexico","Morocco","Netherlands","New Zealand","Nigeria","Norway","Panama","Paraguay","Peru","Poland","Portugal","Romania","Russia","Saudi Arabia","Scotland","Senegal","Serbia","South Africa","South Korea","Spain","Sweden","Switzerland","Tunisia","Turkey","Uganda","Ukraine","United Kingdom","United States","Uruguay","Venezuela","Wales","Zambia","Zimbabwe","Central African Republic","Gabon","Rwanda","Tanzania","Ethiopia","Mozambique","Madagascar","Benin","Togo","Burkina Faso","Niger","Chad","Sudan","Libya","Mauritania","Cape Verde","Guinea-Bissau","Sierra Leone","Liberia","Gambia"];
 const FED_TYPES = ["National Federation","Regional Federation","Provincial / State Federation","Other"];
@@ -29,6 +23,7 @@ const FederationRegister = () => {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     federation_name: "", country: "", federation_type: "",
     rep_first_name: "", rep_last_name: "", rep_role: "", rep_email: "", rep_phone: "",
@@ -48,36 +43,36 @@ const FederationRegister = () => {
     switch (step) {
       case 1:
         if (!form.federation_name || !form.country || !form.federation_type) {
-          toast.error("Please fill in all required fields"); return false;
+          toast.error(t('federation_register.error_required')); return false;
         }
         return true;
       case 2:
         if (!form.rep_first_name || !form.rep_last_name || !form.rep_role || !form.rep_email || !form.rep_phone || !form.password || !form.confirm_password) {
-          toast.error("Please fill in all representative information"); return false;
+          toast.error(t('federation_register.error_rep')); return false;
         }
-        if (form.password !== form.confirm_password) { toast.error("Passwords do not match"); return false; }
-        if (form.password.length < 8) { toast.error("Password must be at least 8 characters"); return false; }
+        if (form.password !== form.confirm_password) { toast.error(t('federation_register.error_passwords_match')); return false; }
+        if (form.password.length < 8) { toast.error(t('federation_register.error_password_length')); return false; }
         return true;
       case 3:
         if (!form.primary_objective || form.age_categories.length === 0) {
-          toast.error("Please select your primary objective and age categories"); return false;
+          toast.error(t('federation_register.error_activities')); return false;
         }
         return true;
       case 4:
         if (form.eligible_nationalities.length === 0) {
-          toast.error("Please select at least one eligible nationality"); return false;
+          toast.error(t('federation_register.error_nationalities')); return false;
         }
         return true;
       case 5:
-        if (!form.description) { toast.error("Please add a federation description"); return false; }
+        if (!form.description) { toast.error(t('federation_register.error_description')); return false; }
         return true;
       case 6:
         if (!form.website && !form.instagram && !form.facebook && !form.linkedin) {
-          toast.error("Please provide at least one verification link"); return false;
+          toast.error(t('federation_register.error_verification')); return false;
         }
         return true;
       case 7:
-        if (!form.terms_accepted || !form.authorized) { toast.error("Please accept both checkboxes"); return false; }
+        if (!form.terms_accepted || !form.authorized) { toast.error(t('federation_register.error_terms')); return false; }
         return true;
       default: return true;
     }
@@ -119,7 +114,7 @@ const FederationRegister = () => {
       trackRegistration('federation');
       navigate("/federation-pending");
     } catch (e) {
-      toast.error(e.response?.data?.detail || "Registration failed");
+      toast.error(e.response?.data?.detail || t('federation_register.reg_failed'));
     }
     setSaving(false);
   };
@@ -130,53 +125,59 @@ const FederationRegister = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="border-b border-border/50 p-4 flex items-center justify-between">
         <img src="/logo.png" alt="Soccer Match" className="h-8 w-auto" />
-        <Link to="/" className="text-xs text-muted-foreground hover:text-white">Back to home</Link>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <Link to="/" className="text-xs text-muted-foreground hover:text-white">{t('federation_register.back_home')}</Link>
+        </div>
       </div>
 
       <div className="px-4 pt-5 max-w-lg mx-auto w-full">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs text-muted-foreground font-medium">Step {step} of 7</p>
+          <p className="text-xs text-muted-foreground font-medium">{t('federation_register.step_of', { step })}</p>
           <p className="text-xs text-primary font-bold">{Math.round(progress)}%</p>
         </div>
         <div className="h-1 bg-white/10 rounded-full overflow-hidden mb-4">
           <div className="h-full bg-primary rounded-full transition-all duration-500" style={{width: `${progress}%`}} />
         </div>
         <div className="flex justify-between">
-          {STEPS.map(s => (
-            <div key={s.id} className="flex flex-col items-center gap-1">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
-                s.id < step ? "bg-primary border-primary text-black" :
-                s.id === step ? "border-primary text-primary bg-primary/10" :
-                "border-white/20 text-muted-foreground"
-              }`}>
-                {s.id < step ? <Check className="w-3.5 h-3.5" /> : s.id}
+          {STEP_KEYS.map((key, idx) => {
+            const id = idx + 1;
+            return (
+              <div key={id} className="flex flex-col items-center gap-1">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
+                  id < step ? "bg-primary border-primary text-black" :
+                  id === step ? "border-primary text-primary bg-primary/10" :
+                  "border-white/20 text-muted-foreground"
+                }`}>
+                  {id < step ? <Check className="w-3.5 h-3.5" /> : id}
+                </div>
+                <p className="text-[9px] text-muted-foreground hidden sm:block">{t(`federation_register.step_${key}`)}</p>
               </div>
-              <p className="text-[9px] text-muted-foreground hidden sm:block">{s.title}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       <div className="flex-1 px-4 pb-8 mt-6">
         <div className="max-w-lg mx-auto">
-          <h2 className="text-2xl font-heading font-bold uppercase mb-1">{STEPS[step-1].title}</h2>
+          <h2 className="text-2xl font-heading font-bold uppercase mb-1">{t(`federation_register.step_${STEP_KEYS[step-1]}`)}</h2>
           <div className="h-0.5 w-12 bg-primary mb-5" />
 
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label className={labelClass}>Federation Name *</label>
-                <input value={form.federation_name} onChange={e => set("federation_name", e.target.value)} placeholder="e.g. French Football Federation" className={inputClass} />
+                <label className={labelClass}>{t('federation_register.federation_name_label')}</label>
+                <input value={form.federation_name} onChange={e => set("federation_name", e.target.value)} placeholder={t('federation_register.federation_name_placeholder')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Country *</label>
+                <label className={labelClass}>{t('federation_register.country_label')}</label>
                 <select value={form.country} onChange={e => set("country", e.target.value)} className={inputClass + " cursor-pointer"}>
-                  <option value="">Select country...</option>
+                  <option value="">{t('federation_register.select_country')}</option>
                   {COUNTRIES.map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Federation Type *</label>
+                <label className={labelClass}>{t('federation_register.federation_type_label')}</label>
                 <div className="space-y-2">
                   {FED_TYPES.map(t => (
                     <button key={t} onClick={() => set("federation_type", t)} type="button"
@@ -192,42 +193,42 @@ const FederationRegister = () => {
           {step === 2 && (
             <div className="space-y-4">
               <div className="p-3 bg-blue-500/5 border border-blue-500/20 rounded-sm">
-                <p className="text-xs text-blue-400">Contact information is private and only accessible to Soccer Match administrators.</p>
+                <p className="text-xs text-blue-400">{t('federation_register.contact_private_note')}</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelClass}>First Name *</label>
+                  <label className={labelClass}>{t('federation_register.first_name_label')}</label>
                   <input value={form.rep_first_name} onChange={e => set("rep_first_name", e.target.value)} placeholder="John" className={inputClass} />
                 </div>
                 <div>
-                  <label className={labelClass}>Last Name *</label>
+                  <label className={labelClass}>{t('federation_register.last_name_label')}</label>
                   <input value={form.rep_last_name} onChange={e => set("rep_last_name", e.target.value)} placeholder="Smith" className={inputClass} />
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Position *</label>
+                <label className={labelClass}>{t('federation_register.position_label')}</label>
                 <select value={form.rep_role} onChange={e => set("rep_role", e.target.value)} className={inputClass + " cursor-pointer"}>
-                  <option value="">Select position...</option>
+                  <option value="">{t('federation_register.select_position')}</option>
                   {REP_ROLES.map(r => <option key={r}>{r}</option>)}
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Email Address *</label>
-                <input type="email" value={form.rep_email} onChange={e => set("rep_email", e.target.value)} placeholder="you@federation.org" className={inputClass} />
+                <label className={labelClass}>{t('federation_register.email_label')}</label>
+                <input type="email" value={form.rep_email} onChange={e => set("rep_email", e.target.value)} placeholder={t('federation_register.email_placeholder')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Phone Number *</label>
-                <input type="tel" value={form.rep_phone} onChange={e => set("rep_phone", e.target.value)} placeholder="+1 234 567 8900" className={inputClass} />
+                <label className={labelClass}>{t('federation_register.phone_label')}</label>
+                <input type="tel" value={form.rep_phone} onChange={e => set("rep_phone", e.target.value)} placeholder={t('federation_register.phone_placeholder')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Password *</label>
-                <input type="password" value={form.password} onChange={e => set("password", e.target.value)} placeholder="Min. 8 characters" className={inputClass} />
+                <label className={labelClass}>{t('federation_register.password_label')}</label>
+                <input type="password" value={form.password} onChange={e => set("password", e.target.value)} placeholder={t('federation_register.password_placeholder')} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Confirm Password *</label>
-                <input type="password" value={form.confirm_password} onChange={e => set("confirm_password", e.target.value)} placeholder="Repeat password" className={inputClass} />
+                <label className={labelClass}>{t('federation_register.confirm_password_label')}</label>
+                <input type="password" value={form.confirm_password} onChange={e => set("confirm_password", e.target.value)} placeholder={t('federation_register.confirm_password_placeholder')} className={inputClass} />
                 {form.confirm_password && form.password !== form.confirm_password && (
-                  <p className="text-xs text-red-400 mt-1">Passwords do not match</p>
+                  <p className="text-xs text-red-400 mt-1">{t('federation_register.passwords_no_match')}</p>
                 )}
               </div>
             </div>
@@ -236,7 +237,7 @@ const FederationRegister = () => {
           {step === 3 && (
             <div className="space-y-5">
               <div>
-                <label className={labelClass}>Primary Objective *</label>
+                <label className={labelClass}>{t('federation_register.primary_objective_label')}</label>
                 <div className="space-y-2">
                   {OBJECTIVES.map(o => (
                     <button key={o} onClick={() => set("primary_objective", o)} type="button"
@@ -247,7 +248,7 @@ const FederationRegister = () => {
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Age Categories Managed *</label>
+                <label className={labelClass}>{t('federation_register.age_categories_label')}</label>
                 <div className="flex flex-wrap gap-2">
                   {AGE_CATEGORIES.map(a => (
                     <button key={a} onClick={() => toggleArr("age_categories", a)} type="button"
@@ -263,10 +264,10 @@ const FederationRegister = () => {
           {step === 4 && (
             <div className="space-y-4">
               <div className="p-3 bg-primary/5 border border-primary/20 rounded-sm">
-                <p className="text-xs text-primary">Select all nationalities eligible for your federation. This helps us match players with the right federation.</p>
+                <p className="text-xs text-primary">{t('federation_register.nationalities_note')}</p>
               </div>
               <div>
-                <label className={labelClass}>Selected: {form.eligible_nationalities.length}</label>
+                <label className={labelClass}>{t('federation_register.selected_count', { count: form.eligible_nationalities.length })}</label>
                 <div className="max-h-80 overflow-y-auto space-y-1 border border-white/10 rounded-sm p-2">
                   {COUNTRIES.map(c => (
                     <button key={c} onClick={() => toggleArr("eligible_nationalities", c)} type="button"
@@ -282,30 +283,30 @@ const FederationRegister = () => {
           {step === 5 && (
             <div className="space-y-4">
               <div>
-                <label className={labelClass}>Federation Logo URL <span className="text-muted-foreground font-normal normal-case">(optional)</span></label>
+                <label className={labelClass}>{t('federation_register.logo_label')} <span className="text-muted-foreground font-normal normal-case">{t('federation_register.logo_optional')}</span></label>
                 <input value={form.logo} onChange={e => set("logo", e.target.value)} placeholder="https://..." className={inputClass} />
                 {form.logo && <img src={form.logo} alt="Logo" className="mt-2 w-16 h-16 object-contain border border-white/10 rounded-sm" />}
               </div>
               <div>
-                <label className={labelClass}>Federation Description *</label>
+                <label className={labelClass}>{t('federation_register.description_label')}</label>
                 <textarea value={form.description} onChange={e => set("description", e.target.value)}
-                  placeholder="e.g. National football federation responsible for talent identification and national team development..."
+                  placeholder={t('federation_register.description_placeholder')}
                   rows={4} className={inputClass + " h-auto py-3"} />
               </div>
               <div>
-                <label className={labelClass}>Website <span className="text-muted-foreground font-normal normal-case">(optional)</span></label>
+                <label className={labelClass}>{t('federation_register.website_label')} <span className="text-muted-foreground font-normal normal-case">{t('federation_register.website_optional')}</span></label>
                 <input value={form.website} onChange={e => set("website", e.target.value)} placeholder="https://federation.org" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Instagram <span className="text-muted-foreground font-normal normal-case">(optional)</span></label>
+                <label className={labelClass}>{t('federation_register.instagram_label')} <span className="text-muted-foreground font-normal normal-case">{t('federation_register.instagram_optional')}</span></label>
                 <input value={form.instagram} onChange={e => set("instagram", e.target.value)} placeholder="https://instagram.com/..." className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Facebook <span className="text-muted-foreground font-normal normal-case">(optional)</span></label>
+                <label className={labelClass}>{t('federation_register.facebook_label')} <span className="text-muted-foreground font-normal normal-case">{t('federation_register.facebook_optional')}</span></label>
                 <input value={form.facebook} onChange={e => set("facebook", e.target.value)} placeholder="https://facebook.com/..." className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>LinkedIn <span className="text-muted-foreground font-normal normal-case">(optional)</span></label>
+                <label className={labelClass}>{t('federation_register.linkedin_label')} <span className="text-muted-foreground font-normal normal-case">{t('federation_register.linkedin_optional')}</span></label>
                 <input value={form.linkedin} onChange={e => set("linkedin", e.target.value)} placeholder="https://linkedin.com/..." className={inputClass} />
               </div>
             </div>
@@ -314,49 +315,49 @@ const FederationRegister = () => {
           {step === 6 && (
             <div className="space-y-4">
               <div className="p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-sm">
-                <p className="text-sm font-bold text-yellow-400 mb-1">Why verification?</p>
-                <p className="text-xs text-muted-foreground">To protect players, we verify every federation. Please provide at least one official link.</p>
+                <p className="text-sm font-bold text-yellow-400 mb-1">{t('federation_register.why_verification')}</p>
+                <p className="text-xs text-muted-foreground">{t('federation_register.verification_note')}</p>
               </div>
               <div>
-                <label className={labelClass}>Official Website</label>
+                <label className={labelClass}>{t('federation_register.official_website')}</label>
                 <input value={form.website} onChange={e => set("website", e.target.value)} placeholder="https://federation.org" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Official Instagram</label>
+                <label className={labelClass}>{t('federation_register.official_instagram')}</label>
                 <input value={form.instagram} onChange={e => set("instagram", e.target.value)} placeholder="https://instagram.com/..." className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Official Facebook</label>
+                <label className={labelClass}>{t('federation_register.official_facebook')}</label>
                 <input value={form.facebook} onChange={e => set("facebook", e.target.value)} placeholder="https://facebook.com/..." className={inputClass} />
               </div>
-              <p className="text-xs text-muted-foreground">* At least one link is required</p>
+              <p className="text-xs text-muted-foreground">{t('federation_register.at_least_one')}</p>
             </div>
           )}
 
           {step === 7 && (
             <div className="space-y-5">
               <div className="p-4 bg-card border border-border/50 rounded-sm">
-                <h3 className="font-bold text-sm uppercase tracking-wide mb-3">Application Summary</h3>
+                <h3 className="font-bold text-sm uppercase tracking-wide mb-3">{t('federation_register.summary_title')}</h3>
                 <div className="space-y-1 text-sm text-muted-foreground">
-                  <p>Federation: <span className="text-white">{form.federation_name}</span></p>
-                  <p>Country: <span className="text-white">{form.country}</span></p>
-                  <p>Type: <span className="text-white">{form.federation_type}</span></p>
-                  <p>Objective: <span className="text-white">{form.primary_objective}</span></p>
-                  <p>Representative: <span className="text-white">{form.rep_first_name} {form.rep_last_name} — {form.rep_role}</span></p>
-                  <p>Nationalities: <span className="text-white">{form.eligible_nationalities.length} selected</span></p>
+                  <p>{t('federation_register.summary_federation')} <span className="text-white">{form.federation_name}</span></p>
+                  <p>{t('federation_register.summary_country')} <span className="text-white">{form.country}</span></p>
+                  <p>{t('federation_register.summary_type')} <span className="text-white">{form.federation_type}</span></p>
+                  <p>{t('federation_register.summary_objective')} <span className="text-white">{form.primary_objective}</span></p>
+                  <p>{t('federation_register.summary_rep')} <span className="text-white">{form.rep_first_name} {form.rep_last_name} — {form.rep_role}</span></p>
+                  <p>{t('federation_register.summary_nationalities')} <span className="text-white">{t('federation_register.summary_nationalities_count', { count: form.eligible_nationalities.length })}</span></p>
                 </div>
               </div>
               <div className="space-y-3">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input type="checkbox" checked={form.terms_accepted} onChange={e => set("terms_accepted", e.target.checked)} className="accent-primary w-5 h-5 mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-muted-foreground">
-                    I have read and accept the <Link to="/cgu" className="text-primary hover:underline">Terms of Use</Link> and <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+                    {t('federation_register.terms_text')} <Link to="/cgu" className="text-primary hover:underline">{t('federation_register.terms_link')}</Link> {t('federation_register.terms_and')} <Link to="/privacy" className="text-primary hover:underline">{t('federation_register.privacy_link')}</Link>.
                   </span>
                 </label>
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input type="checkbox" checked={form.authorized} onChange={e => set("authorized", e.target.checked)} className="accent-primary w-5 h-5 mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-muted-foreground">
-                    I certify that I am authorized to represent this federation and that all information provided is accurate.
+                    {t('federation_register.authorized_text')}
                   </span>
                 </label>
               </div>
@@ -367,12 +368,12 @@ const FederationRegister = () => {
             {step > 1 && (
               <button onClick={() => setStep(s => s-1)} type="button"
                 className="flex items-center gap-2 px-4 py-3 border border-white/10 rounded-sm text-sm text-muted-foreground hover:text-white hover:border-white/30 transition-colors">
-                <ChevronLeft className="w-4 h-4" /> Back
+                <ChevronLeft className="w-4 h-4" /> {t('federation_register.back')}
               </button>
             )}
             <button onClick={next} disabled={saving} type="button"
               className="flex-1 flex items-center justify-center gap-2 bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-              {saving ? "Submitting..." : step === 7 ? "Submit Application" : "Continue"}
+              {saving ? t('federation_register.submitting') : step === 7 ? t('federation_register.submit') : t('federation_register.continue')}
               {!saving && <ChevronRight className="w-4 h-4" />}
             </button>
           </div>
@@ -382,22 +383,22 @@ const FederationRegister = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border/50 rounded-sm p-6 max-w-md w-full">
-            <h3 className="font-heading font-bold uppercase text-lg mb-4 text-primary">Federation Application Submitted</h3>
-            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">Thank you for registering your federation on Soccer Match. Your application has been submitted and is under review.</p>
-            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">A member of our team will contact you within 48 hours to:</p>
+            <h3 className="font-heading font-bold uppercase text-lg mb-4 text-primary">{t('federation_register.modal_title')}</h3>
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{t('federation_register.modal_body1')}</p>
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{t('federation_register.modal_body2')}</p>
             <ul className="text-sm text-muted-foreground mb-4 space-y-1">
-              <li>• Verify your federation</li>
-              <li>• Understand your talent identification and scouting needs</li>
-              <li>• Present the platform</li>
-              <li>• Determine the most appropriate subscription plan</li>
+              <li>• {t('federation_register.modal_li1')}</li>
+              <li>• {t('federation_register.modal_li2')}</li>
+              <li>• {t('federation_register.modal_li3')}</li>
+              <li>• {t('federation_register.modal_li4')}</li>
             </ul>
             <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-sm mb-5">
-              <p className="text-xs text-yellow-400 font-bold">Current Status: Pending Review</p>
+              <p className="text-xs text-yellow-400 font-bold">{t('federation_register.modal_status')}</p>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setShowModal(false)} className="flex-1 border border-white/10 text-muted-foreground hover:text-white rounded-sm py-3 text-sm transition-colors">Go Back</button>
+              <button onClick={() => setShowModal(false)} className="flex-1 border border-white/10 text-muted-foreground hover:text-white rounded-sm py-3 text-sm transition-colors">{t('federation_register.go_back')}</button>
               <button onClick={handleSubmit} disabled={saving} className="flex-1 bg-primary text-black font-bold rounded-sm py-3 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-                {saving ? "Submitting..." : "Finish"}
+                {saving ? t('federation_register.submitting') : t('federation_register.finish')}
               </button>
             </div>
           </div>

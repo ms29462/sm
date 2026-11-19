@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import { useTranslation } from 'react-i18next';
 
 const FederationAccessGate = ({ children }) => {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     api.getFederationAccessStatus()
@@ -17,18 +19,17 @@ const FederationAccessGate = ({ children }) => {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="p-8 text-primary font-heading">LOADING...</div>;
+  if (loading) return <div className="p-8 text-primary font-heading">{t('federation_access_gate.loading')}</div>;
 
   if (!status?.has_access) {
     return (
       <div className="p-4 md:p-8 flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <h1 className="text-2xl font-heading font-bold uppercase mb-3">Access Pending</h1>
+        <h1 className="text-2xl font-heading font-bold uppercase mb-3">{t('federation_access_gate.access_pending_title')}</h1>
         <p className="text-sm text-muted-foreground max-w-md">
-          Your federation profile is currently under review. Once approved by our team, you will gain
-          full access to player search, scouting tools, and national team management features.
+          {t('federation_access_gate.access_pending_desc')}
         </p>
         <p className="text-xs text-muted-foreground mt-4">
-          Questions? Contact us at <a href="mailto:contact@soccermatch.ca" className="text-primary">contact@soccermatch.ca</a>
+          {t('federation_access_gate.questions')} <a href="mailto:contact@soccermatch.ca" className="text-primary">contact@soccermatch.ca</a>
         </p>
       </div>
     );
