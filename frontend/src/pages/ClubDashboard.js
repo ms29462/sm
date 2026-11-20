@@ -21,6 +21,7 @@ import ClubSubscriptionGate from "@/components/club/ClubSubscriptionGate";
 import CollegeSubscribe from "@/components/college/CollegeSubscribe";
 import CollegeSubscriptionGate from "@/components/college/CollegeSubscriptionGate";
 import CollegeApprovalGate from "@/components/college/CollegeApprovalGate";
+import ClubApprovalGate from "@/components/club/ClubApprovalGate";
 import OpportunityDetail from "@/pages/OpportunityDetail";
 
 const ClubDashboard = () => {
@@ -38,7 +39,7 @@ const ClubDashboard = () => {
 
   const FreeCollegeGate = ({ children }) => {
     if (isCollegeRole) return <CollegeApprovalGate>{children}</CollegeApprovalGate>;
-    if (isClub) return <ClubSubscriptionGate>{children}</ClubSubscriptionGate>;
+    if (isClub) return <ClubApprovalGate>{children}</ClubApprovalGate>;
     return children;
   };
 

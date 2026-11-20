@@ -5,6 +5,7 @@ import CollegeAgencyProfile from "@/components/college_agency/CollegeAgencyProfi
 import CollegeAgencyOpportunities from "@/components/college_agency/CollegeAgencyOpportunities";
 import CollegeAgencySubscribe from "@/components/college_agency/CollegeAgencySubscribe";
 import CollegeAgencySubscriptionGate from "@/components/college_agency/CollegeAgencySubscriptionGate";
+import CollegeAgencyApprovalGate from "@/components/college_agency/CollegeAgencyApprovalGate";
 import ClubHome from "@/components/club/ClubHome";
 import ClubPlayers from "@/components/club/ClubPlayers";
 import ClubApplications from "@/components/club/ClubApplications";
@@ -24,14 +25,14 @@ const CollegeAgencyDashboard = () => (
       <Route path="profile" element={<CollegeAgencyProfile />} />
       <Route path="subscribe" element={<CollegeAgencySubscribe />} />
       <Route path="news" element={<NewsFeed />} />
-      <Route path="opportunities" element={<CollegeAgencySubscriptionGate><CollegeAgencyOpportunities /></CollegeAgencySubscriptionGate>} />
+      <Route path="opportunities" element={<CollegeAgencyApprovalGate><CollegeAgencyOpportunities /></CollegeAgencyApprovalGate>} />
       <Route path="opportunities/analytics" element={<CollegeAgencySubscriptionGate><ClubOpportunityAnalytics /></CollegeAgencySubscriptionGate>} />
       <Route path="players" element={<CollegeAgencySubscriptionGate><ClubPlayers /></CollegeAgencySubscriptionGate>} />
       <Route path="player/:playerId" element={<CollegeAgencySubscriptionGate><PlayerDetailView /></CollegeAgencySubscriptionGate>} />
-      <Route path="applications" element={<CollegeAgencySubscriptionGate><ClubApplications /></CollegeAgencySubscriptionGate>} />
-      <Route path="opportunity/:opportunityId" element={<CollegeAgencySubscriptionGate><OpportunityDetail /></CollegeAgencySubscriptionGate>} />
+      <Route path="applications" element={<CollegeAgencyApprovalGate><ClubApplications /></CollegeAgencyApprovalGate>} />
+      <Route path="opportunity/:opportunityId" element={<CollegeAgencyApprovalGate><OpportunityDetail /></CollegeAgencyApprovalGate>} />
       <Route path="favorites" element={<CollegeAgencySubscriptionGate><ClubFavorites /></CollegeAgencySubscriptionGate>} />
-      <Route path="chats" element={<CollegeAgencySubscriptionGate><UnifiedChats /></CollegeAgencySubscriptionGate>} />
+      <Route path="chats" element={<CollegeAgencyApprovalGate><UnifiedChats /></CollegeAgencyApprovalGate>} />
       <Route path="scouting" element={<CollegeAgencySubscriptionGate><ScoutingHub /></CollegeAgencySubscriptionGate>} />
       <Route path="pipeline" element={<CollegeAgencySubscriptionGate><RecruitmentPipeline /></CollegeAgencySubscriptionGate>} />
       <Route path="scouting/:playerId" element={<CollegeAgencySubscriptionGate><TrackingOverview /></CollegeAgencySubscriptionGate>} />

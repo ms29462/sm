@@ -9162,6 +9162,7 @@ async def get_club_subscription_status(current_user: dict = Depends(get_current_
         "recommended_plan": recommended,
         "active_plan": club.get("active_plan"),
         "has_access": sub_status == "active",
+        "is_approved": sub_status in ("approved_awaiting_payment", "active"),
     }
 
 @api_router.get("/college-agency/subscription-status")
@@ -9176,6 +9177,7 @@ async def get_college_agency_subscription_status(current_user: dict = Depends(ge
         "sub_status": sub_status,
         "active_plan": org.get("active_plan"),
         "has_access": sub_status == "active",
+        "is_approved": sub_status in ("approved_awaiting_payment", "active"),
     }
 
 @api_router.post("/stripe/create-club-checkout")

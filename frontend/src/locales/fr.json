@@ -1277,8 +1277,12 @@
   "college_agency_sub_gate": {
     "loading": "CHARGEMENT...",
     "sub_required_title": "Abonnement Requis",
-    "sub_required_body": "Votre agence a besoin d'un abonnement actif pour accéder à cette section.",
+    "sub_required_body": "Votre agence a été approuvée. Activez votre abonnement pour débloquer la recherche de joueurs, le scouting et les fonctionnalités avancées.",
     "view_sub_btn": "Voir le statut d'abonnement"
+  },
+  "college_agency_approval_gate": {
+    "pending_title": "En Attente d'Approbation",
+    "pending_body": "Votre agence est actuellement en cours d'examen. Une fois approuvée par notre équipe, vous pourrez publier des opportunités, gérer les candidatures et discuter avec les joueurs."
   },
   "college_agency_register": {
     "back_home": "Retour à l'accueil",

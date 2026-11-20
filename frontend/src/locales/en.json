@@ -1277,8 +1277,12 @@
   "college_agency_sub_gate": {
     "loading": "LOADING...",
     "sub_required_title": "Subscription Required",
-    "sub_required_body": "Your agency needs an active subscription to access this section.",
+    "sub_required_body": "Your agency has been approved. Activate your subscription to unlock player search, scouting, and advanced features.",
     "view_sub_btn": "View Subscription Status"
+  },
+  "college_agency_approval_gate": {
+    "pending_title": "Pending Admin Approval",
+    "pending_body": "Your agency is currently under review. Once approved by our team, you will be able to publish opportunities, manage applications, and chat with players."
   },
   "college_agency_register": {
     "back_home": "Back to home",
