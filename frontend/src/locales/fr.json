@@ -1157,8 +1157,12 @@
   "college_sub_gate": {
     "loading": "CHARGEMENT...",
     "sub_required_title": "Abonnement Requis",
-    "sub_required_body": "Votre établissement a été approuvé. Veuillez activer votre abonnement pour accéder à Soccer Match.",
+    "sub_required_body": "Votre établissement a été approuvé. Activez votre abonnement pour débloquer la recherche de joueurs, le scouting et les fonctionnalités avancées.",
     "activate_btn": "Activer l'abonnement"
+  },
+  "college_approval_gate": {
+    "pending_title": "En Attente d'Approbation",
+    "pending_body": "Votre établissement est actuellement en cours d'examen. Une fois approuvé par notre équipe, vous pourrez publier des opportunités, gérer les candidatures et discuter avec les joueurs."
   },
   "college_agency_layout": {
     "portal": "Portail Agence Universitaire",

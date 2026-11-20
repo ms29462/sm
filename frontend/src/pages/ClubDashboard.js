@@ -20,6 +20,7 @@ import ClubSubscribe from "@/components/club/ClubSubscribe";
 import ClubSubscriptionGate from "@/components/club/ClubSubscriptionGate";
 import CollegeSubscribe from "@/components/college/CollegeSubscribe";
 import CollegeSubscriptionGate from "@/components/college/CollegeSubscriptionGate";
+import CollegeApprovalGate from "@/components/college/CollegeApprovalGate";
 import OpportunityDetail from "@/pages/OpportunityDetail";
 
 const ClubDashboard = () => {
@@ -35,20 +36,26 @@ const ClubDashboard = () => {
     return children;
   };
 
+  const FreeCollegeGate = ({ children }) => {
+    if (isCollegeRole) return <CollegeApprovalGate>{children}</CollegeApprovalGate>;
+    if (isClub) return <ClubSubscriptionGate>{children}</ClubSubscriptionGate>;
+    return children;
+  };
+
   return (
     <ClubLayout isCollege={isCollege}>
       <Routes>
         <Route path="dashboard" element={<ClubHome />} />
         <Route path="profile" element={isCollege ? <CollegeProfile /> : <ClubProfile />} />
         <Route path="subscribe" element={isCollege ? <CollegeSubscribe /> : <ClubSubscribe />} />
-        <Route path="opportunities" element={<Gate><ClubOpportunities /></Gate>} />
+        <Route path="opportunities" element={<FreeCollegeGate><ClubOpportunities /></FreeCollegeGate>} />
         <Route path="opportunities/analytics" element={<Gate><ClubOpportunityAnalytics /></Gate>} />
         <Route path="players" element={<Gate><ClubPlayers /></Gate>} />
         <Route path="player/:playerId" element={<Gate><PlayerDetailView /></Gate>} />
-        <Route path="applications" element={<Gate><ClubApplications /></Gate>} />
-        <Route path="opportunity/:opportunityId" element={<Gate><OpportunityDetail /></Gate>} />
+        <Route path="applications" element={<FreeCollegeGate><ClubApplications /></FreeCollegeGate>} />
+        <Route path="opportunity/:opportunityId" element={<FreeCollegeGate><OpportunityDetail /></FreeCollegeGate>} />
         <Route path="favorites" element={<Gate><ClubFavorites /></Gate>} />
-        <Route path="chats" element={<Gate><UnifiedChats /></Gate>} />
+        <Route path="chats" element={<FreeCollegeGate><UnifiedChats /></FreeCollegeGate>} />
         <Route path="videos" element={<VideoList />} />
         <Route path="scouting" element={<Gate><ScoutingHub /></Gate>} />
         <Route path="pipeline" element={<Gate><RecruitmentPipeline /></Gate>} />

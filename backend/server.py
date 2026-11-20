@@ -9368,6 +9368,7 @@ async def get_college_subscription_status(current_user: dict = Depends(get_curre
     return {
         "sub_status": sub_status,
         "has_access": sub_status == "active",
+        "is_approved": sub_status in ("approved_awaiting_payment", "active"),
     }
 
 @api_router.post("/stripe/create-college-checkout")

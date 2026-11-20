@@ -1157,8 +1157,12 @@
   "college_sub_gate": {
     "loading": "LOADING...",
     "sub_required_title": "Subscription Required",
-    "sub_required_body": "Your institution has been approved. Please activate your subscription to access Soccer Match.",
+    "sub_required_body": "Your institution has been approved. Activate your subscription to unlock player search, scouting, and advanced features.",
     "activate_btn": "Activate Subscription"
+  },
+  "college_approval_gate": {
+    "pending_title": "Pending Admin Approval",
+    "pending_body": "Your institution is currently under review. Once approved by our team, you will be able to publish opportunities, manage applications, and chat with players."
   },
   "college_agency_layout": {
     "portal": "College Agency Portal",

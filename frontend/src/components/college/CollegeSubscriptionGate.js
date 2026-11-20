@@ -18,6 +18,17 @@ const CollegeSubscriptionGate = ({ children }) => {
 
   if (loading) return <div className="p-8 text-primary font-heading">{t("college_sub_gate.loading")}</div>;
 
+  if (!status?.is_approved) {
+    return (
+      <div className="p-4 md:p-8 flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <h1 className="text-2xl font-heading font-bold uppercase mb-3">{t("college_approval_gate.pending_title")}</h1>
+        <p className="text-sm text-muted-foreground max-w-md">
+          {t("college_approval_gate.pending_body")}
+        </p>
+      </div>
+    );
+  }
+
   if (!status?.has_access) {
     return (
       <div className="p-4 md:p-8 flex flex-col items-center justify-center min-h-[60vh] text-center">
