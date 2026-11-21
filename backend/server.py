@@ -40,7 +40,7 @@ from email_service import (
     send_chat_request_received, send_chat_request_accepted, send_chat_request_declined, send_new_chat_message,
     send_admin_new_chat_request, send_admin_chat_request_accepted,
     send_opportunity_published, send_unread_messages_reminder,
-    send_new_application_received, send_admin_new_user_pending,
+    send_new_application_received, send_admin_new_user_pending, send_unviewed_applications_digest,
     send_new_opportunity_match, send_admin_new_opportunity,
     send_rejection_with_feedback, send_player_registration_rejection
 )
@@ -7427,6 +7427,65 @@ async def check_unread_messages_job():
             logger.error(f"check_unread_messages_job error: {e}")
 
 
+async def check_unviewed_applications_job():
+    """Daily job: emails orgs that have unviewed (submitted) applications older than 24h."""
+    while True:
+        await asyncio.sleep(86400)
+        try:
+            now = datetime.now(timezone.utc)
+            cutoff = (now - timedelta(hours=24)).isoformat()
+
+            # Aggregate submitted apps older than 24h, grouped by org
+            pipeline = [
+                {"$match": {"status": "submitted", "created_at": {"$lt": cutoff}}},
+                {"$group": {"_id": "$club_id", "count": {"$sum": 1}}}
+            ]
+            results = await db.applications.aggregate(pipeline).to_list(None)
+
+            for item in results:
+                org_id = item["_id"]
+                count = item["count"]
+                if not org_id:
+                    continue
+
+                # Look up org doc to get name and last email timestamp
+                clubs_doc = await db.clubs.find_one(
+                    {"user_id": org_id},
+                    {"_id": 0, "last_unviewed_app_email": 1, "club_name": 1, "name": 1}
+                )
+                agency_doc = None if clubs_doc else await db.college_agencies.find_one(
+                    {"user_id": org_id},
+                    {"_id": 0, "last_unviewed_app_email": 1, "name": 1, "agency_name": 1}
+                )
+                org_doc = clubs_doc or agency_doc
+                target_collection = db.clubs if clubs_doc else db.college_agencies
+
+                if org_doc:
+                    last_sent = org_doc.get("last_unviewed_app_email", "")
+                    if last_sent and last_sent > cutoff:
+                        continue  # Already notified in the last 24h
+                    org_name = org_doc.get("club_name") or org_doc.get("name") or org_doc.get("agency_name") or "there"
+                else:
+                    org_name = "there"
+
+                org_email = await get_user_email(org_id)
+                if not org_email:
+                    continue
+
+                try:
+                    await send_unviewed_applications_digest(org_email, org_name, count)
+                    await target_collection.update_one(
+                        {"user_id": org_id},
+                        {"$set": {"last_unviewed_app_email": now.isoformat()}}
+                    )
+                    logger.info(f"Unviewed applications digest sent to {org_id} ({count} unviewed)")
+                except Exception as e:
+                    logger.error(f"Failed to send unviewed applications digest to {org_id}: {e}")
+
+        except Exception as e:
+            logger.error(f"check_unviewed_applications_job error: {e}")
+
+
 # Socket.IO Event Handlers
 @sio.event
 async def connect(sid, environ):
@@ -10423,6 +10482,7 @@ async def create_db_indexes():
 @fastapi_app.on_event("startup")
 async def start_background_jobs():
     asyncio.create_task(check_unread_messages_job())
+    asyncio.create_task(check_unviewed_applications_job())
 
 @fastapi_app.on_event("startup")
 async def migrate_news_college_agency():

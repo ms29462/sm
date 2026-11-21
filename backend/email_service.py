@@ -311,6 +311,29 @@ async def send_new_application_received(email: str, org_name: str, player_name: 
     await send_email(email, f"New application from {player_name} — Soccer Match", get_base_template(content, "New Application"))
 
 
+async def send_unviewed_applications_digest(email: str, org_name: str, count: int):
+    label = f"{count} unreviewed application{'s' if count != 1 else ''}"
+    content = f"""
+      <h1 style="color:#c8f135;font-size:24px;margin:0 0 16px;font-family:Georgia,serif;text-transform:uppercase;">Pending Applications</h1>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi {org_name},</p>
+      <p style="color:#ccc;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        You have <strong style="color:#fff;">{label}</strong> waiting for your attention on Soccer Match.
+      </p>
+      <div style="background-color:#1a1a1a;border:1px solid #333;border-left:3px solid #c8f135;padding:16px 20px;margin:0 0 24px;border-radius:4px;">
+        <p style="color:#ccc;font-size:14px;margin:0;">Reviewing applications promptly improves your chances of securing the right player before other clubs do.</p>
+      </div>
+      <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="background-color:#c8f135;border-radius:4px;padding:14px 28px;">
+            <a href="{PLATFORM_URL}" style="color:#000;font-weight:700;font-size:14px;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">Review Applications</a>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#555;font-size:13px;">You are receiving this email because you have an account on Soccer Match. To manage your email preferences, visit your account settings.</p>
+    """
+    await send_email(email, f"You have {label} — Soccer Match", get_base_template(content, "Pending Applications"))
+
+
 async def send_opportunity_published(email: str, org_name: str, position: str, league_level: str):
     label = f"{position} — {league_level}" if position and league_level else (position or league_level or "Your opportunity")
     content = f"""
